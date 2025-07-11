@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  tags: MyText
+  source: MyString
+  workspace: one
+
+two:
+  title: MyString
+  tags: MyText
+  source: MyString
+  workspace: two

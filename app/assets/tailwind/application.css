@@ -1,5 +1,31 @@
 @import "tailwindcss";
 
+@theme {
+  /* Define custom colors for ShadCN/UI compatibility */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  
+  /* Define radius */
+  --radius-default: 0.5rem;
+}
+
 @layer base {
   :root {
     /* shadcn/ui color variables - Light mode */
@@ -64,15 +90,14 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
   }
-}
-
-@layer base {
+  
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
 
@@ -110,46 +135,128 @@
 @layer components {
   /* Card styles */
   .card {
-    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+    border-radius: var(--radius-default);
+    border-width: 1px;
+    border-color: hsl(var(--border));
+    background-color: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   }
   
   /* Button base styles */
   .btn {
-    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    border-radius: calc(var(--radius-default) - 2px);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  
+  .btn:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+  }
+  
+  .btn:disabled {
+    pointer-events: none;
+    opacity: 0.5;
   }
   
   /* Button variants */
   .btn-default {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+  
+  .btn-default:hover {
+    background-color: hsl(var(--primary) / 0.9);
   }
   
   .btn-destructive {
-    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+    background-color: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+  
+  .btn-destructive:hover {
+    background-color: hsl(var(--destructive) / 0.9);
   }
   
   .btn-outline {
-    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+    border: 1px solid hsl(var(--input));
+    background-color: hsl(var(--background));
+  }
+  
+  .btn-outline:hover {
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
   }
   
   .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
   }
   
-  .btn-ghost {
-    @apply hover:bg-accent hover:text-accent-foreground;
+  .btn-secondary:hover {
+    background-color: hsl(var(--secondary) / 0.8);
+  }
+  
+  .btn-ghost:hover {
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
   }
   
   .btn-link {
-    @apply text-primary underline-offset-4 hover:underline;
+    color: hsl(var(--primary));
+    text-decoration-line: underline;
+    text-underline-offset: 4px;
+  }
+  
+  .btn-link:hover {
+    text-decoration-line: underline;
   }
   
   /* Input styles */
   .input {
-    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    display: flex;
+    height: 2.5rem;
+    width: 100%;
+    border-radius: calc(var(--radius-default) - 2px);
+    border: 1px solid hsl(var(--input));
+    background-color: hsl(var(--background));
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .input::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  .input:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+  }
+  
+  .input:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
   
   /* Label styles */
   .label {
-    @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+  
+  .label:has(+ :disabled) {
+    cursor: not-allowed;
+    opacity: 0.7;
   }
 }

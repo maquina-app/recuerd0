@@ -10,7 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_12_182330) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_11_210309) do
+  create_table "contents", force: :cascade do |t|
+    t.text "body"
+    t.integer "memory_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["memory_id"], name: "index_contents_on_memory_id"
+  end
+
+  create_table "memories", force: :cascade do |t|
+    t.string "title"
+    t.text "tags"
+    t.string "source"
+    t.integer "workspace_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["workspace_id"], name: "index_memories_on_workspace_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "ip_address"
@@ -37,6 +55,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_12_182330) do
     t.index ["user_id"], name: "index_workspaces_on_user_id"
   end
 
+  add_foreign_key "contents", "memories"
+  add_foreign_key "memories", "workspaces"
   add_foreign_key "sessions", "users"
   add_foreign_key "workspaces", "users"
 end
