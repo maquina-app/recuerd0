@@ -4,7 +4,10 @@
       <h1 class="text-3xl font-bold">My Workspaces</h1>
       <p class="text-muted-foreground mt-2">Organize your AI conversations and memories</p>
     </div>
-    <%= link_to "New Workspace", new_workspace_path, class: "btn-default" %>
+    <%= link_to new_workspace_path, class: "btn-default" do %>
+      <%= lucide_icon(:folder_plus) %>
+      New Workspace
+    <% end %>
   </div>
 
   <% if @workspaces.any? %>
@@ -17,6 +20,9 @@
     <%= render "components/empty_state",
     title: "No workspaces yet",
     description: "Create your first workspace to start organizing your AI memories",
-    action: link_to("Create Workspace", new_workspace_path, class: "btn-default") %>
+    action: link_to(new_workspace_path, class: "btn-default") do %>
+      <%= lucide_icon(:folder_plus) %>
+      Create Workspace
+    <% end %>
   <% end %>
 </div>

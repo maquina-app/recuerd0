@@ -1,35 +1,46 @@
-<%= link_to workspace_path(workspace), class: "block" do %>
-  <%= render "components/card", class_names: "h-full hover:shadow-lg transition-shadow" do %>
-    <%= render "components/card_header" do %>
-      <h3 class="text-lg font-semibold leading-none tracking-tight">
-        <%= workspace.name %>
-      </h3>
-      <p class="text-sm text-muted-foreground">
-        <%= pluralize(workspace.memories_count, "memory") %>
-      </p>
-    <% end %>
+<%= render "components/card", class_names: "h-full hover:shadow-lg transition-shadow" do %>
+  <%= render "components/card_header" do %>
+    <div class="flex justify-between items-start">
+      <div>
+        <%= link_to workspace_path(workspace), class: "hover:underline" do %>
+          <h3 class="text-lg font-semibold leading-none tracking-tight">
+            <%= workspace.name %>
+          </h3>
+        <% end %>
+        <p class="text-sm text-muted-foreground mt-1">
+          <%= pluralize(workspace.memories_count, "memory") %>
+        </p>
+      </div>
+      <div class="flex gap-1">
+        <%= link_to edit_workspace_path(workspace), 
+            class: "btn-ghost btn-icon-sm text-muted-foreground hover:text-foreground",
+            title: "Edit workspace",
+            data: { turbo_frame: "_top" } do %>
+          <%= lucide_icon(:pen_square, size: "w-4 h-4") %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 
-    <% if workspace.description.present? %>
+  <% if workspace.description.present? %>
+    <%= link_to workspace_path(workspace), class: "block" do %>
       <%= render "components/card_content" do %>
         <p class="text-sm text-muted-foreground line-clamp-2">
           <%= workspace.description %>
         </p>
       <% end %>
     <% end %>
+  <% end %>
 
+  <%= link_to workspace_path(workspace), class: "block" do %>
     <%= render "components/card_footer", class_names: "justify-between" do %>
-      <div class="text-xs text-muted-foreground">
-        Last active
-        <%= time_ago_in_words(workspace.last_activity) %>
-        ago
-      </div>
-      <div class="flex gap-2">
-        <%= link_to "Edit",
-        edit_workspace_path(workspace),
-        class: "text-xs text-muted-foreground hover:text-foreground",
-        data: {
-          turbo_frame: "_top",
-        } %>
+      <div class="flex items-center gap-1 text-xs text-muted-foreground">
+        <%= lucide_icon(:clock, size: "w-3 h-3") %>
+        <span>
+          Last active
+          <%= time_ago_in_words(workspace.last_activity) %>
+          ago
+        </span>
       </div>
     <% end %>
   <% end %>
