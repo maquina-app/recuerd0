@@ -23,6 +23,57 @@
   </head>
 
   <body>
+    <% if flash.any? %>
+      <div class="fixed top-4 right-4 z-50 space-y-4 max-w-md">
+        <% flash.each do |type, message| %>
+          <% variant =
+            case type.to_s
+            when "notice", "success"
+              "success"
+            when "alert", "error"
+              "destructive"
+            else
+              "default"
+            end %>
+
+          <div
+            data-controller="alert"
+            data-alert-dismiss-after-value="5000"
+            data-alert-remove-after-value="300"
+          >
+            <%= render "components/alert",
+                variant: variant,
+                class_names: "shadow-lg flex items-start gap-3" do %>
+              <% if variant == "success" %>
+                <%= lucide_icon(
+                  :check_circle,
+                  size: "w-5 h-5 flex-shrink-0",
+                  class: "text-emerald-600 dark:text-emerald-400",
+                ) %>
+              <% elsif variant == "destructive" %>
+                <%= lucide_icon(:x_circle, size: "w-5 h-5 flex-shrink-0") %>
+              <% else %>
+                <%= lucide_icon(:info, size: "w-5 h-5 flex-shrink-0") %>
+              <% end %>
+              <div class="flex-1 text-sm">
+                <%= message %>
+              </div>
+              <button
+                type="button"
+                class="
+                  flex-shrink-0 ml-4 text-current opacity-70 hover:opacity-100 transition-opacity
+                "
+                data-action="click->alert#dismiss"
+                aria-label="Dismiss"
+              >
+                <%= lucide_icon(:x, size: "w-4 h-4") %>
+              </button>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
     <main class="container mx-auto mt-28 px-5 flex">
       <%= yield %>
     </main>

@@ -1,0 +1,7 @@
+<%# locals: (class_names: "", **attributes) -%>
+<div
+  class="<%= cn("text-sm [&_p]:leading-relaxed", class_names) %>"
+  <%= tag.attributes(attributes) %>
+>
+  <%= yield %>
+</div>

@@ -1,4 +1,4 @@
-<%# locals: (variant: "default", title: nil, description: nil, icon: nil, class_names: "", **attributes) -%>
+<%# locals: (variant: "default", title: nil, description: nil, class_names: "", **attributes) -%>
 <% base_classes = "relative w-full rounded-lg border p-4"
 
 variant_classes = {
@@ -6,29 +6,12 @@ variant_classes = {
   "destructive" =>
     "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
   "success" =>
-    "border-green-500/50 text-green-600 dark:text-green-400 [&>svg]:text-green-600 dark:[&>svg]:text-green-400",
+    "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-200/30 dark:bg-emerald-500/10 dark:text-emerald-200",
 } %>
 <div
   class="<%= cn(base_classes, variant_classes[variant], class_names) %>"
   role="alert"
   <%= tag.attributes(attributes) %>
 >
-  <% if icon %>
-    <div
-      class="
-        [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:h-4 [&>svg]:w-4
-      "
-    >
-      <%= icon %>
-    </div>
-  <% end %>
-  <div class="<%= icon ? 'pl-7' : '' %>">
-    <% if title %>
-      <h5 class="mb-1 font-medium leading-none tracking-tight"><%= title %></h5>
-    <% end %>
-    <% if description %>
-      <div class="text-sm [&_p]:leading-relaxed"><%= description %></div>
-    <% end %>
-    <%= yield if block_given? %>
-  </div>
+  <%= yield %>
 </div>
