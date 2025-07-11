@@ -1,262 +1,247 @@
 @import "tailwindcss";
 
 @theme {
-  /* Define custom colors for ShadCN/UI compatibility */
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
+  /* Light mode colors (default) */
+  --color-background: oklch(100% 0 0);
+  --color-foreground: oklch(20.79% 0.0399 265.73);
+  --color-card: oklch(100% 0 106.37);
+  --color-card-foreground: oklch(20.79% 0.0399 265.73);
+  --color-popover: oklch(100% 0 0);
+  --color-popover-foreground: oklch(20.79% 0.0399 265.73);
+  --color-primary: oklch(62.32% 0.1879 259.8);
+  --color-primary-foreground: oklch(98.48% 0 0);
+  --color-secondary: oklch(96.84% 0.0068 247.9);
+  --color-secondary-foreground: oklch(20.79% 0.0399 265.73);
+  --color-muted: oklch(96.84% 0.0068 247.9);
+  --color-muted-foreground: oklch(55.47% 0.0407 257.44);
+  --color-accent: oklch(96.84% 0.0068 247.9);
+  --color-accent-foreground: oklch(20.79% 0.0399 265.73);
+  --color-destructive: oklch(62.8% 0.25768330773615683 29.2338851923426);
+  --color-destructive-foreground: oklch(98.38% 0.0035 247.86);
+  --color-border: oklch(92.9% 0.0126 255.53);
+  --color-input: oklch(92.9% 0.0126 255.53);
+  --color-ring: oklch(62.32% 0.1879 259.8);
   
-  /* Define radius */
-  --radius-default: 0.5rem;
+  /* Radius */
+  --radius-sm: 0.375rem;
+  --radius: 0.5rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
+/* Dark mode colors - outside @theme block */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: oklch(9.41% 0.0085 285.87);
+    --color-foreground: oklch(98.48% 0 0);
+    --color-card: oklch(9.41% 0.0085 285.87);
+    --color-card-foreground: oklch(98.48% 0 0);
+    --color-popover: oklch(9.41% 0.0085 285.87);
+    --color-popover-foreground: oklch(98.48% 0 0);
+    --color-primary: oklch(73.46% 0.189 259.73);
+    --color-primary-foreground: oklch(23.21% 0.0085 285.88);
+    --color-secondary: oklch(21.03% 0.0059 285.88);
+    --color-secondary-foreground: oklch(98.48% 0 0);
+    --color-muted: oklch(21.03% 0.0059 285.88);
+    --color-muted-foreground: oklch(64.25% 0.0168 286.11);
+    --color-accent: oklch(21.03% 0.0059 285.88);
+    --color-accent-foreground: oklch(98.48% 0 0);
+    --color-destructive: oklch(62.8% 0.25768330773615683 29.2338851923426);
+    --color-destructive-foreground: oklch(98.48% 0 0);
+    --color-border: oklch(21.03% 0.0059 285.88);
+    --color-input: oklch(21.03% 0.0059 285.88);
+    --color-ring: oklch(73.46% 0.189 259.73);
+  }
 }
 
 @layer base {
-  :root {
-    /* shadcn/ui color variables - Light mode */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    
-    --radius: 0.5rem;
-  }
-  
-  .dark {
-    /* shadcn/ui color variables - Dark mode */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
-  
   * {
-    border-color: hsl(var(--border));
+    border-color: var(--color-border);
   }
   
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    background-color: var(--color-background);
+    color: var(--color-foreground);
   }
 }
 
-/* Custom utility classes for shadcn/ui components */
-@layer utilities {
-  /* Animations */
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
-  }
+/* Custom utilities using Tailwind 4.0's @utility directive */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  height: 2.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
   
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
-  }
-  
-  .animate-accordion-down {
-    animation: accordion-down 0.2s ease-out;
-  }
-  
-  .animate-accordion-up {
-    animation: accordion-up 0.2s ease-out;
-  }
-}
-
-/* Component-specific styles */
-@layer components {
-  /* Card styles */
-  .card {
-    border-radius: var(--radius-default);
-    border-width: 1px;
-    border-color: hsl(var(--border));
-    background-color: hsl(var(--card));
-    color: hsl(var(--card-foreground));
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  }
-  
-  /* Button base styles */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-    border-radius: calc(var(--radius-default) - 2px);
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
-  }
-  
-  .btn:focus-visible {
+  &:focus-visible {
     outline: 2px solid transparent;
     outline-offset: 2px;
-    box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+    box-shadow: 0 0 0 2px var(--color-ring);
   }
   
-  .btn:disabled {
+  &:disabled {
     pointer-events: none;
     opacity: 0.5;
   }
+}
+
+@utility btn-default {
+  @apply btn;
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
   
-  /* Button variants */
-  .btn-default {
-    background-color: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
+  &:hover {
+    opacity: 0.9;
   }
+}
+
+@utility btn-destructive {
+  @apply btn;
+  background-color: var(--color-destructive);
+  color: var(--color-destructive-foreground);
   
-  .btn-default:hover {
-    background-color: hsl(var(--primary) / 0.9);
+  &:hover {
+    opacity: 0.9;
   }
+}
+
+@utility btn-outline {
+  @apply btn;
+  border: 1px solid var(--color-input);
+  background-color: var(--color-background);
   
-  .btn-destructive {
-    background-color: hsl(var(--destructive));
-    color: hsl(var(--destructive-foreground));
+  &:hover {
+    background-color: var(--color-accent);
+    color: var(--color-accent-foreground);
   }
+}
+
+@utility btn-secondary {
+  @apply btn;
+  background-color: var(--color-secondary);
+  color: var(--color-secondary-foreground);
   
-  .btn-destructive:hover {
-    background-color: hsl(var(--destructive) / 0.9);
+  &:hover {
+    opacity: 0.8;
   }
+}
+
+@utility btn-ghost {
+  @apply btn;
   
-  .btn-outline {
-    border: 1px solid hsl(var(--input));
-    background-color: hsl(var(--background));
+  &:hover {
+    background-color: var(--color-accent);
+    color: var(--color-accent-foreground);
   }
+}
+
+@utility btn-link {
+  @apply btn;
+  color: var(--color-primary);
+  text-underline-offset: 4px;
   
-  .btn-outline:hover {
-    background-color: hsl(var(--accent));
-    color: hsl(var(--accent-foreground));
+  &:hover {
+    text-decoration: underline;
   }
-  
-  .btn-secondary {
-    background-color: hsl(var(--secondary));
-    color: hsl(var(--secondary-foreground));
-  }
-  
-  .btn-secondary:hover {
-    background-color: hsl(var(--secondary) / 0.8);
-  }
-  
-  .btn-ghost:hover {
-    background-color: hsl(var(--accent));
-    color: hsl(var(--accent-foreground));
-  }
-  
-  .btn-link {
-    color: hsl(var(--primary));
-    text-decoration-line: underline;
-    text-underline-offset: 4px;
-  }
-  
-  .btn-link:hover {
-    text-decoration-line: underline;
-  }
-  
-  /* Input styles */
-  .input {
+}
+
+@utility btn-sm {
+  height: 2.25rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+@utility btn-lg {
+  height: 2.75rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+@utility btn-icon {
+  width: 2.5rem;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+@layer components {
+  /* Form inputs - Applied automatically to Rails form helpers */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="time"],
+  input[type="week"],
+  textarea,
+  select {
     display: flex;
     height: 2.5rem;
     width: 100%;
-    border-radius: calc(var(--radius-default) - 2px);
-    border: 1px solid hsl(var(--input));
-    background-color: hsl(var(--background));
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-input);
+    background-color: var(--color-background);
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
+    line-height: 1.25rem;
+    
+    &::placeholder {
+      color: var(--color-muted-foreground);
+    }
+    
+    &:focus {
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 2px var(--color-ring);
+    }
+    
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
   }
   
-  .input::placeholder {
-    color: hsl(var(--muted-foreground));
+  textarea {
+    min-height: 5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
   }
   
-  .input:focus-visible {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
-  }
-  
-  .input:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-  
-  /* Label styles */
-  .label {
+  /* Labels */
+  label {
     font-size: 0.875rem;
     font-weight: 500;
-    line-height: 1;
+    line-height: 1.25rem;
   }
   
-  .label:has(+ :disabled) {
-    cursor: not-allowed;
-    opacity: 0.7;
+  /* Form field errors - Rails specific */
+  .field_with_errors {
+    display: contents;
+  }
+  
+  .field_with_errors input,
+  .field_with_errors textarea,
+  .field_with_errors select {
+    border-color: var(--color-destructive);
+  }
+  
+  .error-message {
+    font-size: 0.875rem;
+    color: var(--color-destructive);
   }
 }

@@ -1,0 +1,10 @@
+<%# locals: (orientation: "horizontal", class_names: "", **attributes) -%>
+<% base_classes = "shrink-0 bg-border"
+orientation_classes = {
+  "horizontal" => "h-[1px] w-full",
+  "vertical" => "h-full w-[1px]",
+} %>
+<div
+  class="<%= cn(base_classes, orientation_classes[orientation], class_names) %>"
+  <%= tag.attributes(attributes) %>
+></div>

@@ -1,0 +1,42 @@
+<%= form_with model: workspace do |form| %>
+  <% if workspace.errors.any? %>
+    <%= render "components/alert", variant: "destructive" do %>
+      <h4 class="font-medium mb-2">There were
+        <%= pluralize(workspace.errors.count, "error") %>
+        with your submission:</h4>
+      <ul class="list-disc list-inside text-sm">
+        <% workspace.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <div class="space-y-6">
+    <div class="space-y-2">
+      <%= form.label :name, class: "required" %>
+      <%= form.text_field :name,
+                      placeholder:
+                        "e.g., Personal Projects, Work Research, Learning Notes",
+                      required: true,
+                      autofocus: true %>
+      <p class="text-sm text-muted-foreground">Give your workspace a descriptive name</p>
+    </div>
+
+    <div class="space-y-2">
+      <%= form.label :description %>
+      <%= form.text_area :description,
+                     rows: 4,
+                     placeholder: "Optional description for this workspace" %>
+      <p class="text-sm text-muted-foreground">Add details about what this workspace is for</p>
+    </div>
+
+    <div class="flex gap-3">
+      <%= form.submit workspace.new_record? ? "Create Workspace" : "Update Workspace",
+                  class: "btn-default" %>
+      <%= link_to "Cancel",
+      workspace.new_record? ? workspaces_path : workspace_path(workspace),
+      class: "btn-outline" %>
+    </div>
+  </div>
+<% end %>

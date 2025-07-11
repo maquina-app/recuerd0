@@ -1,0 +1,7 @@
+<%# locals: (class_names: "", **attributes) -%>
+<div
+  class="<%= cn("flex flex-col space-y-1.5 p-6", class_names) %>"
+  <%= tag.attributes(attributes) %>
+>
+  <%= yield %>
+</div>

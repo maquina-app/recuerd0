@@ -1,0 +1,51 @@
+<%# 
+  This template is used by the pagy_nav helper.
+  Locals: 
+  - pagy: the pagy object
+  - pagy_id: the id for the nav element
+  - link: the link proc
+  - **vars: other optional variables %>
+  <nav
+    id="<%= pagy_id %>"
+    class="flex items-center justify-between"
+    aria-label="pager"
+  >
+    <div class="flex items-center gap-2">
+      <% if pagy.prev %>
+        <%== link.call(pagy.prev, pagy_t("pagy.nav.prev"), 'class="btn-outline btn-sm"') %>
+      <% else %>
+        <span class="btn-outline btn-sm opacity-50 cursor-not-allowed">
+          <%= pagy_t("pagy.nav.prev") %>
+        </span>
+      <% end %>
+
+      <div class="flex items-center gap-1">
+        <% pagy.series.each do |item| %>
+          <% if item == :gap %>
+            <span class="px-2 text-muted-foreground">...</span>
+          <% elsif item == pagy.page %>
+            <span class="btn-default btn-sm px-3">
+              <%= item %>
+            </span>
+          <% else %>
+            <%== link.call(item, item, 'class="btn-outline btn-sm px-3"') %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <% if pagy.next %>
+        <%== link.call(pagy.next, pagy_t("pagy.nav.next"), 'class="btn-outline btn-sm"') %>
+      <% else %>
+        <span class="btn-outline btn-sm opacity-50 cursor-not-allowed">
+          <%= pagy_t("pagy.nav.next") %>
+        </span>
+      <% end %>
+    </div>
+
+    <div class="text-sm text-muted-foreground">
+      Page
+      <%= pagy.page %>
+      of
+      <%= pagy.last %>
+    </div>
+  </nav>
