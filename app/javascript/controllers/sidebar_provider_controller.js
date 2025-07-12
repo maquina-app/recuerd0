@@ -34,7 +34,8 @@ export default class extends Controller {
   // Called when a sidebar outlet is connected
   sidebarOutletConnected(outlet, element) {
     // Set initial state when outlet connects
-    const isMobile = element.getAttribute("data-mobile") === "true"
+    // On mobile, always start closed; on desktop, use saved state
+    const isMobile = window.innerWidth < 768
     outlet.openValue = isMobile ? false : this.desiredOpenState
   }
 
@@ -49,10 +50,9 @@ export default class extends Controller {
   // Handle state changes from sidebar controllers
   handleSidebarStateChanged(event) {
     const isOpen = event.detail.open
-    const sidebar = event.target
+    const isMobile = event.detail.mobile
 
     // Only save cookie for desktop sidebar state
-    const isMobile = sidebar.getAttribute("data-mobile") === "true"
     if (!isMobile) {
       this.setCookie(this.cookieNameValue, isOpen.toString(), this.cookieMaxAgeValue)
       this.desiredOpenState = isOpen
