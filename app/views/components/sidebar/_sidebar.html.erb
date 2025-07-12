@@ -1,0 +1,37 @@
+<%# locals: (collapsible: "offcanvas", side: "left", variant: "sidebar", class_names: "", **attributes) -%>
+<aside
+  id="sidebar"
+  data-controller="sidebar"
+  data-sidebar-collapsible-value="<%= collapsible %>"
+  data-sidebar-side-value="<%= side %>"
+  data-sidebar-variant-value="<%= variant %>"
+  data-sidebar-target="sidebar"
+  data-sidebar-provider-target="sidebar"
+  class="<%= cn(
+    "flex h-screen flex-col bg-sidebar-background text-sidebar-foreground",
+    "transition-all duration-300 ease-in-out",
+    "border-r border-sidebar-border",
+    # Width classes
+    "w-[var(--sidebar-width)] md:w-[var(--sidebar-width)]",
+    "data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
+    # Mobile specific
+    "fixed inset-y-0 z-50 md:relative",
+    "data-[mobile=true]:w-[var(--sidebar-width-mobile)]",
+    # Variant styles
+    variant == "floating" && "m-4 rounded-lg border shadow-lg",
+    variant == "inset" && "border-r-0",
+    # Side positioning
+    side == "left" ? "left-0" : "right-0",
+    class_names
+  ) %>"
+  <%= tag.attributes(attributes) %>
+>
+  <%= yield %>
+</aside>
+<!-- Mobile backdrop -->
+<div
+  data-sidebar-target="backdrop"
+  data-action="click->sidebar#backdropClick"
+  class="fixed inset-0 z-40 bg-black/50 hidden md:hidden"
+  aria-hidden="true"
+></div>

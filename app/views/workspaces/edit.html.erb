@@ -1,11 +1,18 @@
-<div class="container mx-auto px-4 py-8 max-w-2xl">
-  <div class="mb-8">
-    <%= link_to workspace_path(@workspace), class: "btn-ghost btn-sm mb-4 inline-flex" do %>
-      <%= lucide_icon(:arrow_left, size: "w-4 h-4") %>
-      Back to
-      <%= @workspace.name %>
-    <% end %>
+<% content_for :page_title, "Edit Workspace" %>
 
+<% content_for :breadcrumb do %>
+  <%= breadcrumbs(
+    {
+      "Home" => root_path,
+      "Workspaces" => workspaces_path,
+      @workspace.name => workspace_path(@workspace),
+    },
+    "Edit",
+  ) %>
+<% end %>
+
+<div class="max-w-2xl">
+  <div class="mb-8">
     <h1 class="text-3xl font-bold">Edit Workspace</h1>
     <p class="text-muted-foreground mt-2">Update workspace details</p>
   </div>

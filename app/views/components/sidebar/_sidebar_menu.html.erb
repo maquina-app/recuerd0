@@ -1,0 +1,11 @@
+<%# locals: (class_names: "", **attributes) -%>
+<ul
+  class="<%= cn(
+    "flex flex-col gap-1 px-2",
+    "data-[state=collapsed]:px-1",
+    class_names
+  ) %>"
+  <%= tag.attributes(attributes) %>
+>
+  <%= yield %>
+</ul>

@@ -1,8 +1,8 @@
 <%# locals: (variant: "default", title: nil, description: nil, class_names: "", **attributes) -%>
-<% base_classes = "relative w-full rounded-lg border p-4"
+<% base_classes = "relative w-full rounded-lg border p-4 shadow-lg bg-background"
 
 variant_classes = {
-  "default" => "bg-background text-foreground",
+  "default" => "border-border text-foreground",
   "destructive" =>
     "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
   "success" =>

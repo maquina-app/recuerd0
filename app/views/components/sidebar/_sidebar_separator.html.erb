@@ -1,0 +1,9 @@
+<%# locals: (class_names: "", **attributes) -%>
+<hr
+  class="<%= cn(
+    "mx-2 my-2 border-t border-sidebar-border",
+    "data-[state=collapsed]:mx-2",
+    class_names
+  ) %>"
+  <%= tag.attributes(attributes) %>
+/>

@@ -8,6 +8,9 @@ export default class extends Controller {
   }
 
   connect() {
+    // Add enter animation
+    this.element.style.animation = "slide-in-from-right 300ms cubic-bezier(0.16, 1, 0.3, 1), fade-in 300ms cubic-bezier(0.16, 1, 0.3, 1)"
+
     // Auto-dismiss after specified time
     if (this.dismissAfterValue > 0) {
       this.dismissTimeout = setTimeout(() => {
@@ -29,9 +32,8 @@ export default class extends Controller {
       clearTimeout(this.dismissTimeout)
     }
 
-    // Add fade-out animation
-    this.element.style.transition = `opacity ${this.removeAfterValue}ms ease-out`
-    this.element.style.opacity = "0"
+    // Add exit animation
+    this.element.style.animation = "slide-out-to-right 300ms cubic-bezier(0.4, 0, 1, 1), fade-out 300ms cubic-bezier(0.4, 0, 1, 1)"
 
     // Remove element after animation completes
     setTimeout(() => {

@@ -1,64 +1,72 @@
-<div class="container mx-auto px-4 py-8">
-  <div class="mb-8">
-    <div class="flex justify-between items-start">
-      <div>
-        <h1 class="text-3xl font-bold"><%= @workspace.name %></h1>
-        <% if @workspace.description.present? %>
-          <p class="text-muted-foreground mt-2"><%= @workspace.description %></p>
-        <% end %>
-        <p class="text-sm text-muted-foreground mt-4">
-          Created
-          <%= time_ago_in_words(@workspace.created_at) %>
-          ago
-        </p>
-      </div>
-      <div class="flex gap-2">
-        <%= link_to edit_workspace_path(@workspace), class: "btn-outline btn-sm" do %>
-          <%= lucide_icon(:edit, size: "w-4 h-4") %>
-          Edit
-        <% end %>
-        <%= button_to workspace_path(@workspace),
-            method: :delete,
-            data: {
-              turbo_confirm: "Are you sure you want to delete this workspace and all its memories?",
-            },
-            class: "btn-destructive btn-sm" do %>
-          <%= lucide_icon(:trash_2, size: "w-4 h-4") %>
-          Delete
-        <% end %>
-      </div>
+<% content_for :page_title, @workspace.name %>
+
+<% content_for :breadcrumb do %>
+  <%= breadcrumbs(
+    { "Home" => root_path, "Workspaces" => workspaces_path },
+    @workspace.name,
+  ) %>
+<% end %>
+
+<div class="mb-8">
+  <div class="flex justify-between items-start">
+    <div>
+      <h1 class="text-3xl font-bold"><%= @workspace.name %></h1>
+      <% if @workspace.description.present? %>
+        <p class="text-muted-foreground mt-2"><%= @workspace.description %></p>
+      <% end %>
+      <p class="inline-flex items-center gap-1 text-sm text-muted-foreground mt-4">
+        <%= lucide_icon(:clock, size: "w-4 h-4", class: "flex-shrink-0") %>
+        Created
+        <%= time_ago_in_words(@workspace.created_at) %>
+        ago
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <%= link_to edit_workspace_path(@workspace), class: "btn-outline btn-sm" do %>
+        <%= lucide_icon(:edit, size: "w-4 h-4") %>
+        Edit
+      <% end %>
+      <%= button_to workspace_path(@workspace),
+          method: :delete,
+          data: {
+            turbo_confirm: "Are you sure you want to delete this workspace and all its memories?",
+          },
+          class: "btn-destructive btn-sm" do %>
+        <%= lucide_icon(:trash_2, size: "w-4 h-4") %>
+        Delete
+      <% end %>
     </div>
   </div>
+</div>
 
-  <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <h2 class="text-xl font-semibold">Memories</h2>
-      <%= link_to new_workspace_memory_path(@workspace), class: "btn-secondary btn-sm" do %>
-        <%= lucide_icon(:bookmark_plus, size: "w-4 h-4") %>
-        New Memory
-      <% end %>
-    </div>
-
-    <% if @memories.any? %>
-      <div class="space-y-4">
-        <% @memories.each do |memory| %>
-          <%= render "memories/memory", memory: memory, workspace: @workspace %>
-        <% end %>
-      </div>
-
-      <% if @pagy.pages > 1 %>
-        <div class="mt-8">
-          <%== pagy_nav(@pagy) %>
-        </div>
-      <% end %>
-    <% else %>
-      <%= render "components/empty_state",
-      title: "No memories yet",
-      description: "Start adding memories to this workspace",
-      action: link_to(new_workspace_memory_path(@workspace), class: "btn-secondary") do %>
-        <%= lucide_icon(:bookmark_plus) %>
-        Add First Memory
-      <% end %>
+<div class="space-y-6">
+  <div class="flex justify-between items-center">
+    <h2 class="text-xl font-semibold">Memories</h2>
+    <%= link_to new_workspace_memory_path(@workspace), class: "btn-secondary btn-sm" do %>
+      <%= lucide_icon(:bookmark_plus, size: "w-4 h-4") %>
+      New Memory
     <% end %>
   </div>
+
+  <% if @memories.any? %>
+    <div class="space-y-4">
+      <% @memories.each do |memory| %>
+        <%= render "memories/memory", memory: memory, workspace: @workspace %>
+      <% end %>
+    </div>
+
+    <% if @pagy.pages > 1 %>
+      <div class="mt-8">
+        <%== pagy_nav(@pagy) %>
+      </div>
+    <% end %>
+  <% else %>
+    <%= render "components/empty_state",
+    title: "No memories yet",
+    description: "Start adding memories to this workspace",
+    action: link_to(new_workspace_memory_path(@workspace), class: "btn-secondary") do %>
+      <%= lucide_icon(:bookmark_plus) %>
+      Add First Memory
+    <% end %>
+  <% end %>
 </div>

@@ -52,16 +52,16 @@
         flex justify-between items-center w-full text-xs text-muted-foreground
       "
     >
-      <span>
-        <%= lucide_icon(:clock, size: "w-3 h-3", class: "inline") %>
+      <span class="inline-flex items-center gap-1">
+        <%= lucide_icon(:clock, size: "w-3 h-3", class: "flex-shrink-0") %>
         Created
         <%= time_ago_in_words(memory.created_at) %>
         ago
       </span>
       <%= link_to workspace_memory_path(workspace, memory),
-          class: "btn-link text-xs p-0 h-auto" do %>
+          class: "btn-link text-xs p-0 h-auto inline-flex items-center gap-1" do %>
         View Details
-        <%= lucide_icon(:chevron_right, size: "w-3 h-3", class: "inline ml-1") %>
+        <%= lucide_icon(:chevron_right, size: "w-3 h-3", class: "flex-shrink-0") %>
       <% end %>
     </div>
   <% end %>

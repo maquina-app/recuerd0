@@ -1,0 +1,12 @@
+<%# locals: (href: "#", title: "", class_names: "", **attributes) -%>
+<%= link_to href,
+    class: cn(
+      "ml-auto p-0.5 text-sidebar-foreground/60 transition-colors hover:text-sidebar-foreground",
+      "data-[state=collapsed]:hidden",
+      class_names
+    ),
+    title: title,
+    data: { turbo_frame: "_top" },
+    **attributes do %>
+  <%= yield %>
+<% end %>

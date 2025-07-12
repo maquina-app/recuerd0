@@ -16,7 +16,7 @@
             class: "btn-ghost btn-icon-sm text-muted-foreground hover:text-foreground",
             title: "Edit workspace",
             data: { turbo_frame: "_top" } do %>
-          <%= lucide_icon(:pen_square, size: "w-4 h-4") %>
+          <%= lucide_icon(:edit, size: "w-4 h-4") %>
         <% end %>
       </div>
     </div>
@@ -34,14 +34,12 @@
 
   <%= link_to workspace_path(workspace), class: "block" do %>
     <%= render "components/card_footer", class_names: "justify-between" do %>
-      <div class="flex items-center gap-1 text-xs text-muted-foreground">
-        <%= lucide_icon(:clock, size: "w-3 h-3") %>
-        <span>
-          Last active
-          <%= time_ago_in_words(workspace.last_activity) %>
-          ago
-        </span>
-      </div>
+      <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
+        <%= lucide_icon(:clock, size: "w-3 h-3", class: "flex-shrink-0") %>
+        Last active
+        <%= time_ago_in_words(workspace.last_activity) %>
+        ago
+      </span>
     <% end %>
   <% end %>
 <% end %>

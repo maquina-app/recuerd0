@@ -1,0 +1,7 @@
+<%# locals: (class_names: "", **attributes) -%>
+<li
+  class="<%= cn("inline-flex items-center gap-1.5", class_names) %>"
+  <%= tag.attributes(attributes) %>
+>
+  <%= yield %>
+</li>

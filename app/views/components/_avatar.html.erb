@@ -1,0 +1,21 @@
+<%# locals: (src: nil, alt: "", fallback: nil, size: "h-10 w-10", grayscale: false, class_names: "", **attributes) %>
+
+<span
+  class="<%= avatar_classes(size: size, grayscale: grayscale, class_names: class_names) %>"
+  <%= tag.attributes(attributes) %>
+>
+  <% if src.present? %>
+    <%= image_tag src,
+    alt: alt,
+    class: "aspect-square h-full w-full object-cover",
+    loading: "lazy" %>
+  <% else %>
+    <span
+      class="
+        flex h-full w-full items-center justify-center bg-muted text-sm font-medium
+      "
+    >
+      <%= avatar_fallback(alt, fallback) %>
+    </span>
+  <% end %>
+</span>

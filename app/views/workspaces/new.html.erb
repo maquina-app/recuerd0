@@ -1,12 +1,16 @@
-<div class="container mx-auto px-4 py-8 max-w-2xl">
-  <div class="mb-8">
-    <%= link_to workspaces_path, class: "btn-ghost btn-sm mb-4 inline-flex" do %>
-      <%= lucide_icon(:arrow_left, size: "w-4 h-4") %>
-      Back to Workspaces
-    <% end %>
+<% content_for :page_title, "New Workspace" %>
 
-    <h1 class="text-3xl font-bold">New Workspace</h1>
-    <p class="text-muted-foreground mt-2">Create a new workspace to organize your AI memories</p>
+<% content_for :breadcrumb do %>
+  <%= breadcrumbs(
+    { "Home" => root_path, "Workspaces" => workspaces_path },
+    "New Workspace",
+  ) %>
+<% end %>
+
+<div class="max-w-2xl">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold">Create a New Workspace</h1>
+    <p class="text-muted-foreground mt-2">Workspaces help you organize your memories</p>
   </div>
 
   <%= render "components/card" do %>

@@ -1,0 +1,11 @@
+<%# locals: (class_names: "", **attributes) -%>
+<div
+  class="<%= cn(
+    "flex flex-1 flex-col overflow-hidden",
+    "transition-[margin] duration-300 ease-in-out",
+    class_names
+  ) %>"
+  <%= tag.attributes(attributes) %>
+>
+  <%= yield %>
+</div>

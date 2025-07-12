@@ -1,0 +1,21 @@
+<%# locals: (href: nil, class_names: "", **attributes) -%>
+<% if href %>
+  <%= link_to href,
+      class: cn(
+        "transition-colors hover:text-foreground",
+        class_names
+      ),
+      **attributes do %>
+    <%= yield %>
+  <% end %>
+<% else %>
+  <span
+    class="<%= cn(
+      "transition-colors hover:text-foreground",
+      class_names
+    ) %>"
+    <%= tag.attributes(attributes) %>
+  >
+    <%= yield %>
+  </span>
+<% end %>

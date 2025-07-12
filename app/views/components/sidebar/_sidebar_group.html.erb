@@ -1,0 +1,10 @@
+<%# locals: (class_names: "", **attributes) -%>
+<div
+  class="<%= cn(
+    "relative",
+    class_names
+  ) %>"
+  <%= tag.attributes(attributes) %>
+>
+  <%= yield %>
+</div>

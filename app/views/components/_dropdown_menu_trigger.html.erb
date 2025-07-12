@@ -1,0 +1,33 @@
+<%# locals: (as_child: false, class_names: "", **attributes) -%>
+<% if as_child %>
+  <%= content_tag :div,
+      data: {
+        dropdown_target: "trigger",
+        action: "click->dropdown#toggle"
+      },
+      "aria-haspopup": "true",
+      "aria-expanded": "false",
+      class: class_names,
+      **attributes do %>
+    <%= yield %>
+  <% end %>
+<% else %>
+  <%= content_tag :button,
+      type: "button",
+      data: {
+        dropdown_target: "trigger",
+        action: "click->dropdown#toggle"
+      },
+      "aria-haspopup": "true",
+      "aria-expanded": "false",
+      class: cn(
+        "inline-flex items-center justify-center rounded-md text-sm font-medium",
+        "ring-offset-background transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "disabled:pointer-events-none disabled:opacity-50",
+        class_names
+      ),
+      **attributes do %>
+    <%= yield %>
+  <% end %>
+<% end %>

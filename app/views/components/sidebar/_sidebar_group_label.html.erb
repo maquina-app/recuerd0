@@ -1,0 +1,22 @@
+<%# locals: (as_child: false, class_names: "", **attributes) -%>
+<% if as_child %>
+  <%= content_tag :div,
+      class: cn(
+        "flex items-center justify-between px-4 py-1 text-xs font-semibold text-sidebar-foreground/60",
+        "data-[state=collapsed]:hidden",
+        class_names
+      ),
+      **attributes do %>
+    <%= yield %>
+  <% end %>
+<% else %>
+  <%= content_tag :div,
+      class: cn(
+        "flex items-center justify-between px-4 py-1 text-xs font-semibold text-sidebar-foreground/60",
+        "data-[state=collapsed]:hidden",
+        class_names
+      ),
+      **attributes do %>
+    <%= yield %>
+  <% end %>
+<% end %>

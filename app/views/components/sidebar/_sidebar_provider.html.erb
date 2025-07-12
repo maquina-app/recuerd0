@@ -1,0 +1,20 @@
+<%# locals: (default_open: true, class_names: "", **attributes) -%>
+<% merged_attributes =
+  attributes.merge(
+    {
+      data: {
+        controller: "sidebar-provider",
+        sidebar_provider_default_open_value: default_open,
+        sidebar_provider_keyboard_shortcut_value:
+          attributes.dig(:data, :sidebar_provider_keyboard_shortcut_value) ||
+            "b",
+        sidebar_state: default_open ? "expanded" : "collapsed",
+      }.merge(attributes[:data] || {}),
+    },
+  ) %>
+<div
+  class="<%= cn("flex h-screen w-full overflow-hidden", class_names) %>"
+  <%= tag.attributes(merged_attributes) %>
+>
+  <%= yield %>
+</div>
