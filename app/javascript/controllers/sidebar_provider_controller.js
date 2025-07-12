@@ -15,32 +15,51 @@ export default class extends Controller {
     const cookieValue = this.getCookie(this.cookieNameValue)
     const isOpen = cookieValue !== null ? cookieValue === "true" : this.defaultOpenValue
 
-    if (this.hasSidebarOutlet) {
-      this.sidebarOutlet.openValue = isOpen
-    }
+    // Store the desired open state to apply when outlets connect
+    this.desiredOpenState = isOpen
 
     // Setup keyboard shortcut
     this.keyboardHandler = this.handleKeyboard.bind(this)
     document.addEventListener("keydown", this.keyboardHandler)
+
+    // Listen for state changes from sidebar controllers
+    this.element.addEventListener("sidebar:stateChanged", this.handleSidebarStateChanged.bind(this))
   }
 
   disconnect() {
     document.removeEventListener("keydown", this.keyboardHandler)
+    this.element.removeEventListener("sidebar:stateChanged", this.handleSidebarStateChanged.bind(this))
+  }
+
+  // Called when a sidebar outlet is connected
+  sidebarOutletConnected(outlet, element) {
+    // Set initial state when outlet connects
+    const isMobile = element.getAttribute("data-mobile") === "true"
+    outlet.openValue = isMobile ? false : this.desiredOpenState
   }
 
   toggle() {
     if (this.hasSidebarOutlet) {
-      this.sidebarOutlet.toggle()
+      this.sidebarOutlets.forEach(outlet => {
+        outlet.toggle()
+      })
     }
   }
 
-  // Called by sidebar outlet when state changes
-  sidebarStateChanged(event) {
+  // Handle state changes from sidebar controllers
+  handleSidebarStateChanged(event) {
     const isOpen = event.detail.open
-    this.setCookie(this.cookieNameValue, isOpen.toString(), this.cookieMaxAgeValue)
+    const sidebar = event.target
 
-    // Also set data attribute on provider for CSS selectors
-    this.element.setAttribute('data-sidebar-state', isOpen ? 'expanded' : 'collapsed')
+    // Only save cookie for desktop sidebar state
+    const isMobile = sidebar.getAttribute("data-mobile") === "true"
+    if (!isMobile) {
+      this.setCookie(this.cookieNameValue, isOpen.toString(), this.cookieMaxAgeValue)
+      this.desiredOpenState = isOpen
+
+      // Also set data attribute on provider for CSS selectors
+      this.element.setAttribute('data-sidebar-state', isOpen ? 'expanded' : 'collapsed')
+    }
   }
 
   handleKeyboard(event) {

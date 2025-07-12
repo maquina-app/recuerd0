@@ -11,28 +11,35 @@ export default class extends Controller {
 
   static targets = ["sidebar", "backdrop"]
 
-  static outlets = ["sidebar-provider"]
-
   connect() {
-    this.checkMobile()
-    this.resizeHandler = this.checkMobile.bind(this)
-    window.addEventListener("resize", this.resizeHandler)
+    // Check if this is mobile or desktop sidebar
+    this.mobileValue = this.sidebarTarget.getAttribute("data-mobile") === "true"
+
+    if (!this.mobileValue) {
+      // Only setup resize handler for desktop
+      this.checkMobile()
+      this.resizeHandler = this.checkMobile.bind(this)
+      window.addEventListener("resize", this.resizeHandler)
+    }
 
     // Set initial state based on open value
     this.updateState()
   }
 
   disconnect() {
-    window.removeEventListener("resize", this.resizeHandler)
+    if (this.resizeHandler) {
+      window.removeEventListener("resize", this.resizeHandler)
+    }
   }
 
   openValueChanged() {
     this.updateState()
 
-    // Notify provider of state change
-    if (this.hasSidebarProviderOutlet) {
-      this.dispatch("stateChanged", { detail: { open: this.openValue } })
-    }
+    // Dispatch a custom event that the provider can listen to
+    this.dispatch("stateChanged", {
+      detail: { open: this.openValue },
+      bubbles: true
+    })
   }
 
   toggle() {
@@ -59,38 +66,57 @@ export default class extends Controller {
       // Set data attributes for CSS
       sidebar.setAttribute("data-state", isOpen ? "expanded" : "collapsed")
       sidebar.setAttribute("data-collapsible", collapsible)
-      sidebar.setAttribute("data-variant", this.variantValue)
-      sidebar.setAttribute("data-side", this.sideValue)
 
       // Handle mobile specific states
       if (isMobile) {
-        sidebar.setAttribute("data-mobile", "true")
         if (collapsible === "offcanvas") {
           // On mobile, sidebar slides in/out
           if (isOpen) {
-            sidebar.classList.remove("-translate-x-full")
-            sidebar.classList.add("translate-x-0")
+            // Remove translate classes to show sidebar
+            if (this.sideValue === "left") {
+              sidebar.classList.remove("-translate-x-full")
+              sidebar.classList.add("translate-x-0")
+            } else {
+              sidebar.classList.remove("translate-x-full")
+              sidebar.classList.add("-translate-x-0")
+            }
             // Show backdrop
             if (this.hasBackdropTarget) {
               this.backdropTarget.classList.remove("hidden")
-              this.backdropTarget.classList.add("block")
             }
           } else {
-            sidebar.classList.add("-translate-x-full")
-            sidebar.classList.remove("translate-x-0")
+            // Add translate classes to hide sidebar
+            if (this.sideValue === "left") {
+              sidebar.classList.add("-translate-x-full")
+              sidebar.classList.remove("translate-x-0")
+            } else {
+              sidebar.classList.add("translate-x-full")
+              sidebar.classList.remove("-translate-x-0")
+            }
             // Hide backdrop
             if (this.hasBackdropTarget) {
               this.backdropTarget.classList.add("hidden")
-              this.backdropTarget.classList.remove("block")
             }
           }
         }
       } else {
-        sidebar.setAttribute("data-mobile", "false")
-        sidebar.classList.remove("-translate-x-full", "translate-x-0")
+        // Desktop sidebar doesn't use translate classes
+        sidebar.classList.remove("-translate-x-full", "translate-x-full", "translate-x-0", "-translate-x-0")
         // Always hide backdrop on desktop
         if (this.hasBackdropTarget) {
           this.backdropTarget.classList.add("hidden")
+        }
+      }
+
+      // Update the sidebar trigger icon if present
+      const trigger = document.querySelector('[data-slot="sidebar-trigger"] .sidebar-trigger-icon svg')
+      if (trigger && !isMobile) {
+        if (isOpen) {
+          trigger.classList.remove("lucide-panel-left-close")
+          trigger.classList.add("lucide-panel-left-open")
+        } else {
+          trigger.classList.remove("lucide-panel-left-open")
+          trigger.classList.add("lucide-panel-left-close")
         }
       }
     }

@@ -9,6 +9,8 @@
           attributes.dig(:data, :sidebar_provider_keyboard_shortcut_value) ||
             "b",
         sidebar_state: default_open ? "expanded" : "collapsed",
+        # Add the outlet attribute - this is what was missing!
+        sidebar_provider_sidebar_outlet: "[data-controller='sidebar']",
       }.merge(attributes[:data] || {}),
     },
   ) %>

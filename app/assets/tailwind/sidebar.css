@@ -2,6 +2,15 @@
 
 /* Import the sidebar styles to application.css */
 @layer components {
+  /* Desktop sidebar width management */
+  .sidebar-desktop {
+    width: var(--sidebar-width);
+  }
+
+  .sidebar-desktop[data-state="collapsed"] {
+    width: var(--sidebar-width-icon);
+  }
+
   /* Sidebar base styles */
   .sidebar {
     @apply flex h-screen flex-col bg-sidebar-background text-sidebar-foreground;
@@ -42,12 +51,14 @@
     }
     
     /* Text hiding in collapsed state - using parent selector */
-    .sidebar[data-state="collapsed"] & span:not(.sr-only) {
+    .sidebar[data-state="collapsed"] & span:not(.sr-only),
+    .sidebar-desktop[data-state="collapsed"] & span:not(.sr-only) {
       @apply hidden;
     }
     
     /* Center content when collapsed - using parent selector */
-    .sidebar[data-state="collapsed"] & {
+    .sidebar[data-state="collapsed"] &,
+    .sidebar-desktop[data-state="collapsed"] & {
       @apply justify-center px-2;
     }
   }
@@ -60,7 +71,8 @@
     .sidebar-group-label {
       @apply px-4 py-1.5 text-xs font-semibold text-sidebar-foreground/60;
       
-      .sidebar[data-state="collapsed"] & {
+      .sidebar[data-state="collapsed"] &,
+      .sidebar-desktop[data-state="collapsed"] & {
         @apply sr-only;
       }
     }
@@ -70,7 +82,8 @@
       @apply absolute right-2 top-1.5 p-0.5;
       @apply text-sidebar-foreground/60 transition-colors hover:text-sidebar-foreground;
       
-      .sidebar[data-state="collapsed"] & {
+      .sidebar[data-state="collapsed"] &,
+      .sidebar-desktop[data-state="collapsed"] & {
         @apply hidden;
       }
     }
@@ -78,7 +91,8 @@
   
   /* Sidebar header and footer spacing adjustments */
   .sidebar-header {
-    .sidebar[data-state="collapsed"] & {
+    .sidebar[data-state="collapsed"] &,
+    .sidebar-desktop[data-state="collapsed"] & {
       @apply px-2 justify-center;
     }
   }
@@ -87,7 +101,8 @@
   .sidebar-separator {
     @apply mx-2 my-2 border-t border-sidebar-border;
     
-    .sidebar[data-state="collapsed"] & {
+    .sidebar[data-state="collapsed"] &,
+    .sidebar-desktop[data-state="collapsed"] & {
       @apply mx-2;
     }
   }
@@ -205,19 +220,23 @@
   }
   
   /* Utility classes for collapsed state visibility */
-  .sidebar[data-state="collapsed"] .data-\[state\=collapsed\]\:hidden {
+  .sidebar[data-state="collapsed"] .data-\[state\=collapsed\]\:hidden,
+  .sidebar-desktop[data-state="collapsed"] .data-\[state\=collapsed\]\:hidden {
     @apply hidden;
   }
   
-  .sidebar[data-state="collapsed"] .data-\[state\=collapsed\]\:px-1 {
+  .sidebar[data-state="collapsed"] .data-\[state\=collapsed\]\:px-1,
+  .sidebar-desktop[data-state="collapsed"] .data-\[state\=collapsed\]\:px-1 {
     @apply px-1;
   }
   
-  .sidebar[data-state="collapsed"] .data-\[state\=collapsed\]\:px-2 {
+  .sidebar[data-state="collapsed"] .data-\[state\=collapsed\]\:px-2,
+  .sidebar-desktop[data-state="collapsed"] .data-\[state\=collapsed\]\:px-2 {
     @apply px-2;
   }
   
-  .sidebar[data-state="collapsed"] .data-\[state\=collapsed\]\:justify-center {
+  .sidebar[data-state="collapsed"] .data-\[state\=collapsed\]\:justify-center,
+  .sidebar-desktop[data-state="collapsed"] .data-\[state\=collapsed\]\:justify-center {
     @apply justify-center;
   }
 }
@@ -228,7 +247,8 @@
   .sidebar-menu-sub {
     @apply ml-4 border-l border-sidebar-border pl-4;
     
-    .sidebar[data-state="collapsed"] & {
+    .sidebar[data-state="collapsed"] &,
+    .sidebar-desktop[data-state="collapsed"] & {
       @apply hidden;
     }
   }
@@ -238,7 +258,8 @@
     @apply ml-auto flex h-5 min-w-[1.25rem] items-center justify-center rounded-full;
     @apply bg-sidebar-primary px-1 text-[10px] font-medium text-sidebar-primary-foreground;
     
-    .sidebar[data-state="collapsed"] & {
+    .sidebar[data-state="collapsed"] &,
+    .sidebar-desktop[data-state="collapsed"] & {
       @apply absolute right-2 top-1/2 -translate-y-1/2;
     }
   }
@@ -266,7 +287,8 @@
     @apply transition-all duration-200 ease-in-out;
     @apply whitespace-nowrap z-50;
     
-    .sidebar[data-state="collapsed"] .sidebar-menu-button:hover & {
+    .sidebar[data-state="collapsed"] .sidebar-menu-button:hover &,
+    .sidebar-desktop[data-state="collapsed"] .sidebar-menu-button:hover & {
       @apply visible opacity-100;
     }
   }
@@ -283,12 +305,14 @@
 /* Responsive sidebar variants */
 @layer utilities {
   /* Floating sidebar variant */
-  .sidebar[data-variant="floating"] {
+  .sidebar[data-variant="floating"],
+  .sidebar-desktop[data-variant="floating"] {
     @apply m-4 rounded-lg border shadow-lg;
   }
   
   /* Inset sidebar variant */
-  .sidebar[data-variant="inset"] {
+  .sidebar[data-variant="inset"],
+  .sidebar-desktop[data-variant="inset"] {
     @apply border-r-0;
   }
 }

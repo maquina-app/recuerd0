@@ -1,22 +1,47 @@
 <%# locals: (collapsible: "offcanvas", side: "left", variant: "sidebar", class_names: "", **attributes) -%>
+<%# Mobile sidebar %>
 <aside
-  id="sidebar"
+  id="sidebar-mobile"
   data-controller="sidebar"
   data-sidebar-collapsible-value="<%= collapsible %>"
   data-sidebar-side-value="<%= side %>"
   data-sidebar-variant-value="<%= variant %>"
   data-sidebar-target="sidebar"
-  data-sidebar-provider-target="sidebar"
+  data-mobile="true"
   class="<%= cn(
+    "md:hidden",
     "flex h-screen flex-col bg-sidebar-background text-sidebar-foreground",
-    "transition-all duration-300 ease-in-out",
+    "fixed inset-y-0 z-50",
+    "w-[var(--sidebar-width-mobile)]",
+    "transition-transform duration-300 ease-in-out",
     "border-r border-sidebar-border",
-    # Width classes
-    "w-[var(--sidebar-width)] md:w-[var(--sidebar-width)]",
-    "data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
-    # Mobile specific
-    "fixed inset-y-0 z-50 md:relative",
-    "data-[mobile=true]:w-[var(--sidebar-width-mobile)]",
+    # Side-specific classes
+    side == "left" ? "left-0" : "right-0",
+    # Initial state - hidden on mobile
+    side == "left" ? "-translate-x-full" : "translate-x-full",
+    class_names
+  ) %>"
+  <%= tag.attributes(attributes) %>
+>
+  <%= yield %>
+</aside>
+
+<%# Desktop sidebar %>
+<aside
+  id="sidebar-desktop"
+  data-controller="sidebar"
+  data-sidebar-collapsible-value="<%= collapsible %>"
+  data-sidebar-side-value="<%= side %>"
+  data-sidebar-variant-value="<%= variant %>"
+  data-sidebar-target="sidebar"
+  data-mobile="false"
+  data-state="expanded"
+  class="<%= cn(
+    "hidden md:flex sidebar-desktop",
+    "h-screen flex-col bg-sidebar-background text-sidebar-foreground",
+    "relative",
+    "transition-[width] duration-300 ease-in-out",
+    "border-r border-sidebar-border",
     # Variant styles
     variant == "floating" && "m-4 rounded-lg border shadow-lg",
     variant == "inset" && "border-r-0",
