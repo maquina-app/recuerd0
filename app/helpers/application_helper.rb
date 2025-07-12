@@ -24,7 +24,9 @@ module ApplicationHelper
 
           # Add separator after each link except the last one (if there's no current page)
           if index < links.size - 1 || current_page.present?
-            items << render("components/breadcrumb_separator")
+            items << capture do
+              render "components/breadcrumb_separator"
+            end
           end
         end
 

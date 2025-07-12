@@ -3,9 +3,8 @@
   data-orientation="<%= orientation %>"
   role="none"
   class="<%= cn(
-    "bg-border shrink-0",
-    orientation == "horizontal" ? "h-px w-full" : "w-px h-full",
+    "bg-border shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px mx-2 data-[orientation=vertical]:h-4",
     class_names
   ) %>"
   <%= tag.attributes(attributes) %>
-/>
+></div>

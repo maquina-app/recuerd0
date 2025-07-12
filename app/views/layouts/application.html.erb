@@ -175,9 +175,7 @@
             <%= render "components/sidebar/sidebar_trigger",
             class_names: "size-7 -ml-1 md:hidden" %>
 
-            <%= render "components/separator",
-            orientation: "vertical",
-            class_names: "mx-2 h-4 md:hidden" %>
+            <%= render "components/separator", orientation: "vertical" %>
 
             <% if content_for?(:breadcrumb) %>
               <%= yield :breadcrumb %>

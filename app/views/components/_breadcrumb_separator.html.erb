@@ -5,11 +5,5 @@
   class="<%= cn("[&>svg]:size-3.5", class_names) %>"
   <%= tag.attributes(attributes) %>
 >
-  <% if content_for?(:breadcrumb_separator) %>
-    <%= yield :breadcrumb_separator %>
-  <% elsif block_given? %>
-    <%= yield %>
-  <% else %>
-    <%= lucide_icon :chevron_right, size: "w-3.5 h-3.5" %>
-  <% end %>
+  <%= lucide_icon(:chevron_right, size: "w-3.5 h-3.5") %>
 </li>
