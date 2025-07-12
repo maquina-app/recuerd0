@@ -1,31 +1,60 @@
-<div class="mx-auto md:w-2/3 w-full">
-  <% if alert = flash[:alert] %>
-    <p class="py-2 px-3 bg-red-50 mb-5 text-red-500 font-medium rounded-lg inline-block" id="alert"><%= alert %></p>
+<%= render "components/card" do %>
+  <%= render "components/card_header", class_names: "text-center" do %>
+    <h2 class="text-xl font-semibold">Welcome back</h2>
+    <p class="text-sm text-muted-foreground mt-1">
+      Enter your email and password to sign in
+    </p>
   <% end %>
 
-  <% if notice = flash[:notice] %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-lg inline-block" id="notice"><%= notice %></p>
-  <% end %>
+  <%= render "components/card_content" do %>
+    <%= form_with url: session_url do |form| %>
+      <div class="grid gap-6">
+        <div class="grid gap-6">
+          <div class="grid gap-3">
+            <%= form.label :email_address, "Email", class: "text-sm font-medium" %>
+            <%= form.email_field :email_address,
+                             required: true,
+                             autofocus: true,
+                             autocomplete: "username",
+                             placeholder: "m@example.com",
+                             value: params[:email_address],
+                             class: "w-full" %>
+          </div>
 
-  <h1 class="font-bold text-4xl">Sign in</h1>
+          <div class="grid gap-3">
+            <div class="flex items-center">
+              <%= form.label :password, class: "text-sm font-medium" %>
+              <%= link_to "Forgot your password?",
+              new_password_path,
+              class: "ml-auto text-sm underline-offset-4 hover:underline" %>
+            </div>
+            <%= form.password_field :password,
+                                required: true,
+                                autocomplete: "current-password",
+                                placeholder: "Enter your password",
+                                maxlength: 72,
+                                class: "w-full" %>
+          </div>
 
-  <%= form_with url: session_url, class: "contents" do |form| %>
-    <div class="my-5">
-      <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "Enter your email address", value: params[:email_address], class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
-    </div>
+          <%= form.submit "Sign in", class: "btn-default w-full" %>
+        </div>
 
-    <div class="my-5">
-      <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Enter your password", maxlength: 72, class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
-    </div>
-
-    <div class="col-span-6 sm:flex sm:items-center sm:gap-4">
-      <div class="inline">
-        <%= form.submit "Sign in", class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+        <div class="text-center text-sm">
+          Don't have an account?
+          <%= link_to "Sign up", "#", class: "underline underline-offset-4" %>
+        </div>
       </div>
-
-      <div class="mt-4 text-sm text-gray-500 sm:mt-0">
-        <%= link_to "Forgot password?", new_password_path, class: "text-gray-700 underline hover:no-underline" %>
-      </div>
-    </div>
+    <% end %>
   <% end %>
+<% end %>
+
+<div class="text-center text-xs text-muted-foreground">
+  By clicking continue, you agree to our
+  <%= link_to "Terms of Service",
+  "#",
+  class: "underline underline-offset-4 hover:text-primary" %>
+  and
+  <%= link_to "Privacy Policy",
+  "#",
+  class: "underline underline-offset-4 hover:text-primary" %>.
 </div>
