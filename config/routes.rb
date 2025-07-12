@@ -4,6 +4,12 @@ Rails.application.routes.draw do
 
   resources :workspaces do
     resources :memories
+
+    member do
+      post :archive, to: "workspaces/archives#create"
+      delete :archive, to: "workspaces/archives#destroy"
+      post :restore, to: "workspaces/restores#create"
+    end
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

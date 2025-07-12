@@ -110,9 +110,87 @@ create_or_update_memory(
   "What if APIs could self-document based on actual usage patterns? Track common request/response pairs, error scenarios, and performance characteristics. Generate documentation that shows real-world examples instead of just schemas."
 )
 
+# Create 18 additional workspaces
+additional_workspaces = [
+  {name: "Ruby on Rails Tips", description: "Best practices and code snippets for Rails development"},
+  {name: "Book Notes", description: "Summaries and insights from technical books"},
+  {name: "Conference Talks", description: "Key takeaways from tech conferences and meetups"},
+  {name: "System Design", description: "Architecture patterns and design decisions"},
+  {name: "DevOps & Infrastructure", description: "Deployment strategies and infrastructure notes"},
+  {name: "Frontend Development", description: "JavaScript, CSS, and modern frontend frameworks"},
+  {name: "Database Optimization", description: "Query optimization and database design patterns"},
+  {name: "Security Best Practices", description: "Security vulnerabilities and mitigation strategies"},
+  {name: "API Design Patterns", description: "RESTful and GraphQL API design principles"},
+  {name: "Testing Strategies", description: "Unit testing, integration testing, and TDD practices"},
+  {name: "Performance Optimization", description: "Application performance and optimization techniques"},
+  {name: "Open Source Contributions", description: "Ideas and notes for OSS contributions"},
+  {name: "Learning Resources", description: "Courses, tutorials, and learning paths"},
+  {name: "Career Development", description: "Professional growth and skill development"},
+  {name: "Tech Stack Evaluations", description: "Comparisons and evaluations of technologies"},
+  {name: "Bug Investigations", description: "Complex bugs and their solutions"},
+  {name: "Code Refactoring", description: "Refactoring patterns and techniques"},
+  {name: "Documentation Templates", description: "Templates for technical documentation"}
+]
+
+created_workspaces = additional_workspaces.map do |workspace_data|
+  Workspace.find_or_create_by!(
+    name: workspace_data[:name],
+    user: user
+  ) do |w|
+    w.description = workspace_data[:description]
+  end
+end
+
+# Add 25 memories to "Ruby on Rails Tips" workspace
+rails_workspace = created_workspaces[0]
+25.times do |i|
+  create_or_update_memory(
+    rails_workspace,
+    {
+      title: "Rails Tip ##{i + 1}",
+      tags: ["rails", "ruby", "tip", "best-practice"],
+      source: "Experience from Rails project"
+    },
+    "This is a valuable Rails tip about #{["controllers", "models", "views", "testing", "performance", "security", "deployment", "debugging"].sample}. It covers important aspects of Rails development and provides practical examples for better code organization and maintainability."
+  )
+end
+
+# Add 25 memories to "System Design" workspace
+system_design_workspace = created_workspaces[3]
+25.times do |i|
+  create_or_update_memory(
+    system_design_workspace,
+    {
+      title: "Design Pattern: #{["Microservices", "Event Sourcing", "CQRS", "Saga Pattern", "Circuit Breaker", "API Gateway", "Service Mesh", "Distributed Cache"].sample} - Part #{i + 1}",
+      tags: ["system-design", "architecture", "patterns", "distributed-systems"],
+      source: "System Design Interview prep"
+    },
+    "Detailed explanation of system design concepts including scalability considerations, trade-offs, and real-world implementation examples. This pattern is particularly useful for #{["high-traffic applications", "distributed systems", "microservices architecture", "event-driven systems"].sample}."
+  )
+end
+
+# Add a few memories to other workspaces
+created_workspaces[1..5].each do |workspace|
+  rand(2..5).times do |i|
+    create_or_update_memory(
+      workspace,
+      {
+        title: "#{workspace.name} Note #{i + 1}",
+        tags: [workspace.name.downcase.gsub(/\s+/, "-"), "note"],
+        source: "Personal experience"
+      },
+      "This is an important note about #{workspace.name.downcase}. It contains valuable insights and practical examples that can be applied in real-world scenarios."
+    )
+  end
+end
+
 puts "Seeded database with:"
 puts "- #{User.count} user(s)"
 puts "- #{Workspace.count} workspace(s)"
 puts "- #{Memory.count} memory(ies) with content"
 puts ""
 puts "User: demo@recuerd0.com / password123"
+puts ""
+puts "Workspaces with 25+ memories:"
+puts "- #{rails_workspace.name}: #{rails_workspace.memories.count} memories"
+puts "- #{system_design_workspace.name}: #{system_design_workspace.memories.count} memories"
