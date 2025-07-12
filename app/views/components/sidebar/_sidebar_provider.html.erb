@@ -1,4 +1,4 @@
-<%# locals: (default_open: true, class_names: "", **attributes) -%>
+<%# locals: (default_open: true, variant: "default", class_names: "", **attributes) -%>
 <% merged_attributes =
   attributes.merge(
     {
@@ -13,7 +13,13 @@
     },
   ) %>
 <div
-  class="<%= cn("flex h-screen w-full overflow-hidden", class_names) %>"
+  data-slot="sidebar-wrapper"
+  style="--sidebar-width: calc(var(--spacing) * 64); --sidebar-width-icon: 3rem; --header-height: calc(var(--spacing) * 14)"
+  class="<%= cn(
+    "group/sidebar-wrapper flex min-h-svh w-full",
+    variant == "inset" && "bg-sidebar-background",
+    class_names
+  ) %>"
   <%= tag.attributes(merged_attributes) %>
 >
   <%= yield %>

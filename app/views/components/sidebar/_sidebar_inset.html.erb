@@ -1,11 +1,18 @@
 <%# locals: (class_names: "", **attributes) -%>
-<div
-  class="<%= cn(
-    "flex flex-1 flex-col overflow-hidden",
-    "transition-[margin] duration-300 ease-in-out",
+<%# 
+  The SidebarInset component creates the main content area that works alongside the sidebar.
+  It provides visual separation and responsive behavior based on the sidebar state. -%>
+  <main
+    data-slot="sidebar-inset"
+    class="<%= cn(
+    "relative flex w-full flex-1 flex-col",
+    # Inset effect styles - always apply on desktop when parent has inset variant
+    "md:m-2 md:ml-0 md:rounded-xl md:shadow-sm md:bg-background",
+    # When sidebar is collapsed, add left margin
+    "[.group\/sidebar-wrapper[data-sidebar-state=collapsed]_&]:md:ml-2",
     class_names
   ) %>"
-  <%= tag.attributes(attributes) %>
->
-  <%= yield %>
-</div>
+    <%= tag.attributes(attributes) %>
+  >
+    <%= yield %>
+  </main>
