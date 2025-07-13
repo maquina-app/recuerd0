@@ -3,7 +3,13 @@ class WorkspacesController < ApplicationController
 
   # GET /workspaces
   def index
-    @pagy, @workspaces = pagy(Current.user.workspaces.active.ordered)
+    if params[:filter] == "archived"
+      @pagy, @workspaces = pagy(Current.user.workspaces.archived.ordered, items: 12)
+      @page_title = "Archived Workspaces"
+    else
+      @pagy, @workspaces = pagy(Current.user.workspaces.active.ordered, items: 12)
+      @page_title = "Workspaces"
+    end
   end
 
   # GET /workspaces/1
@@ -13,7 +19,7 @@ class WorkspacesController < ApplicationController
       return
     end
 
-    @pagy, @memories = pagy(@workspace.memories.includes(:content).order(created_at: :desc))
+    @pagy, @memories = pagy(@workspace.memories.includes(:content).order(created_at: :desc), items: 10)
   end
 
   # GET /workspaces/new

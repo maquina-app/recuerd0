@@ -1,7 +1,5 @@
-<%# locals: (sidebar_open: true) %>
-
-<%= render "components/sidebar/sidebar_provider", default_open: sidebar_open, variant: "inset" do %>
-  <%= render "components/sidebar/sidebar", open: sidebar_open, collapsible: "offcanvas", variant: "inset", class_names: "h-full" do %>
+<%= render "components/sidebar/sidebar_provider", default_open: true, variant: "inset" do %>
+  <%= render "components/sidebar/sidebar", collapsible: "offcanvas", variant: "inset", class_names: "h-full" do %>
     <%= render "components/sidebar/sidebar_header" do %>
       <%= render "components/sidebar/sidebar_menu", class_names: "w-full" do %>
         <%= render "components/sidebar/sidebar_menu_item" do %>
@@ -70,6 +68,100 @@
                     data: { highlight: false } do %>
                   <%= lucide_icon :more_horizontal, size: "w-4 h-4" %>
                   <span class="data-[state=collapsed]:hidden">More...</span>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <%# More workspaces group (including archived) %>
+        <% archived_workspaces = Current.user.workspaces.archived.ordered.limit(5) %>
+        <% if Current.user.workspaces.archived.any? %>
+          <%= render "components/sidebar/sidebar_separator" %>
+
+          <%# More workspaces group %>
+          <%= render "components/sidebar/sidebar_group" do %>
+            <div class="flex items-center justify-between px-4 py-1">
+              <span
+                class="
+                  text-xs font-semibold text-sidebar-foreground/60 data-[state=collapsed]:hidden
+                "
+              >
+                More workspaces
+              </span>
+            </div>
+            <%= render "components/sidebar/sidebar_menu" do %>
+              <%# Archived Workspaces as a collapsible item %>
+              <%= render "components/sidebar/sidebar_menu_item" do %>
+                <div
+                  data-controller="collapsible"
+                  data-collapsible-open-value="false"
+                  class="group/collapsible"
+                  data-state="closed"
+                >
+                  <button
+                    type="button"
+                    data-action="click->collapsible#toggle"
+                    data-collapsible-target="trigger"
+                    class="sidebar-menu-button w-full"
+                    aria-expanded="false"
+                    data-state="closed"
+                  >
+                    <%= lucide_icon :archive, size: "w-4 h-4" %>
+                    <span class="flex-1 text-left data-[state=collapsed]:hidden">Archived Workspaces</span>
+                    <span
+                      class="
+                        text-xs text-sidebar-foreground/60 data-[state=collapsed]:hidden mr-2
+                      "
+                    >
+                      <%= Current.user.workspaces.archived.count %>
+                    </span>
+                    <span
+                      data-collapsible-target="chevron"
+                      class="transition-transform duration-200"
+                    >
+                      <%= lucide_icon :chevron_right, size: "w-4 h-4" %>
+                    </span>
+                  </button>
+
+                  <div data-collapsible-target="content" class="overflow-hidden"
+                    hidden>
+                    <div class="ml-4 border-l border-sidebar-border pl-4 space-y-1 py-1">
+                      <% archived_workspaces.each do |workspace| %>
+                        <%= link_to workspace_path(workspace), 
+                            class: "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" do %>
+                          <%= lucide_icon :folder, size: "w-4 h-4", class: "opacity-60" %>
+                          <span class="truncate"><%= workspace.name %></span>
+                        <% end %>
+                      <% end %>
+
+                      <% if Current.user.workspaces.archived.count > 5 %>
+                        <%= render "components/sidebar/sidebar_menu" do %>
+                          <%= render "components/sidebar/sidebar_menu_item" do %>
+                            <%= render "components/sidebar/sidebar_menu_button", 
+                                href: workspaces_path(filter: 'archived'),
+                                data: { highlight: false },
+                                class_names: "px-2" do %>
+                              <%= lucide_icon :more_horizontal, size: "w-4 h-4", class: "opacity-60" %>
+                              <span>More...</span>
+                            <% end %>
+                          <% end %>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+
+              <%# More... option at group level if needed %>
+              <% if false # Add condition here if you need a general "More..." option %>
+                <%= render "components/sidebar/sidebar_menu_item" do %>
+                  <%= render "components/sidebar/sidebar_menu_button", 
+                      href: "#",
+                      data: { highlight: false } do %>
+                    <%= lucide_icon :more_horizontal, size: "w-4 h-4" %>
+                    <span class="data-[state=collapsed]:hidden">More...</span>
+                  <% end %>
                 <% end %>
               <% end %>
             <% end %>
