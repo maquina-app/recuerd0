@@ -28,11 +28,12 @@
   </div>
 
   <% if @workspaces.any? %>
-    <div class="mb-8">
-      <h2 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">Active Workspaces</h2>
-      <div class="space-y-4">
-        <%= render @workspaces %>
-      </div>
+    <div class="space-y-4">
+      <%= render @workspaces %>
+    </div>
+
+    <div class="mt-8">
+      <%= render "components/pagination", pagy: @pagy %>
     </div>
   <% else %>
     <div
@@ -53,42 +54,6 @@
           <%= lucide_icon :plus, size: "w-4 h-4" %>
           New Workspace
         <% end %>
-      </div>
-    </div>
-  <% end %>
-
-  <% if @archived_workspaces.any? %>
-    <div class="mb-8">
-      <h2 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">
-        Archived Workspaces
-        <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">
-          (<%= @archived_workspaces.count %>)
-        </span>
-      </h2>
-      <div class="space-y-4">
-        <%= render partial: "workspace",
-        collection: @archived_workspaces,
-        locals: {
-          show_status: true,
-        } %>
-      </div>
-    </div>
-  <% end %>
-
-  <% if @deleted_workspaces.any? %>
-    <div class="mb-8">
-      <h2 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">
-        Deleted Workspaces
-        <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">
-          (<%= @deleted_workspaces.count %>)
-        </span>
-      </h2>
-      <div class="space-y-4">
-        <%= render partial: "workspace",
-        collection: @deleted_workspaces,
-        locals: {
-          show_status: true,
-        } %>
       </div>
     </div>
   <% end %>

@@ -1,0 +1,73 @@
+<%# locals: (pagy:) %>
+
+<% if pagy.pages > 1 %>
+  <nav
+    role="navigation"
+    aria-label="pagination"
+    class="mx-auto flex w-full justify-center"
+  >
+    <ul class="flex flex-row items-center gap-1">
+      <li>
+        <% if pagy.prev %>
+          <%= link_to url_for(page: pagy.prev), 
+              class: "pagination-nav",
+              "aria-label": "Go to previous page" do %>
+            <%= lucide_icon :chevron_left, size: "w-4 h-4" %>
+            <span class="hidden sm:block">Previous</span>
+          <% end %>
+        <% else %>
+          <span
+            class="pagination-nav pointer-events-none opacity-50"
+            aria-disabled="true"
+          >
+            <%= lucide_icon :chevron_left, size: "w-4 h-4" %>
+            <span class="hidden sm:block">Previous</span>
+          </span>
+        <% end %>
+      </li>
+
+      <% pagy.series.each do |item| %>
+        <% if item.to_i.is_a?(Integer) %>
+          <li>
+            <% if item.to_i == pagy.page %>
+              <span class="pagination-item pagination-active" aria-current="page">
+                <%= item %>
+              </span>
+            <% else %>
+              <%= link_to item,
+              url_for(page: item),
+              class: "pagination-item",
+              "aria-label": "Go to page #{item}" %>
+            <% end %>
+          </li>
+        <% elsif item == :gap %>
+          <li>
+            <span aria-hidden="true" class="flex size-9 items-center justify-center">
+              <%= lucide_icon :ellipsis, size: "w-4 h-4" %>
+              <span class="sr-only">More pages</span>
+            </span>
+          </li>
+        <% end %>
+      <% end %>
+
+      <li>
+        <% if pagy.next %>
+          <%= link_to url_for(page: pagy.next), 
+              class: "pagination-nav",
+              "aria-label": "Go to next page" do %>
+            <span class="hidden sm:block">Next</span>
+            <%= lucide_icon :chevron_right, size: "w-4 h-4" %>
+          <% end %>
+        <% else %>
+          <span
+            class="pagination-nav pointer-events-none opacity-50"
+            aria-disabled="true"
+          >
+            <span class="hidden sm:block">Next</span>
+            <%= lucide_icon :chevron_right, size: "w-4 h-4" %>
+          </span>
+        <% end %>
+      </li>
+    </ul>
+  </nav>
+<% end %>

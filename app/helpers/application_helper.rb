@@ -1,4 +1,6 @@
 module ApplicationHelper
+  include Pagy::Frontend
+
   # Merges CSS classes using Tailwind's convention
   # Similar to clsx or cn() in JavaScript
   def cn(*classes)

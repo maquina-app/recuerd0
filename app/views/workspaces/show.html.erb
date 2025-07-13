@@ -7,8 +7,8 @@
   ) %>
 <% end %>
 
-<div class="mb-8">
-  <div class="flex justify-between items-start">
+<div class="mx-auto max-w-7xl">
+  <div class="mb-8 flex justify-between items-center">
     <div>
       <h1 class="text-3xl font-bold"><%= @workspace.name %></h1>
       <% if @workspace.description.present? %>
@@ -37,36 +37,36 @@
       <% end %>
     </div>
   </div>
-</div>
 
-<div class="space-y-6">
-  <div class="flex justify-between items-center">
-    <h2 class="text-xl font-semibold">Memories</h2>
-    <%= link_to new_workspace_memory_path(@workspace), class: "btn-secondary btn-sm" do %>
-      <%= lucide_icon(:bookmark_plus, size: "w-4 h-4") %>
-      New Memory
-    <% end %>
-  </div>
-
-  <% if @memories.any? %>
-    <div class="space-y-4">
-      <% @memories.each do |memory| %>
-        <%= render "memories/memory", memory: memory, workspace: @workspace %>
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-semibold">Memories</h2>
+      <%= link_to new_workspace_memory_path(@workspace), class: "btn-secondary btn-sm" do %>
+        <%= lucide_icon(:bookmark_plus, size: "w-4 h-4") %>
+        New Memory
       <% end %>
     </div>
 
-    <% if @pagy.pages > 1 %>
-      <div class="mt-8">
-        <%== pagy_nav(@pagy) %>
+    <% if @memories.any? %>
+      <div class="space-y-4">
+        <% @memories.each do |memory| %>
+          <%= render "memories/memory", memory: memory, workspace: @workspace %>
+        <% end %>
       </div>
-    <% end %>
-  <% else %>
-    <%= render "components/empty_state",
+
+      <% if @pagy.pages > 1 %>
+        <div class="mt-8">
+          <%== pagy_nav(@pagy) %>
+        </div>
+      <% end %>
+    <% else %>
+      <%= render "components/empty_state",
     title: "No memories yet",
     description: "Start adding memories to this workspace",
     action: link_to(new_workspace_memory_path(@workspace), class: "btn-secondary") do %>
-      <%= lucide_icon(:bookmark_plus) %>
-      Add First Memory
+        <%= lucide_icon(:bookmark_plus) %>
+        Add First Memory
+      <% end %>
     <% end %>
-  <% end %>
+  </div>
 </div>

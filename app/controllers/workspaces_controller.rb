@@ -3,11 +3,7 @@ class WorkspacesController < ApplicationController
 
   # GET /workspaces
   def index
-    @workspaces = Current.user.workspaces.active.ordered
-
-    # Load soft deleted and archived workspaces for display
-    @deleted_workspaces = Current.user.workspaces.only_deleted.ordered
-    @archived_workspaces = Current.user.workspaces.archived.ordered
+    @pagy, @workspaces = pagy(Current.user.workspaces.active.ordered)
   end
 
   # GET /workspaces/1
@@ -17,7 +13,7 @@ class WorkspacesController < ApplicationController
       return
     end
 
-    @pagy, @memories = pagy(@workspace.memories.includes(:content).order(created_at: :desc), items: 10)
+    @pagy, @memories = pagy(@workspace.memories.includes(:content).order(created_at: :desc))
   end
 
   # GET /workspaces/new

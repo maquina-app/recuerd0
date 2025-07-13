@@ -5,7 +5,14 @@ require "pagy/extras/overflow"
 Pagy::DEFAULT[:overflow] = :last_page
 
 # Default items per page
-Pagy::DEFAULT[:items] = 10
+Pagy::DEFAULT[:limit] = 10
 
-# The I18n is handled differently in newer versions of Pagy
-# You can customize labels by creating a locale file or using the built-in defaults
+# Control how many page links are shown
+# The size can be a single number or an array for responsive behavior
+# Format: [start_links, before_current, current, after_current, end_links]
+# Example: [1, 4, 4, 4, 1] means:
+# - 1 link at the start
+# - 4 links before current page
+# - 4 links after current page
+# - 1 link at the end
+Pagy::DEFAULT[:size] = 7  # [1, 4, 4, 4, 1]
