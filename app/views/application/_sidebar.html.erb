@@ -1,4 +1,5 @@
-<%= render "components/sidebar/sidebar_provider", default_open: true, variant: "inset" do %>
+<% collapsible_states ||= {} %>
+<%= render "components/sidebar/sidebar_provider", default_open: sidebar_open, variant: "inset" do %>
   <%= render "components/sidebar/sidebar", collapsible: "offcanvas", variant: "inset", class_names: "h-full" do %>
     <%= render "components/sidebar/sidebar_header" do %>
       <%= render "components/sidebar/sidebar_menu", class_names: "w-full" do %>
@@ -93,19 +94,21 @@
             <%= render "components/sidebar/sidebar_menu" do %>
               <%# Archived Workspaces as a collapsible item %>
               <%= render "components/sidebar/sidebar_menu_item" do %>
+                <% archived_open = collapsible_states["archived-workspaces"] || false %>
                 <div
                   data-controller="collapsible"
-                  data-collapsible-open-value="false"
+                  data-collapsible-open-value="<%= archived_open %>"
+                  data-collapsible-id-value="archived-workspaces"
                   class="group/collapsible"
-                  data-state="closed"
+                  data-state="<%= archived_open ? 'open' : 'closed' %>"
                 >
                   <button
                     type="button"
                     data-action="click->collapsible#toggle"
                     data-collapsible-target="trigger"
                     class="sidebar-menu-button w-full"
-                    aria-expanded="false"
-                    data-state="closed"
+                    aria-expanded="<%= archived_open %>"
+                    data-state="<%= archived_open ? 'open' : 'closed' %>"
                   >
                     <%= lucide_icon :archive, size: "w-4 h-4" %>
                     <span class="flex-1 text-left data-[state=collapsed]:hidden">Archived Workspaces</span>
@@ -118,14 +121,19 @@
                     </span>
                     <span
                       data-collapsible-target="chevron"
-                      class="transition-transform duration-200"
+                      class="
+                        transition-transform duration-200 <%= archived_open ? 'rotate-90' : '' %>
+                      "
                     >
                       <%= lucide_icon :chevron_right, size: "w-4 h-4" %>
                     </span>
                   </button>
 
-                  <div data-collapsible-target="content" class="overflow-hidden"
-                    hidden>
+                  <div
+                    data-collapsible-target="content"
+                    class="overflow-hidden"
+                    <%= archived_open ? '' : 'hidden' %>
+                  >
                     <div class="ml-4 border-l border-sidebar-border pl-4 space-y-1 py-1">
                       <% archived_workspaces.each do |workspace| %>
                         <%= link_to workspace_path(workspace), 

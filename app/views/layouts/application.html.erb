@@ -76,7 +76,9 @@
     </div>
 
     <div class="flex h-screen overflow-hidden">
-      <%= render "application/sidebar", sidebar_open: @sidebar_open %>
+      <%= render "application/sidebar",
+      sidebar_open: @sidebar_open,
+      collapsible_states: @collapsible_states %>
     </div>
   </body>
 </html>
