@@ -1,0 +1,128 @@
+<%# locals: (sidebar_open: true) %>
+
+<%= render "components/sidebar/sidebar_provider", default_open: sidebar_open, variant: "inset" do %>
+  <%= render "components/sidebar/sidebar", open: sidebar_open, collapsible: "offcanvas", variant: "inset", class_names: "h-full" do %>
+    <%= render "components/sidebar/sidebar_header" do %>
+      <%= render "components/sidebar/sidebar_menu", class_names: "w-full" do %>
+        <%= render "components/sidebar/sidebar_menu_item" do %>
+          <%= render "components/sidebar/sidebar_menu_button",
+              href: root_path,
+              as_child: false,
+              class_names: "!p-2 w-full justify-start" do %>
+            <%= lucide_icon :brain, size: "w-5 h-5" %>
+            <span class="text-base font-semibold data-[state=collapsed]:hidden">Recuerd0</span>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= render "components/sidebar/sidebar_content" do %>
+      <% if Current.user %>
+        <%# All workspaces menu item - now above the group %>
+        <%= render "components/sidebar/sidebar_menu" do %>
+          <%= render "components/sidebar/sidebar_menu_item" do %>
+            <%= render "components/sidebar/sidebar_menu_button", 
+                href: workspaces_path do %>
+              <%= lucide_icon :folders, size: "w-4 h-4" %>
+              <span class="data-[state=collapsed]:hidden">All workspaces</span>
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <%# Separator between All workspaces and the group %>
+        <%= render "components/sidebar/sidebar_separator" %>
+
+        <%# Workspaces group %>
+        <%= render "components/sidebar/sidebar_group" do %>
+          <div class="flex items-center justify-between px-4 py-1">
+            <span
+              class="
+                text-xs font-semibold text-sidebar-foreground/60 data-[state=collapsed]:hidden
+              "
+            >
+              Workspaces
+            </span>
+            <%= render "components/sidebar/sidebar_group_action",
+                href: new_workspace_path,
+                title: "New Workspace" do %>
+              <%= lucide_icon :plus, size: "w-4 h-4" %>
+              <span class="sr-only">New Workspace</span>
+            <% end %>
+          </div>
+          <%= render "components/sidebar/sidebar_menu" do %>
+            <%# Individual workspaces (only active ones, using ordered scope, limit to 10) %>
+            <% workspaces = Current.user.workspaces.active.ordered.limit(10) %>
+            <% workspaces.each do |workspace| %>
+              <%= render "components/sidebar/sidebar_menu_item" do %>
+                <%= render "components/sidebar/sidebar_menu_button", 
+                    href: workspace_path(workspace) do %>
+                  <%= lucide_icon :folder, size: "w-4 h-4" %>
+                  <span class="data-[state=collapsed]:hidden"><%= workspace.name %></span>
+                <% end %>
+              <% end %>
+            <% end %>
+
+            <%# Show "More" link if there are more than 10 active workspaces %>
+            <% if Current.user.workspaces.active.count > 10 %>
+              <%= render "components/sidebar/sidebar_menu_item" do %>
+                <%= render "components/sidebar/sidebar_menu_button", 
+                    href: workspaces_path,
+                    data: { highlight: false } do %>
+                  <%= lucide_icon :more_horizontal, size: "w-4 h-4" %>
+                  <span class="data-[state=collapsed]:hidden">More...</span>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= render "components/sidebar/sidebar_footer" do %>
+      <% if Current.user %>
+        <%= render "components/sidebar/nav_user", user: Current.user %>
+      <% else %>
+        <%= render "components/sidebar/sidebar_menu" do %>
+          <%= render "components/sidebar/sidebar_menu_item" do %>
+            <%= render "components/sidebar/sidebar_menu_button", href: new_session_path do %>
+              <%= lucide_icon :log_in, size: "w-4 h-4" %>
+              <span class="data-[state=collapsed]:hidden">Sign in</span>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render "components/sidebar/sidebar_inset", class_names: "flex flex-col h-full overflow-hidden" do %>
+    <header
+      class="
+        flex h-(--header-height) shrink-0 items-center gap-2 border-b
+        transition-[width,height] ease-linear
+        group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)
+      "
+    >
+      <div class="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
+        <%= render "components/sidebar/sidebar_trigger", class_names: "-ml-1" %>
+
+        <%= render "components/separator",
+        orientation: "vertical",
+        class_names: "mx-2 data-[orientation=vertical]:h-4" %>
+
+        <% if content_for?(:breadcrumb) %>
+          <%= yield :breadcrumb %>
+        <% else %>
+          <h1 class="text-base font-medium"><%= content_for(:page_title) || "Dashboard" %></h1>
+        <% end %>
+      </div>
+    </header>
+
+    <div class="flex flex-1 flex-col overflow-hidden">
+      <div class="@container/main flex flex-1 flex-col gap-2 overflow-hidden">
+        <main class="flex-1 p-4 md:p-6 overflow-y-auto">
+          <%= yield %>
+        </main>
+      </div>
+    </div>
+  <% end %>
+<% end %>

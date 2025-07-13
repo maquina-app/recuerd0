@@ -10,7 +10,7 @@ export default class extends Controller {
 
   static outlets = ["sidebar"]
 
-  connect() {
+  initialize() {
     // Set initial state from cookie or default
     const cookieValue = this.getCookie(this.cookieNameValue)
     const isOpen = cookieValue !== null ? cookieValue === "true" : this.defaultOpenValue
@@ -18,6 +18,11 @@ export default class extends Controller {
     // Store the desired open state to apply when outlets connect
     this.desiredOpenState = isOpen
 
+    // Apply state to data attribute immediately
+    this.element.setAttribute('data-sidebar-state', isOpen ? 'expanded' : 'collapsed')
+  }
+
+  connect() {
     // Setup keyboard shortcut
     this.keyboardHandler = this.handleKeyboard.bind(this)
     document.addEventListener("keydown", this.keyboardHandler)
@@ -36,7 +41,23 @@ export default class extends Controller {
     // Set initial state when outlet connects
     // On mobile, always start closed; on desktop, use saved state
     const isMobile = window.innerWidth < 768
-    outlet.openValue = isMobile ? false : this.desiredOpenState
+    const targetState = isMobile ? false : this.desiredOpenState
+
+    // Update the sidebar's state without triggering animations on initial load
+    if (outlet.openValue !== targetState) {
+      // Temporarily disable transitions
+      const sidebar = outlet.sidebarTarget
+      const originalTransition = sidebar.style.transition
+      sidebar.style.transition = 'none'
+
+      // Set the state
+      outlet.openValue = targetState
+
+      // Re-enable transitions after a frame
+      requestAnimationFrame(() => {
+        sidebar.style.transition = originalTransition
+      })
+    }
   }
 
   toggle() {
@@ -78,6 +99,6 @@ export default class extends Controller {
   }
 
   setCookie(name, value, maxAge) {
-    document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`
+    document.cookie = `${name}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`
   }
 }

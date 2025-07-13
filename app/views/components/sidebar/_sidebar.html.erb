@@ -1,14 +1,15 @@
-<%# locals: (collapsible: "offcanvas", side: "left", variant: "sidebar", class_names: "", **attributes) -%>
+<%# locals: (open: "true", collapsible: "offcanvas", side: "left", variant: "sidebar", class_names: "", **attributes) -%>
 <div
   data-controller="sidebar"
   data-sidebar-collapsible-value="<%= collapsible %>"
   data-sidebar-side-value="<%= side %>"
   data-sidebar-variant-value="<%= variant %>"
+  data-sidebar-open-value="<%= open %>"
 >
   <aside
     id="sidebar"
     data-sidebar-target="sidebar"
-    data-state="collapsed"
+    data-state="<%= open ? 'expanded' : 'collapsed' %>"
     class="<%= cn(
       "sidebar",
       "flex h-screen flex-col bg-sidebar-background text-sidebar-foreground",

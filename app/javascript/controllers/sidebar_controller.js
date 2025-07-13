@@ -18,7 +18,7 @@ export default class extends Controller {
     this.resizeHandler = this.checkScreenSize.bind(this)
     window.addEventListener("resize", this.resizeHandler)
 
-    // Set initial state based on open value and screen size
+    // Set initial state based on open value - no need to delay
     this.updateState()
   }
 

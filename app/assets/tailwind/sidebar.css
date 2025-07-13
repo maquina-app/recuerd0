@@ -31,13 +31,23 @@
   .sidebar-menu-button {
     @apply flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium;
     @apply transition-colors duration-200;
-    @apply hover:bg-sidebar-accent hover:text-sidebar-accent-foreground;
-    @apply focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring;
     
-    /* Active state */
-    &[data-active="true"] {
+    /* Default hover and focus states - skip if data-highlight="false" */
+    &:not([data-highlight="false"]) {
+      @apply hover:bg-sidebar-accent hover:text-sidebar-accent-foreground;
+      @apply focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring;
+    }
+    
+    /* Active state - skip if data-highlight="false" */
+    &[data-active="true"]:not([data-highlight="false"]) {
       @apply bg-sidebar-accent text-sidebar-accent-foreground;
       @apply font-semibold;
+    }
+    
+    /* Special styles for non-highlightable items */
+    &[data-highlight="false"] {
+      @apply text-sidebar-foreground/60;
+      @apply focus-visible:outline-none;
     }
     
     /* Icon alignment */
