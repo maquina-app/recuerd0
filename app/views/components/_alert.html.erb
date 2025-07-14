@@ -1,17 +1,42 @@
-<%# locals: (variant: "default", title: nil, description: nil, class_names: "", **attributes) -%>
-<% base_classes = "relative w-full rounded-lg border p-4 shadow-lg bg-background"
+<%# locals: (variant: "default", icon: nil, title: nil, description: nil, class_names: "", **attributes) -%>
+<% base_classes =
+  "relative w-full rounded-lg border px-4 py-3 text-sm grid has-[>svg]:grid-cols-[calc(var(--spacing)*5)_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current"
 
 variant_classes = {
-  "default" => "border-border text-foreground",
+  "default" => "bg-card text-card-foreground border-border",
   "destructive" =>
     "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
   "success" =>
-    "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-200/30 dark:bg-emerald-500/10 dark:text-emerald-200",
+    "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800/30 dark:bg-emerald-900/10 dark:text-emerald-200",
+  "warning" =>
+    "border-yellow-200 bg-yellow-50 text-yellow-900 dark:border-yellow-800/30 dark:bg-yellow-900/10 dark:text-yellow-200",
+  "info" =>
+    "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800/30 dark:bg-blue-900/10 dark:text-blue-200",
 } %>
+
 <div
-  class="<%= cn(base_classes, variant_classes[variant], class_names) %>"
+  data-slot="alert"
   role="alert"
+  class="<%= cn(base_classes, variant_classes[variant], class_names) %>"
   <%= tag.attributes(attributes) %>
 >
-  <%= yield %>
+  <% if icon %>
+    <%= icon %>
+  <% end %>
+
+  <% if title %>
+    <%= render "components/alert_title" do %>
+      <%= title %>
+    <% end %>
+  <% end %>
+
+  <% if description %>
+    <%= render "components/alert_description" do %>
+      <%= description %>
+    <% end %>
+  <% elsif block_given? %>
+    <div class="col-start-2">
+      <%= yield %>
+    </div>
+  <% end %>
 </div>

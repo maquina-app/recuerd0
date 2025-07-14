@@ -8,6 +8,7 @@ module Archivable
     # Scopes
     scope :archived, -> { where.not(archived_at: nil) }
     scope :not_archived, -> { where(archived_at: nil) }
+    scope :archived_ordered, -> { archived.order(archived_at: :desc) }
   end
 
   # Archive the record

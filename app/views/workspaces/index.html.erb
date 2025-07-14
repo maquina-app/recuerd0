@@ -1,37 +1,18 @@
+<%# locals: () %>
+<% content_for :page_title, "Workspaces" %>
 <% content_for :breadcrumb do %>
-  <nav class="flex" aria-label="Breadcrumb">
-    <ol
-      class="
-        flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400
-      "
-    >
-      <li>
-        <%= link_to "Home", root_path, class: "hover:text-gray-900 dark:hover:text-gray-200" %>
-      </li>
-      <li class="flex items-center">
-        <%= lucide_icon :chevron_right, size: "w-4 h-4", class: "mx-1" %>
-        <span class="text-gray-900 dark:text-gray-200"><%= @page_title || "Workspaces" %></span>
-      </li>
-    </ol>
-  </nav>
+  <%= breadcrumbs({ "Home" => root_path }, "Workspaces") %>
 <% end %>
 
 <div class="mx-auto max-w-7xl">
   <div class="mb-8 flex items-center justify-between">
     <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-      <%= @page_title || "Workspaces" %>
+      Workspaces
     </h1>
 
-    <% if params[:filter] == 'archived' %>
-      <%= link_to workspaces_path, class: "btn-outline" do %>
-        <%= lucide_icon :arrow_left, size: "w-4 h-4" %>
-        Back to Active
-      <% end %>
-    <% else %>
-      <%= link_to new_workspace_path, class: "btn-default" do %>
-        <%= lucide_icon :plus, size: "w-4 h-4" %>
-        New Workspace
-      <% end %>
+    <%= link_to new_workspace_path, class: "btn-default" do %>
+      <%= lucide_icon :plus, size: "w-4 h-4" %>
+      New Workspace
     <% end %>
   </div>
 
@@ -50,29 +31,19 @@
         dark:border-gray-700
       "
     >
-      <% if params[:filter] == 'archived' %>
-        <%= lucide_icon :archive,
-        size: "w-12 h-12",
-        class: "mx-auto text-gray-400 dark:text-gray-600" %>
-        <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No archived workspaces</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Workspaces you archive will appear here.
-        </p>
-      <% else %>
-        <%= lucide_icon :folder_open,
-        size: "w-12 h-12",
-        class: "mx-auto text-gray-400 dark:text-gray-600" %>
-        <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No workspaces</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Get started by creating a new workspace.
-        </p>
-        <div class="mt-6">
-          <%= link_to new_workspace_path, class: "btn-default" do %>
-            <%= lucide_icon :plus, size: "w-4 h-4" %>
-            New Workspace
-          <% end %>
-        </div>
-      <% end %>
+      <%= lucide_icon :folder_open,
+      size: "w-12 h-12",
+      class: "mx-auto text-gray-400 dark:text-gray-600" %>
+      <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No workspaces</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Get started by creating a new workspace.
+      </p>
+      <div class="mt-6">
+        <%= link_to new_workspace_path, class: "btn-default" do %>
+          <%= lucide_icon :plus, size: "w-4 h-4" %>
+          New Workspace
+        <% end %>
+      </div>
     </div>
   <% end %>
 </div>

@@ -1,0 +1,58 @@
+/* Sidebar-specific styles including inset pattern */
+
+/* Import existing comprehensive sidebar styles */
+@import "./sidebar.css";
+
+/* Additional sidebar inset pattern styles from application.css */
+@layer components {
+  /* Apply sidebar background to the wrapper when using inset variant */
+  [data-slot="sidebar-wrapper"][data-sidebar-state] {
+    background-color: var(--color-sidebar-background);
+  }
+  
+  /* Main content area with inset effect */
+  [data-slot="sidebar-inset"] {
+    /* Use peer utility to respond to sidebar state */
+    &.peer-data-[variant=inset]:m-2 {
+      margin: 0.5rem;
+    }
+    
+    &.peer-data-[variant=inset]:ml-0 {
+      margin-left: 0;
+    }
+    
+    &.peer-data-[variant=inset]:rounded-xl {
+      border-radius: 0.75rem;
+    }
+    
+    &.peer-data-[variant=inset]:shadow-sm {
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
+    
+    /* When sidebar is collapsed, add left margin */
+    &.peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2 {
+      margin-left: 0.5rem;
+    }
+  }
+  
+  /* Alternative approach using has selector */
+  .group\/sidebar-wrapper:has([data-variant="inset"]) {
+    background-color: var(--color-sidebar-background);
+  }
+  
+  .group\/sidebar-wrapper:has([data-variant="inset"]) [data-slot="sidebar-inset"] {
+    @media (min-width: 768px) {
+      margin: 0.5rem;
+      margin-left: 0;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      background-color: var(--color-background);
+    }
+  }
+  
+  .group\/sidebar-wrapper:has([data-variant="inset"][data-state="collapsed"]) [data-slot="sidebar-inset"] {
+    @media (min-width: 768px) {
+      margin-left: 0.5rem;
+    }
+  }
+}

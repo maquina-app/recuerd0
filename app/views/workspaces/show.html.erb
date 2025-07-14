@@ -1,10 +1,22 @@
+<%# locals: () %>
 <% content_for :page_title, @workspace.name %>
 
 <% content_for :breadcrumb do %>
-  <%= breadcrumbs(
-    { "Home" => root_path, "Workspaces" => workspaces_path },
-    @workspace.name,
-  ) %>
+  <% if @workspace.archived? %>
+    <%= breadcrumbs(
+      {
+        "Home" => root_path,
+        "Workspaces" => workspaces_path,
+        "Archived Workspaces" => archived_workspaces_path,
+      },
+      @workspace.name,
+    ) %>
+  <% else %>
+    <%= breadcrumbs(
+      { "Home" => root_path, "Workspaces" => workspaces_path },
+      @workspace.name,
+    ) %>
+  <% end %>
 <% end %>
 
 <div class="mx-auto max-w-7xl">
@@ -14,36 +26,78 @@
       <% if @workspace.description.present? %>
         <p class="text-muted-foreground mt-2"><%= @workspace.description %></p>
       <% end %>
-      <p class="inline-flex items-center gap-1 text-sm text-muted-foreground mt-4">
-        <%= lucide_icon(:clock, size: "w-4 h-4", class: "flex-shrink-0") %>
-        Created
-        <%= time_ago_in_words(@workspace.created_at) %>
-        ago
-      </p>
+      <div class="flex flex-col gap-1 mt-4">
+        <p class="inline-flex items-center gap-1 text-sm text-muted-foreground">
+          <%= lucide_icon(:clock, size: "w-4 h-4", class: "flex-shrink-0") %>
+          Created
+          <%= time_ago_in_words(@workspace.created_at) %>
+          ago
+        </p>
+        <% if @workspace.archived? && @workspace.archived_at.present? %>
+          <p class="inline-flex items-center gap-1 text-sm text-muted-foreground">
+            <%= lucide_icon(:archive, size: "w-4 h-4", class: "flex-shrink-0") %>
+            Archived
+            <%= time_ago_in_words(@workspace.archived_at) %>
+            ago
+          </p>
+        <% end %>
+      </div>
     </div>
-    <div class="flex gap-2">
-      <%= link_to edit_workspace_path(@workspace), class: "btn-outline btn-sm" do %>
-        <%= lucide_icon(:edit, size: "w-4 h-4") %>
-        Edit
-      <% end %>
-      <%= button_to workspace_path(@workspace),
-          method: :delete,
-          data: {
-            turbo_confirm: "Are you sure you want to delete this workspace and all its memories?",
-          },
-          class: "btn-destructive btn-sm" do %>
-        <%= lucide_icon(:trash_2, size: "w-4 h-4") %>
-        Delete
-      <% end %>
-    </div>
+    <% if @workspace.active? %>
+      <div class="flex gap-2">
+        <%= link_to edit_workspace_path(@workspace), class: "btn-outline btn-sm" do %>
+          <%= lucide_icon(:edit, size: "w-4 h-4") %>
+          Edit
+        <% end %>
+        <%= button_to workspace_path(@workspace),
+            method: :delete,
+            data: {
+              turbo_confirm: "Are you sure you want to delete this workspace and all its memories?",
+            },
+            class: "btn-destructive btn-sm" do %>
+          <%= lucide_icon(:trash_2, size: "w-4 h-4") %>
+          Delete
+        <% end %>
+      </div>
+    <% elsif @workspace.archived? %>
+      <div class="flex gap-2">
+        <%= button_to archive_workspace_path(@workspace),
+            method: :delete,
+            class: "btn-outline btn-sm" do %>
+          <%= lucide_icon(:archive_restore, size: "w-4 h-4") %>
+          Restore
+        <% end %>
+        <%= button_to workspace_path(@workspace),
+            method: :delete,
+            data: {
+              turbo_confirm: "Are you sure you want to permanently delete this workspace and all its memories?",
+            },
+            class: "btn-destructive btn-sm" do %>
+          <%= lucide_icon(:trash_2, size: "w-4 h-4") %>
+          Delete
+        <% end %>
+      </div>
+    <% end %>
   </div>
+
+  <% if @workspace.archived? %>
+    <%= render "components/alert",
+    variant: "info",
+    icon: lucide_icon(:archive, class: "text-blue-600 dark:text-blue-400"),
+    title: "This workspace is archived",
+    description:
+      "This workspace is in read-only mode. You can view its contents but cannot make changes. Restore it to continue adding memories.",
+    class_names: "mb-6" %>
+  <% end %>
 
   <div class="space-y-6">
     <div class="flex justify-between items-center">
       <h2 class="text-xl font-semibold">Memories</h2>
-      <%= link_to new_workspace_memory_path(@workspace), class: "btn-secondary btn-sm" do %>
-        <%= lucide_icon(:bookmark_plus, size: "w-4 h-4") %>
-        New Memory
+      <% if @workspace.active? %>
+        <%= link_to new_workspace_memory_path(@workspace), class: "btn-secondary btn-sm" do %>
+          <%= lucide_icon(:bookmark_plus, size: "w-4 h-4") %>
+          New Memory
+        <% end %>
       <% end %>
     </div>
 
@@ -60,12 +114,29 @@
         </div>
       <% end %>
     <% else %>
-      <%= render "components/empty_state",
-    title: "No memories yet",
-    description: "Start adding memories to this workspace",
-    action: link_to(new_workspace_memory_path(@workspace), class: "btn-secondary") do %>
-        <%= lucide_icon(:bookmark_plus) %>
-        Add First Memory
+      <% if @workspace.active? %>
+        <%= render "components/empty_state",
+      title: "No memories yet",
+      description: "Start adding memories to this workspace",
+      action: link_to(new_workspace_memory_path(@workspace), class: "btn-secondary") do %>
+          <%= lucide_icon(:bookmark_plus) %>
+          Add First Memory
+        <% end %>
+      <% else %>
+        <div
+          class="
+            rounded-lg border-2 border-dashed border-gray-300 p-12 text-center
+            dark:border-gray-700
+          "
+        >
+          <%= lucide_icon :sticky_note,
+          size: "w-12 h-12",
+          class: "mx-auto text-gray-400 dark:text-gray-600" %>
+          <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No memories in this workspace</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            This workspace doesn't have any memories yet.
+          </p>
+        </div>
       <% end %>
     <% end %>
   </div>

@@ -1,0 +1,72 @@
+/* Form input and field styles */
+@layer components {
+  /* Form inputs - Applied automatically to Rails form helpers */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="time"],
+  input[type="week"],
+  textarea,
+  select {
+    display: flex;
+    height: 2.5rem;
+    width: 100%;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-input);
+    background-color: var(--color-background);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    
+    &::placeholder {
+      color: var(--color-muted-foreground);
+    }
+    
+    &:focus {
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 2px var(--color-ring);
+    }
+    
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+  
+  textarea {
+    min-height: 5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  /* Labels */
+  label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+  }
+  
+  /* Form field errors - Rails specific */
+  .field_with_errors {
+    display: contents;
+  }
+  
+  .field_with_errors input,
+  .field_with_errors textarea,
+  .field_with_errors select {
+    border-color: var(--color-destructive);
+  }
+  
+  .error-message {
+    font-size: 0.875rem;
+    color: var(--color-destructive);
+  }
+}

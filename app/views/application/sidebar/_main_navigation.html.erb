@@ -1,0 +1,10 @@
+<%# locals: () %>
+<%= render "components/sidebar/sidebar_menu" do %>
+  <%= render "components/sidebar/sidebar_menu_item" do %>
+    <%= render "components/sidebar/sidebar_menu_button", 
+        href: workspaces_path do %>
+      <%= lucide_icon :folders, size: "w-4 h-4" %>
+      <span class="data-[state=collapsed]:hidden">All workspaces</span>
+    <% end %>
+  <% end %>
+<% end %>

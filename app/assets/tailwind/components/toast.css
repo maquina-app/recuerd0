@@ -1,0 +1,62 @@
+/* Sonner toast component styles and animations */
+
+/* Toast-specific animations */
+@keyframes toast-slide-in-right {
+  from { 
+    transform: translateX(calc(100% + 1rem));
+    opacity: 0;
+  }
+  to { 
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-slide-out-right {
+  from { 
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to { 
+    transform: translateX(calc(100% + 1rem));
+    opacity: 0;
+  }
+}
+
+/* Sonner toaster container and toast styles */
+@layer components {
+  .sonner-toaster {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+    max-width: 420px;
+    width: 100%;
+    
+    @media (max-width: 640px) {
+      bottom: 1rem;
+      top: auto;
+      left: 1rem;
+      right: 1rem;
+      max-width: 100%;
+    }
+  }
+  
+  .sonner-toaster > * {
+    pointer-events: auto;
+  }
+  
+  /* Sonner toast styles */
+  .sonner-toast {
+    width: 100%;
+  }
+  
+  /* Ensure toasts stack properly */
+  .sonner-toaster .sonner-toast + .sonner-toast {
+    margin-top: 0.5rem;
+  }
+}

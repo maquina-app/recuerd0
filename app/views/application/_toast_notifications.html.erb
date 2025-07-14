@@ -1,0 +1,52 @@
+<div class="sonner-toaster" aria-live="polite" aria-atomic="true">
+  <% if flash.any? %>
+    <% flash.each do |type, message| %>
+      <% variant =
+        case type.to_s
+        when "notice", "success"
+          "success"
+        when "alert", "error"
+          "destructive"
+        when "warning"
+          "warning"
+        when "info"
+          "info"
+        else
+          "default"
+        end
+      
+      icon =
+        case variant
+        when "success"
+          lucide_icon(
+            :check_circle,
+            class: "h-5 w-5 text-emerald-600 dark:text-emerald-400",
+          )
+        when "destructive"
+          lucide_icon(:x_circle, class: "h-5 w-5 text-destructive")
+        when "warning"
+          lucide_icon(
+            :alert_triangle,
+            class: "h-5 w-5 text-yellow-600 dark:text-yellow-400",
+          )
+        when "info"
+          lucide_icon(:info, class: "h-5 w-5 text-blue-600 dark:text-blue-400")
+        else
+          nil
+        end %>
+
+      <div
+        data-controller="sonner"
+        data-sonner-dismiss-after-value="4000"
+        data-sonner-remove-after-value="150"
+        class="sonner-toast"
+      >
+        <%= render "components/sonner",
+        variant: variant,
+        icon: icon,
+        description: message,
+        class_names: "w-full max-w-[420px]" %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

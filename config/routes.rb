@@ -5,12 +5,19 @@ Rails.application.routes.draw do
   resources :workspaces do
     resources :memories
 
+    collection do
+      get :archived, to: "workspaces/archives#index"
+    end
+
     member do
       post :archive, to: "workspaces/archives#create"
       delete :archive, to: "workspaces/archives#destroy"
       post :restore, to: "workspaces/restores#create"
     end
   end
+
+  # Archived workspace show route
+  get "workspaces/archived/:id", to: "workspaces/archives#show", as: :archived_workspace
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.

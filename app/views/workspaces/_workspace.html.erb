@@ -4,7 +4,7 @@
   class="
     group relative flex items-start gap-4 rounded-lg border border-gray-200 bg-white
     p-6 transition-all hover:shadow-sm dark:border-gray-800 dark:bg-gray-900
-    <%= 'opacity-60' if workspace.deleted? || workspace.archived? %>
+    <%= 'opacity-60' if workspace.deleted? %>
   "
 >
   <div class="flex-1 min-w-0">
@@ -14,6 +14,10 @@
           <% if workspace.active? %>
             <%= link_to workspace.name,
             workspace_path(workspace),
+            class: "hover:text-indigo-600 dark:hover:text-indigo-400" %>
+          <% elsif workspace.archived? %>
+            <%= link_to workspace.name,
+            archived_workspace_path(workspace),
             class: "hover:text-indigo-600 dark:hover:text-indigo-400" %>
           <% else %>
             <%= workspace.name %>
@@ -98,6 +102,14 @@
           <%= time_ago_in_words(workspace.created_at) %>
           ago</span>
       </div>
+      <% if workspace.archived? && workspace.archived_at.present? %>
+        <div class="flex items-center gap-1">
+          <%= lucide_icon :archive, size: "w-4 h-4" %>
+          <span>Archived
+            <%= time_ago_in_words(workspace.archived_at) %>
+            ago</span>
+        </div>
+      <% end %>
       <% if show_status && (workspace.deleted? || workspace.archived?) %>
         <% if workspace.deleted? %>
           <span

@@ -3,18 +3,15 @@ class WorkspacesController < ApplicationController
 
   # GET /workspaces
   def index
-    if params[:filter] == "archived"
-      @pagy, @workspaces = pagy(Current.user.workspaces.archived.ordered, items: 12)
-      @page_title = "Archived Workspaces"
-    else
-      @pagy, @workspaces = pagy(Current.user.workspaces.active.ordered, items: 12)
-      @page_title = "Workspaces"
-    end
+    @pagy, @workspaces = pagy(Current.user.workspaces.active.ordered)
   end
 
   # GET /workspaces/1
   def show
-    unless @workspace.active?
+    if @workspace.archived?
+      redirect_to archived_workspace_path(@workspace)
+      return
+    elsif !@workspace.active?
       redirect_to workspaces_path, alert: "This workspace is not accessible."
       return
     end

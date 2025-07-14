@@ -1,0 +1,7 @@
+<%# locals: (class_names: "", **attributes) -%>
+<p
+  class="<%= cn("text-sm opacity-90", class_names) %>"
+  <%= tag.attributes(attributes) %>
+>
+  <%= yield %>
+</p>

@@ -17,6 +17,8 @@ module LucideIconHelper
       %(<circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" />)
     when :info
       %(<circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />)
+    when :alert_triangle
+      %(<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" />)
     when :x
       %(<path d="M18 6 6 18" /><path d="m6 6 12 12" />)
     when :trash_2
@@ -33,6 +35,10 @@ module LucideIconHelper
       %(<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" />)
     when :archive
       %(<rect width="20" height="5" x="2" y="3" rx="1" /><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><path d="M10 12h4" />)
+    when :archive_restore
+      %(<rect width="20" height="5" x="2" y="3" rx="1" /><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><path d="m9 15 3-3 3 3" /><path d="M12 12v9" />)
+    when :rotate_ccw
+      %(<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />)
     when :sticky_note
       %(<path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z" /><path d="M15 3v4a2 2 0 0 0 2 2h4" />)
     when :brain
@@ -85,6 +91,10 @@ module LucideIconHelper
       %(<circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />)
     when :tag
       %(<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /><circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />)
+    when :folder_open
+      %(<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />)
+    when :calendar
+      %(<path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" />)
     else
       # Default icon if not found - this helps identify missing icons
       Rails.logger.warn "Lucide icon not found: #{name}" if defined?(Rails)
