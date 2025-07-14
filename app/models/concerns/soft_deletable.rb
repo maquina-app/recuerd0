@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # Provides soft delete functionality for ActiveRecord models
 module SoftDeletable
   extend ActiveSupport::Concern
@@ -13,6 +11,7 @@ module SoftDeletable
     scope :with_deleted, -> { unscoped }
     scope :only_deleted, -> { unscoped.where.not(deleted_at: nil) }
     scope :not_deleted, -> { where(deleted_at: nil) }
+    scope :deleted_ordered, -> { deleted.order(deleted_at: :desc) }
   end
 
   # Soft delete the record
@@ -44,5 +43,19 @@ module SoftDeletable
     with_lock do
       self.class.unscoped.where(id: id).delete_all
     end
+  end
+
+  # Calculate days until permanent deletion (30 days after soft delete)
+  def days_until_permanent_deletion
+    return nil unless deleted? && deleted_at.present?
+
+    days_elapsed = (Date.current - deleted_at.to_date).to_i
+    days_remaining = 30 - days_elapsed
+    (days_remaining > 0) ? days_remaining : 0
+  end
+
+  # Check if scheduled for permanent deletion
+  def scheduled_for_permanent_deletion?
+    deleted? && days_until_permanent_deletion == 0
   end
 end

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # Provides archive functionality for ActiveRecord models
 module Archivable
   extend ActiveSupport::Concern

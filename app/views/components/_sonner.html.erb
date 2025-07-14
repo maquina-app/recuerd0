@@ -4,14 +4,10 @@
 
 variant_classes = {
   "default" => "border-border bg-background text-foreground",
-  "destructive" =>
-    "destructive group border-destructive bg-destructive text-destructive-foreground",
-  "success" =>
-    "group border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800/30 dark:bg-emerald-900/10 dark:text-emerald-200",
-  "warning" =>
-    "group border-yellow-200 bg-yellow-50 text-yellow-900 dark:border-yellow-800/30 dark:bg-yellow-900/10 dark:text-yellow-200",
-  "info" =>
-    "group border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800/30 dark:bg-blue-900/10 dark:text-blue-200",
+  "destructive" => "border-border bg-background text-foreground",
+  "success" => "border-border bg-background text-foreground",
+  "warning" => "border-border bg-background text-foreground",
+  "info" => "border-border bg-background text-foreground",
 } %>
 
 <div
@@ -24,6 +20,19 @@ variant_classes = {
     <% if icon %>
       <div class="flex-shrink-0">
         <%= icon %>
+      </div>
+    <% elsif variant != "default" %>
+      <div class="flex-shrink-0">
+        <% case variant %>
+        <% when "destructive" %>
+          <%= lucide_icon(:x_circle, class: "h-5 w-5 text-destructive") %>
+        <% when "success" %>
+          <%= lucide_icon(:check_circle, class: "h-5 w-5 text-success") %>
+        <% when "warning" %>
+          <%= lucide_icon(:alert_triangle, class: "h-5 w-5 text-warning") %>
+        <% when "info" %>
+          <%= lucide_icon(:info, class: "h-5 w-5 text-primary") %>
+        <% end %>
       </div>
     <% end %>
 
@@ -39,7 +48,9 @@ variant_classes = {
           <%= description %>
         <% end %>
       <% elsif block_given? %>
-        <%= yield %>
+        <div class="text-sm">
+          <%= yield %>
+        </div>
       <% end %>
     </div>
   </div>
@@ -53,9 +64,9 @@ variant_classes = {
   <button
     type="button"
     class="
-      absolute right-1 top-1 rounded-md p-1 text-foreground/50 opacity-0
+      absolute right-1 top-1 rounded-md p-1 text-muted-foreground opacity-0
       transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none
-      focus:ring-1 group-hover:opacity-100
+      focus:ring-1 focus:ring-ring group-hover:opacity-100
     "
     data-action="click->sonner#dismiss"
     aria-label="Close"

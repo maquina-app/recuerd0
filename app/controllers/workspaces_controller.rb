@@ -11,6 +11,9 @@ class WorkspacesController < ApplicationController
     if @workspace.archived?
       redirect_to archived_workspace_path(@workspace)
       return
+    elsif @workspace.deleted?
+      redirect_to deleted_workspace_path(@workspace)
+      return
     elsif !@workspace.active?
       redirect_to workspaces_path, alert: "This workspace is not accessible."
       return
@@ -39,6 +42,7 @@ class WorkspacesController < ApplicationController
     if @workspace.save
       redirect_to @workspace, notice: "Workspace was successfully created."
     else
+      flash.now[:alert] = "Please review the errors below."
       render :new, status: :unprocessable_entity
     end
   end
@@ -53,6 +57,7 @@ class WorkspacesController < ApplicationController
     if @workspace.update(workspace_params)
       redirect_to @workspace, notice: "Workspace was successfully updated."
     else
+      flash.now[:alert] = "Please review the errors below."
       render :edit, status: :unprocessable_entity
     end
   end

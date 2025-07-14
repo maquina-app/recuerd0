@@ -1,3 +1,4 @@
+<%# locals: () %>
 <% content_for :page_title, "Edit Workspace" %>
 
 <% content_for :breadcrumb do %>
@@ -11,15 +12,18 @@
   ) %>
 <% end %>
 
-<div class="max-w-2xl">
+<div class="mx-auto max-w-2xl">
   <div class="mb-8">
     <h1 class="text-3xl font-bold">Edit Workspace</h1>
     <p class="text-muted-foreground mt-2">Update workspace details</p>
   </div>
 
-  <%= render "components/card" do %>
-    <%= render "components/card_content", class_names: "pt-6" do %>
-      <%= render "form", workspace: @workspace %>
-    <% end %>
-  <% end %>
+  <div
+    class="
+      rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800
+      dark:bg-gray-900
+    "
+  >
+    <%= render "form", workspace: @workspace %>
+  </div>
 </div>

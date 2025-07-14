@@ -1,5 +1,5 @@
 class Memory < ApplicationRecord
-  belongs_to :workspace
+  belongs_to :workspace, touch: true, counter_cache: true
   has_one :content, dependent: :destroy
 
   # Serialize tags as an array - Rails 7+ syntax

@@ -19,6 +19,10 @@
             <%= link_to workspace.name,
             archived_workspace_path(workspace),
             class: "hover:text-indigo-600 dark:hover:text-indigo-400" %>
+          <% elsif workspace.deleted? %>
+            <%= link_to workspace.name,
+            deleted_workspace_path(workspace),
+            class: "hover:text-indigo-600 dark:hover:text-indigo-400" %>
           <% else %>
             <%= workspace.name %>
           <% end %>
@@ -69,19 +73,19 @@
             <%= lucide_icon :trash_2, size: "w-4 h-4" %>
           <% end %>
         <% elsif workspace.deleted? %>
-          <%= button_to restore_workspace_path(workspace),
+          <%= button_to restore_deleted_workspace_path(workspace),
               method: :post,
               class: "btn-ghost btn-icon-sm",
               title: "Restore workspace" do %>
             <%= lucide_icon :rotate_ccw, size: "w-4 h-4" %>
           <% end %>
 
-          <%= button_to workspace_path(workspace),
+          <%= button_to destroy_deleted_workspace_path(workspace),
               method: :delete,
               class: "btn-ghost btn-icon-sm text-destructive hover:text-destructive",
               title: "Permanently delete workspace",
               data: { turbo_confirm: "Are you sure you want to permanently delete this workspace? This action cannot be undone." } do %>
-            <%= lucide_icon :trash_2, size: "w-4 h-4" %>
+            <%= lucide_icon :trash, size: "w-4 h-4" %>
           <% end %>
         <% end %>
       </div>
@@ -110,6 +114,14 @@
             ago</span>
         </div>
       <% end %>
+      <% if workspace.deleted? && workspace.deleted_at.present? %>
+        <div class="flex items-center gap-1">
+          <%= lucide_icon :trash_2, size: "w-4 h-4" %>
+          <span>Deleted
+            <%= time_ago_in_words(workspace.deleted_at) %>
+            ago</span>
+        </div>
+      <% end %>
       <% if show_status && (workspace.deleted? || workspace.archived?) %>
         <% if workspace.deleted? %>
           <span
@@ -132,5 +144,31 @@
         <% end %>
       <% end %>
     </div>
+
+    <% if workspace.deleted? && workspace.deleted_at.present? %>
+      <% days_until_permanent_deletion =
+        30 - (Date.current - workspace.deleted_at.to_date).to_i %>
+      <% if days_until_permanent_deletion > 0 %>
+        <div
+          class="
+            mt-2 flex items-center gap-1 text-sm font-medium text-amber-600
+            dark:text-amber-400
+          "
+        >
+          <%= lucide_icon :alert_triangle, size: "w-4 h-4" %>
+          <span><%= pluralize(days_until_permanent_deletion, "day") %>
+            until permanent deletion</span>
+        </div>
+      <% else %>
+        <div
+          class="
+            mt-2 flex items-center gap-1 text-sm font-medium text-red-600 dark:text-red-400
+          "
+        >
+          <%= lucide_icon :alert_triangle, size: "w-4 h-4" %>
+          <span>Scheduled for permanent deletion</span>
+        </div>
+      <% end %>
+    <% end %>
   </div>
 </div>

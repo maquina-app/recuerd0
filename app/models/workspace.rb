@@ -15,10 +15,6 @@ class Workspace < ApplicationRecord
   scope :active, -> { not_archived.not_deleted }
 
   # Instance methods
-  def memories_count
-    memories.count
-  end
-
   def last_activity
     memories.maximum(:created_at) || created_at
   end

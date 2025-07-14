@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_12_230904) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_14_044346) do
   create_table "contents", force: :cascade do |t|
     t.text "body"
     t.integer "memory_id", null: false
@@ -54,6 +54,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_12_230904) do
     t.datetime "updated_at", null: false
     t.datetime "deleted_at"
     t.datetime "archived_at"
+    t.integer "memories_count", default: 0, null: false
     t.index ["archived_at"], name: "index_workspaces_on_archived_at"
     t.index ["deleted_at"], name: "index_workspaces_on_deleted_at"
     t.index ["user_id"], name: "index_workspaces_on_user_id"

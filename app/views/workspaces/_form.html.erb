@@ -1,44 +1,30 @@
-<%= form_with(model: workspace, local: true) do |form| %>
-  <% if workspace.errors.any? %>
-    <%= render "components/alert", variant: "destructive" do %>
-      <h4 class="font-semibold">There were
-        <%= pluralize(workspace.errors.count, "error") %>
-        with your submission</h4>
-      <ul class="list-disc list-inside mt-2">
-        <% workspace.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
+<%# locals: (workspace:) -%>
+<%= form_with(model: workspace, local: true, class: "space-y-6") do |form| %>
+  <div>
+    <%= form.label :name, class: "block mb-2" %>
+    <%= form.text_field :name, autofocus: true, placeholder: "My Workspace" %>
+    <% if workspace.errors[:name].any? %>
+      <p class="error-message mt-1"><%= workspace.errors[:name].first %></p>
     <% end %>
-  <% end %>
+  </div>
 
-  <div class="space-y-6">
-    <div>
-      <%= form.label :name, class: "block mb-2" %>
-      <%= form.text_field :name, autofocus: true, placeholder: "My Workspace" %>
-      <% if workspace.errors[:name].any? %>
-        <p class="error-message mt-1"><%= workspace.errors[:name].first %></p>
-      <% end %>
-    </div>
+  <div>
+    <%= form.label :description, class: "block mb-2" %>
+    <%= form.text_area :description,
+                   rows: 4,
+                   placeholder: "Describe what this workspace is for...",
+                   class: "resize-none overflow-y-auto" %>
+    <% if workspace.errors[:description].any? %>
+      <p class="error-message mt-1"><%= workspace.errors[:description].first %></p>
+    <% end %>
+  </div>
 
-    <div>
-      <%= form.label :description, class: "block mb-2" %>
-      <%= form.text_area :description,
-                     rows: 4,
-                     placeholder: "Describe what this workspace is for..." %>
-      <% if workspace.errors[:description].any? %>
-        <p class="error-message mt-1"><%= workspace.errors[:description].first %></p>
-      <% end %>
-    </div>
+  <div class="flex items-center gap-4 pt-4">
+    <%= form.submit workspace.persisted? ? "Update Workspace" : "Create Workspace",
+                class: "btn-default" %>
 
-    <div class="flex items-center gap-4">
-      <%= form.submit workspace.persisted? ? "Update Workspace" : "Create Workspace",
-                  class: "btn-default" %>
-
-      <%= link_to workspaces_path, class: "btn-outline" do %>
-        <%= lucide_icon(:x) %>
-        Cancel
-      <% end %>
-    </div>
+    <%= link_to "Cancel",
+    workspace.persisted? ? workspace_path(workspace) : workspaces_path,
+    class: "btn-outline" %>
   </div>
 <% end %>

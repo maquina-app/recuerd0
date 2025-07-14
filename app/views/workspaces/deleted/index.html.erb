@@ -1,25 +1,25 @@
 <%# locals: () %>
-<% content_for :page_title, "Archived Workspaces" %>
+<% content_for :page_title, "Deleted Workspaces" %>
 
 <% content_for :breadcrumb do %>
   <%= breadcrumbs(
     { "Home" => root_path, "Workspaces" => workspaces_path },
-    "Archived Workspaces",
+    "Deleted Workspaces",
   ) %>
 <% end %>
 
 <div class="mx-auto max-w-7xl">
   <div class="mb-8">
-    <h1 class="text-3xl font-bold">Archived Workspaces</h1>
-    <p class="text-muted-foreground mt-2">Manage your archived workspaces</p>
+    <h1 class="text-3xl font-bold">Deleted Workspaces</h1>
+    <p class="text-muted-foreground mt-2">Manage your deleted workspaces</p>
   </div>
 
   <%= render "components/alert",
-  variant: "info",
-  icon: lucide_icon(:archive, class: "text-blue-600 dark:text-blue-400"),
-  title: "About Archived Workspaces",
+  variant: "warning",
+  icon: lucide_icon(:trash_2, class: "text-amber-600 dark:text-amber-400"),
+  title: "About Deleted Workspaces",
   description:
-    "Archived workspaces are read-only and cannot be modified. You can restore them at any time to continue working with them.",
+    "Deleted workspaces can be restored or permanently removed. Permanently deleting a workspace will also delete all associated memories and cannot be undone.",
   class_names: "mb-6" %>
 
   <% if @workspaces.any? %>
@@ -41,12 +41,12 @@
         dark:border-gray-700
       "
     >
-      <%= lucide_icon :archive,
+      <%= lucide_icon :trash_2,
       size: "w-12 h-12",
       class: "mx-auto text-gray-400 dark:text-gray-600" %>
-      <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No archived workspaces</h3>
+      <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No deleted workspaces</h3>
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        You haven't archived any workspaces yet.
+        You haven't deleted any workspaces yet.
       </p>
       <div class="mt-6">
         <%= link_to workspaces_path, class: "btn-secondary" do %>

@@ -1,6 +1,7 @@
 <%# locals: (user:, collapsible_states:) %>
 <% archived_workspaces = user.workspaces.archived_ordered.limit(5) %>
-<% if user.workspaces.archived.any? %>
+<% deleted_workspaces = user.workspaces.deleted_ordered.limit(5) %>
+<% if user.workspaces.archived.any? || user.workspaces.deleted.any? %>
   <%= render "components/sidebar/sidebar_separator" %>
 
   <%= render "components/sidebar/sidebar_group" do %>
@@ -14,72 +15,146 @@
       </span>
     </div>
     <%= render "components/sidebar/sidebar_menu" do %>
-      <%= render "components/sidebar/sidebar_menu_item" do %>
-        <% archived_open = collapsible_states["archived-workspaces"] || false %>
-        <div
-          data-controller="collapsible"
-          data-collapsible-open-value="<%= archived_open %>"
-          data-collapsible-id-value="archived-workspaces"
-          class="group/collapsible"
-          data-state="<%= archived_open ? 'open' : 'closed' %>"
-        >
-          <button
-            type="button"
-            data-action="click->collapsible#toggle"
-            data-collapsible-target="trigger"
-            class="sidebar-menu-button w-full"
-            aria-expanded="<%= archived_open %>"
+      <% if user.workspaces.archived.any? %>
+        <%= render "components/sidebar/sidebar_menu_item" do %>
+          <% archived_open = collapsible_states["archived-workspaces"] || false %>
+          <div
+            data-controller="collapsible"
+            data-collapsible-open-value="<%= archived_open %>"
+            data-collapsible-id-value="archived-workspaces"
+            class="group/collapsible"
             data-state="<%= archived_open ? 'open' : 'closed' %>"
           >
-            <%= lucide_icon :archive, size: "w-4 h-4" %>
-            <span class="flex-1 text-left data-[state=collapsed]:hidden">Archived Workspaces</span>
-            <span
-              class="
-                text-xs text-sidebar-foreground/60 data-[state=collapsed]:hidden mr-2
-              "
+            <button
+              type="button"
+              data-action="click->collapsible#toggle"
+              data-collapsible-target="trigger"
+              class="sidebar-menu-button w-full"
+              aria-expanded="<%= archived_open %>"
+              data-state="<%= archived_open ? 'open' : 'closed' %>"
             >
-              <%= user.workspaces.archived.count %>
-            </span>
-            <span
-              data-collapsible-target="chevron"
-              class="
-                transition-transform duration-200 <%= archived_open ? 'rotate-90' : '' %>
-              "
-            >
-              <%= lucide_icon :chevron_right, size: "w-4 h-4" %>
-            </span>
-          </button>
+              <%= lucide_icon :archive, size: "w-4 h-4" %>
+              <span class="flex-1 text-left data-[state=collapsed]:hidden">Archived Workspaces</span>
+              <span
+                class="
+                  text-xs text-sidebar-foreground/60 data-[state=collapsed]:hidden mr-2
+                "
+              >
+                <%= user.workspaces.archived.count %>
+              </span>
+              <span
+                data-collapsible-target="chevron"
+                class="
+                  transition-transform duration-200 <%= archived_open ? 'rotate-90' : '' %>
+                "
+              >
+                <%= lucide_icon :chevron_right, size: "w-4 h-4" %>
+              </span>
+            </button>
 
-          <div
-            data-collapsible-target="content"
-            class="overflow-hidden"
-            <%= archived_open ? '' : 'hidden' %>
-          >
-            <div class="ml-4 border-l border-sidebar-border pl-4 space-y-1 py-1">
-              <% archived_workspaces.each do |workspace| %>
-                <%= link_to archived_workspace_path(workspace), 
-                    class: "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" do %>
-                  <%= lucide_icon :folder, size: "w-4 h-4", class: "opacity-60" %>
-                  <span class="truncate"><%= workspace.name %></span>
+            <div
+              data-collapsible-target="content"
+              class="overflow-hidden"
+              <%= archived_open ? '' : 'hidden' %>
+            >
+              <div class="ml-4 border-l border-sidebar-border pl-4 space-y-1 py-1">
+                <% archived_workspaces.each do |workspace| %>
+                  <%= render "components/sidebar/sidebar_menu_button", 
+                      href: archived_workspace_path(workspace),
+                      class_names: "px-2" do %>
+                    <%= lucide_icon :folder, size: "w-4 h-4", class: "opacity-60" %>
+                    <span class="truncate"><%= workspace.name %></span>
+                  <% end %>
                 <% end %>
-              <% end %>
 
-              <% if user.workspaces.archived.count > 5 %>
-                <%= render "components/sidebar/sidebar_menu" do %>
-                  <%= render "components/sidebar/sidebar_menu_item" do %>
-                    <%= render "components/sidebar/sidebar_menu_button", 
-                        href: archived_workspaces_path,
-                        data: { highlight: false },
-                        class_names: "px-2" do %>
-                      <%= lucide_icon :more_horizontal, size: "w-4 h-4", class: "opacity-60" %>
-                      <span>More...</span>
+                <% if user.workspaces.archived.count > 5 %>
+                  <%= render "components/sidebar/sidebar_menu" do %>
+                    <%= render "components/sidebar/sidebar_menu_item" do %>
+                      <%= render "components/sidebar/sidebar_menu_button", 
+                          href: archived_workspaces_path,
+                          data: { highlight: false },
+                          class_names: "px-2" do %>
+                        <%= lucide_icon :more_horizontal, size: "w-4 h-4", class: "opacity-60" %>
+                        <span>More...</span>
+                      <% end %>
                     <% end %>
                   <% end %>
                 <% end %>
-              <% end %>
+              </div>
             </div>
           </div>
-        </div>
+        <% end %>
+      <% end %>
+
+      <% if user.workspaces.deleted.any? %>
+        <%= render "components/sidebar/sidebar_menu_item" do %>
+          <% deleted_open = collapsible_states["deleted-workspaces"] || false %>
+          <div
+            data-controller="collapsible"
+            data-collapsible-open-value="<%= deleted_open %>"
+            data-collapsible-id-value="deleted-workspaces"
+            class="group/collapsible"
+            data-state="<%= deleted_open ? 'open' : 'closed' %>"
+          >
+            <button
+              type="button"
+              data-action="click->collapsible#toggle"
+              data-collapsible-target="trigger"
+              class="sidebar-menu-button w-full"
+              aria-expanded="<%= deleted_open %>"
+              data-state="<%= deleted_open ? 'open' : 'closed' %>"
+            >
+              <%= lucide_icon :trash_2, size: "w-4 h-4" %>
+              <span class="flex-1 text-left data-[state=collapsed]:hidden">Deleted Workspaces</span>
+              <span
+                class="
+                  text-xs text-sidebar-foreground/60 data-[state=collapsed]:hidden mr-2
+                "
+              >
+                <%= user.workspaces.deleted.count %>
+              </span>
+              <span
+                data-collapsible-target="chevron"
+                class="
+                  transition-transform duration-200 <%= deleted_open ? 'rotate-90' : '' %>
+                "
+              >
+                <%= lucide_icon :chevron_right, size: "w-4 h-4" %>
+              </span>
+            </button>
+
+            <div
+              data-collapsible-target="content"
+              class="overflow-hidden"
+              <%= deleted_open ? '' : 'hidden' %>
+            >
+              <div class="ml-4 border-l border-sidebar-border pl-4 space-y-1 py-1">
+                <% deleted_workspaces.each do |workspace| %>
+                  <%= render "components/sidebar/sidebar_menu_button", 
+                      href: deleted_workspace_path(workspace),
+                      class_names: "px-2" do %>
+                    <%= lucide_icon :folder, size: "w-4 h-4", class: "opacity-60" %>
+                    <span class="truncate"><%= workspace.name %></span>
+                  <% end %>
+                <% end %>
+
+                <% if user.workspaces.deleted.count > 5 %>
+                  <%= render "components/sidebar/sidebar_menu" do %>
+                    <%= render "components/sidebar/sidebar_menu_item" do %>
+                      <%= render "components/sidebar/sidebar_menu_button", 
+                          href: deleted_workspaces_path,
+                          data: { highlight: false },
+                          class_names: "px-2" do %>
+                        <%= lucide_icon :more_horizontal, size: "w-4 h-4", class: "opacity-60" %>
+                        <span>More...</span>
+                      <% end %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
       <% end %>
     <% end %>
   <% end %>
