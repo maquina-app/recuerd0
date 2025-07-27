@@ -105,6 +105,15 @@
     }
   }
   
+  /* Sidebar footer specific styles */
+  .sidebar-footer {
+    @media (min-width: 768px) {
+      .sidebar[data-state="collapsed"] & {
+        @apply px-1;
+      }
+    }
+  }
+  
   /* Sidebar separator styles */
   .sidebar-separator {
     @apply mx-2 my-2 border-t border-sidebar-border;
@@ -124,10 +133,13 @@
   /* Sidebar inset main content area */
   .sidebar-inset {
     @apply flex-1 overflow-auto;
-    @apply transition-all duration-300 ease-in-out;
+    /* Smooth transition for all properties including padding */
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
     
     /* Desktop: Add padding for sidebar */
-    @apply md:pl-[var(--sidebar-width)];
+    @media (min-width: 768px) {
+      padding-left: var(--sidebar-width);
+    }
   }
   
   /* Mobile backdrop styles */
@@ -268,12 +280,12 @@
   @media (min-width: 768px) {
     /* Use the provider's data attribute */
     [data-sidebar-state="collapsed"] .sidebar-inset {
-      @apply pl-[var(--sidebar-width-icon)];
+      padding-left: var(--sidebar-width-icon);
     }
     
     /* Also support the sidebar-inset's own data attribute if present */
     .sidebar-inset[data-sidebar-state="collapsed"] {
-      @apply pl-[var(--sidebar-width-icon)];
+      padding-left: var(--sidebar-width-icon);
     }
   }
   
@@ -325,6 +337,8 @@
       border-radius: 0.75rem;
       box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
       background-color: var(--color-background);
+      /* Smooth transition for the inset effect */
+      transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
   
@@ -390,6 +404,55 @@
         & > span:not(:first-child) {
           @apply hidden;
         }
+      }
+      
+      /* Special alignment for header and footer areas */
+      .sidebar-header,
+      .sidebar-footer {
+        /* Center the menu in these areas */
+        .sidebar-menu {
+          @apply px-1 mx-auto;
+          width: fit-content;
+        }
+        
+        /* Ensure buttons are square and centered */
+        .sidebar-menu-button {
+          @apply w-10 h-10 p-0;
+        }
+      }
+    }
+  }
+}
+
+/* Smooth content reflow animation */
+@layer components {
+  /* Prevent text wrapping during transition */
+  .sidebar-menu-button {
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  
+  /* Smooth opacity transitions for collapsible content - Fixed to not hide icons */
+  @media (min-width: 768px) {
+    .sidebar[data-state="collapsed"] {
+      /* Only fade out text spans that contain actual text, not icons */
+      .sidebar-menu-button > span.flex > span:not(:has(svg)),
+      .sidebar-menu-button > span:not(.flex):not(.sr-only):not(:has(svg)),
+      .sidebar-group-label,
+      [data-collapsible-target="content"],
+      [data-collapsible-target="chevron"] {
+        opacity: 0;
+        transition: opacity 150ms ease-out;
+      }
+    }
+    
+    .sidebar:not([data-state="collapsed"]) {
+      /* Fade in text content with delay */
+      .sidebar-menu-button > span.flex > span:not(:has(svg)),
+      .sidebar-menu-button > span:not(.flex):not(.sr-only):not(:has(svg)),
+      .sidebar-group-label {
+        opacity: 1;
+        transition: opacity 300ms ease-in 150ms;
       }
     }
   }
