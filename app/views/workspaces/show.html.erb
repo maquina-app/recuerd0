@@ -85,55 +85,61 @@
       </div>
     </div>
     <% if @workspace.active? %>
-      <div class="flex gap-2">
-        <%= link_to edit_workspace_path(@workspace), class: "btn-outline btn-sm" do %>
-          <%= lucide_icon(:edit, size: "w-4 h-4") %>
-          Edit
+      <div class="flex items-center gap-1">
+        <%= link_to edit_workspace_path(@workspace),
+            class: "btn-ghost btn-icon-sm",
+            title: "Edit workspace" do %>
+          <%= lucide_icon :edit, size: "w-4 h-4" %>
         <% end %>
+
+        <%= button_to archive_workspace_path(@workspace),
+            method: :post,
+            class: "btn-ghost btn-icon-sm cursor-pointer",
+            title: "Archive workspace",
+            data: { turbo_confirm: "Are you sure you want to archive this workspace?" } do %>
+          <%= lucide_icon :archive, size: "w-4 h-4" %>
+        <% end %>
+
         <%= button_to workspace_path(@workspace),
             method: :delete,
-            data: {
-              turbo_confirm: "Are you sure you want to delete this workspace and all its memories?",
-            },
-            class: "btn-destructive btn-sm" do %>
-          <%= lucide_icon(:trash_2, size: "w-4 h-4") %>
-          Delete
+            class: "btn-ghost btn-icon-sm cursor-pointer text-destructive hover:text-destructive",
+            title: "Delete workspace",
+            data: { turbo_confirm: "Are you sure you want to delete this workspace?" } do %>
+          <%= lucide_icon :trash_2, size: "w-4 h-4" %>
         <% end %>
       </div>
     <% elsif @workspace.archived? %>
-      <div class="flex gap-2">
+      <div class="flex items-center gap-1">
         <%= button_to archive_workspace_path(@workspace),
             method: :delete,
-            class: "btn-outline btn-sm" do %>
-          <%= lucide_icon(:archive_restore, size: "w-4 h-4") %>
-          Restore
+            class: "btn-ghost btn-icon-sm cursor-pointer",
+            title: "Unarchive workspace" do %>
+          <%= lucide_icon :archive_restore, size: "w-4 h-4" %>
         <% end %>
+
         <%= button_to workspace_path(@workspace),
             method: :delete,
-            data: {
-              turbo_confirm: "Are you sure you want to permanently delete this workspace and all its memories?",
-            },
-            class: "btn-destructive btn-sm" do %>
-          <%= lucide_icon(:trash_2, size: "w-4 h-4") %>
-          Delete
+            class: "btn-ghost btn-icon-sm cursor-pointer text-destructive hover:text-destructive",
+            title: "Delete workspace",
+            data: { turbo_confirm: "Are you sure you want to delete this workspace?" } do %>
+          <%= lucide_icon :trash_2, size: "w-4 h-4" %>
         <% end %>
       </div>
     <% elsif @workspace.deleted? %>
-      <div class="flex gap-2">
+      <div class="flex items-center gap-1">
         <%= button_to restore_deleted_workspace_path(@workspace),
             method: :post,
-            class: "btn-outline btn-sm" do %>
-          <%= lucide_icon(:rotate_ccw, size: "w-4 h-4") %>
-          Restore
+            class: "btn-ghost btn-icon-sm cursor-pointer",
+            title: "Restore workspace" do %>
+          <%= lucide_icon :rotate_ccw, size: "w-4 h-4" %>
         <% end %>
+
         <%= button_to destroy_deleted_workspace_path(@workspace),
             method: :delete,
-            data: {
-              turbo_confirm: "Are you sure you want to permanently delete this workspace? This action cannot be undone and will remove all associated memories.",
-            },
-            class: "btn-destructive btn-sm" do %>
-          <%= lucide_icon(:trash, size: "w-4 h-4") %>
-          Delete Permanently
+            class: "btn-ghost btn-icon-sm cursor-pointer text-destructive hover:text-destructive",
+            title: "Permanently delete workspace",
+            data: { turbo_confirm: "Are you sure you want to permanently delete this workspace? This action cannot be undone." } do %>
+          <%= lucide_icon :trash, size: "w-4 h-4" %>
         <% end %>
       </div>
     <% end %>
