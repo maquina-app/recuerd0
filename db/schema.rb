@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_14_044346) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_27_212734) do
   create_table "contents", force: :cascade do |t|
     t.text "body"
     t.integer "memory_id", null: false
@@ -27,6 +27,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_14_044346) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["workspace_id"], name: "index_memories_on_workspace_id"
+  end
+
+  create_table "pins", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "pinnable_type", null: false
+    t.integer "pinnable_id", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["pinnable_type", "pinnable_id"], name: "index_pins_on_pinnable"
+    t.index ["user_id", "pinnable_type", "pinnable_id"], name: "index_pins_uniqueness", unique: true
+    t.index ["user_id", "pinnable_type", "position"], name: "index_pins_user_type_position"
+    t.index ["user_id"], name: "index_pins_on_user_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -62,6 +75,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_14_044346) do
 
   add_foreign_key "contents", "memories"
   add_foreign_key "memories", "workspaces"
+  add_foreign_key "pins", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "workspaces", "users"
 end

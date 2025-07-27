@@ -1,4 +1,6 @@
 class Memory < ApplicationRecord
+  include Pinnable
+
   belongs_to :workspace, touch: true, counter_cache: true
   has_one :content, dependent: :destroy
 
