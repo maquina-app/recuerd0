@@ -16,34 +16,17 @@
     <% end %>
   </div>
 
-  <% if @workspaces.any? %>
-    <div class="space-y-4">
-      <%= render @workspaces %>
-    </div>
+  <% if @pinned_workspaces.any? %>
+    <%= render "workspaces/pinned_section", pinned_workspaces: @pinned_workspaces %>
+    <%= render "components/separator", class_names: "my-8" %>
+  <% end %>
 
-    <div class="mt-8">
-      <%= render "components/pagination", pagy: @pagy %>
-    </div>
+  <% if @workspaces.any? || @pinned_workspaces.any? %>
+    <%= render "workspaces/workspaces_list",
+    workspaces: @workspaces,
+    pagy: @pagy,
+    title: @pinned_workspaces.any? ? "Other Workspaces" : nil %>
   <% else %>
-    <div
-      class="
-        rounded-lg border-2 border-dashed border-gray-300 p-12 text-center
-        dark:border-gray-700
-      "
-    >
-      <%= lucide_icon :folder_open,
-      size: "w-12 h-12",
-      class: "mx-auto text-gray-400 dark:text-gray-600" %>
-      <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No workspaces</h3>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        Get started by creating a new workspace.
-      </p>
-      <div class="mt-6">
-        <%= link_to new_workspace_path, class: "btn-default" do %>
-          <%= lucide_icon :plus, size: "w-4 h-4" %>
-          New Workspace
-        <% end %>
-      </div>
-    </div>
+    <%= render "workspaces/empty_state" %>
   <% end %>
 </div>

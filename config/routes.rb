@@ -24,6 +24,10 @@ Rails.application.routes.draw do
   post "workspaces/deleted/:id/restore", to: "workspaces/deleted#restore", as: :restore_deleted_workspace
   delete "workspaces/deleted/:id", to: "workspaces/deleted#destroy", as: :destroy_deleted_workspace
 
+  # Pin routes
+  post "pins/:pinnable_type/:pinnable_id", to: "pins#create", as: :create_pin
+  delete "pins/:pinnable_type/:pinnable_id", to: "pins#destroy", as: :destroy_pin
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", :as => :rails_health_check
