@@ -1,4 +1,13 @@
-<div class="sonner-toaster" aria-live="polite" aria-atomic="true">
+<%# Toast notifications container %>
+<%# You can configure the position by setting a data attribute or using a configuration %>
+<% toast_position = @toast_position || "top-right" %>
+
+<div
+  class="sonner-toaster"
+  data-position="<%= toast_position %>"
+  aria-live="polite"
+  aria-atomic="true"
+>
   <% if flash.any? %>
     <% flash.each do |type, message| %>
       <% variant =
@@ -33,18 +42,35 @@
           lucide_icon(:info, class: "h-5 w-5 text-blue-600 dark:text-blue-400")
         else
           nil
-        end %>
+        end
+      
+      # Extract position if provided in flash message
+      position = nil
+      position = message[:position] || message["position"] if message.is_a?(Hash) %>
 
       <div
         data-controller="sonner"
         data-sonner-dismiss-after-value="4000"
         data-sonner-remove-after-value="150"
+        data-sonner-position-value="<%= position || toast_position %>"
         class="sonner-toast"
       >
+        <% description =
+          if message.is_a?(Hash)
+            message[:description] || message["description"] || message.to_s
+          else
+            message
+          end
+        
+        title = message.is_a?(Hash) ? (message[:title] || message["title"]) : nil
+        action = message.is_a?(Hash) ? (message[:action] || message["action"]) : nil %>
+
         <%= render "components/sonner",
         variant: variant,
         icon: icon,
-        description: message,
+        title: title,
+        description: description,
+        action: action,
         class_names: "w-full max-w-[420px]" %>
       </div>
     <% end %>
