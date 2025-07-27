@@ -334,3 +334,63 @@
     }
   }
 }
+
+/* Fix collapsed sidebar icon alignment - Revised approach */
+@layer components {
+  /* Collapsed state specific styles */
+  @media (min-width: 768px) {
+    .sidebar[data-state="collapsed"] {
+      /* Adjust menu padding in collapsed state */
+      .sidebar-menu {
+        @apply px-1;
+      }
+      
+      /* Override button styles for collapsed state */
+      .sidebar-menu-button {
+        @apply px-0 justify-center;
+        min-width: 2.5rem;
+        
+        /* Handle the span wrapper in links */
+        & > span.flex {
+          @apply justify-center;
+          
+          /* Hide text but keep icons */
+          & > :not(svg):not(.avatar) {
+            @apply hidden;
+          }
+        }
+        
+        /* For buttons with direct children */
+        & > :not(svg):not(.avatar):not(span) {
+          @apply hidden;
+        }
+      }
+      
+      /* Special handling for the user dropdown button */
+      .sidebar-menu-button[data-state] {
+        /* The wrapper div should only show avatar */
+        & > div {
+          @apply justify-center;
+          
+          /* Hide everything except avatar */
+          & > :not(.avatar) {
+            @apply hidden;
+          }
+          
+          /* Ensure avatar is properly sized */
+          & > .avatar {
+            @apply w-5 h-5;
+          }
+        }
+      }
+      
+      /* Collapsed chevrons and counts in collapsible items */
+      .sidebar-menu-button[aria-expanded] {
+        /* Hide chevron and count in collapsed state */
+        & > span:not(:first-child) {
+          @apply hidden;
+        }
+      }
+    }
+  }
+}

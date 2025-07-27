@@ -15,7 +15,7 @@ is_mobile = false # Default, will be overridden by JS if needed %>
             alt: user.email_address,
             size: "h-8 w-8",
             grayscale: true,
-            class_names: "rounded-lg" %>
+            class_names: "avatar rounded-lg" %>
             <div
               class="
                 grid flex-1 text-left text-sm leading-tight data-[state=collapsed]:hidden
@@ -46,7 +46,7 @@ is_mobile = false # Default, will be overridden by JS if needed %>
             src: nil,
             alt: user.email_address,
             size: "h-8 w-8",
-            class_names: "rounded-lg" %>
+            class_names: "avatar rounded-lg" %>
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-medium"><%= user.email_address.split("@").first %></span>
               <span class="truncate text-xs text-muted-foreground">
