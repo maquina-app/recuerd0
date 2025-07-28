@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     resources :memories
 
     collection do
+      get :pinned, to: "workspaces/pinned#index"
       get :archived, to: "workspaces/archives#index"
       get :deleted, to: "workspaces/deleted#index"
     end

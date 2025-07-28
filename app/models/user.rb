@@ -7,12 +7,12 @@ class User < ApplicationRecord
   # Pin associations
   has_many :pins, dependent: :destroy
   has_many :pinned_workspaces,
-    -> { joins(:pins).merge(Workspace.active).order("pins.position ASC") },
+    -> { joins(:pins).merge(Workspace.active).order("pins.created_at DESC") },
     through: :pins,
     source: :pinnable,
     source_type: "Workspace"
   has_many :pinned_memories,
-    -> { joins(:pins).order("pins.position ASC") },
+    -> { joins(:pins).order("pins.created_at DESC") },
     through: :pins,
     source: :pinnable,
     source_type: "Memory"

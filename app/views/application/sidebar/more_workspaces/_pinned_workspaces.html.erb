@@ -1,0 +1,15 @@
+<%# locals: (user:, collapsible_states:) %>
+<% if user.pinned_workspaces.any? %>
+  <% pinned_workspaces = user.pinned_workspaces %>
+  <%= render "application/sidebar/more_workspaces/collapsible_workspace_list",
+  title: "Pinned Workspaces",
+  icon: :pin,
+  icon_class: "rotate-45",
+  workspaces: pinned_workspaces,
+  total_count: pinned_workspaces.count,
+  collapsible_id: "pinned-workspaces",
+  collapsible_open: collapsible_states["pinned-workspaces"] || false,
+  workspace_path_helper: :workspace_path,
+  view_all_path: pinned_workspaces_path,
+  show_more_threshold: nil %>
+<% end %>

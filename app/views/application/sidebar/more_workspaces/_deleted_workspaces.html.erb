@@ -1,0 +1,15 @@
+<%# locals: (user:, collapsible_states:) %>
+<% if user.workspaces.deleted.any? %>
+  <% deleted_workspaces = user.workspaces.deleted_ordered.limit(5) %>
+  <%= render "application/sidebar/more_workspaces/collapsible_workspace_list",
+  title: "Deleted Workspaces",
+  icon: :trash_2,
+  icon_class: "",
+  workspaces: deleted_workspaces,
+  total_count: user.workspaces.deleted.count,
+  collapsible_id: "deleted-workspaces",
+  collapsible_open: collapsible_states["deleted-workspaces"] || false,
+  workspace_path_helper: :deleted_workspace_path,
+  view_all_path: deleted_workspaces_path,
+  show_more_threshold: 5 %>
+<% end %>

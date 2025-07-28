@@ -20,9 +20,11 @@
     <% workspaces.each do |workspace| %>
       <%= render "components/sidebar/sidebar_menu_item" do %>
         <%= render "components/sidebar/sidebar_menu_button", 
-            href: workspace_path(workspace) do %>
+            href: workspace_path(workspace),
+            class_names: "font-normal",
+            title: workspace.name do %>
           <%= lucide_icon :folder, size: "w-4 h-4" %>
-          <span class="data-[state=collapsed]:hidden"><%= workspace.name %></span>
+          <span class="data-[state=collapsed]:hidden truncate"><%= workspace.name %></span>
         <% end %>
       <% end %>
     <% end %>
@@ -31,7 +33,8 @@
       <%= render "components/sidebar/sidebar_menu_item" do %>
         <%= render "components/sidebar/sidebar_menu_button", 
             href: workspaces_path,
-            data: { highlight: false } do %>
+            data: { highlight: false },
+            class_names: "font-normal" do %>
           <%= lucide_icon :more_horizontal, size: "w-4 h-4" %>
           <span class="data-[state=collapsed]:hidden">More...</span>
         <% end %>

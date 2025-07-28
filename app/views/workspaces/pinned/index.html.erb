@@ -1,0 +1,60 @@
+<%# locals: () %>
+<% content_for :page_title, "Pinned Workspaces" %>
+
+<% content_for :breadcrumb do %>
+  <%= breadcrumbs(
+    { "Home" => root_path, "Workspaces" => workspaces_path },
+    "Pinned Workspaces",
+  ) %>
+<% end %>
+
+<div class="mx-auto max-w-7xl">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold">Pinned Workspaces</h1>
+    <p class="text-muted-foreground mt-2">Your most important workspaces for quick access</p>
+  </div>
+
+  <%= render "components/alert",
+  variant: "info",
+  icon: lucide_icon(:pin, class: "text-blue-600 dark:text-blue-400 rotate-45"),
+  title: "About Pinned Workspaces",
+  description:
+    "Pinned workspaces appear at the top of your workspace list for easy access. You can pin up to 10 workspaces. The most recently pinned workspace appears first.",
+  class_names: "mb-6" %>
+
+  <% if @workspaces.any? %>
+    <div class="space-y-4">
+      <% @workspaces.each do |workspace| %>
+        <%= render "workspaces/workspace", workspace: workspace %>
+      <% end %>
+    </div>
+
+    <% if @pagy && @pagy.pages > 1 %>
+      <div class="mt-8">
+        <%= render "components/pagination", pagy: @pagy %>
+      </div>
+    <% end %>
+  <% else %>
+    <div
+      class="
+        rounded-lg border-2 border-dashed border-gray-300 p-12 text-center
+        dark:border-gray-700
+      "
+    >
+      <%= lucide_icon :pin,
+      size: "w-12 h-12",
+      class: "mx-auto text-gray-400 dark:text-gray-600 rotate-45" %>
+      <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No pinned workspaces</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        You haven't pinned any workspaces yet. Pin workspaces for quick
+        access.
+      </p>
+      <div class="mt-6">
+        <%= link_to workspaces_path, class: "btn-secondary" do %>
+          <%= lucide_icon(:arrow_left, size: "w-4 h-4") %>
+          Back to Workspaces
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,15 @@
+<%# locals: (user:, collapsible_states:) %>
+<% if user.workspaces.archived.any? %>
+  <% archived_workspaces = user.workspaces.archived_ordered.limit(5) %>
+  <%= render "application/sidebar/more_workspaces/collapsible_workspace_list",
+  title: "Archived Workspaces",
+  icon: :archive,
+  icon_class: "",
+  workspaces: archived_workspaces,
+  total_count: user.workspaces.archived.count,
+  collapsible_id: "archived-workspaces",
+  collapsible_open: collapsible_states["archived-workspaces"] || false,
+  workspace_path_helper: :archived_workspace_path,
+  view_all_path: archived_workspaces_path,
+  show_more_threshold: 5 %>
+<% end %>
