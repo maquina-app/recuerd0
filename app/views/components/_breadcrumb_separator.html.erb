@@ -1,9 +1,12 @@
 <%# locals: (class_names: "", **attributes) -%>
-<li
-  role="presentation"
-  aria-hidden="true"
-  class="<%= cn("[&>svg]:size-3.5", class_names) %>"
-  <%= tag.attributes(attributes) %>
->
+
+<%= content_tag :li,
+  class: cn(
+    "[&>svg]:size-3.5", 
+    class_names
+  ),
+  role: :presentation,
+  "aria-hidden": true,
+  **attributes do %>
   <%= lucide_icon(:chevron_right, size: "w-3.5 h-3.5") %>
-</li>
+<% end %>

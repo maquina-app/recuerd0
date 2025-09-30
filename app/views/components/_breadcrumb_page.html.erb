@@ -1,10 +1,12 @@
 <%# locals: (class_names: "", **attributes) -%>
-<span
-  role="link"
-  aria-disabled="true"
-  aria-current="page"
-  class="<%= cn("font-normal text-foreground", class_names) %>"
-  <%= tag.attributes(attributes) %>
->
-  <%= yield %>
-</span>
+
+<%= content_tag :span,
+  yield,
+  class: cn(
+    "font-normal text-foreground", 
+    class_names
+  ),
+  role: :link,
+  "aria-disabled": true,
+  "aria-current": :page,
+  **attributes %>

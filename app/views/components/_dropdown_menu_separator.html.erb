@@ -1,7 +1,11 @@
 <%# locals: (class_names: "", **attributes) -%>
-<div
-  role="separator"
-  aria-orientation="horizontal"
-  class="<%= cn("-mx-1 my-1 h-px bg-muted", class_names) %>"
-  <%= tag.attributes(attributes) %>
-></div>
+
+<%= content_tag :div,
+  nil,
+  role: "separator",
+  aria_oriented: "horizontal",
+  class: cn(
+    "-mx-1 my-1 h-px bg-muted", 
+    class_names
+  ),
+  **attributes %>

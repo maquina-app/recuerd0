@@ -1,4 +1,5 @@
 <%# locals: (open: "true", collapsible: "offcanvas", side: "left", variant: "sidebar", class_names: "", **attributes) -%>
+
 <div
   data-controller="sidebar"
   data-sidebar-collapsible-value="<%= collapsible %>"
@@ -6,11 +7,9 @@
   data-sidebar-variant-value="<%= variant %>"
   data-sidebar-open-value="<%= open %>"
 >
-  <aside
-    id="sidebar"
-    data-sidebar-target="sidebar"
-    data-state="<%= open ? 'expanded' : 'collapsed' %>"
-    class="<%= cn(
+  <%= content_tag :aside,
+    yield,
+    class: cn(
       "sidebar",
       "flex h-screen flex-col bg-sidebar-background text-sidebar-foreground",
       "transition-all duration-300 ease-in-out",
@@ -28,11 +27,12 @@
       variant == "floating" && "md:m-4 md:rounded-lg md:border md:shadow-lg",
       variant == "inset" && "md:border-r-0",
       class_names
-    ) %>"
-    <%= tag.attributes(attributes) %>
-  >
-    <%= yield %>
-  </aside>
+    ),
+    id: :sidebar,
+    "data-sidebar-target": :sidebar,
+    "data-state": open ? 'expanded' : 'collapsed',
+    **attributes %>
+
   <!-- Backdrop for mobile -->
   <div
     data-sidebar-target="backdrop"

@@ -1,8 +1,10 @@
 <%# locals: (class_names: "", **attributes) -%>
-<div
-  data-controller="dropdown"
-  class="<%= cn("relative inline-block text-left", class_names) %>"
-  <%= tag.attributes(attributes) %>
->
-  <%= yield %>
-</div>
+
+<%= content_tag :div,
+  yield,
+  class: cn(
+    "relative inline-block text-left",
+    class_names
+  ),
+  "data-controller": :dropdown,
+  **attributes %>

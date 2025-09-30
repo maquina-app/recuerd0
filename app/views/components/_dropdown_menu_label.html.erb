@@ -1,7 +1,9 @@
 <%# locals: (class_names: "", **attributes) -%>
-<div
-  class="<%= cn("px-2 py-1.5 text-sm font-semibold", class_names) %>"
-  <%= tag.attributes(attributes) %>
->
-  <%= yield %>
-</div>
+
+<%= content_tag :div,
+  yield,
+  class: cn(
+    "px-2 py-1.5 text-sm font-semibold", 
+    class_names
+  ),
+  **attributes %>

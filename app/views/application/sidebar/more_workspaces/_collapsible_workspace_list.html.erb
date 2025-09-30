@@ -1,4 +1,5 @@
 <%# locals: (title:, icon:, icon_class: "", workspaces:, total_count:, collapsible_id:, collapsible_open:, workspace_path_helper:, view_all_path: nil, show_more_threshold: nil) %>
+
 <%= render "components/sidebar/sidebar_menu_item" do %>
   <div
     data-controller="collapsible"
@@ -19,26 +20,21 @@
       <span class="flex-1 text-left truncate data-[state=collapsed]:hidden"><%= title %></span>
       <span
         class="
-          text-xs text-sidebar-foreground/60 data-[state=collapsed]:hidden mr-2
+          text-xs text-sidebar-foreground/60 data-[state=collapsed]:hidden
+          mr-2
         "
       >
         <%= total_count %>
       </span>
       <span
         data-collapsible-target="chevron"
-        class="
-          transition-transform duration-200 <%= collapsible_open ? 'rotate-90' : '' %>
-        "
+        class="transition-transform duration-200 <%= collapsible_open ? 'rotate-90' : '' %>"
       >
         <%= lucide_icon :chevron_right, size: "w-4 h-4" %>
       </span>
     </button>
 
-    <div
-      data-collapsible-target="content"
-      class="overflow-hidden"
-      <%= collapsible_open ? '' : 'hidden' %>
-    >
+    <div data-collapsible-target="content" class="overflow-hidden">
       <div class="ml-4 border-l border-sidebar-border pl-4 space-y-1 py-1">
         <% workspaces.each do |workspace| %>
           <%= render "components/sidebar/sidebar_menu_button", 

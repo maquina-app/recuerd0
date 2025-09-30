@@ -1,13 +1,8 @@
 <%# locals: (side: "bottom", align: "center", side_offset: 4, class_names: "", **attributes) -%>
-<div
-  data-dropdown-target="content"
-  data-dropdown-side-value="<%= side %>"
-  data-dropdown-align-value="<%= align %>"
-  data-dropdown-side-offset-value="<%= side_offset %>"
-  role="menu"
-  aria-orientation="vertical"
-  data-state="closed"
-  class="<%= cn(
+
+<%= content_tag :div,
+  yield,
+  class: cn(
     "min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -18,8 +13,12 @@
     "data-[side=top]:slide-in-from-bottom-2",
     "hidden",
     class_names
-  ) %>"
-  <%= tag.attributes(attributes) %>
->
-  <%= yield %>
-</div>
+  ),
+  "data-dropdown-target": :content,
+  "data-dropdown-side-value": side,
+  "data-dropdown-align-value": align,
+  "data-dropdown-side-offset-value": side_offset,
+  role: :menu,
+  "aria-orientation": :vertical,
+  "data-state": :closed,
+  **attributes %>

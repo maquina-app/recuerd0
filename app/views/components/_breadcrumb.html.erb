@@ -1,8 +1,9 @@
 <%# locals: (class_names: "", **attributes) -%>
-<nav
-  aria-label="breadcrumb"
-  class="<%= cn("relative", class_names) %>"
-  <%= tag.attributes(attributes) %>
->
-  <%= yield %>
-</nav>
+
+<%= content_tag :nav,
+  yield,
+  class: cn(
+    "relative", class_names
+  ),
+  "aria-label": :breadcrumb,
+  **attributes %>

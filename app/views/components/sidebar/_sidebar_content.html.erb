@@ -1,11 +1,10 @@
 <%# locals: (class_names: "", **attributes) -%>
-<div
-  class="<%= cn(
+
+<%= content_tag :div,
+  yield,
+  class: cn(
     "flex-1 overflow-y-auto overflow-x-hidden py-2",
     "data-[state=collapsed]:py-2",
     class_names
-  ) %>"
-  <%= tag.attributes(attributes) %>
->
-  <%= yield %>
-</div>
+  ),
+  **attributes %>

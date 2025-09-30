@@ -1,4 +1,5 @@
 <%# locals: (default_open: true, variant: "default", class_names: "", **attributes) -%>
+
 <% merged_attributes =
   attributes.merge(
     {
@@ -13,14 +14,13 @@
       }.merge(attributes[:data] || {}),
     },
   ) %>
-<div
-  data-slot="sidebar-wrapper"
-  class="<%= cn(
+
+<%= content_tag :div,
+  yield,
+  class: cn(
     "group/sidebar-wrapper flex min-h-svh w-full",
     variant == "inset" && "bg-sidebar-background",
     class_names
-  ) %>"
-  <%= tag.attributes(merged_attributes) %>
->
-  <%= yield %>
-</div>
+  ),
+  "data-slot": :"sidebar-wrapper",
+  **merged_attributes %>

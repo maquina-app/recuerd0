@@ -1,10 +1,9 @@
 <%# locals: (class_names: "", **attributes) -%>
-<div
-  class="<%= cn(
+
+<%= content_tag :div,
+  yield,
+  class: cn(
     "mt-auto p-2",
     class_names
-  ) %>"
-  <%= tag.attributes(attributes) %>
->
-  <%= yield %>
-</div>
+  ),
+  **attributes %>

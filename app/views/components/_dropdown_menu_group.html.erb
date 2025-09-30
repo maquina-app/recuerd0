@@ -1,8 +1,9 @@
 <%# locals: (class_names: "", **attributes) -%>
-<div
-  role="group"
-  class="<%= cn(class_names) %>"
-  <%= tag.attributes(attributes) %>
->
-  <%= yield %>
-</div>
+
+<%= content_tag :div,
+  yield,
+  class: cn(
+    class_names
+  ),
+  role: :group,
+  **attributes %>

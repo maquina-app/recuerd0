@@ -1,7 +1,9 @@
 <%# locals: (class_names: "", **attributes) -%>
-<li
-  class="<%= cn("relative", class_names) %>"
-  <%= tag.attributes(attributes) %>
->
-  <%= yield %>
-</li>
+
+<%= content_tag :li,
+  yield,
+  class: cn(
+    "relative", 
+    class_names
+  ),
+  **attributes %>
