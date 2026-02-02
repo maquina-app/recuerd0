@@ -1,7 +1,8 @@
 <%# locals: (class_names: "", **attributes) -%>
-<p
-  class="<%= cn("text-sm text-muted-foreground", class_names) %>"
-  <%= tag.attributes(attributes) %>
->
-  <%= yield %>
-</p>
+
+<%= content_tag :p,
+  yield,
+  class: cn(
+    "text-sm text-muted-foreground", class_names
+  ),
+  **attributes %>

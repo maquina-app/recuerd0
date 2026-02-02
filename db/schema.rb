@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_27_212734) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_30_230353) do
   create_table "contents", force: :cascade do |t|
     t.text "body"
     t.integer "memory_id", null: false
@@ -26,6 +26,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_27_212734) do
     t.integer "workspace_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "version", default: 1, null: false
+    t.integer "parent_memory_id"
+    t.index ["parent_memory_id", "version"], name: "index_memories_on_parent_memory_id_and_version"
+    t.index ["parent_memory_id"], name: "index_memories_on_parent_memory_id"
+    t.index ["version"], name: "index_memories_on_version"
     t.index ["workspace_id"], name: "index_memories_on_workspace_id"
   end
 
@@ -74,6 +79,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_27_212734) do
   end
 
   add_foreign_key "contents", "memories"
+  add_foreign_key "memories", "memories", column: "parent_memory_id"
   add_foreign_key "memories", "workspaces"
   add_foreign_key "pins", "users"
   add_foreign_key "sessions", "users"

@@ -42,6 +42,7 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
+gem "commonmarker"
 gem "pagy", "~> 9.3"
 
 group :development, :test do
@@ -57,7 +58,7 @@ end
 group :development do
   gem "log_bench", "~> 0.3.1"
   gem "reactionview", "~> 0.1.2"
-  gem "standard", "~> 1.50.0"
+  gem "standard", "~> 1.51.0"
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 end

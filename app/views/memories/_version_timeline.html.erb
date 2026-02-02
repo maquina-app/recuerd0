@@ -1,0 +1,98 @@
+<%# locals: (versions:, current_memory:, workspace:) %>
+
+<div class="space-y-4">
+  <% versions.reverse.each_with_index do |version, index| %>
+    <div class="flex gap-4">
+      <%# Timeline indicator %>
+      <div class="flex flex-col items-center">
+        <div class="w-3 h-3 rounded-full <%= version == current_memory ? 'bg-primary' : 'bg-muted' %>"></div>
+        <% unless index == versions.count - 1 %>
+          <div class="w-px h-full min-h-[4rem] bg-border mt-2"></div>
+        <% end %>
+      </div>
+
+      <%# Version content %>
+      <%= render "components/card", class_names: "flex-1 #{version == current_memory ? 'ring-2 ring-primary' : ''}" do %>
+        <%= render "components/card_header" do %>
+          <div class="flex justify-between items-start">
+            <div class="space-y-1 flex-1">
+              <div class="flex items-center gap-2">
+                <h3 class="font-semibold text-lg">
+                  <%= version.version_label %>
+                </h3>
+
+                <% if version == current_memory %>
+                  <%= render "components/badge", variant: "default", class_names: "text-xs" do %>
+                    Current Version
+                  <% end %>
+                <% end %>
+
+                <% if version.latest_version? %>
+                  <%= render "components/badge", variant: "secondary", class_names: "text-xs" do %>
+                    Root
+                  <% end %>
+                <% end %>
+              </div>
+
+              <p class="text-sm text-muted-foreground">
+                <%= version.display_title %>
+              </p>
+
+              <p class="text-xs text-muted-foreground">
+                Created <%= time_ago_in_words(version.created_at) %> ago
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <%= link_to "View",
+                  workspace_memory_path(workspace, version),
+                  class: "btn-ghost btn-sm" %>
+              <% if workspace.active? && version != current_memory %>
+                <%= button_to "Create Version from This",
+                    workspace_memory_versions_path(workspace, version),
+                    method: :post,
+                    data: { turbo_confirm: "Create a new version from #{version.version_label}?" },
+                    class: "btn-secondary btn-sm" do %>
+                  <%= lucide_icon(:copy_plus, size: "w-4 h-4") %>
+                  Branch
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <%= render "components/card_content" do %>
+          <div class="prose prose-sm max-w-none text-muted-foreground">
+            <%= truncate(version.content&.body || "", length: 300) %>
+          </div>
+
+          <% if version.tags.any? %>
+            <div class="flex flex-wrap gap-1 mt-3">
+              <% version.tags.each do |tag| %>
+                <%= render "components/badge", variant: "outline", class_names: "text-xs" do %>
+                  <%= lucide_icon(:tag, size: "w-3 h-3") %>
+                  <%= tag %>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% if version.source.present? %>
+            <p class="text-xs text-muted-foreground mt-3">
+              Source: <%= version.source %>
+            </p>
+          <% end %>
+        <% end %>
+
+        <% if version.child_versions.any? %>
+          <%= render "components/card_footer" do %>
+            <div class="flex items-center gap-2 text-xs text-muted-foreground">
+              <%= lucide_icon(:git_branch, size: "w-3 h-3") %>
+              <span><%= pluralize(version.child_versions.count, "version") %> branched from this</span>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

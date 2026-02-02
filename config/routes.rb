@@ -3,7 +3,9 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
 
   resources :workspaces do
-    resources :memories
+    resources :memories do
+      resources :versions, only: [:index, :show, :create], controller: "memories/versions"
+    end
 
     collection do
       get :pinned, to: "workspaces/pinned#index"

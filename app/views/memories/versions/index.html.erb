@@ -1,0 +1,42 @@
+<% content_for :page_title, "#{@root_memory.display_title} - Versions" %>
+
+<% content_for :breadcrumb do %>
+  <%= breadcrumbs(
+    {
+      "Home" => root_path,
+      "Workspaces" => workspaces_path,
+      @workspace.name => workspace_path(@workspace),
+      @root_memory.display_title => workspace_memory_path(@workspace, @root_memory)
+    },
+    "Versions"
+  ) %>
+<% end %>
+
+<div class="mx-auto max-w-4xl space-y-6">
+  <%# Header %>
+  <div class="flex justify-between items-start">
+    <div>
+      <h1 class="text-2xl font-bold"><%= @root_memory.display_title %></h1>
+      <p class="text-muted-foreground">Version history</p>
+    </div>
+    <% if @workspace.active? %>
+      <div class="flex items-center gap-2">
+        <%= link_to "Back to Memory",
+            workspace_memory_path(@workspace, @memory),
+            class: "btn-ghost" %>
+        <%= link_to workspace_memory_path(@workspace, @memory),
+            data: { turbo_method: :post, turbo_confirm: "Create a new version from #{@memory.version_label}?" },
+            class: "btn-secondary" do %>
+          <%= lucide_icon(:copy_plus, size: "w-4 h-4") %>
+          Create New Version
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Version timeline %>
+  <%= render "memories/version_timeline", 
+      versions: @all_versions, 
+      current_memory: @memory,
+      workspace: @workspace %>
+</div>

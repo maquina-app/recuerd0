@@ -1,0 +1,69 @@
+<%# locals: (form:, field:, value: []) %>
+
+<div
+  data-controller="tag-input"
+  data-tag-input-field-value="<%= form.object_name %>[<%= field %>]"
+>
+  <div
+    class="
+      flex flex-row flex-wrap items-center gap-2 p-2 w-full rounded-md
+      border border-input bg-background text-sm ring-offset-background
+      focus-within:outline-none focus-within:ring-2 focus-within:ring-ring
+      focus-within:ring-offset-2
+    "
+  >
+    <%# Existing tags %>
+    <% Array(value).each do |tag| %>
+      <span
+        draggable="false"
+        class="
+          transition-all border inline-flex items-center pl-2 bg-secondary
+          text-secondary-foreground hover:bg-secondary/80
+          disabled:cursor-not-allowed disabled:opacity-50 text-sm h-8
+          rounded-sm border-solid cursor-default animate-fadeIn font-normal
+        "
+      >
+        <%= tag %>
+        <button
+          class="
+            inline-flex items-center justify-center whitespace-nowrap
+            rounded-md text-sm font-medium transition-colors
+            focus-visible:outline-none focus-visible:ring-1
+            focus-visible:ring-ring disabled:pointer-events-none
+            disabled:opacity-50 hover:text-accent-foreground py-1 px-3
+            h-full hover:bg-transparent
+          "
+          type="button"
+          data-action="click->tag-input#removeTag"
+          data-tag="<%= tag %>"
+        >
+          <%= lucide_icon(:x, size: "w-3.5 h-3.5") %>
+        </button>
+      </span>
+    <% end %>
+
+    <%# Input for new tags %>
+    <input
+      type="text"
+      class="
+        flex rounded-md border-input px-3 py-1 text-sm shadow-sm
+        transition-colors placeholder:text-muted-foreground
+        focus-visible:outline-none disabled:cursor-not-allowed
+        disabled:opacity-50 border-0 h-5 bg-transparent focus-visible:ring-0
+        focus-visible:ring-transparent focus-visible:ring-offset-0 flex-1
+        w-full
+      "
+      placeholder="Add a tag"
+      autocomplete="off"
+      data-tag-input-target="input"
+      data-action="keydown->tag-input#handleKeydown"
+    >
+  </div>
+
+  <%# Hidden inputs for form submission %>
+  <div data-tag-input-target="hiddenInputs">
+    <% Array(value).each do |tag| %>
+      <%= form.hidden_field field, value: tag, multiple: true %>
+    <% end %>
+  </div>
+</div>

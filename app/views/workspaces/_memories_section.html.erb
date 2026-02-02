@@ -1,4 +1,5 @@
 <%# locals: (workspace:, memories:, pagy:) %>
+
 <div class="space-y-6">
   <div class="flex justify-between items-center">
     <h2 class="text-xl font-semibold">Memories</h2>
@@ -11,28 +12,58 @@
   </div>
 
   <% if memories.any? %>
-    <div class="space-y-4">
-      <% memories.each do |memory| %>
-        <%= render "memories/memory", memory: memory, workspace: workspace %>
+    <%# Separate pinned and regular memories %>
+    <% pinned_memories = memories.select { |m| m.pinned_by?(Current.user) } %>
+    <% regular_memories = memories.reject { |m| m.pinned_by?(Current.user) } %>
+    <%# Pinned memories section %>
+    <% if pinned_memories.any? %>
+      <div class="space-y-4">
+        <h3 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <%= lucide_icon(:pin, size: "w-4 h-4") %> Pinned Memories
+        </h3>
+        <div class="grid gap-4">
+          <% pinned_memories.each do |memory| %>
+            <%= render "memories/memory", memory: memory, workspace: workspace, show_pinned: true %>
+          <% end %>
+        </div>
+      </div>
+      <% if regular_memories.any? %>
+        <%= render "components/separator" %>
       <% end %>
-    </div>
+    <% end %>
+    <%# Regular memories section %>
+    <% if regular_memories.any? %>
+      <div class="space-y-4">
+        <% if pinned_memories.any? %>
+          <h3 class="text-sm font-medium text-muted-foreground">
+            All Memories
+          </h3>
+        <% end %>
 
-    <% if pagy.pages > 1 %>
-      <div class="mt-8">
-        <%= render "components/pagination", pagy: pagy %>
+        <div class="grid gap-4">
+          <% regular_memories.each do |memory| %>
+            <%= render "memories/memory", memory: memory, workspace: workspace %>
+          <% end %>
+        </div>
       </div>
     <% end %>
+    <%# Pagination %>
+    <% if pagy.pages > 1 %>
+      <div class="mt-8"><%= render "components/pagination", pagy: pagy %></div>
+    <% end %>
   <% else %>
+    <%# Empty state %>
     <div
       class="
         rounded-lg border-2 border-dashed border-gray-300 p-12 text-center
         dark:border-gray-700
       "
     >
-      <%= lucide_icon :sticky_note,
-      size: "w-12 h-12",
-      class: "mx-auto text-gray-400 dark:text-gray-600" %>
-      <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No memories yet</h3>
+      <%= lucide_icon :sticky_note, size: "w-12 h-12", class: "mx-auto text-gray-400 dark:text-gray-600" %>
+      <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
+        No memories yet
+      </h3>
+
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
         <% if workspace.active? %>
           Start adding memories to this workspace.
@@ -40,6 +71,7 @@
           This workspace doesn't have any memories.
         <% end %>
       </p>
+
       <% if workspace.active? %>
         <div class="mt-6">
           <%= link_to new_workspace_memory_path(workspace), class: "btn-secondary" do %>

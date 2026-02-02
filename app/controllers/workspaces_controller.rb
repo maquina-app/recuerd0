@@ -29,7 +29,13 @@ class WorkspacesController < ApplicationController
       return
     end
 
-    @pagy, @memories = pagy(@workspace.memories.includes(:content).order(created_at: :desc), items: 10)
+    # Load only latest versions with eager loading for performance
+    memories_scope = @workspace.memories
+      .latest_versions
+      .includes(:content, :child_versions)
+      .order(updated_at: :desc)
+
+    @pagy, @memories = pagy(memories_scope, items: 10)
   end
 
   # GET /workspaces/new

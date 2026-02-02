@@ -1,0 +1,160 @@
+<%# locals: () %>
+
+<% content_for :page_title, "#{@version.display_title} - #{@version.version_label}" %>
+
+<% content_for :breadcrumb do %>
+  <%= breadcrumbs(
+    {
+      "Home" => root_path,
+      "Workspaces" => workspaces_path,
+      @workspace.name => workspace_path(@workspace),
+      @memory.root_memory.display_title => workspace_memory_path(@workspace, @memory.root_memory),
+      "Versions" => workspace_memory_versions_path(@workspace, @memory)
+    },
+    @version.version_label
+  ) %>
+<% end %>
+
+<div class="mx-auto max-w-4xl space-y-6">
+  <%# Version navigation header %>
+  <div class="flex justify-between items-center gap-4">
+    <div class="flex items-center gap-2 flex-wrap">
+      <%= link_to workspace_memory_versions_path(@workspace, @memory),
+          class: "btn-ghost btn-sm" do %>
+        <%= lucide_icon(:arrow_left, size: "w-4 h-4") %>
+        All Versions
+      <% end %>
+
+      <%# Previous/Next navigation %>
+      <% all_versions = @memory.all_versions.order(:version) %>
+      <% current_index = all_versions.index(@version) %>
+
+      <% if current_index && current_index > 0 %>
+        <% prev_version = all_versions[current_index - 1] %>
+        <%= link_to workspace_memory_version_path(@workspace, @memory, prev_version),
+            class: "btn-ghost btn-sm",
+            title: "Previous version (#{prev_version.version_label})" do %>
+          <%= lucide_icon(:chevron_left, size: "w-4 h-4") %>
+          Prev
+        <% end %>
+      <% end %>
+
+      <span class="text-sm font-medium px-2"><%= @version.version_label %></span>
+
+      <% if current_index && current_index < all_versions.count - 1 %>
+        <% next_version = all_versions[current_index + 1] %>
+        <%= link_to workspace_memory_version_path(@workspace, @memory, next_version),
+            class: "btn-ghost btn-sm",
+            title: "Next version (#{next_version.version_label})" do %>
+          Next
+          <%= lucide_icon(:chevron_right, size: "w-4 h-4") %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if @workspace.active? %>
+      <%= button_to workspace_memory_versions_path(@workspace, @version),
+          method: :post,
+          class: "btn-secondary btn-sm",
+          data: { turbo_confirm: "Create a new version from #{@version.version_label}?" } do %>
+        <%= lucide_icon(:copy_plus, size: "w-4 h-4") %>
+        Branch from This
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Version metadata alert %>
+  <%= render "components/alert",
+      variant: "info",
+      icon: lucide_icon(:info, class: "text-blue-600 dark:text-blue-400"),
+      title: "Version #{@version.version}",
+      description: "Created #{time_ago_in_words(@version.created_at)} ago#{@version.latest_version? ? ' (Root version)' : ''}" %>
+
+  <%# Memory header %>
+  <div class="space-y-2">
+    <div class="flex items-center gap-2 flex-wrap">
+      <h1 class="text-3xl font-bold"><%= @version.display_title %></h1>
+
+      <%= render "components/badge", variant: "outline" do %>
+        <%= @version.version_label %>
+      <% end %>
+
+      <% if @version.latest_version? %>
+        <%= render "components/badge", variant: "secondary" do %>
+          Root
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if @version.source.present? %>
+      <p class="text-muted-foreground">Source: <%= @version.source %></p>
+    <% end %>
+  </div>
+
+  <%# Content %>
+  <%= render "components/card" do %>
+    <%= render "components/card_content" do %>
+      <div class="prose prose-sm max-w-none dark:prose-invert">
+        <%= simple_format(@version.content&.body || "No content") %>
+      </div>
+    <% end %>
+
+    <% if @version.tags.any? %>
+      <%= render "components/card_footer" do %>
+        <div class="flex flex-wrap gap-2">
+          <% @version.tags.each do |tag| %>
+            <%= render "components/badge", variant: "secondary", class_names: "text-xs" do %>
+              <%= lucide_icon(:tag, size: "w-3 h-3") %>
+              <%= tag %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Version relationships %>
+  <% if @version.child_versions.any? %>
+    <%= render "components/card" do %>
+      <%= render "components/card_header" do %>
+        <div class="flex items-center gap-2">
+          <%= lucide_icon(:git_branch, size: "w-4 h-4") %>
+          <h3 class="text-lg font-semibold">Versions Created from This</h3>
+        </div>
+      <% end %>
+
+      <%= render "components/card_content" do %>
+        <div class="space-y-2">
+          <% @version.child_versions.order(:version).each do |child_version| %>
+            <div
+              class="
+                flex items-center justify-between p-2 rounded-md
+                hover:bg-accent transition-colors
+              "
+            >
+              <div class="flex items-center gap-2">
+                <%= render "components/badge", variant: "outline", class_names: "text-xs" do %>
+                  <%= child_version.version_label %>
+                <% end %>
+                <span class="text-sm"><%= child_version.display_title %></span>
+              </div>
+              <%= link_to "View",
+                  workspace_memory_path(@workspace, child_version),
+                  class: "btn-ghost btn-sm" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Back to root memory %>
+  <div class="flex justify-center pt-4">
+    <%= link_to workspace_memory_path(@workspace, @memory.root_memory),
+        class: "btn-ghost" do %>
+      <%= lucide_icon(:arrow_left, size: "w-4 h-4") %>
+      Back to
+      <%= @memory.root_memory.display_title %>
+    <% end %>
+  </div>
+</div>
