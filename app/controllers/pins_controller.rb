@@ -1,4 +1,6 @@
 class PinsController < ApplicationController
+  PINNABLE_TYPES = %w[Workspace Memory].freeze
+
   before_action :set_pinnable
   before_action :check_pin_limit, only: :create
 
@@ -25,8 +27,10 @@ class PinsController < ApplicationController
   end
 
   def find_pinnable
-    klass = params[:pinnable_type].constantize
-    klass.find(params[:pinnable_id])
+    type = params[:pinnable_type]
+    raise ActiveRecord::RecordNotFound unless PINNABLE_TYPES.include?(type)
+
+    Current.user.send(type.tableize).with_deleted.find(params[:pinnable_id])
   end
 
   def check_pin_limit

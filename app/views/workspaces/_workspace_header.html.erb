@@ -7,47 +7,29 @@
     <% end %>
     <div class="flex flex-col gap-1 mt-4">
       <p class="inline-flex items-center gap-1 text-sm text-muted-foreground">
-        <%= lucide_icon(:clock, size: "w-4 h-4", class: "flex-shrink-0") %>
-        Created
-        <%= time_ago_in_words(workspace.created_at) %>
-        ago
+        <%= icon_for(:clock, class: "w-4 h-4 flex-shrink-0") %>
+        Created <%= time_ago_in_words(workspace.created_at) %> ago
       </p>
       <% if workspace.archived? && workspace.archived_at.present? %>
         <p class="inline-flex items-center gap-1 text-sm text-muted-foreground">
-          <%= lucide_icon(:archive, size: "w-4 h-4", class: "flex-shrink-0") %>
-          Archived
-          <%= time_ago_in_words(workspace.archived_at) %>
-          ago
+          <%= icon_for(:archive, class: "w-4 h-4 flex-shrink-0") %>
+          Archived <%= time_ago_in_words(workspace.archived_at) %> ago
         </p>
       <% end %>
       <% if workspace.deleted? && workspace.deleted_at.present? %>
         <p class="inline-flex items-center gap-1 text-sm text-muted-foreground">
-          <%= lucide_icon(:trash_2, size: "w-4 h-4", class: "flex-shrink-0") %>
-          Deleted
-          <%= time_ago_in_words(workspace.deleted_at) %>
-          ago
+          <%= icon_for(:trash_2, class: "w-4 h-4 flex-shrink-0") %>
+          Deleted <%= time_ago_in_words(workspace.deleted_at) %> ago
         </p>
-        <% days_until_permanent_deletion =
-          30 - (Date.current - workspace.deleted_at.to_date).to_i %>
+        <% days_until_permanent_deletion = 30 - (Date.current - workspace.deleted_at.to_date).to_i %>
         <% if days_until_permanent_deletion > 0 %>
-          <p
-            class="
-              inline-flex items-center gap-1 text-sm font-medium text-amber-600
-              dark:text-amber-400
-            "
-          >
-            <%= lucide_icon(:alert_triangle, size: "w-4 h-4", class: "flex-shrink-0") %>
-            <%= pluralize(days_until_permanent_deletion, "day") %>
-            until permanent deletion
+          <p class="inline-flex items-center gap-1 text-sm font-medium text-amber-600 dark:text-amber-400">
+            <%= icon_for(:alert_triangle, class: "w-4 h-4 flex-shrink-0") %>
+            <%= pluralize(days_until_permanent_deletion, "day") %> until permanent deletion
           </p>
         <% else %>
-          <p
-            class="
-              inline-flex items-center gap-1 text-sm font-medium text-red-600
-              dark:text-red-400
-            "
-          >
-            <%= lucide_icon(:alert_triangle, size: "w-4 h-4", class: "flex-shrink-0") %>
+          <p class="inline-flex items-center gap-1 text-sm font-medium text-red-600 dark:text-red-400">
+            <%= icon_for(:alert_triangle, class: "w-4 h-4 flex-shrink-0") %>
             Scheduled for permanent deletion
           </p>
         <% end %>

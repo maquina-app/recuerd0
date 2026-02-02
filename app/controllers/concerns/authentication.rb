@@ -35,7 +35,14 @@ module Authentication
     end
 
     def after_authentication_url
-      session.delete(:return_to_after_authenticating) || root_url
+      return_url = session.delete(:return_to_after_authenticating)
+
+      # If return URL is home or not set, go to workspaces
+      if return_url.blank? || return_url == root_url
+        workspaces_url
+      else
+        return_url
+      end
     end
 
     def start_new_session_for(user)

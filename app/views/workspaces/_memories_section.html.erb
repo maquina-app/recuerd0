@@ -4,8 +4,8 @@
   <div class="flex justify-between items-center">
     <h2 class="text-xl font-semibold">Memories</h2>
     <% if workspace.active? %>
-      <%= link_to new_workspace_memory_path(workspace), class: "btn-secondary btn-sm" do %>
-        <%= lucide_icon(:bookmark_plus, size: "w-4 h-4") %>
+      <%= link_to new_workspace_memory_path(workspace), data: { component: "button", variant: "secondary", size: "sm" } do %>
+        <%= icon_for(:bookmark_plus, class: "w-4 h-4") %>
         New Memory
       <% end %>
     <% end %>
@@ -19,7 +19,7 @@
     <% if pinned_memories.any? %>
       <div class="space-y-4">
         <h3 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <%= lucide_icon(:pin, size: "w-4 h-4") %> Pinned Memories
+          <%= icon_for(:pin, class: "w-4 h-4") %> Pinned Memories
         </h3>
         <div class="grid gap-4">
           <% pinned_memories.each do |memory| %>
@@ -49,37 +49,30 @@
     <% end %>
     <%# Pagination %>
     <% if pagy.pages > 1 %>
-      <div class="mt-8"><%= render "components/pagination", pagy: pagy %></div>
+      <div class="mt-8"><%= render "application/components/pagination", pagy: pagy %></div>
     <% end %>
   <% else %>
     <%# Empty state %>
-    <div
-      class="
-        rounded-lg border-2 border-dashed border-gray-300 p-12 text-center
-        dark:border-gray-700
-      "
-    >
-      <%= lucide_icon :sticky_note, size: "w-12 h-12", class: "mx-auto text-gray-400 dark:text-gray-600" %>
-      <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
-        No memories yet
-      </h3>
-
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        <% if workspace.active? %>
-          Start adding memories to this workspace.
-        <% else %>
-          This workspace doesn't have any memories.
+    <%= render "components/empty", variant: :dashed do %>
+      <%= render "components/empty/header" do %>
+        <%= render "components/empty/media", icon: :sticky_note %>
+        <%= render "components/empty/title", text: "No memories yet" %>
+        <%= render "components/empty/description" do %>
+          <% if workspace.active? %>
+            Start adding memories to this workspace.
+          <% else %>
+            This workspace doesn't have any memories.
+          <% end %>
         <% end %>
-      </p>
-
+      <% end %>
       <% if workspace.active? %>
-        <div class="mt-6">
-          <%= link_to new_workspace_memory_path(workspace), class: "btn-secondary" do %>
-            <%= lucide_icon(:bookmark_plus, size: "w-4 h-4") %>
+        <%= render "components/empty/content" do %>
+          <%= link_to new_workspace_memory_path(workspace), data: { component: "button", variant: "secondary" } do %>
+            <%= icon_for(:bookmark_plus, class: "w-4 h-4") %>
             Add First Memory
           <% end %>
-        </div>
+        <% end %>
       <% end %>
-    </div>
+    <% end %>
   <% end %>
 </div>

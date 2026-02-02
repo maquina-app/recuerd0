@@ -1,21 +1,14 @@
 <%# locals: () %>
-<div
-  class="
-    rounded-lg border-2 border-dashed border-gray-300 p-12 text-center
-    dark:border-gray-700
-  "
->
-  <%= lucide_icon :folder_open,
-  size: "w-12 h-12",
-  class: "mx-auto text-gray-400 dark:text-gray-600" %>
-  <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No workspaces</h3>
-  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-    Get started by creating a new workspace.
-  </p>
-  <div class="mt-6">
-    <%= link_to new_workspace_path, class: "btn-default" do %>
-      <%= lucide_icon :plus, size: "w-4 h-4" %>
+<%= render "components/empty", variant: :dashed do %>
+  <%= render "components/empty/header" do %>
+    <%= render "components/empty/media", icon: :folder_open %>
+    <%= render "components/empty/title", text: "No workspaces" %>
+    <%= render "components/empty/description", text: "Get started by creating a new workspace." %>
+  <% end %>
+  <%= render "components/empty/content" do %>
+    <%= link_to new_workspace_path, data: { component: "button" } do %>
+      <%= icon_for(:plus, class: "w-4 h-4") %>
       New Workspace
     <% end %>
-  </div>
-</div>
+  <% end %>
+<% end %>

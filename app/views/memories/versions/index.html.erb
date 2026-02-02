@@ -27,7 +27,7 @@
         <%= link_to workspace_memory_path(@workspace, @memory),
             data: { turbo_method: :post, turbo_confirm: "Create a new version from #{@memory.version_label}?" },
             class: "btn-secondary" do %>
-          <%= lucide_icon(:copy_plus, size: "w-4 h-4") %>
+          <%= icon_for(:copy_plus, class: "w-4 h-4") %>
           Create New Version
         <% end %>
       </div>

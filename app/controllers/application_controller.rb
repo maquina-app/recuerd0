@@ -11,12 +11,5 @@ class ApplicationController < ActionController::Base
 
   def load_ui_cookies
     @sidebar_open = cookies["recuerd0_sidebar_state"] == "true"
-
-    # Load collapsible states
-    @collapsible_states = begin
-      JSON.parse(cookies["recuerd0_collapsible_states"] || "{}")
-    rescue JSON::ParserError
-      {}
-    end
   end
 end

@@ -27,19 +27,19 @@
       icon =
         case variant
         when "success"
-          lucide_icon(
+          icon_for(
             :check_circle,
             class: "h-5 w-5 text-emerald-600 dark:text-emerald-400",
           )
         when "destructive"
-          lucide_icon(:x_circle, class: "h-5 w-5 text-destructive")
+          icon_for(:x_circle, class: "h-5 w-5 text-destructive")
         when "warning"
-          lucide_icon(
+          icon_for(
             :alert_triangle,
             class: "h-5 w-5 text-yellow-600 dark:text-yellow-400",
           )
         when "info"
-          lucide_icon(:info, class: "h-5 w-5 text-blue-600 dark:text-blue-400")
+          icon_for(:info, class: "h-5 w-5 text-blue-600 dark:text-blue-400")
         else
           nil
         end
@@ -65,7 +65,7 @@
         title = message.is_a?(Hash) ? (message[:title] || message["title"]) : nil
         action = message.is_a?(Hash) ? (message[:action] || message["action"]) : nil %>
 
-        <%= render "components/sonner",
+        <%= render "application/components/sonner",
         variant: variant,
         icon: icon,
         title: title,

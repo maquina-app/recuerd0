@@ -1,12 +1,12 @@
 <%= render "components/card" do %>
-  <%= render "components/card_header", class_names: "text-center" do %>
+  <%= render "components/card/header", css_classes: "text-center" do %>
     <h2 class="text-xl font-semibold">Welcome back</h2>
     <p class="text-sm text-muted-foreground mt-1">
       Enter your email and password to sign in
     </p>
   <% end %>
 
-  <%= render "components/card_content" do %>
+  <%= render "components/card/content" do %>
     <%= form_with url: session_url do |form| %>
       <div class="grid gap-6">
         <div class="grid gap-6">

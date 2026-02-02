@@ -24,9 +24,6 @@ class WorkspacesController < ApplicationController
     elsif @workspace.deleted?
       redirect_to deleted_workspace_path(@workspace)
       return
-    elsif !@workspace.active?
-      redirect_to workspaces_path, alert: "This workspace is not accessible."
-      return
     end
 
     # Load only latest versions with eager loading for performance

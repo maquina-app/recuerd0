@@ -1,5 +1,5 @@
 class Workspaces::ArchivesController < ApplicationController
-  before_action :set_workspace, except: [:index]
+  include WorkspaceScoped
 
   # GET /workspaces/archived
   def index
@@ -33,11 +33,5 @@ class Workspaces::ArchivesController < ApplicationController
     else
       redirect_to workspaces_path, alert: "Failed to unarchive workspace."
     end
-  end
-
-  private
-
-  def set_workspace
-    @workspace = Current.user.workspaces.with_deleted.find(params[:id])
   end
 end

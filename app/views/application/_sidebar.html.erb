@@ -1,26 +1,18 @@
-<%# locals: (sidebar_open: true, collapsible_states: {}) %>
-<%= render "components/sidebar/sidebar_provider", default_open: sidebar_open, variant: "inset" do %>
-  <%= render "components/sidebar/sidebar", collapsible: "offcanvas", variant: "inset", class_names: "h-full" do %>
+<%# locals: (sidebar_open: true) %>
+<%= render "components/sidebar/provider", default_open: sidebar_open, variant: :inset do %>
+  <%= render "components/sidebar", collapsible: :offcanvas, variant: :inset, css_classes: "h-full" do %>
     <%= render "application/sidebar/header" %>
 
-    <%= render "components/sidebar/sidebar_content" do %>
+    <%= render "components/sidebar/content" do %>
       <% if Current.user %>
         <%= render "application/sidebar/main_navigation" %>
-
-        <%= render "components/sidebar/sidebar_separator" %>
-
-        <%= render "application/sidebar/workspaces_section", user: Current.user %>
-
-        <%= render "application/sidebar/more_workspaces_section",
-        user: Current.user,
-        collapsible_states: collapsible_states %>
       <% end %>
     <% end %>
 
     <%= render "application/sidebar/footer", user: Current.user %>
   <% end %>
 
-  <%= render "components/sidebar/sidebar_inset", class_names: "flex flex-col h-full overflow-hidden" do %>
+  <%= render "components/sidebar/inset", css_classes: "flex flex-col h-full overflow-hidden" do %>
     <header
       class="
         flex h-(--header-height) shrink-0 items-center gap-2 border-b
@@ -29,11 +21,9 @@
       "
     >
       <div class="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
-        <%= render "components/sidebar/sidebar_trigger", class_names: "-ml-1" %>
+        <%= render "components/sidebar/trigger", css_classes: "-ml-1" %>
 
-        <%= render "components/separator",
-        orientation: "vertical",
-        class_names: "mx-2 data-[orientation=vertical]:h-4" %>
+        <%= render "components/separator", orientation: :vertical %>
 
         <% if content_for?(:breadcrumb) %>
           <%= yield :breadcrumb %>

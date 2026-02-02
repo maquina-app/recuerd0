@@ -21,7 +21,7 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag :tailwind, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
@@ -29,9 +29,7 @@
     <%= render "application/toast_notifications" %>
 
     <div class="flex h-screen overflow-hidden">
-      <%= render "application/sidebar",
-      sidebar_open: @sidebar_open,
-      collapsible_states: @collapsible_states %>
+      <%= render "application/sidebar", sidebar_open: @sidebar_open %>
     </div>
 
     <%= render "shared/turbo_confirm_dialog" %>

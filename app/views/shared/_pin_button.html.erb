@@ -2,21 +2,17 @@
 <% if pinnable.pinned_by?(Current.user) %>
   <%= button_to destroy_pin_path(pinnable_type: pinnable.class.name, pinnable_id: pinnable.id),
       method: :delete,
-      class: "btn-ghost btn-icon-sm cursor-pointer group",
       title: "Unpin",
-      data: { turbo_stream: true } do %>
-    <%= lucide_icon :pin,
-    size: "w-4 h-4",
-    class: "text-primary rotate-45 transition-transform duration-200" %>
+      aria: { label: "Unpin" },
+      data: { component: "button", variant: "ghost", size: "icon-sm", turbo_stream: true } do %>
+    <%= icon_for :pin, class: "w-4 h-4 text-primary rotate-45" %>
   <% end %>
 <% else %>
   <%= button_to create_pin_path(pinnable_type: pinnable.class.name, pinnable_id: pinnable.id),
       method: :post,
-      class: "btn-ghost btn-icon-sm cursor-pointer group",
       title: "Pin to top",
-      data: { turbo_stream: true } do %>
-    <%= lucide_icon :pin,
-    size: "w-4 h-4",
-    class: "transition-all duration-200 group-hover:text-primary" %>
+      aria: { label: "Pin to top" },
+      data: { component: "button", variant: "ghost", size: "icon-sm", turbo_stream: true } do %>
+    <%= icon_for :pin, class: "w-4 h-4" %>
   <% end %>
 <% end %>

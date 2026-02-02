@@ -1,77 +1,48 @@
 <%# locals: (workspace:, show_status: false) -%>
-<div
-  class="mt-3 flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400"
->
+<div class="mt-3 flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
   <div class="flex items-center gap-1">
-    <%= lucide_icon :file_text, size: "w-4 h-4" %>
+    <%= icon_for(:file_text, class: "w-4 h-4") %>
     <span><%= pluralize(workspace.memories_count, "memory", "memories") %></span>
   </div>
   <div class="flex items-center gap-1">
-    <%= lucide_icon :clock, size: "w-4 h-4" %>
-    <span>Created
-      <%= time_ago_in_words(workspace.created_at) %>
-      ago</span>
+    <%= icon_for(:clock, class: "w-4 h-4") %>
+    <span>Created <%= time_ago_in_words(workspace.created_at) %> ago</span>
   </div>
   <% if workspace.archived? && workspace.archived_at.present? %>
     <div class="flex items-center gap-1">
-      <%= lucide_icon :archive, size: "w-4 h-4" %>
-      <span>Archived
-        <%= time_ago_in_words(workspace.archived_at) %>
-        ago</span>
+      <%= icon_for(:archive, class: "w-4 h-4") %>
+      <span>Archived <%= time_ago_in_words(workspace.archived_at) %> ago</span>
     </div>
   <% end %>
   <% if workspace.deleted? && workspace.deleted_at.present? %>
     <div class="flex items-center gap-1">
-      <%= lucide_icon :trash_2, size: "w-4 h-4" %>
-      <span>Deleted
-        <%= time_ago_in_words(workspace.deleted_at) %>
-        ago</span>
+      <%= icon_for(:trash_2, class: "w-4 h-4") %>
+      <span>Deleted <%= time_ago_in_words(workspace.deleted_at) %> ago</span>
     </div>
   <% end %>
   <% if show_status && (workspace.deleted? || workspace.archived?) %>
     <% if workspace.deleted? %>
-      <span
-        class="
-          inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium
-          text-red-800 dark:bg-red-900 dark:text-red-200
-        "
-      >
+      <%= render "components/badge", variant: :destructive do %>
         Deleted
-      </span>
+      <% end %>
     <% elsif workspace.archived? %>
-      <span
-        class="
-          inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs
-          font-medium text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
-        "
-      >
+      <%= render "components/badge", variant: :warning do %>
         Archived
-      </span>
+      <% end %>
     <% end %>
   <% end %>
 </div>
 
 <% if workspace.deleted? && workspace.deleted_at.present? %>
-  <% days_until_permanent_deletion =
-    30 - (Date.current - workspace.deleted_at.to_date).to_i %>
+  <% days_until_permanent_deletion = 30 - (Date.current - workspace.deleted_at.to_date).to_i %>
   <% if days_until_permanent_deletion > 0 %>
-    <div
-      class="
-        mt-2 flex items-center gap-1 text-sm font-medium text-amber-600
-        dark:text-amber-400
-      "
-    >
-      <%= lucide_icon :alert_triangle, size: "w-4 h-4" %>
-      <span><%= pluralize(days_until_permanent_deletion, "day") %>
-        until permanent deletion</span>
+    <div class="mt-2 flex items-center gap-1 text-sm font-medium text-amber-600 dark:text-amber-400">
+      <%= icon_for(:alert_triangle, class: "w-4 h-4") %>
+      <span><%= pluralize(days_until_permanent_deletion, "day") %> until permanent deletion</span>
     </div>
   <% else %>
-    <div
-      class="
-        mt-2 flex items-center gap-1 text-sm font-medium text-red-600 dark:text-red-400
-      "
-    >
-      <%= lucide_icon :alert_triangle, size: "w-4 h-4" %>
+    <div class="mt-2 flex items-center gap-1 text-sm font-medium text-red-600 dark:text-red-400">
+      <%= icon_for(:alert_triangle, class: "w-4 h-4") %>
       <span>Scheduled for permanent deletion</span>
     </div>
   <% end %>

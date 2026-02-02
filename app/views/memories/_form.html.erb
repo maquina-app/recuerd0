@@ -5,18 +5,18 @@
 <%= form_with model: [workspace, memory], local: true, class: "flex flex-col h-full space-y-4" do |form| %>
   <%# Error messages %>
   <% if memory.errors.any? %>
-    <%= render "components/alert", variant: "destructive" do %>
-      <%= render "components/alert_title" do %>
-        <%= pluralize(memory.errors.count, "error") %>
-        prevented this memory from being saved:
-      <% end %>
-      <%= render "components/alert_description" do %>
-        <ul class="list-disc list-inside space-y-1">
-          <% memory.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-        </ul>
-      <% end %>
+    <%= render "components/alert", variant: :destructive do %>
+      <div class="flex items-start gap-3">
+        <%= icon_for(:alert_circle, class: "w-4 h-4 flex-shrink-0") %>
+        <div>
+          <strong><%= pluralize(memory.errors.count, "error") %> prevented this memory from being saved:</strong>
+          <ul class="list-disc list-inside space-y-1 mt-2">
+            <% memory.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
     <% end %>
   <% end %>
 
@@ -56,7 +56,7 @@
       "
     >
       <span class="flex items-center gap-2 text-sm font-medium">
-        <%= lucide_icon(:info, size: "w-4 h-4", class: "text-muted-foreground") %> Additional Information
+        <%= icon_for(:info, class: "w-4 h-4 text-muted-foreground") %> Additional Information
       </span>
       <span
         class="
@@ -64,7 +64,7 @@
           group-open:rotate-180
         "
       >
-        <%= lucide_icon(:chevron_down, size: "w-4 h-4") %>
+        <%= icon_for(:chevron_down, class: "w-4 h-4") %>
       </span>
     </summary>
 
@@ -91,7 +91,7 @@
           <%# Tags field %>
           <div>
             <%= form.label :tags, class: "block mb-2" %>
-            <%= render "components/tag_input", form: form, field: :tags, value: memory.tags %>
+            <%= render "application/components/tag_input", form: form, field: :tags, value: memory.tags %>
             <p class="text-xs text-muted-foreground mt-1.5">
               Press Enter or comma to add tags
             </p>

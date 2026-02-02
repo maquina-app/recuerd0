@@ -18,12 +18,9 @@
     <p class="text-muted-foreground mt-2">Update workspace details</p>
   </div>
 
-  <div
-    class="
-      rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800
-      dark:bg-gray-900
-    "
-  >
-    <%= render "form", workspace: @workspace %>
-  </div>
+  <%= render "components/card" do %>
+    <%= render "components/card/content" do %>
+      <%= render "form", workspace: @workspace %>
+    <% end %>
+  <% end %>
 </div>

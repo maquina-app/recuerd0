@@ -1,5 +1,6 @@
 module ApplicationHelper
   include Pagy::Frontend
+  include MaquinaComponentsHelper
 
   # Merges CSS classes using Tailwind's convention
   # Similar to clsx or cn() in JavaScript
@@ -10,15 +11,15 @@ module ApplicationHelper
   # Helper method to generate breadcrumbs
   # Usage: breadcrumbs({ "Home" => root_path, "Workspaces" => workspaces_path }, "Current Page")
   def breadcrumbs(links = {}, current_page = nil)
-    render "components/breadcrumb" do
-      render "components/breadcrumb_list" do
+    render "components/breadcrumbs" do
+      render "components/breadcrumbs/list" do
         items = []
 
         # Add all links
         links.each_with_index do |(text, path), index|
           items << capture do
-            render "components/breadcrumb_item" do
-              render "components/breadcrumb_link", href: path do
+            render "components/breadcrumbs/item" do
+              render "components/breadcrumbs/link", href: path do
                 text
               end
             end
@@ -27,7 +28,7 @@ module ApplicationHelper
           # Add separator after each link except the last one (if there's no current page)
           if index < links.size - 1 || current_page.present?
             items << capture do
-              render "components/breadcrumb_separator"
+              render "components/breadcrumbs/separator"
             end
           end
         end
@@ -35,8 +36,8 @@ module ApplicationHelper
         # Add current page if provided
         if current_page.present?
           items << capture do
-            render "components/breadcrumb_item" do
-              render "components/breadcrumb_page" do
+            render "components/breadcrumbs/item" do
+              render "components/breadcrumbs/page" do
                 current_page
               end
             end

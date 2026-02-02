@@ -1,12 +1,12 @@
 <%= render "components/card" do %>
-  <%= render "components/card_header", class_names: "text-center" do %>
+  <%= render "components/card/header", css_classes: "text-center" do %>
     <h2 class="text-xl font-semibold">Forgot your password?</h2>
     <p class="text-sm text-muted-foreground mt-1">
       Enter your email and we'll send you reset instructions
     </p>
   <% end %>
 
-  <%= render "components/card_content" do %>
+  <%= render "components/card/content" do %>
     <%= form_with url: passwords_path do |form| %>
       <div class="grid gap-6">
         <div class="grid gap-3">

@@ -10,15 +10,17 @@
       Workspaces
     </h1>
 
-    <%= link_to new_workspace_path, class: "btn-default" do %>
-      <%= lucide_icon :plus, size: "w-4 h-4" %>
+    <%= link_to new_workspace_path, data: { component: "button" } do %>
+      <%= icon_for(:plus, class: "w-4 h-4") %>
       New Workspace
     <% end %>
   </div>
 
   <% if @pinned_workspaces.any? %>
     <%= render "workspaces/pinned_section", pinned_workspaces: @pinned_workspaces %>
-    <%= render "components/separator", class_names: "my-8" %>
+    <div class="my-8">
+      <%= render "components/separator" %>
+    </div>
   <% end %>
 
   <% if @workspaces.any? || @pinned_workspaces.any? %>

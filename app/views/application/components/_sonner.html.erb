@@ -25,26 +25,26 @@ variant_classes = {
       <div class="flex-shrink-0">
         <% case variant %>
         <% when "destructive" %>
-          <%= lucide_icon(:x_circle, class: "h-5 w-5 text-destructive") %>
+          <%= icon_for(:x_circle, class: "h-5 w-5 text-destructive") %>
         <% when "success" %>
-          <%= lucide_icon(:check_circle, class: "h-5 w-5 text-success") %>
+          <%= icon_for(:check_circle, class: "h-5 w-5 text-success") %>
         <% when "warning" %>
-          <%= lucide_icon(:alert_triangle, class: "h-5 w-5 text-warning") %>
+          <%= icon_for(:alert_triangle, class: "h-5 w-5 text-warning") %>
         <% when "info" %>
-          <%= lucide_icon(:info, class: "h-5 w-5 text-primary") %>
+          <%= icon_for(:info, class: "h-5 w-5 text-primary") %>
         <% end %>
       </div>
     <% end %>
 
     <div class="flex-1 space-y-1">
       <% if title %>
-        <%= render "components/sonner_title" do %>
+        <%= render "application/components/sonner_title" do %>
           <%= title %>
         <% end %>
       <% end %>
 
       <% if description %>
-        <%= render "components/sonner_description" do %>
+        <%= render "application/components/sonner_description" do %>
           <%= description %>
         <% end %>
       <% elsif block_given? %>
@@ -71,6 +71,6 @@ variant_classes = {
     data-action="click->sonner#dismiss"
     aria-label="Close"
   >
-    <%= lucide_icon(:x, class: "h-4 w-4") %>
+    <%= icon_for(:x, class: "h-4 w-4") %>
   </button>
 </div>

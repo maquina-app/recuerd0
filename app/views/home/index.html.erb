@@ -13,17 +13,17 @@
   <% if Current.user %>
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <%= link_to workspaces_path, class: "block" do %>
-        <%= render "components/card", class_names: "hover:shadow-md transition-shadow" do %>
-          <%= render "components/card_header" do %>
+        <%= render "components/card", css_classes: "hover:shadow-md transition-shadow" do %>
+          <%= render "components/card/header" do %>
             <div class="flex items-center gap-3">
-              <%= lucide_icon :folders, size: "w-8 h-8", class: "text-primary" %>
+              <%= icon_for :folders, class: "w-8 h-8 text-primary" %>
               <div>
                 <h3 class="text-lg font-semibold">Workspaces</h3>
                 <p class="text-sm text-muted-foreground">Organize your memories</p>
               </div>
             </div>
           <% end %>
-          <%= render "components/card_content" do %>
+          <%= render "components/card/content" do %>
             <p class="text-2xl font-bold"><%= Current.user.workspaces.count %></p>
             <p class="text-xs text-muted-foreground">Total workspaces</p>
           <% end %>
@@ -31,9 +31,9 @@
       <% end %>
 
       <%= link_to new_workspace_path, class: "block" do %>
-        <%= render "components/card", class_names: "hover:shadow-md transition-shadow border-dashed" do %>
-          <%= render "components/card_content", class_names: "flex flex-col items-center justify-center h-full py-8" do %>
-            <%= lucide_icon :folder_plus, size: "w-12 h-12", class: "text-muted-foreground mb-2" %>
+        <%= render "components/card", css_classes: "hover:shadow-md transition-shadow border-dashed" do %>
+          <%= render "components/card/content", css_classes: "flex flex-col items-center justify-center h-full py-8" do %>
+            <%= icon_for :folder_plus, class: "w-12 h-12 text-muted-foreground mb-2" %>
             <h3 class="text-lg font-semibold">Create Workspace</h3>
             <p class="text-sm text-muted-foreground mt-1">Start organizing your memories</p>
           <% end %>
@@ -48,11 +48,11 @@
         <div class="space-y-3">
           <% recent_workspaces.each do |workspace| %>
             <%= link_to workspace_path(workspace), class: "block" do %>
-              <%= render "components/card", class_names: "hover:shadow-md transition-shadow" do %>
-                <%= render "components/card_content", class_names: "py-4" do %>
+              <%= render "components/card", css_classes: "hover:shadow-md transition-shadow" do %>
+                <%= render "components/card/content", css_classes: "py-4" do %>
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                      <%= lucide_icon :folder, size: "w-5 h-5", class: "text-muted-foreground" %>
+                      <%= icon_for :folder, class: "w-5 h-5 text-muted-foreground" %>
                       <div>
                         <h4 class="font-medium"><%= workspace.name %></h4>
                         <p class="text-sm text-muted-foreground">
@@ -63,7 +63,7 @@
                         </p>
                       </div>
                     </div>
-                    <%= lucide_icon :chevron_right, size: "w-5 h-5", class: "text-muted-foreground" %>
+                    <%= icon_for :chevron_right, class: "w-5 h-5 text-muted-foreground" %>
                   </div>
                 <% end %>
               <% end %>
@@ -77,7 +77,7 @@
       <h2 class="text-2xl font-semibold mb-4">Get Started with Recuerd0</h2>
       <p class="text-muted-foreground mb-6">Sign in to start capturing and organizing your AI conversations</p>
       <%= link_to new_session_path, class: "btn-default" do %>
-        <%= lucide_icon :log_in, size: "w-4 h-4" %>
+        <%= icon_for :log_in, class: "w-4 h-4" %>
         Sign In
       <% end %>
     </div>

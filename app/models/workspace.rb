@@ -11,12 +11,13 @@ class Workspace < ApplicationRecord
   validates :description, length: {maximum: 500}, allow_blank: true
 
   # Callbacks to unpin when archiving or soft deleting
-  after_update :unpin_if_inactive, if: :saved_change_to_archived_at?
-  after_update :unpin_if_inactive, if: :saved_change_to_deleted_at?
+  after_update :unpin_if_inactive, if: -> { saved_change_to_archived_at? || saved_change_to_deleted_at? }
 
   # Scopes
   scope :ordered, -> { order(created_at: :desc) }
-  scope :search, ->(query) { where("name ILIKE :query OR description ILIKE :query", query: "%#{query}%") if query.present? }
+  scope :search, ->(query) {
+    where("LOWER(name) LIKE LOWER(:query) OR LOWER(description) LIKE LOWER(:query)", query: "%#{query}%") if query.present?
+  }
   scope :active, -> { not_archived.not_deleted }
 
   # Additional scopes that consider pinning
@@ -55,5 +56,10 @@ class Workspace < ApplicationRecord
     return if active?
 
     pins.destroy_all
+  end
+
+  # Called by SoftDeletable#restore to also unarchive the workspace
+  def after_restore
+    unarchive if archived?
   end
 end

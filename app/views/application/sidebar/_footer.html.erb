@@ -1,14 +1,14 @@
 <%# locals: (user:) %>
-<%= render "components/sidebar/sidebar_footer" do %>
+<%= render "components/sidebar/footer" do %>
   <% if user %>
-    <%= render "components/sidebar/nav_user", user: user %>
+    <%= render "application/components/sidebar/nav_user", user: user %>
   <% else %>
-    <%= render "components/sidebar/sidebar_menu" do %>
-      <%= render "components/sidebar/sidebar_menu_item" do %>
-        <%= render "components/sidebar/sidebar_menu_button", href: new_session_path do %>
-          <%= lucide_icon :log_in, size: "w-4 h-4" %>
-          <span class="data-[state=collapsed]:hidden">Sign in</span>
-        <% end %>
+    <%= render "components/sidebar/menu" do %>
+      <%= render "components/sidebar/menu_item" do %>
+        <%= render "components/sidebar/menu_button",
+            title: "Sign in",
+            url: new_session_path,
+            icon_name: :log_in %>
       <% end %>
     <% end %>
   <% end %>

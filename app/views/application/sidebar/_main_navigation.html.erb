@@ -1,10 +1,30 @@
 <%# locals: () %>
-<%= render "components/sidebar/sidebar_menu" do %>
-  <%= render "components/sidebar/sidebar_menu_item" do %>
-    <%= render "components/sidebar/sidebar_menu_button", 
-        href: workspaces_path do %>
-      <%= lucide_icon :folders, size: "w-4 h-4" %>
-      <span class="data-[state=collapsed]:hidden">All workspaces</span>
-    <% end %>
+<%= render "components/sidebar/menu" do %>
+  <%= render "components/sidebar/menu_item" do %>
+    <%= render "components/sidebar/menu_button",
+        title: "All Workspaces",
+        url: workspaces_path,
+        icon_name: :folders %>
+  <% end %>
+
+  <%= render "components/sidebar/menu_item" do %>
+    <%= render "components/sidebar/menu_button",
+        title: "Pinned",
+        url: pinned_workspaces_path,
+        icon_name: :pin %>
+  <% end %>
+
+  <%= render "components/sidebar/menu_item" do %>
+    <%= render "components/sidebar/menu_button",
+        title: "Archived",
+        url: archived_workspaces_path,
+        icon_name: :archive %>
+  <% end %>
+
+  <%= render "components/sidebar/menu_item" do %>
+    <%= render "components/sidebar/menu_button",
+        title: "Deleted",
+        url: deleted_workspaces_path,
+        icon_name: :trash_2 %>
   <% end %>
 <% end %>

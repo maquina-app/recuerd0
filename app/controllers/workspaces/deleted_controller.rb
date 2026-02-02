@@ -1,5 +1,5 @@
 class Workspaces::DeletedController < ApplicationController
-  before_action :set_workspace, except: [:index]
+  include WorkspaceScoped
 
   # GET /workspaces/deleted
   def index
@@ -33,11 +33,5 @@ class Workspaces::DeletedController < ApplicationController
     else
       redirect_to deleted_workspaces_path, alert: "Failed to permanently delete workspace."
     end
-  end
-
-  private
-
-  def set_workspace
-    @workspace = Current.user.workspaces.with_deleted.find(params[:id])
   end
 end

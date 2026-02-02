@@ -9,7 +9,6 @@ module SoftDeletable
     # Scopes
     scope :deleted, -> { unscoped.where.not(deleted_at: nil) }
     scope :with_deleted, -> { unscoped }
-    scope :only_deleted, -> { unscoped.where.not(deleted_at: nil) }
     scope :not_deleted, -> { where(deleted_at: nil) }
     scope :deleted_ordered, -> { deleted.order(deleted_at: :desc) }
   end
@@ -21,7 +20,8 @@ module SoftDeletable
 
   # Restore a soft deleted record
   def restore
-    update_columns(deleted_at: nil, archived_at: nil)
+    update_column(:deleted_at, nil)
+    after_restore if respond_to?(:after_restore, true)
   end
 
   # Check if the record is soft deleted

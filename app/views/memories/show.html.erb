@@ -16,12 +16,15 @@
 <div class="mx-auto max-w-4xl space-y-6">
   <%# Workspace state alert %>
   <% unless @workspace.active? %>
-    <%= render "components/alert",
-        variant: "warning",
-        icon: lucide_icon(:alert_triangle, class: "text-amber-600 dark:text-amber-400"),
-        title: "Read-only mode",
-        description: "This memory is in a #{@workspace.archived? ? 'archived' : 'deleted'} workspace and cannot be edited.",
-        class_names: "mb-6" %>
+    <%= render "components/alert", variant: :warning, css_classes: "mb-6" do %>
+      <div class="flex items-start gap-3">
+        <%= icon_for(:alert_triangle, class: "w-4 h-4 flex-shrink-0 text-amber-600 dark:text-amber-400") %>
+        <div>
+          <strong>Read-only mode</strong>
+          <p class="mt-1">This memory is in a <%= @workspace.archived? ? "archived" : "deleted" %> workspace and cannot be edited.</p>
+        </div>
+      </div>
+    <% end %>
   <% end %>
 
   <%# Memory header %>
@@ -31,14 +34,14 @@
         <h1 class="text-3xl font-bold"><%= @memory.display_title %></h1>
 
         <% if @memory.has_versions? %>
-          <%= render "components/badge", variant: "outline" do %>
+          <%= render "components/badge", variant: :outline do %>
             <%= @memory.version_label %>
           <% end %>
         <% end %>
 
         <% if @memory.pinned_by?(Current.user) %>
-          <%= render "components/badge", variant: "secondary" do %>
-            <%= lucide_icon(:pin, size: "w-3 h-3") %>
+          <%= render "components/badge", variant: :secondary do %>
+            <%= icon_for(:pin, class: "w-3 h-3") %>
             Pinned
           <% end %>
         <% end %>
@@ -59,7 +62,7 @@
         <%= link_to workspace_memory_versions_path(@workspace, @memory),
             class: "btn-ghost btn-sm",
             title: "View version history" do %>
-          <%= lucide_icon(:git_branch, size: "w-4 h-4") %>
+          <%= icon_for(:git_branch, class: "w-4 h-4") %>
           Versions
         <% end %>
       <% end %>
@@ -70,13 +73,13 @@
             class: "btn-secondary btn-sm",
             title: "Create a new version",
             data: { turbo_confirm: "Create a new version from #{@memory.version_label}?" } do %>
-          <%= lucide_icon(:copy_plus, size: "w-4 h-4") %>
+          <%= icon_for(:copy_plus, class: "w-4 h-4") %>
           New Version
         <% end %>
         <%= link_to edit_workspace_memory_path(@workspace, @memory),
             class: "btn-ghost btn-sm",
             title: "Edit this memory" do %>
-          <%= lucide_icon(:edit, size: "w-4 h-4") %>
+          <%= icon_for(:edit, class: "w-4 h-4") %>
           Edit
         <% end %>
         <%= button_to workspace_memory_path(@workspace, @memory),
@@ -84,7 +87,7 @@
             class: "btn-ghost btn-sm text-destructive hover:text-destructive",
             title: "Delete this memory",
             data: { turbo_confirm: "Are you sure you want to delete this memory?" } do %>
-          <%= lucide_icon(:trash_2, size: "w-4 h-4") %>
+          <%= icon_for(:trash_2, class: "w-4 h-4") %>
           Delete
         <% end %>
       <% end %>
@@ -113,7 +116,7 @@
             text-center py-12
           "
         >
-          <%= lucide_icon(:file_text, size: "w-12 h-12", class: "mx-auto text-muted-foreground/50 mb-4") %>
+          <%= icon_for(:file_text, class: "w-12 h-12 mx-auto text-muted-foreground/50 mb-4") %>
           <h3 class="text-lg font-semibold text-muted-foreground mb-2">
             No content yet
           </h3>
@@ -126,7 +129,7 @@
           <% if @workspace.active? %>
             <%= link_to edit_workspace_memory_path(@workspace, @memory),
                 class: "btn-secondary" do %>
-              <%= lucide_icon(:edit, size: "w-4 h-4") %>
+              <%= icon_for(:edit, class: "w-4 h-4") %>
               Add Content
             <% end %>
           <% end %>
@@ -135,11 +138,11 @@
     </div>
 
     <% if @memory.tags.any? %>
-      <%= render "components/card_footer" do %>
+      <%= render "components/card/footer" do %>
         <div class="flex flex-wrap gap-2">
           <% @memory.tags.each do |tag| %>
-            <%= render "components/badge", variant: "secondary", class_names: "text-xs" do %>
-              <%= lucide_icon(:tag, size: "w-3 h-3") %>
+            <%= render "components/badge", variant: :secondary, css_classes: "text-xs" do %>
+              <%= icon_for(:tag, class: "w-3 h-3") %>
               <%= tag %>
             <% end %>
           <% end %>
@@ -151,28 +154,28 @@
   <%# Metadata %>
   <div class="text-sm text-muted-foreground flex items-center gap-4 flex-wrap">
     <span class="inline-flex items-center gap-1">
-      <%= lucide_icon(:clock, size: "w-4 h-4") %> Created <%= time_ago_in_words(@memory.created_at) %> ago
+      <%= icon_for(:clock, class: "w-4 h-4") %> Created <%= time_ago_in_words(@memory.created_at) %> ago
     </span>
     <span class="inline-flex items-center gap-1">
-      <%= lucide_icon(:refresh_cw, size: "w-4 h-4") %> Updated <%= time_ago_in_words(@memory.updated_at) %> ago
+      <%= icon_for(:refresh_cw, class: "w-4 h-4") %> Updated <%= time_ago_in_words(@memory.updated_at) %> ago
     </span>
   </div>
 
   <%# Version info %>
   <% if @memory.has_versions? %>
     <%= render "components/card" do %>
-      <%= render "components/card_header" do %>
+      <%= render "components/card/header" do %>
         <div class="flex justify-between items-center">
           <h3 class="text-lg font-semibold">Version Information</h3>
           <%= link_to workspace_memory_versions_path(@workspace, @memory),
               class: "btn-ghost btn-sm" do %>
-            <%= lucide_icon(:git_branch, size: "w-4 h-4") %>
+            <%= icon_for(:git_branch, class: "w-4 h-4") %>
             View All Versions
           <% end %>
         </div>
       <% end %>
 
-      <%= render "components/card_content" do %>
+      <%= render "components/card/content" do %>
         <div class="flex items-center gap-4 text-sm">
           <span>Current: <strong><%= @memory.version_label %></strong></span>
           <% if @memory.child_versions.any? %>

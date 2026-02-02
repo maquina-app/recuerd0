@@ -1,14 +1,12 @@
 <%# locals: () %>
-<%= render "components/sidebar/sidebar_header" do %>
-  <%= render "components/sidebar/sidebar_menu", class_names: "w-full" do %>
-    <%= render "components/sidebar/sidebar_menu_item" do %>
-      <%= render "components/sidebar/sidebar_menu_button",
-          href: root_path,
-          as_child: false,
-          class_names: "!p-2 w-full justify-start" do %>
-        <%= lucide_icon :brain, size: "w-5 h-5" %>
-        <span class="text-base font-semibold data-[state=collapsed]:hidden">Recuerd0</span>
-      <% end %>
+<%= render "components/sidebar/header" do %>
+  <%= render "components/sidebar/menu", css_classes: "w-full" do %>
+    <%= render "components/sidebar/menu_item" do %>
+      <%= render "components/sidebar/menu_button",
+          title: "Recuerd0",
+          url: root_path,
+          icon_name: :brain,
+          css_classes: "!p-2 w-full justify-start" %>
     <% end %>
   <% end %>
 <% end %>

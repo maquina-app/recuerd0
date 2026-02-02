@@ -1,30 +1,36 @@
 <%# locals: (workspace:) -%>
-<%= form_with(model: workspace, local: true, class: "space-y-6") do |form| %>
-  <div>
-    <%= form.label :name, class: "block mb-2" %>
-    <%= form.text_field :name, autofocus: true, placeholder: "My Workspace" %>
+<%= form_with(model: workspace, local: true, data: { component: "form" }) do |form| %>
+  <div data-form-part="group">
+    <%= form.label :name, data: { component: "label" } %>
+    <%= form.text_field :name,
+        autofocus: true,
+        placeholder: "My Workspace",
+        required: true,
+        maxlength: 100,
+        data: { component: "input" } %>
     <% if workspace.errors[:name].any? %>
       <p class="error-message mt-1"><%= workspace.errors[:name].first %></p>
     <% end %>
   </div>
 
-  <div>
-    <%= form.label :description, class: "block mb-2" %>
+  <div data-form-part="group">
+    <%= form.label :description, data: { component: "label" } %>
     <%= form.text_area :description,
-                   rows: 4,
-                   placeholder: "Describe what this workspace is for...",
-                   class: "resize-none overflow-y-auto" %>
+        rows: 4,
+        placeholder: "Describe what this workspace is for...",
+        maxlength: 500,
+        data: { component: "textarea" } %>
     <% if workspace.errors[:description].any? %>
       <p class="error-message mt-1"><%= workspace.errors[:description].first %></p>
     <% end %>
   </div>
 
-  <div class="flex items-center gap-4 pt-4">
+  <div data-form-part="actions">
     <%= form.submit workspace.persisted? ? "Update Workspace" : "Create Workspace",
-                class: "btn-default" %>
+        data: { component: "button" } %>
 
     <%= link_to "Cancel",
-    workspace.persisted? ? workspace_path(workspace) : workspaces_path,
-    class: "btn-outline" %>
+        workspace.persisted? ? workspace_path(workspace) : workspaces_path,
+        data: { component: "button", variant: "outline" } %>
   </div>
 <% end %>

@@ -32,30 +32,29 @@
   <%= render "workspaces/workspace_header", workspace: @workspace %>
 
   <% if @workspace.archived? %>
-    <%= render "components/alert",
-    variant: "info",
-    icon: lucide_icon(:archive, class: "text-blue-600 dark:text-blue-400"),
-    title: "This workspace is archived",
-    description:
-      "This workspace is in read-only mode. You can view its contents but cannot make changes. Restore it to continue adding memories.",
-    class_names: "mb-6" %>
+    <%= render "components/alert", variant: :info, css_classes: "mb-6" do %>
+      <div class="flex items-start gap-3">
+        <%= icon_for(:archive, class: "w-4 h-4 flex-shrink-0 text-blue-600 dark:text-blue-400") %>
+        <div>
+          <strong>This workspace is archived</strong>
+          <p class="mt-1">This workspace is in read-only mode. You can view its contents but cannot make changes. Restore it to continue adding memories.</p>
+        </div>
+      </div>
+    <% end %>
   <% elsif @workspace.deleted? %>
-    <% days_until_permanent_deletion =
-      30 - (Date.current - @workspace.deleted_at.to_date).to_i %>
-    <%= render "components/alert",
-    variant: "warning",
-    icon: lucide_icon(:trash_2, class: "text-amber-600 dark:text-amber-400"),
-    title: "This workspace is deleted",
-    description:
-      "This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories. " +
-        (
-          if days_until_permanent_deletion > 0
-            "This workspace will be permanently deleted in #{pluralize(days_until_permanent_deletion, "day")}."
-          else
-            "This workspace is scheduled for permanent deletion."
-          end
-        ),
-    class_names: "mb-6" %>
+    <% days_until_permanent_deletion = 30 - (Date.current - @workspace.deleted_at.to_date).to_i %>
+    <%= render "components/alert", variant: :warning, css_classes: "mb-6" do %>
+      <div class="flex items-start gap-3">
+        <%= icon_for(:trash_2, class: "w-4 h-4 flex-shrink-0 text-amber-600 dark:text-amber-400") %>
+        <div>
+          <strong>This workspace is deleted</strong>
+          <p class="mt-1">
+            This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories.
+            <%= days_until_permanent_deletion > 0 ? "This workspace will be permanently deleted in #{pluralize(days_until_permanent_deletion, "day")}." : "This workspace is scheduled for permanent deletion." %>
+          </p>
+        </div>
+      </div>
+    <% end %>
   <% end %>
 
   <%= render "workspaces/memories_section",

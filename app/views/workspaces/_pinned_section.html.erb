@@ -1,12 +1,7 @@
 <%# locals: (pinned_workspaces:) %>
 <div>
-  <h2
-    class="
-      text-lg font-semibold mb-4 flex items-center gap-2 text-gray-700
-      dark:text-gray-300
-    "
-  >
-    <%= lucide_icon :pin, size: "w-4 h-4", class: "rotate-45" %>
+  <h2 class="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-700 dark:text-gray-300">
+    <%= icon_for(:pin, class: "w-4 h-4 rotate-45") %>
     Pinned
   </h2>
   <div id="pinned_workspaces" class="space-y-4">

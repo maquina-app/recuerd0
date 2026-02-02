@@ -1,28 +1,21 @@
 <%# locals: (workspace:, show_status: false) -%>
-<div
-  id="<%= dom_id workspace %>"
-  class="
-    group relative flex items-start gap-4 rounded-lg border border-gray-200 bg-white
-    p-6 transition-all hover:shadow-sm dark:border-gray-800 dark:bg-gray-900
-    <%= 'opacity-60' if workspace.deleted? %> <%= 'ring-2 ring-primary/20' if workspace.pinned_by?(Current.user) %>
-  "
->
-  <div class="flex-1 min-w-0">
+<%= render "components/card", id: dom_id(workspace), css_classes: "#{'opacity-60' if workspace.deleted?} #{'ring-2 ring-primary/20' if workspace.pinned_by?(Current.user)}" do %>
+  <div class="flex-1 min-w-0 p-6">
     <div class="flex items-start justify-between gap-4">
       <div class="flex-1">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
           <% if workspace.active? %>
             <%= link_to workspace.name,
-            workspace_path(workspace),
-            class: "hover:text-indigo-600 dark:hover:text-indigo-400" %>
+                workspace_path(workspace),
+                class: "hover:text-indigo-600 dark:hover:text-indigo-400" %>
           <% elsif workspace.archived? %>
             <%= link_to workspace.name,
-            archived_workspace_path(workspace),
-            class: "hover:text-indigo-600 dark:hover:text-indigo-400" %>
+                archived_workspace_path(workspace),
+                class: "hover:text-indigo-600 dark:hover:text-indigo-400" %>
           <% elsif workspace.deleted? %>
             <%= link_to workspace.name,
-            deleted_workspace_path(workspace),
-            class: "hover:text-indigo-600 dark:hover:text-indigo-400" %>
+                deleted_workspace_path(workspace),
+                class: "hover:text-indigo-600 dark:hover:text-indigo-400" %>
           <% else %>
             <%= workspace.name %>
           <% end %>
@@ -39,62 +32,68 @@
           <%= render "shared/pin_button", pinnable: workspace %>
 
           <%= link_to edit_workspace_path(workspace),
-              class: "btn-ghost btn-icon-sm",
-              title: "Edit workspace" do %>
-            <%= lucide_icon :edit, size: "w-4 h-4" %>
+              data: { component: "button", variant: "ghost", size: "icon-sm" },
+              title: "Edit workspace",
+              aria: { label: "Edit workspace" } do %>
+            <%= icon_for(:edit, class: "w-4 h-4") %>
           <% end %>
 
           <%= button_to archive_workspace_path(workspace),
               method: :post,
-              class: "btn-ghost btn-icon-sm cursor-pointer",
+              data: { component: "button", variant: "ghost", size: "icon-sm", turbo_confirm: "Are you sure you want to archive this workspace?" },
               title: "Archive workspace",
-              data: { turbo_confirm: "Are you sure you want to archive this workspace?" } do %>
-            <%= lucide_icon :archive, size: "w-4 h-4" %>
+              aria: { label: "Archive workspace" } do %>
+            <%= icon_for(:archive, class: "w-4 h-4") %>
           <% end %>
 
           <%= button_to workspace_path(workspace),
               method: :delete,
-              class: "btn-ghost btn-icon-sm cursor-pointer text-destructive hover:text-destructive",
+              class: "text-destructive hover:text-destructive",
+              data: { component: "button", variant: "ghost", size: "icon-sm", turbo_confirm: "Are you sure you want to delete this workspace?" },
               title: "Delete workspace",
-              data: { turbo_confirm: "Are you sure you want to delete this workspace?" } do %>
-            <%= lucide_icon :trash_2, size: "w-4 h-4" %>
+              aria: { label: "Delete workspace" } do %>
+            <%= icon_for(:trash_2, class: "w-4 h-4") %>
           <% end %>
         <% elsif workspace.archived? %>
           <%= button_to archive_workspace_path(workspace),
               method: :delete,
-              class: "btn-ghost btn-icon-sm cursor-pointer",
-              title: "Unarchive workspace" do %>
-            <%= lucide_icon :archive_restore, size: "w-4 h-4" %>
+              data: { component: "button", variant: "ghost", size: "icon-sm" },
+              title: "Unarchive workspace",
+              aria: { label: "Unarchive workspace" } do %>
+            <%= icon_for(:archive_restore, class: "w-4 h-4") %>
           <% end %>
 
           <%= button_to workspace_path(workspace),
               method: :delete,
-              class: "btn-ghost btn-icon-sm cursor-pointer text-destructive hover:text-destructive",
+              class: "text-destructive hover:text-destructive",
+              data: { component: "button", variant: "ghost", size: "icon-sm", turbo_confirm: "Are you sure you want to delete this workspace?" },
               title: "Delete workspace",
-              data: { turbo_confirm: "Are you sure you want to delete this workspace?" } do %>
-            <%= lucide_icon :trash_2, size: "w-4 h-4" %>
+              aria: { label: "Delete workspace" } do %>
+            <%= icon_for(:trash_2, class: "w-4 h-4") %>
           <% end %>
         <% elsif workspace.deleted? %>
           <%= button_to restore_deleted_workspace_path(workspace),
               method: :post,
-              class: "btn-ghost btn-icon-sm cursor-pointer",
-              title: "Restore workspace" do %>
-            <%= lucide_icon :rotate_ccw, size: "w-4 h-4" %>
+              data: { component: "button", variant: "ghost", size: "icon-sm" },
+              title: "Restore workspace",
+              aria: { label: "Restore workspace" } do %>
+            <%= icon_for(:rotate_ccw, class: "w-4 h-4") %>
           <% end %>
 
           <%= button_to destroy_deleted_workspace_path(workspace),
               method: :delete,
-              class: "btn-ghost btn-icon-sm cursor-pointer text-destructive hover:text-destructive",
+              class: "text-destructive hover:text-destructive",
+              data: { component: "button", variant: "ghost", size: "icon-sm", turbo_confirm: "Are you sure you want to permanently delete this workspace? This action cannot be undone." },
               title: "Permanently delete workspace",
-              data: { turbo_confirm: "Are you sure you want to permanently delete this workspace? This action cannot be undone." } do %>
-            <%= lucide_icon :trash, size: "w-4 h-4" %>
+              aria: { label: "Permanently delete workspace" } do %>
+            <%= icon_for(:trash, class: "w-4 h-4") %>
           <% end %>
         <% end %>
       </div>
     </div>
 
     <%= render "workspaces/workspace_metadata",
-    workspace: workspace,
-    show_status: show_status %>
+        workspace: workspace,
+        show_status: show_status %>
   </div>
-</div>
+<% end %>
