@@ -16,10 +16,8 @@
 <div class="mx-auto max-w-4xl h-[calc(100vh-12rem)] flex flex-col">
   <%= render "components/card", css_classes: "flex flex-col flex-1 min-h-0" do %>
     <%= render "components/card/header" do %>
-      <h2 class="text-2xl font-bold">Create New Memory</h2>
-      <p class="text-sm text-muted-foreground">
-        Add a new memory to <%= @workspace.name %>
-      </p>
+      <%= render "components/card/title", text: "Create New Memory" %>
+      <%= render "components/card/description", text: "Add a new memory to #{@workspace.name}" %>
     <% end %>
 
     <%= render "components/card/content", css_classes: "flex-1 flex flex-col min-h-0" do %>

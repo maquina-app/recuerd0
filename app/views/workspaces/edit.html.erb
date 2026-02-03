@@ -12,13 +12,13 @@
   ) %>
 <% end %>
 
-<div class="mx-auto max-w-2xl">
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold">Edit Workspace</h1>
-    <p class="text-muted-foreground mt-2">Update workspace details</p>
-  </div>
-
+<div class="mx-auto max-w-4xl">
   <%= render "components/card" do %>
+    <%= render "components/card/header" do %>
+      <%= render "components/card/title", text: "Edit #{@workspace.name}" %>
+      <%= render "components/card/description", text: "Update workspace details" %>
+    <% end %>
+
     <%= render "components/card/content" do %>
       <%= render "form", workspace: @workspace %>
     <% end %>

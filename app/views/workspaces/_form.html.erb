@@ -9,7 +9,7 @@
         maxlength: 100,
         data: { component: "input" } %>
     <% if workspace.errors[:name].any? %>
-      <p class="error-message mt-1"><%= workspace.errors[:name].first %></p>
+      <p data-form-part="error"><%= workspace.errors[:name].first %></p>
     <% end %>
   </div>
 
@@ -21,7 +21,7 @@
         maxlength: 500,
         data: { component: "textarea" } %>
     <% if workspace.errors[:description].any? %>
-      <p class="error-message mt-1"><%= workspace.errors[:description].first %></p>
+      <p data-form-part="error"><%= workspace.errors[:description].first %></p>
     <% end %>
   </div>
 

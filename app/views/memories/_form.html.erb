@@ -1,42 +1,25 @@
-<% content_for :page_title, action_name == "new" ? "New Memory" : "Edit Memory" %>
-
 <%# locals: (workspace:, memory:) %>
 
-<%= form_with model: [workspace, memory], local: true, class: "flex flex-col h-full space-y-4" do |form| %>
-  <%# Error messages %>
-  <% if memory.errors.any? %>
-    <%= render "components/alert", variant: :destructive do %>
-      <div class="flex items-start gap-3">
-        <%= icon_for(:alert_circle, class: "w-4 h-4 flex-shrink-0") %>
-        <div>
-          <strong><%= pluralize(memory.errors.count, "error") %> prevented this memory from being saved:</strong>
-          <ul class="list-disc list-inside space-y-1 mt-2">
-            <% memory.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
-        </div>
-      </div>
-    <% end %>
-  <% end %>
-
+<%= form_with model: [workspace, memory], local: true, class: "flex flex-col h-full space-y-4", data: { component: "form" } do |form| %>
   <%# Title field %>
-  <div>
-    <%= form.label :title, class: "block mb-2" %>
-    <%= form.text_field :title, 
-        placeholder: "Untitled Memory" %>
+  <div data-form-part="group">
+    <%= form.label :title, data: { component: "label" } %>
+    <%= form.text_field :title,
+        placeholder: "Untitled Memory",
+        data: { component: "input" } %>
     <% if memory.errors[:title].any? %>
-      <p class="error-message mt-1"><%= memory.errors[:title].first %></p>
+      <p data-form-part="error"><%= memory.errors[:title].first %></p>
     <% end %>
   </div>
 
   <%# Content field - takes remaining space %>
-  <div class="flex-1 flex flex-col min-h-0">
-    <%= form.label :content, "Content (Markdown)", class: "block mb-2" %>
-    <%= text_area_tag "memory[content]", 
-        memory.content&.body, 
+  <div class="flex-1 flex flex-col min-h-0" data-form-part="group">
+    <%= form.label :content, "Content (Markdown)", data: { component: "label" } %>
+    <%= text_area_tag "memory[content]",
+        memory.content&.body,
         class: "flex-1 resize-none overflow-y-auto font-mono text-sm",
-        placeholder: "Enter your memory content using Markdown..." %>
+        placeholder: "Enter your memory content using Markdown...",
+        data: { component: "textarea" } %>
     <p class="text-xs text-muted-foreground mt-1.5">
       Supports Markdown formatting
     </p>
@@ -77,20 +60,19 @@
       <div class="overflow-hidden">
         <div class="px-4 pb-4 pt-2 space-y-4 border-t border-border bg-muted/20">
           <%# Source field %>
-          <div>
-            <%= form.label :source, class: "block mb-2" %>
-            <%= form.text_field :source, 
-                placeholder: "e.g., Claude, Book Title, URL..." %>
+          <div data-form-part="group">
+            <%= form.label :source, data: { component: "label" } %>
+            <%= form.text_field :source,
+                placeholder: "e.g., Claude, Book Title, URL...",
+                data: { component: "input" } %>
             <% if memory.errors[:source].any? %>
-              <p class="error-message mt-1">
-                <%= memory.errors[:source].first %>
-              </p>
+              <p data-form-part="error"><%= memory.errors[:source].first %></p>
             <% end %>
           </div>
 
           <%# Tags field %>
-          <div>
-            <%= form.label :tags, class: "block mb-2" %>
+          <div data-form-part="group">
+            <%= form.label :tags, data: { component: "label" } %>
             <%= render "application/components/tag_input", form: form, field: :tags, value: memory.tags %>
             <p class="text-xs text-muted-foreground mt-1.5">
               Press Enter or comma to add tags
@@ -102,8 +84,8 @@
   </details>
 
   <%# Submit buttons %>
-  <div class="flex items-center gap-4 pt-2">
-    <%= form.submit class: "btn-default" %>
-    <%= link_to "Cancel", workspace_path(workspace), class: "btn-outline" %>
+  <div data-form-part="actions">
+    <%= form.submit data: { component: "button" } %>
+    <%= link_to "Cancel", workspace_path(workspace), data: { component: "button", variant: "outline" } %>
   </div>
 <% end %>
