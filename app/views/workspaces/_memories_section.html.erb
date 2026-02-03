@@ -1,10 +1,7 @@
-<%# locals: (workspace:, memories:, pagy:) %>
+<%# locals: (workspace:, pinned_memories:, regular_memories:, pagy:) %>
 
 <div class="space-y-6">
-  <% if memories.any? %>
-    <%# Separate pinned and regular memories %>
-    <% pinned_memories = memories.select { |m| m.pinned_by?(Current.user) } %>
-    <% regular_memories = memories.reject { |m| m.pinned_by?(Current.user) } %>
+  <% if pinned_memories.any? || regular_memories.any? %>
     <%# Pinned memories section %>
     <% if pinned_memories.any? %>
       <div class="space-y-4">

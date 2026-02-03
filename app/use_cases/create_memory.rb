@@ -12,13 +12,8 @@ class CreateMemory
 
   def call
     memory = @workspace.memories.build(memory_attributes)
-
-    if memory.save
-      create_content(memory)
-      memory
-    else
-      memory
-    end
+    create_content(memory) if memory.save
+    memory
   end
 
   private

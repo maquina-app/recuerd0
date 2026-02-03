@@ -19,8 +19,6 @@ class Memory < ApplicationRecord
 
   validates :title, length: {maximum: 255}
 
-  after_create :create_default_content
-
   # Override pinning to respect workspace state
   def can_be_pinned?
     workspace.active?
@@ -56,11 +54,5 @@ class Memory < ApplicationRecord
   # Display title with fallback for untitled memories
   def display_title
     title.presence || "Untitled Memory"
-  end
-
-  private
-
-  def create_default_content
-    create_content(body: "")
   end
 end

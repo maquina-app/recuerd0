@@ -1,0 +1,8 @@
+<%# locals: (workspace:) -%>
+<% if workspace.active? %>
+  <%= render "workspaces/workspace_actions_active", workspace: workspace %>
+<% elsif workspace.archived? %>
+  <%= render "workspaces/workspace_actions_archived", workspace: workspace %>
+<% elsif workspace.deleted? %>
+  <%= render "workspaces/workspace_actions_deleted", workspace: workspace %>
+<% end %>

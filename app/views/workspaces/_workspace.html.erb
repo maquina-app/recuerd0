@@ -57,13 +57,7 @@
       <%= render "components/dropdown_menu/content",
           align: :end,
           css_classes: "w-48" do %>
-        <% if workspace.active? %>
-          <%= render "workspaces/workspace_actions_active", workspace: workspace %>
-        <% elsif workspace.archived? %>
-          <%= render "workspaces/workspace_actions_archived", workspace: workspace %>
-        <% elsif workspace.deleted? %>
-          <%= render "workspaces/workspace_actions_deleted", workspace: workspace %>
-        <% end %>
+        <%= render "workspaces/workspace_actions", workspace: workspace %>
       <% end %>
     <% end %>
   </div>

@@ -13,7 +13,8 @@ class Workspaces::DeletedController < ApplicationController
       return
     end
 
-    @pagy, @memories = pagy(@workspace.memories.includes(:content).order(created_at: :desc), items: 10)
+    @pagy, @memories = pagy(@workspace.memories.includes(:content, :pins).order(created_at: :desc), items: 10)
+    @pinned_memories, @regular_memories = @memories.partition { |m| m.pinned_by?(Current.user) }
     render "workspaces/show"
   end
 

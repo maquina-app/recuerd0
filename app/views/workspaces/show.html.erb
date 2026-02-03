@@ -2,30 +2,7 @@
 <% content_for :page_title, @workspace.name %>
 
 <% content_for :breadcrumb do %>
-  <% if @workspace.archived? %>
-    <%= breadcrumbs(
-      {
-        "Home" => root_path,
-        "Workspaces" => workspaces_path,
-        "Archived Workspaces" => archived_workspaces_path,
-      },
-      @workspace.name,
-    ) %>
-  <% elsif @workspace.deleted? %>
-    <%= breadcrumbs(
-      {
-        "Home" => root_path,
-        "Workspaces" => workspaces_path,
-        "Deleted Workspaces" => deleted_workspaces_path,
-      },
-      @workspace.name,
-    ) %>
-  <% else %>
-    <%= breadcrumbs(
-      { "Home" => root_path, "Workspaces" => workspaces_path },
-      @workspace.name,
-    ) %>
-  <% end %>
+  <%= breadcrumbs(workspace_breadcrumb_links(@workspace), @workspace.name) %>
 <% end %>
 
 <div class="mx-auto max-w-4xl">
@@ -68,13 +45,7 @@
         <%= render "components/dropdown_menu/content",
             align: :end,
             css_classes: "w-48" do %>
-          <% if @workspace.active? %>
-            <%= render "workspaces/workspace_actions_active", workspace: @workspace %>
-          <% elsif @workspace.archived? %>
-            <%= render "workspaces/workspace_actions_archived", workspace: @workspace %>
-          <% elsif @workspace.deleted? %>
-            <%= render "workspaces/workspace_actions_deleted", workspace: @workspace %>
-          <% end %>
+          <%= render "workspaces/workspace_actions", workspace: @workspace %>
         <% end %>
       <% end %>
     </div>
@@ -82,7 +53,7 @@
 
   <%# State alerts %>
   <% if @workspace.archived? %>
-    <%= render "components/alert", variant: :success, icon: :archive, css_classes: "mb-6" do %>
+    <%= render "components/alert", variant: :default, icon: :archive, css_classes: "mb-6" do %>
       <strong>This workspace is archived</strong>
       <p class="mt-1">This workspace is in read-only mode. You can view its contents but cannot make changes. Restore it to continue adding memories.</p>
     <% end %>
@@ -123,6 +94,7 @@
 
   <%= render "workspaces/memories_section",
     workspace: @workspace,
-    memories: @memories,
+    pinned_memories: @pinned_memories,
+    regular_memories: @regular_memories,
     pagy: @pagy %>
 </div>

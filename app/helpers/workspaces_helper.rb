@@ -8,4 +8,16 @@ module WorkspacesHelper
       deleted_workspace_path(workspace)
     end
   end
+
+  def workspace_breadcrumb_links(workspace)
+    base = {"Home" => root_path, "Workspaces" => workspaces_path}
+
+    if workspace.archived?
+      base.merge("Archived Workspaces" => archived_workspaces_path)
+    elsif workspace.deleted?
+      base.merge("Deleted Workspaces" => deleted_workspaces_path)
+    else
+      base
+    end
+  end
 end

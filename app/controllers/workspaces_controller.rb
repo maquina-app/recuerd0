@@ -6,7 +6,7 @@ class WorkspacesController < ApplicationController
     workspaces = Current.user.workspaces
       .active
       .ordered_with_pins_first(Current.user)
-      .includes(:memories)
+      .includes(:pins)
 
     @pagy, @workspaces = pagy(workspaces)
   end
@@ -24,10 +24,11 @@ class WorkspacesController < ApplicationController
     # Load only latest versions with eager loading for performance
     memories_scope = @workspace.memories
       .latest_versions
-      .includes(:content, :child_versions)
+      .includes(:content, :child_versions, :pins)
       .order(updated_at: :desc)
 
     @pagy, @memories = pagy(memories_scope, items: 10)
+    @pinned_memories, @regular_memories = @memories.partition { |m| m.pinned_by?(Current.user) }
   end
 
   # GET /workspaces/new

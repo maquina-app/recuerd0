@@ -21,7 +21,12 @@ module Pinnable
 
   def pinned_by?(user)
     return false unless user
-    pins.exists?(user: user)
+
+    if pins.loaded?
+      pins.any? { |p| p.user_id == user.id }
+    else
+      pins.exists?(user: user)
+    end
   end
 
   def pin_for(user)
