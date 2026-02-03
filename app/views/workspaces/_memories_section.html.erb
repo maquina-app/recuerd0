@@ -1,16 +1,6 @@
 <%# locals: (workspace:, memories:, pagy:) %>
 
 <div class="space-y-6">
-  <div class="flex justify-between items-center">
-    <h2 class="text-xl font-semibold">Memories</h2>
-    <% if workspace.active? %>
-      <%= link_to new_workspace_memory_path(workspace), data: { component: "button", variant: "secondary", size: "sm" } do %>
-        <%= icon_for(:bookmark_plus, class: "w-4 h-4") %>
-        New Memory
-      <% end %>
-    <% end %>
-  </div>
-
   <% if memories.any? %>
     <%# Separate pinned and regular memories %>
     <% pinned_memories = memories.select { |m| m.pinned_by?(Current.user) } %>
@@ -53,7 +43,7 @@
     </div>
   <% else %>
     <%# Empty state %>
-    <%= render "components/empty", variant: :dashed do %>
+    <%= render "components/empty", variant: :outline do %>
       <%= render "components/empty/header" do %>
         <%= render "components/empty/media", icon: :sticky_note %>
         <%= render "components/empty/title", text: "No memories yet" %>

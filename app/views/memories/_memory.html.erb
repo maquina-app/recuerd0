@@ -1,6 +1,6 @@
 <%# locals: (memory:, workspace:, show_pinned: false) %>
 
-<%= render "components/card", css_classes: "hover:shadow-md transition-shadow" do %>
+<%= render "components/card", css_classes: "group hover:shadow-md transition-shadow" do %>
   <%= render "components/card/header" do %>
     <div class="flex justify-between items-start">
       <div class="space-y-1 flex-1">
@@ -29,31 +29,28 @@
         <% end %>
       </div>
 
-      <div class="flex items-center gap-1 ml-4">
-        <%# Pin button %>
-        <%= render "shared/pin_button", pinnable: memory %>
-
-        <%# Version controls %>
-        <% if memory.has_versions? %>
-          <%= link_to workspace_memory_versions_path(workspace, memory),
-              class: "btn-ghost btn-icon-sm",
-              title: "View versions" do %>
-            <%= icon_for(:git_branch, class: "w-4 h-4") %>
+      <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
+        <%= render "components/dropdown_menu" do %>
+          <%= render "components/dropdown_menu/trigger", as_child: true do %>
+            <button
+              type="button"
+              data-component="button"
+              data-variant="ghost"
+              data-size="icon-sm"
+              data-dropdown-menu-target="trigger"
+              data-action="dropdown-menu#toggle"
+              aria-haspopup="menu"
+              aria-expanded="false"
+              aria-label="Memory actions"
+            >
+              <%= icon_for(:more_vertical, class: "w-4 h-4") %>
+            </button>
           <% end %>
-        <% end %>
 
-        <% if workspace.active? %>
-          <%= link_to edit_workspace_memory_path(workspace, memory),
-              class: "btn-ghost btn-icon-sm",
-              title: "Edit memory" do %>
-            <%= icon_for(:edit, class: "w-4 h-4") %>
-          <% end %>
-          <%= button_to workspace_memory_path(workspace, memory),
-              method: :delete,
-              data: { turbo_confirm: "Are you sure you want to delete this memory?" },
-              class: "btn-ghost btn-icon-sm text-destructive hover:text-destructive",
-              title: "Delete memory" do %>
-            <%= icon_for(:trash_2, class: "w-4 h-4") %>
+          <%= render "components/dropdown_menu/content",
+              align: :end,
+              css_classes: "w-48" do %>
+            <%= render "memories/memory_actions", memory: memory, workspace: workspace %>
           <% end %>
         <% end %>
       </div>
@@ -86,7 +83,8 @@
         ago
       </span>
       <%= link_to workspace_memory_path(workspace, memory),
-          class: "btn-link text-xs p-0 h-auto inline-flex items-center gap-1" do %>
+          class: "inline-flex items-center gap-1 text-xs p-0 h-auto",
+          data: { component: "button", variant: "link", size: "sm" } do %>
         View Details
         <%= icon_for(:chevron_right, class: "w-3 h-3 flex-shrink-0") %>
       <% end %>

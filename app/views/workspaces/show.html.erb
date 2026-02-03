@@ -28,37 +28,101 @@
   <% end %>
 <% end %>
 
-<div class="mx-auto max-w-7xl">
-  <%= render "workspaces/workspace_header", workspace: @workspace %>
+<div class="mx-auto max-w-4xl">
+  <%# Header %>
+  <div class="mb-6 flex items-center justify-between">
+    <div class="min-w-0">
+      <h1 class="text-2xl font-bold tracking-tight"><%= @workspace.name %></h1>
+      <% if @workspace.description.present? %>
+        <p class="text-muted-foreground mt-1"><%= @workspace.description %></p>
+      <% end %>
+    </div>
 
+    <div class="flex items-center gap-1 flex-shrink-0">
+      <% if @workspace.active? %>
+        <%= render "shared/pin_button", pinnable: @workspace %>
+
+        <%= link_to new_workspace_memory_path(@workspace), data: { component: "button", variant: "secondary", size: "sm" } do %>
+          <%= icon_for(:bookmark_plus, class: "w-4 h-4") %>
+          New Memory
+        <% end %>
+      <% end %>
+
+      <%= render "components/dropdown_menu" do %>
+        <%= render "components/dropdown_menu/trigger", as_child: true do %>
+          <button
+            type="button"
+            data-component="button"
+            data-variant="ghost"
+            data-size="icon-sm"
+            data-dropdown-menu-target="trigger"
+            data-action="dropdown-menu#toggle"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-label="Workspace actions"
+          >
+            <%= icon_for(:more_vertical, class: "w-4 h-4") %>
+          </button>
+        <% end %>
+
+        <%= render "components/dropdown_menu/content",
+            align: :end,
+            css_classes: "w-48" do %>
+          <% if @workspace.active? %>
+            <%= render "workspaces/workspace_actions_active", workspace: @workspace %>
+          <% elsif @workspace.archived? %>
+            <%= render "workspaces/workspace_actions_archived", workspace: @workspace %>
+          <% elsif @workspace.deleted? %>
+            <%= render "workspaces/workspace_actions_deleted", workspace: @workspace %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# State alerts %>
   <% if @workspace.archived? %>
-    <%= render "components/alert", variant: :info, css_classes: "mb-6" do %>
-      <div class="flex items-start gap-3">
-        <%= icon_for(:archive, class: "w-4 h-4 flex-shrink-0 text-blue-600 dark:text-blue-400") %>
-        <div>
-          <strong>This workspace is archived</strong>
-          <p class="mt-1">This workspace is in read-only mode. You can view its contents but cannot make changes. Restore it to continue adding memories.</p>
-        </div>
-      </div>
+    <%= render "components/alert", variant: :success, icon: :archive, css_classes: "mb-6" do %>
+      <strong>This workspace is archived</strong>
+      <p class="mt-1">This workspace is in read-only mode. You can view its contents but cannot make changes. Restore it to continue adding memories.</p>
     <% end %>
   <% elsif @workspace.deleted? %>
-    <% days_until_permanent_deletion = 30 - (Date.current - @workspace.deleted_at.to_date).to_i %>
-    <%= render "components/alert", variant: :warning, css_classes: "mb-6" do %>
-      <div class="flex items-start gap-3">
-        <%= icon_for(:trash_2, class: "w-4 h-4 flex-shrink-0 text-amber-600 dark:text-amber-400") %>
-        <div>
-          <strong>This workspace is deleted</strong>
-          <p class="mt-1">
-            This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories.
-            <%= days_until_permanent_deletion > 0 ? "This workspace will be permanently deleted in #{pluralize(days_until_permanent_deletion, "day")}." : "This workspace is scheduled for permanent deletion." %>
-          </p>
-        </div>
-      </div>
+    <%= render "components/alert", variant: :warning, icon: :trash_2, css_classes: "mb-6" do %>
+      <strong>This workspace is deleted</strong>
+      <p class="mt-1">
+        This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories.
+        <% if @workspace.days_until_permanent_deletion > 0 %>
+          This workspace will be permanently deleted in <%= pluralize(@workspace.days_until_permanent_deletion, "day") %>.
+        <% else %>
+          This workspace is scheduled for permanent deletion.
+        <% end %>
+      </p>
     <% end %>
   <% end %>
 
+  <%# Metadata %>
+  <div class="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+    <span class="inline-flex items-center gap-1">
+      <%= icon_for(:clock, class: "w-4 h-4") %>
+      Created <%= time_ago_in_words(@workspace.created_at) %> ago
+    </span>
+    <span class="inline-flex items-center gap-1">
+      <%= icon_for(:file_text, class: "w-4 h-4") %>
+      <%= pluralize(@workspace.memories_count, "memory") %>
+    </span>
+    <% if @workspace.deleted? && @workspace.days_until_permanent_deletion > 0 %>
+      <%= render "components/badge", variant: :destructive, css_classes: "text-xs" do %>
+        <%= pluralize(@workspace.days_until_permanent_deletion, "day") %> left
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="mb-6">
+    <%= render "components/separator" %>
+  </div>
+
   <%= render "workspaces/memories_section",
-  workspace: @workspace,
-  memories: @memories,
-  pagy: @pagy %>
+    workspace: @workspace,
+    memories: @memories,
+    pagy: @pagy %>
 </div>
