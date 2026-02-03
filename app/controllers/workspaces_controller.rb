@@ -1,7 +1,7 @@
 class WorkspacesController < ApplicationController
   before_action :set_workspace, only: %i[show edit update destroy]
+  before_action :require_active_workspace, only: %i[edit update]
 
-  # GET /workspaces
   def index
     workspaces = Current.user.workspaces
       .active
@@ -11,7 +11,6 @@ class WorkspacesController < ApplicationController
     @pagy, @workspaces = pagy(workspaces)
   end
 
-  # GET /workspaces/1
   def show
     if @workspace.archived?
       redirect_to archived_workspace_path(@workspace)
@@ -21,7 +20,6 @@ class WorkspacesController < ApplicationController
       return
     end
 
-    # Load only latest versions with eager loading for performance
     memories_scope = @workspace.memories
       .latest_versions
       .includes(:content, :child_versions, :pins)
@@ -31,57 +29,48 @@ class WorkspacesController < ApplicationController
     @pinned_memories, @regular_memories = @memories.partition { |m| m.pinned_by?(Current.user) }
   end
 
-  # GET /workspaces/new
   def new
     @workspace = Current.user.workspaces.build
   end
 
-  # GET /workspaces/1/edit
   def edit
-    unless @workspace.active?
-      redirect_to workspaces_path, alert: "This workspace cannot be edited."
-      nil
-    end
   end
 
-  # POST /workspaces
   def create
     @workspace = Current.user.workspaces.build(workspace_params)
 
     if @workspace.save
-      redirect_to @workspace, notice: "Workspace was successfully created."
+      redirect_to @workspace, notice: t(".created")
     else
-      flash.now[:alert] = "Please review the errors below."
+      flash.now[:alert] = t(".errors")
       render :new, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /workspaces/1
   def update
-    unless @workspace.active?
-      redirect_to workspaces_path, alert: "This workspace cannot be updated."
-      return
-    end
-
     if @workspace.update(workspace_params)
-      redirect_to @workspace, notice: "Workspace was successfully updated."
+      redirect_to @workspace, notice: t(".updated")
     else
-      flash.now[:alert] = "Please review the errors below."
+      flash.now[:alert] = t(".errors")
       render :edit, status: :unprocessable_entity
     end
   end
 
-  # DELETE /workspaces/1
   def destroy
     @workspace.soft_delete
-    redirect_to workspaces_url, notice: "Workspace was successfully deleted.", status: :see_other
+    redirect_to workspaces_url, notice: t(".destroyed"), status: :see_other
   end
 
   private
 
   def set_workspace
-    # Use with_deleted to find soft deleted workspaces as well
     @workspace = Current.user.workspaces.with_deleted.find(params[:id])
+  end
+
+  def require_active_workspace
+    return if @workspace.active?
+
+    redirect_to workspaces_path, alert: t("workspaces.inactive_workspace")
   end
 
   def workspace_params

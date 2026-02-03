@@ -54,6 +54,9 @@ group :development, :test do
   gem "brakeman", require: false
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
+
+  # Pin minitest to v5 for Rails 8.0 compatibility with Ruby 4.0
+  gem "minitest", "~> 5.25"
 end
 
 group :development do

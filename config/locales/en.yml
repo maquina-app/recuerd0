@@ -29,3 +29,14 @@
 
 en:
   hello: "Hello world"
+
+  workspaces:
+    inactive_workspace: "This workspace cannot be modified."
+    create:
+      created: "Workspace was successfully created."
+      errors: "Please review the errors below."
+    update:
+      updated: "Workspace was successfully updated."
+      errors: "Please review the errors below."
+    destroy:
+      destroyed: "Workspace was successfully deleted."
