@@ -101,3 +101,24 @@ Component partials accept `css_classes:` for styling and `**html_options` (inclu
 ### Authentication
 
 Uses Rails 8 built-in authentication generator with `Current.user` for accessing the logged-in user.
+
+## Rails MCP Server
+
+A Rails MCP server is available for introspecting the application and loading documentation guides. Use `mcp__rails__execute_tool` to call tools and `mcp__rails__search_tools` to discover them.
+
+### Available guides
+
+Load guides with `execute_tool("load_guide", { library: "<library>", guide: "<guide_name>" })`. Omit `guide` to list all available guides for a library.
+
+- **Rails** (54 guides) — `routing`, `active_record_querying`, `testing`, `caching_with_rails`, `security`, `configuring`, etc.
+- **Turbo** (13 guides) — `handbook/02_drive`, `handbook/03_page_refreshes`, `handbook/04_frames`, `handbook/05_streams`, `reference/events`, `reference/attributes`, etc.
+- **Stimulus** (16 guides) — `reference/actions`, `reference/controllers`, `reference/values`, `reference/targets`, `reference/lifecycle_callbacks`, `reference/outlets`, etc.
+- **Kamal** (58 guides) — `configuration/overview`, `configuration/proxy`, `commands/deploy`, `commands/rollback`, `upgrading/overview`, `hooks/overview`, etc.
+
+### Other useful tools
+
+- `analyze_models` — introspect ActiveRecord models (associations, validations, scopes)
+- `analyze_controller_views` — inspect controllers (callbacks, strong params, renders)
+- `get_routes` — list HTTP routes with filtering
+- `get_schema` — database schema for all or specific tables
+- `project_info` — Rails version, directory structure, project overview

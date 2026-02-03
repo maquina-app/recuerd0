@@ -1,0 +1,14 @@
+<%# locals: (icon:, title:, description:) %>
+<%= render "components/empty", variant: :dashed do %>
+  <%= render "components/empty/header" do %>
+    <%= render "components/empty/media", icon: icon %>
+    <%= render "components/empty/title", text: title %>
+    <%= render "components/empty/description", text: description %>
+  <% end %>
+  <%= render "components/empty/content" do %>
+    <%= link_to workspaces_path, data: { component: "button", variant: "secondary" } do %>
+      <%= icon_for(:arrow_left, class: "w-4 h-4") %>
+      Back to Workspaces
+    <% end %>
+  <% end %>
+<% end %>

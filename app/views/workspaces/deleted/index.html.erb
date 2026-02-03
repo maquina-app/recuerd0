@@ -9,9 +9,8 @@
 <% end %>
 
 <div class="mx-auto max-w-4xl">
-  <div class="mb-6">
+  <div class="mb-6 flex items-center justify-between">
     <h1 class="text-2xl font-bold tracking-tight">Deleted Workspaces</h1>
-    <p class="text-muted-foreground mt-1">Manage your deleted workspaces</p>
   </div>
 
   <%= render "components/alert", variant: :warning, css_classes: "mb-6" do %>
@@ -25,28 +24,8 @@
   <% end %>
 
   <% if @workspaces.any? %>
-    <div class="divide-y divide-border">
-      <% @workspaces.each do |workspace| %>
-        <%= render "workspaces/workspace", workspace: workspace %>
-      <% end %>
-    </div>
-
-    <div class="mt-6">
-      <%= pagination_nav(@pagy, :deleted_workspaces_path) %>
-    </div>
+    <%= render "workspaces/workspaces_list", workspaces: @workspaces, pagy: @pagy, path_helper: :deleted_workspaces_path, show_status: true %>
   <% else %>
-    <%= render "components/empty", variant: :dashed do %>
-      <%= render "components/empty/header" do %>
-        <%= render "components/empty/media", icon: :trash_2 %>
-        <%= render "components/empty/title", text: "No deleted workspaces" %>
-        <%= render "components/empty/description", text: "You haven't deleted any workspaces yet." %>
-      <% end %>
-      <%= render "components/empty/content" do %>
-        <%= link_to workspaces_path, data: { component: "button", variant: "secondary" } do %>
-          <%= icon_for(:arrow_left, class: "w-4 h-4") %>
-          Back to Workspaces
-        <% end %>
-      <% end %>
-    <% end %>
+    <%= render "workspaces/empty_state_generic", icon: :trash_2, title: "No deleted workspaces", description: "You haven't deleted any workspaces yet." %>
   <% end %>
 </div>
