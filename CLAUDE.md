@@ -91,7 +91,12 @@ Component partials accept `css_classes:` for styling and `**html_options` (inclu
 ### Turbo / Hotwire Notes
 
 - Layout uses `turbo_refresh_method_tag :morph` — Turbo caches page snapshots
-- Dropdown menus and other stateful Stimulus-controlled elements should use `data-turbo-temporary` so Turbo strips them from cache snapshots, preventing stale DOM state on back navigation
+- `data-turbo-temporary` does **not** work with morph mode for cleaning up stateful elements
+- Stateful Stimulus components (dropdowns, modals) need cleanup via Turbo cache events:
+  - `turbo:before-cache` — clean the live DOM before Turbo snapshots it
+  - `turbo:before-render` — clean `event.detail.newBody` before Turbo paints it on Back/Forward (prevents flash of stale state)
+- `app/javascript/controllers/application.js` implements the [Better Stimulus global teardown pattern](https://www.betterstimulus.com/turbo/teardown.html): any Stimulus controller with a `teardown()` method gets called on `turbo:before-cache`
+- `app/javascript/application.js` has manual DOM cleanup for gem-provided dropdown menus (until the gem adds its own `teardown()`)
 
 ### Authentication
 
