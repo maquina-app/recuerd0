@@ -1,25 +1,20 @@
 <%# locals: (workspaces:, pagy:, title: nil) %>
 <div>
   <% if title %>
-    <h2 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">
-      <%= title %>
-    </h2>
+    <h2 class="text-lg font-semibold mb-4 text-muted-foreground"><%= title %></h2>
   <% end %>
 
   <% if workspaces.any? %>
-    <div id="unpinned_workspaces" class="space-y-4">
+    <div id="workspaces" class="divide-y divide-border">
       <%= render workspaces %>
     </div>
 
     <% if pagy.pages > 1 %>
-      <div class="mt-8">
+      <div class="mt-6">
         <%= render "application/components/pagination", pagy: pagy %>
       </div>
     <% end %>
   <% else %>
-    <p class="text-gray-500 dark:text-gray-400">
-      No unpinned workspaces yet. Pin your favorite workspaces for quick
-      access!
-    </p>
+    <p class="text-sm text-muted-foreground py-8 text-center">No workspaces found.</p>
   <% end %>
 </div>

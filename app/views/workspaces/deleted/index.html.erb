@@ -8,10 +8,10 @@
   ) %>
 <% end %>
 
-<div class="mx-auto max-w-7xl">
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold">Deleted Workspaces</h1>
-    <p class="text-muted-foreground mt-2">Manage your deleted workspaces</p>
+<div class="mx-auto max-w-4xl">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold tracking-tight">Deleted Workspaces</h1>
+    <p class="text-muted-foreground mt-1">Manage your deleted workspaces</p>
   </div>
 
   <%= render "components/alert", variant: :warning, css_classes: "mb-6" do %>
@@ -25,7 +25,7 @@
   <% end %>
 
   <% if @workspaces.any? %>
-    <div class="space-y-4">
+    <div class="divide-y divide-border">
       <% @workspaces.each do |workspace| %>
         <%= render "workspaces/workspace", workspace: workspace %>
       <% end %>

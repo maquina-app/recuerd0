@@ -9,7 +9,7 @@ module Pinnable
 
       joins(:pins)
         .where(pins: {user_id: user.id})
-        .order("pins.position ASC, pins.created_at DESC")
+        .order(Arel.sql("pins.position ASC, pins.created_at DESC"))
     }
 
     scope :not_pinned_by, ->(user) {

@@ -3,17 +3,12 @@ class WorkspacesController < ApplicationController
 
   # GET /workspaces
   def index
-    @pinned_workspaces = Current.user.pinned_workspaces
+    workspaces = Current.user.workspaces
       .active
+      .ordered_with_pins_first(Current.user)
       .includes(:memories)
 
-    @workspaces = Current.user.workspaces
-      .active
-      .not_pinned_by(Current.user)
-      .ordered
-      .includes(:memories)
-
-    @pagy, @workspaces = pagy(@workspaces)
+    @pagy, @workspaces = pagy(workspaces)
   end
 
   # GET /workspaces/1

@@ -26,8 +26,8 @@ class Workspace < ApplicationRecord
       .where(pins: {user_id: [user.id, nil]})
       .order(
         Arel.sql("CASE WHEN pins.id IS NOT NULL THEN 0 ELSE 1 END"),
-        "pins.position ASC NULLS LAST",
-        "workspaces.updated_at DESC"
+        Arel.sql("pins.position ASC NULLS LAST"),
+        Arel.sql("workspaces.updated_at DESC")
       )
       .distinct
   }
