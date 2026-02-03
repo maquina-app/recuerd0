@@ -74,9 +74,24 @@ Controllers under `workspaces/` handle specific workspace states:
 ### Frontend
 
 - **Stimulus controllers** in `app/javascript/controllers/` - sidebar, collapsible, dropdown, sonner (toasts), tag input
-- **Component partials** in `app/views/components/` - shadcn/ui-inspired components (card, badge, alert, breadcrumb, dropdown_menu, sidebar)
-- **Pagination** via Pagy gem
+- **Component partials** in `app/views/components/` — provided by the `maquina-components` gem (not local files). Components include: card, badge, alert, breadcrumb, dropdown_menu, sidebar, pagination, empty, separator
+- **Pagination** via Pagy gem, rendered with `pagination_nav(pagy, :route_helper)` from the gem's `PaginationHelper`
+- **Breadcrumbs** via `breadcrumbs({ "Label" => path }, "Current Page")` from the gem's `BreadcrumbsHelper`
 - UI state (sidebar open/closed, collapsible states) persisted in cookies
+
+### maquina-components Gem
+
+Component partials live in the gem, not in the app. The app's `MaquinaComponentsHelper` (`app/helpers/maquina_components_helper.rb`) includes:
+- `MaquinaComponents::IconsHelper` — `icon_for(:name)` helper with app-level SVG fallbacks via `main_icon_svg_for`
+- `MaquinaComponents::PaginationHelper` — `pagination_nav(pagy, :route_helper, params: {})` and `pagination_simple`
+- `MaquinaComponents::BreadcrumbsHelper` — `breadcrumbs(links_hash, current_page)` and `responsive_breadcrumbs`
+
+Component partials accept `css_classes:` for styling and `**html_options` (including `data:`) for extra attributes. Data attributes are merged with the component's own data attributes (e.g., `data-component`, `data-controller`).
+
+### Turbo / Hotwire Notes
+
+- Layout uses `turbo_refresh_method_tag :morph` — Turbo caches page snapshots
+- Dropdown menus and other stateful Stimulus-controlled elements should use `data-turbo-temporary` so Turbo strips them from cache snapshots, preventing stale DOM state on back navigation
 
 ### Authentication
 

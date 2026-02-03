@@ -9,11 +9,9 @@
       <%= render workspaces %>
     </div>
 
-    <% if pagy.pages > 1 %>
-      <div class="mt-6">
-        <%= render "application/components/pagination", pagy: pagy %>
-      </div>
-    <% end %>
+    <div class="mt-6">
+      <%= pagination_nav(pagy, :workspaces_path) %>
+    </div>
   <% else %>
     <p class="text-sm text-muted-foreground py-8 text-center">No workspaces found.</p>
   <% end %>

@@ -31,11 +31,9 @@
       <% end %>
     </div>
 
-    <% if @pagy && @pagy.pages > 1 %>
-      <div class="mt-8">
-        <%= render "application/components/pagination", pagy: @pagy %>
-      </div>
-    <% end %>
+    <div class="mt-6">
+      <%= pagination_nav(@pagy, :pinned_workspaces_path) %>
+    </div>
   <% else %>
     <%= render "components/empty", variant: :dashed do %>
       <%= render "components/empty/header" do %>

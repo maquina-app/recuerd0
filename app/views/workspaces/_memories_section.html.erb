@@ -48,9 +48,9 @@
       </div>
     <% end %>
     <%# Pagination %>
-    <% if pagy.pages > 1 %>
-      <div class="mt-8"><%= render "application/components/pagination", pagy: pagy %></div>
-    <% end %>
+    <div class="mt-6">
+      <%= pagination_nav(pagy, :workspace_path, params: { id: workspace.id }) %>
+    </div>
   <% else %>
     <%# Empty state %>
     <%= render "components/empty", variant: :dashed do %>
