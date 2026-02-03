@@ -13,14 +13,9 @@
     <h1 class="text-2xl font-bold tracking-tight">Deleted Workspaces</h1>
   </div>
 
-  <%= render "components/alert", variant: :warning, css_classes: "mb-6" do %>
-    <div class="flex items-start gap-3">
-      <%= icon_for(:trash_2, class: "w-4 h-4 flex-shrink-0 text-amber-600 dark:text-amber-400") %>
-      <div>
-        <strong>About Deleted Workspaces</strong>
-        <p class="mt-1">Deleted workspaces can be restored or permanently removed. Permanently deleting a workspace will also delete all associated memories and cannot be undone.</p>
-      </div>
-    </div>
+  <%= render "components/alert", variant: :warning, icon: :trash_2, css_classes: "mb-6" do %>
+    <strong>About Deleted Workspaces</strong>
+    <p class="mt-1">Deleted workspaces can be restored or permanently removed. Permanently deleting a workspace will also delete all associated memories and cannot be undone.</p>
   <% end %>
 
   <% if @workspaces.any? %>

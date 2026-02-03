@@ -4,15 +4,11 @@
     <h2 class="text-lg font-semibold mb-4 text-muted-foreground"><%= title %></h2>
   <% end %>
 
-  <% if workspaces.any? %>
-    <div id="workspaces" class="divide-y divide-border">
-      <%= render partial: "workspaces/workspace", collection: workspaces, as: :workspace, locals: { show_status: show_status } %>
-    </div>
+  <div id="workspaces" class="divide-y divide-border">
+    <%= render partial: "workspaces/workspace", collection: workspaces, as: :workspace, locals: { show_status: show_status } %>
+  </div>
 
-    <div class="mt-6">
-      <%= pagination_nav(pagy, path_helper) %>
-    </div>
-  <% else %>
-    <p class="text-sm text-muted-foreground py-8 text-center">No workspaces found.</p>
-  <% end %>
+  <div class="mt-6">
+    <%= pagination_nav(pagy, path_helper) %>
+  </div>
 </div>

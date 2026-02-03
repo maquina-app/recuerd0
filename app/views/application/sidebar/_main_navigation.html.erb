@@ -5,21 +5,24 @@
       <%= render "components/sidebar/menu_button",
           title: "Workspaces",
           url: workspaces_path,
-          icon_name: :folders %>
+          icon_name: :folders,
+          active: current_page?(workspaces_path) %>
     <% end %>
 
     <%= render "components/sidebar/menu_item" do %>
       <%= render "components/sidebar/menu_button",
           title: "Archived",
           url: archived_workspaces_path,
-          icon_name: :archive %>
+          icon_name: :archive,
+          active: current_page?(archived_workspaces_path) %>
     <% end %>
 
     <%= render "components/sidebar/menu_item" do %>
       <%= render "components/sidebar/menu_button",
           title: "Deleted",
           url: deleted_workspaces_path,
-          icon_name: :trash_2 %>
+          icon_name: :trash_2,
+          active: current_page?(deleted_workspaces_path) %>
     <% end %>
   <% end %>
 <% end %>

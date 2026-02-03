@@ -68,7 +68,6 @@ Workspace state hierarchy: active (default) → archived → deleted
 Controllers under `workspaces/` handle specific workspace states:
 - `Workspaces::ArchivesController` - archived workspace operations
 - `Workspaces::DeletedController` - deleted workspace operations (restore, permanent delete)
-- `Workspaces::PinnedController` - pinned workspace listing
 - `Memories::VersionsController` - memory version operations
 
 ### Frontend
@@ -87,6 +86,46 @@ Component partials live in the gem, not in the app. The app's `MaquinaComponents
 - `MaquinaComponents::BreadcrumbsHelper` — `breadcrumbs(links_hash, current_page)` and `responsive_breadcrumbs`
 
 Component partials accept `css_classes:` for styling and `**html_options` (including `data:`) for extra attributes. Data attributes are merged with the component's own data attributes (e.g., `data-component`, `data-controller`).
+
+#### Component variant reference
+
+- **alert** — `:default`, `:destructive`, `:success`, `:warning` (no `:info` variant)
+- **empty** — `:default`, `:outline` (`:outline` renders a dashed border; there is no `:dashed` variant)
+- **badge** — `:default`, `:secondary`, `:destructive`, `:warning`, `:outline`
+
+#### Alert `icon:` parameter
+
+Use the built-in `icon:` local instead of manually placing icons inside the block. The component sets `data-has-icon` and uses a CSS grid layout automatically:
+
+```erb
+<%= render "components/alert", variant: :warning, icon: :trash_2, css_classes: "mb-6" do %>
+  <strong>Title</strong>
+  <p class="mt-1">Description text.</p>
+<% end %>
+```
+
+#### Sidebar `active:` parameter
+
+The `sidebar/menu_button` partial accepts `active:` (default `false`) to highlight the current section:
+
+```erb
+<%= render "components/sidebar/menu_button",
+    title: "Workspaces",
+    url: workspaces_path,
+    icon_name: :folders,
+    active: current_page?(workspaces_path) %>
+```
+
+#### Theme color variables
+
+The app's CSS theme is defined in `app/assets/tailwind/application.css` using oklch colors with **hue 150 (green)** as the primary. The gem's component CSS references raw CSS variables (e.g., `var(--success)`, `var(--warning-foreground)`) — these must be defined in `:root` and `.dark` blocks. The `@theme` block maps them to Tailwind utilities with `--color-` prefix.
+
+Required semantic color variables (beyond the standard set):
+- `--destructive-foreground` — text on destructive backgrounds
+- `--success` / `--success-foreground` — used by alert and toast components
+- `--warning` / `--warning-foreground` — used by alert and toast components
+
+Alert variants use subtle light-tinted backgrounds with dark text (not bold colored banners). The warning hue (85) is a warm yellow-green that complements the green theme without clashing.
 
 ### Turbo / Hotwire Notes
 

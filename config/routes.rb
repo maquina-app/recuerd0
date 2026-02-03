@@ -18,13 +18,13 @@ Rails.application.routes.draw do
     end
   end
 
-  # Archived workspace show route
-  get "workspaces/archived/:id", to: "workspaces/archives#show", as: :archived_workspace
-
-  # Deleted workspace routes
-  get "workspaces/deleted/:id", to: "workspaces/deleted#show", as: :deleted_workspace
-  post "workspaces/deleted/:id/restore", to: "workspaces/deleted#restore", as: :restore_deleted_workspace
-  delete "workspaces/deleted/:id", to: "workspaces/deleted#destroy", as: :destroy_deleted_workspace
+  # Archived & deleted workspace routes
+  scope "workspaces" do
+    get "archived/:id", to: "workspaces/archives#show", as: :archived_workspace
+    get "deleted/:id", to: "workspaces/deleted#show", as: :deleted_workspace
+    post "deleted/:id/restore", to: "workspaces/deleted#restore", as: :restore_deleted_workspace
+    delete "deleted/:id", to: "workspaces/deleted#destroy", as: :destroy_deleted_workspace
+  end
 
   # Pin routes
   post "pins/:pinnable_type/:pinnable_id", to: "pins#create", as: :create_pin

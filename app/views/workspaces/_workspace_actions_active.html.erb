@@ -1,0 +1,45 @@
+<%# locals: (workspace:) -%>
+<%= render "components/dropdown_menu/item",
+    href: workspace_path(workspace) do %>
+  <%= icon_for(:folder_open, class: "w-4 h-4") %>
+  Open
+<% end %>
+
+<% if workspace.pinned_by?(Current.user) %>
+  <%= render "components/dropdown_menu/item",
+      href: destroy_pin_path(pinnable_type: workspace.class.name, pinnable_id: workspace.id),
+      data: { turbo_method: :delete, turbo_stream: true } do %>
+    <%= icon_for(:pin, class: "w-4 h-4") %>
+    Unpin
+  <% end %>
+<% else %>
+  <%= render "components/dropdown_menu/item",
+      href: create_pin_path(pinnable_type: workspace.class.name, pinnable_id: workspace.id),
+      data: { turbo_method: :post, turbo_stream: true } do %>
+    <%= icon_for(:pin, class: "w-4 h-4") %>
+    Pin
+  <% end %>
+<% end %>
+
+<%= render "components/dropdown_menu/item",
+    href: edit_workspace_path(workspace) do %>
+  <%= icon_for(:edit, class: "w-4 h-4") %>
+  Edit
+<% end %>
+
+<%= render "components/dropdown_menu/separator" %>
+
+<%= render "components/dropdown_menu/item",
+    href: archive_workspace_path(workspace),
+    data: { turbo_method: :post, turbo_confirm: "Are you sure you want to archive this workspace?" } do %>
+  <%= icon_for(:archive, class: "w-4 h-4") %>
+  Archive
+<% end %>
+
+<%= render "components/dropdown_menu/item",
+    href: workspace_path(workspace),
+    css_classes: "text-destructive focus:text-destructive",
+    data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this workspace?" } do %>
+  <%= icon_for(:trash_2, class: "w-4 h-4") %>
+  Delete
+<% end %>

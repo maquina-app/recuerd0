@@ -1,0 +1,17 @@
+<%# locals: (workspace:) -%>
+<%= render "components/dropdown_menu/item",
+    href: restore_deleted_workspace_path(workspace),
+    data: { turbo_method: :post } do %>
+  <%= icon_for(:rotate_ccw, class: "w-4 h-4") %>
+  Restore
+<% end %>
+
+<%= render "components/dropdown_menu/separator" %>
+
+<%= render "components/dropdown_menu/item",
+    href: destroy_deleted_workspace_path(workspace),
+    css_classes: "text-destructive focus:text-destructive",
+    data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to permanently delete this workspace? This action cannot be undone." } do %>
+  <%= icon_for(:trash, class: "w-4 h-4") %>
+  Delete permanently
+<% end %>

@@ -1,0 +1,17 @@
+<%# locals: (workspace:) -%>
+<%= render "components/dropdown_menu/item",
+    href: archive_workspace_path(workspace),
+    data: { turbo_method: :delete } do %>
+  <%= icon_for(:archive_restore, class: "w-4 h-4") %>
+  Unarchive
+<% end %>
+
+<%= render "components/dropdown_menu/separator" %>
+
+<%= render "components/dropdown_menu/item",
+    href: workspace_path(workspace),
+    css_classes: "text-destructive focus:text-destructive",
+    data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this workspace?" } do %>
+  <%= icon_for(:trash_2, class: "w-4 h-4") %>
+  Delete
+<% end %>

@@ -7,12 +7,8 @@
         <%= icon_for(:pin, class: "w-3.5 h-3.5 text-primary rotate-45 flex-shrink-0") %>
       <% end %>
       <h3 class="text-sm font-medium truncate">
-        <% if workspace.active? %>
-          <%= link_to workspace.name, workspace_path(workspace), class: "hover:underline" %>
-        <% elsif workspace.archived? %>
-          <%= link_to workspace.name, archived_workspace_path(workspace), class: "hover:underline" %>
-        <% elsif workspace.deleted? %>
-          <%= link_to workspace.name, deleted_workspace_path(workspace), class: "hover:underline" %>
+        <% if (path = workspace_link_path(workspace)) %>
+          <%= link_to workspace.name, path, class: "hover:underline" %>
         <% else %>
           <%= workspace.name %>
         <% end %>
@@ -62,86 +58,11 @@
           align: :end,
           css_classes: "w-48" do %>
         <% if workspace.active? %>
-          <%= render "components/dropdown_menu/item",
-              href: workspace_path(workspace) do %>
-            <%= icon_for(:folder_open, class: "w-4 h-4") %>
-            Open
-          <% end %>
-
-          <% if workspace.pinned_by?(Current.user) %>
-            <%= render "components/dropdown_menu/item",
-                href: destroy_pin_path(pinnable_type: workspace.class.name, pinnable_id: workspace.id),
-                data: { turbo_method: :delete, turbo_stream: true } do %>
-              <%= icon_for(:pin, class: "w-4 h-4") %>
-              Unpin
-            <% end %>
-          <% else %>
-            <%= render "components/dropdown_menu/item",
-                href: create_pin_path(pinnable_type: workspace.class.name, pinnable_id: workspace.id),
-                data: { turbo_method: :post, turbo_stream: true } do %>
-              <%= icon_for(:pin, class: "w-4 h-4") %>
-              Pin
-            <% end %>
-          <% end %>
-
-          <%= render "components/dropdown_menu/item",
-              href: edit_workspace_path(workspace) do %>
-            <%= icon_for(:edit, class: "w-4 h-4") %>
-            Edit
-          <% end %>
-
-          <%= render "components/dropdown_menu/separator" %>
-
-          <%= render "components/dropdown_menu/item",
-              href: archive_workspace_path(workspace),
-              data: { turbo_method: :post, turbo_confirm: "Are you sure you want to archive this workspace?" } do %>
-            <%= icon_for(:archive, class: "w-4 h-4") %>
-            Archive
-          <% end %>
-
-          <%= render "components/dropdown_menu/item",
-              href: workspace_path(workspace),
-              css_classes: "text-destructive focus:text-destructive",
-              data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this workspace?" } do %>
-            <%= icon_for(:trash_2, class: "w-4 h-4") %>
-            Delete
-          <% end %>
-
+          <%= render "workspaces/workspace_actions_active", workspace: workspace %>
         <% elsif workspace.archived? %>
-          <%= render "components/dropdown_menu/item",
-              href: archive_workspace_path(workspace),
-              data: { turbo_method: :delete } do %>
-            <%= icon_for(:archive_restore, class: "w-4 h-4") %>
-            Unarchive
-          <% end %>
-
-          <%= render "components/dropdown_menu/separator" %>
-
-          <%= render "components/dropdown_menu/item",
-              href: workspace_path(workspace),
-              css_classes: "text-destructive focus:text-destructive",
-              data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this workspace?" } do %>
-            <%= icon_for(:trash_2, class: "w-4 h-4") %>
-            Delete
-          <% end %>
-
+          <%= render "workspaces/workspace_actions_archived", workspace: workspace %>
         <% elsif workspace.deleted? %>
-          <%= render "components/dropdown_menu/item",
-              href: restore_deleted_workspace_path(workspace),
-              data: { turbo_method: :post } do %>
-            <%= icon_for(:rotate_ccw, class: "w-4 h-4") %>
-            Restore
-          <% end %>
-
-          <%= render "components/dropdown_menu/separator" %>
-
-          <%= render "components/dropdown_menu/item",
-              href: destroy_deleted_workspace_path(workspace),
-              css_classes: "text-destructive focus:text-destructive",
-              data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to permanently delete this workspace? This action cannot be undone." } do %>
-            <%= icon_for(:trash, class: "w-4 h-4") %>
-            Delete permanently
-          <% end %>
+          <%= render "workspaces/workspace_actions_deleted", workspace: workspace %>
         <% end %>
       <% end %>
     <% end %>

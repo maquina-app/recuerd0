@@ -13,14 +13,9 @@
     <h1 class="text-2xl font-bold tracking-tight">Archived Workspaces</h1>
   </div>
 
-  <%= render "components/alert", variant: :info, css_classes: "mb-6" do %>
-    <div class="flex items-start gap-3">
-      <%= icon_for(:archive, class: "w-4 h-4 flex-shrink-0 text-blue-600 dark:text-blue-400") %>
-      <div>
-        <strong>About Archived Workspaces</strong>
-        <p class="mt-1">Archived workspaces are read-only and cannot be modified. You can restore them at any time to continue working with them.</p>
-      </div>
-    </div>
+  <%= render "components/alert", variant: :success, icon: :archive, css_classes: "mb-6" do %>
+    <strong>About Archived Workspaces</strong>
+    <p class="mt-1">Archived workspaces are read-only and cannot be modified. You can restore them at any time to continue working with them.</p>
   <% end %>
 
   <% if @workspaces.any? %>
