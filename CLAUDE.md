@@ -72,8 +72,8 @@ Controllers under `workspaces/` handle specific workspace states:
 
 ### Frontend
 
-- **Stimulus controllers** in `app/javascript/controllers/` - sidebar, collapsible, dropdown, sonner (toasts), tag input
-- **Component partials** in `app/views/components/` — provided by the `maquina-components` gem (not local files). Components include: card, badge, alert, breadcrumb, dropdown_menu, sidebar, pagination, empty, separator
+- **Stimulus controllers** in `app/javascript/controllers/` - sidebar, collapsible, dropdown, tag input. Toast/toaster controllers are provided by the gem.
+- **Component partials** in `app/views/components/` — provided by the `maquina-components` gem (not local files). Components include: card, badge, alert, breadcrumb, dropdown_menu, sidebar, pagination, empty, separator, toaster, toast
 - **Pagination** via Pagy gem, rendered with `pagination_nav(pagy, :route_helper)` from the gem's `PaginationHelper`
 - **Breadcrumbs** via `breadcrumbs({ "Label" => path }, "Current Page")` from the gem's `BreadcrumbsHelper`
 - UI state (sidebar open/closed, collapsible states) persisted in cookies
@@ -84,6 +84,7 @@ Component partials live in the gem, not in the app. The app's `MaquinaComponents
 - `MaquinaComponents::IconsHelper` — `icon_for(:name)` helper with app-level SVG fallbacks via `main_icon_svg_for`
 - `MaquinaComponents::PaginationHelper` — `pagination_nav(pagy, :route_helper, params: {})` and `pagination_simple`
 - `MaquinaComponents::BreadcrumbsHelper` — `breadcrumbs(links_hash, current_page)` and `responsive_breadcrumbs`
+- `MaquinaComponents::ToastHelper` — `toast_flash_messages`, `toast(variant, title, description:)`, `toast_success`, `toast_error`, `toast_warning`, `toast_info`
 
 Component partials accept `css_classes:` for styling and `**html_options` (including `data:`) for extra attributes. Data attributes are merged with the component's own data attributes (e.g., `data-component`, `data-controller`).
 
@@ -92,6 +93,7 @@ Component partials accept `css_classes:` for styling and `**html_options` (inclu
 - **alert** — `:default`, `:destructive`, `:success`, `:warning` (no `:info` variant)
 - **empty** — `:default`, `:outline` (`:outline` renders a dashed border; there is no `:dashed` variant)
 - **badge** — `:default`, `:secondary`, `:destructive`, `:warning`, `:outline`
+- **toast** — `:default`, `:success`, `:info`, `:warning`, `:error`
 
 #### Alert `icon:` parameter
 
@@ -124,8 +126,27 @@ Required semantic color variables (beyond the standard set):
 - `--destructive-foreground` — text on destructive backgrounds
 - `--success` / `--success-foreground` — used by alert and toast components
 - `--warning` / `--warning-foreground` — used by alert and toast components
+- `--info` / `--info-foreground` — used by toast info variant
 
 Alert variants use subtle light-tinted backgrounds with dark text (not bold colored banners). The warning hue (85) is a warm yellow-green that complements the green theme without clashing.
+
+#### Toast / Toaster usage
+
+The layout uses the gem's toaster container with `toast_flash_messages` to render flash-based toasts:
+
+```erb
+<%= render "components/toaster", position: :bottom_right do %>
+  <%= toast_flash_messages %>
+<% end %>
+```
+
+Individual toasts are rendered with `render "components/toast"`:
+
+```erb
+<%= render "components/toast", variant: :success, title: "Saved!", description: "Your changes were saved." %>
+```
+
+Always use the gem's `render "components/..."` partials — never hand-write inline HTML to replicate a gem component's output. The gem manages data attributes, Stimulus controllers, and CSS selectors internally.
 
 ### Turbo / Hotwire Notes
 

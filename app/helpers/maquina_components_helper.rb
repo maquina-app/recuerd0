@@ -2,6 +2,7 @@ module MaquinaComponentsHelper
   include MaquinaComponents::IconsHelper
   include MaquinaComponents::PaginationHelper
   include MaquinaComponents::BreadcrumbsHelper
+  include MaquinaComponents::ToastHelper
 
   # Provides fallback icons for maquina-components gem.
   # Called when the gem doesn't have a built-in icon.

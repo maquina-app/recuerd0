@@ -26,7 +26,9 @@
   </head>
 
   <body>
-    <%= render "application/toast_notifications" %>
+    <%= render "components/toaster", position: :bottom_right do %>
+      <%= toast_flash_messages %>
+    <% end %>
 
     <div class="flex h-screen overflow-hidden">
       <%= render "application/sidebar", sidebar_open: @sidebar_open %>
