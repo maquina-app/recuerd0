@@ -8,7 +8,7 @@ class PinsControllerTest < ActionDispatch::IntegrationTest
 
   test "create pins a memory" do
     assert_difference("Pin.count") do
-      post create_pin_url("Memory", memories(:one))
+      post create_pin_url("Memory", memories(:versioned_parent))
     end
   end
 

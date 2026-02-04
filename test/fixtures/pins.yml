@@ -2,3 +2,8 @@ workspace_pin:
   user: one
   pinnable: one (Workspace)
   position: 0
+
+memory_pin:
+  user: one
+  pinnable: one (Memory)
+  position: 1

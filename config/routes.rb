@@ -31,6 +31,9 @@ Rails.application.routes.draw do
     delete "deleted/:id", to: "workspaces/deleted#destroy", as: :destroy_deleted_workspace
   end
 
+  # Pinned memories
+  get "memories/pinned", to: "memories/pinned#index", as: :pinned_memories
+
   # Pin routes
   post "pins/:pinnable_type/:pinnable_id", to: "pins#create", as: :create_pin
   delete "pins/:pinnable_type/:pinnable_id", to: "pins#destroy", as: :destroy_pin

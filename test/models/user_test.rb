@@ -15,6 +15,6 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "pinned_items_count reflects pins" do
-    assert_equal 1, users(:one).pinned_items_count
+    assert_equal 2, users(:one).pinned_items_count
   end
 end

@@ -1,0 +1,10 @@
+en:
+  memories:
+    pinned:
+      index:
+        title: "Pinned Memories"
+        about_title: "About Pinned Memories"
+        about_description: "These are memories you've pinned across all your workspaces for quick access."
+        empty_title: "No pinned memories"
+        empty_description: "Pin memories from any workspace to see them here."
+        back_to_workspaces: "Back to Workspaces"

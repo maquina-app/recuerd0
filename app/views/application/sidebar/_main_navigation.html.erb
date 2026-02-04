@@ -26,3 +26,15 @@
     <% end %>
   <% end %>
 <% end %>
+
+<%= render "components/sidebar/group", title: "Memories" do %>
+  <%= render "components/sidebar/menu" do %>
+    <%= render "components/sidebar/menu_item" do %>
+      <%= render "components/sidebar/menu_button",
+          title: "Pinned",
+          url: pinned_memories_path,
+          icon_name: :pin,
+          active: current_page?(pinned_memories_path) %>
+    <% end %>
+  <% end %>
+<% end %>
