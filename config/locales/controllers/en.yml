@@ -24,8 +24,9 @@ en:
       create:
         created: "New version created successfully."
         failed: "Failed to create new version."
-      destroy:
-        destroyed: "All other versions have been deleted."
+      consolidations:
+        create:
+          created: "All other versions have been deleted."
 
   pins:
     create:
@@ -60,9 +61,11 @@ en:
 
   workspaces/deleted:
     not_deleted: "This workspace is not deleted."
-    restore:
-      restored: "Workspace was successfully restored."
-      error: "Failed to restore workspace."
     destroy:
       destroyed: "Workspace was permanently deleted."
       error: "Failed to permanently delete workspace."
+
+  workspaces/restores:
+    create:
+      created: "Workspace was successfully restored."
+      error: "Failed to restore workspace."

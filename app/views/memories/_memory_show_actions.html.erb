@@ -26,8 +26,8 @@
 
   <% if memory.has_versions? %>
     <%= render "components/dropdown_menu/item",
-        href: workspace_memory_version_path(workspace, memory, memory),
-        method: :delete,
+        href: workspace_memory_version_consolidation_path(workspace, memory, memory),
+        method: :post,
         variant: :destructive,
         data: { turbo_confirm: "Delete all other versions? Only #{memory.version_label} will be kept." } do %>
       <%= icon_for(:trash_2, class: "size-4") %>

@@ -5,9 +5,11 @@ Rails.application.routes.draw do
   resources :workspaces do
     resources :memories do
       collection do
-        post :preview
+        post :preview, to: "memories/previews#create"
       end
-      resources :versions, only: [:index, :show, :create, :destroy], controller: "memories/versions"
+      resources :versions, only: [:index, :show, :create], controller: "memories/versions" do
+        resource :consolidation, only: [:create], controller: "memories/versions/consolidations"
+      end
     end
 
     collection do
@@ -25,7 +27,7 @@ Rails.application.routes.draw do
   scope "workspaces" do
     get "archived/:id", to: "workspaces/archives#show", as: :archived_workspace
     get "deleted/:id", to: "workspaces/deleted#show", as: :deleted_workspace
-    post "deleted/:id/restore", to: "workspaces/deleted#restore", as: :restore_deleted_workspace
+    post "deleted/:id/restore", to: "workspaces/restores#create", as: :restore_deleted_workspace
     delete "deleted/:id", to: "workspaces/deleted#destroy", as: :destroy_deleted_workspace
   end
 

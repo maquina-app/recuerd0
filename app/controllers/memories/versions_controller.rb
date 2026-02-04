@@ -3,7 +3,7 @@ class Memories::VersionsController < ApplicationController
 
   before_action :set_workspace
   before_action :set_memory
-  before_action :require_active_workspace, only: %i[create destroy]
+  before_action :require_active_workspace, only: %i[create]
 
   def index
     @all_versions = @memory.all_versions.includes(:content)
@@ -23,13 +23,6 @@ class Memories::VersionsController < ApplicationController
     else
       redirect_to [@workspace, @memory], alert: t(".failed")
     end
-  end
-
-  def destroy
-    @keep_version = @memory.all_versions.find(params[:id])
-    @keep_version.consolidate_versions!
-
-    redirect_to [@workspace, @keep_version], notice: t(".destroyed")
   end
 
   private

@@ -19,15 +19,6 @@ class Workspaces::DeletedController < ApplicationController
     render "workspaces/show"
   end
 
-  # POST /workspaces/deleted/:id/restore
-  def restore
-    if @workspace.restore
-      redirect_to @workspace, notice: t(".restored")
-    else
-      redirect_to deleted_workspaces_path, alert: t(".error")
-    end
-  end
-
   # DELETE /workspaces/deleted/:id
   def destroy
     if @workspace.destroy!

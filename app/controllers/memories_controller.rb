@@ -5,11 +5,6 @@ class MemoriesController < ApplicationController
   before_action :set_memory, only: %i[show edit update destroy]
   before_action :require_active_workspace, only: %i[new create edit update destroy]
 
-  def preview
-    @content = params[:content].to_s
-    render layout: false
-  end
-
   def show
     @all_versions = @memory.all_versions
   end
