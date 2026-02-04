@@ -31,6 +31,14 @@ module Versionable
     child_versions.any? || parent_memory.present?
   end
 
+  # Consolidate versions: keep this version and destroy all others
+  def consolidate_versions!
+    transaction do
+      all_versions.where.not(id: id).destroy_all
+      update!(parent_memory_id: nil, version: 1) if parent_memory_id.present?
+    end
+  end
+
   private
 
   def set_version

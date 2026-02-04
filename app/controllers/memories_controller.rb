@@ -4,8 +4,7 @@ class MemoriesController < ApplicationController
   before_action :require_active_workspace, only: %i[new create edit update destroy]
 
   def show
-    @all_versions = @memory.all_versions.includes(:content)
-    @current_version = @memory
+    @all_versions = @memory.all_versions
   end
 
   def new
@@ -16,9 +15,9 @@ class MemoriesController < ApplicationController
     @memory = CreateMemory.call(@workspace, memory_params)
 
     if @memory.persisted?
-      redirect_to [@workspace, @memory], notice: "Memory was successfully created."
+      redirect_to [@workspace, @memory], notice: t(".created")
     else
-      flash.now[:alert] = "Please review the errors below."
+      flash.now[:alert] = t(".errors")
       render :new, status: :unprocessable_entity
     end
   end
@@ -32,9 +31,9 @@ class MemoriesController < ApplicationController
     @memory = UpdateMemory.call(@memory, memory_params)
 
     if @memory.errors.empty?
-      redirect_to [@workspace, @memory], notice: "Memory was successfully updated."
+      redirect_to [@workspace, @memory], notice: t(".updated")
     else
-      flash.now[:alert] = "Please review the errors below."
+      flash.now[:alert] = t(".errors")
       render :edit, status: :unprocessable_entity
     end
   end
@@ -42,7 +41,7 @@ class MemoriesController < ApplicationController
   def destroy
     @memory.destroy
     redirect_to workspace_path(@workspace),
-      notice: "Memory was successfully deleted.",
+      notice: t(".destroyed"),
       status: :see_other
   end
 
@@ -60,7 +59,7 @@ class MemoriesController < ApplicationController
     return if @workspace.active?
 
     redirect_to workspace_path(@workspace),
-      alert: "This workspace is in read-only mode."
+      alert: t("workspaces.inactive_workspace")
   end
 
   def memory_params

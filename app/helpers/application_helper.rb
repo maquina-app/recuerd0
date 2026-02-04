@@ -8,6 +8,13 @@ module ApplicationHelper
     classes.compact.flatten.select(&:present?).join(" ")
   end
 
+  # Render Markdown content as HTML
+  def render_markdown(text)
+    return "".html_safe if text.blank?
+
+    Commonmarker.parse(text, options: {parse: {smart: true}}).to_html.html_safe
+  end
+
   # Avatar helper methods
   def avatar_classes(size: "h-10 w-10", grayscale: false, class_names: "")
     base_classes = "relative flex shrink-0 overflow-hidden rounded-full"

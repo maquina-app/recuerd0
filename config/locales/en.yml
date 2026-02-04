@@ -30,6 +30,23 @@
 en:
   hello: "Hello world"
 
+  memories:
+    create:
+      created: "Memory was successfully created."
+      errors: "Please review the errors below."
+    update:
+      updated: "Memory was successfully updated."
+      errors: "Please review the errors below."
+    destroy:
+      destroyed: "Memory was successfully deleted."
+    versions:
+      read_only: "Cannot modify versions in a read-only workspace."
+      create:
+        created: "New version created successfully."
+        failed: "Failed to create new version."
+      destroy:
+        destroyed: "All other versions have been deleted."
+
   workspaces:
     inactive_workspace: "This workspace cannot be modified."
     create:

@@ -20,12 +20,8 @@ class CreateMemoryVersion
       source: attributes[:source] || original_memory.source
     )
 
-    if new_version.save
-      create_content(new_version)
-      new_version
-    else
-      new_version
-    end
+    create_content(new_version) if new_version.save
+    new_version
   end
 
   private

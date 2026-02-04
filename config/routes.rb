@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   resources :workspaces do
     resources :memories do
-      resources :versions, only: [:index, :show, :create], controller: "memories/versions"
+      resources :versions, only: [:index, :show, :create, :destroy], controller: "memories/versions"
     end
 
     collection do

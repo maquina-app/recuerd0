@@ -1,6 +1,7 @@
 /* Tailwind base imports */
 @import "tailwindcss";
 @import "../builds/tailwind/maquina_components_engine.css";
+@plugin "@tailwindcss/typography";
 
 /* Base styles */
 /* @import "./base/theme.css"; */
