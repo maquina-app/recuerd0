@@ -8,6 +8,12 @@ Recuerd0 is a Rails 8 application for managing memories organized into workspace
 
 See `docs/technical-guide.md` for a comprehensive technical reference and `docs/ui-patterns.md` for the complete UI patterns catalog.
 
+## Workflow Discipline
+
+- When implementing a feature from a plan, ALWAYS re-read the full plan before starting and check off each requirement as you complete it. Before declaring done, verify every planned item was addressed.
+- After implementing UI components or interactive elements, verify they work end-to-end (open, close, state changes) by running relevant tests before considering the task complete.
+- After making changes, always run `bin/rails test` to verify nothing is broken. After multi-file changes, run the full suite rather than spot-checking individual files. For front-end changes, verify both server-side rendering and client-side behavior. Run `bundle exec standardrb` to check for lint violations in changed files.
+
 ## Commands
 
 ```bash
