@@ -64,7 +64,7 @@ class WorkspacesController < ApplicationController
   private
 
   def set_workspace
-    @workspace = Current.user.workspaces.with_deleted.find(params[:id])
+    @workspace = Current.user.workspaces.find(params[:id])
   end
 
   def require_active_workspace

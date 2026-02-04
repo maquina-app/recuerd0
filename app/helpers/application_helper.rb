@@ -12,7 +12,8 @@ module ApplicationHelper
   def render_markdown(text)
     return "".html_safe if text.blank?
 
-    Commonmarker.parse(text, options: {parse: {smart: true}}).to_html.html_safe
+    html = Commonmarker.to_html(text, options: {parse: {smart: true}})
+    sanitize(html)
   end
 
   # Avatar helper methods

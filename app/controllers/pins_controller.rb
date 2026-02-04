@@ -30,7 +30,12 @@ class PinsController < ApplicationController
     type = params[:pinnable_type]
     raise ActiveRecord::RecordNotFound unless PINNABLE_TYPES.include?(type)
 
-    Current.user.send(type.tableize).with_deleted.find(params[:pinnable_id])
+    case type
+    when "Workspace"
+      Current.user.workspaces.find(params[:pinnable_id])
+    when "Memory"
+      Memory.joins(:workspace).where(workspaces: {user_id: Current.user.id}).find(params[:pinnable_id])
+    end
   end
 
   def check_pin_limit

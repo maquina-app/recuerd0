@@ -8,6 +8,6 @@ module WorkspaceScoped
   private
 
   def set_workspace
-    @workspace = Current.user.workspaces.with_deleted.find(params[:id])
+    @workspace = Current.user.workspaces.find(params[:id])
   end
 end

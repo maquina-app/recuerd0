@@ -16,7 +16,10 @@ class Workspace < ApplicationRecord
   # Scopes
   scope :ordered, -> { order(created_at: :desc) }
   scope :search, ->(query) {
-    where("LOWER(name) LIKE LOWER(:query) OR LOWER(description) LIKE LOWER(:query)", query: "%#{query}%") if query.present?
+    if query.present?
+      where("LOWER(name) LIKE LOWER(:query) OR LOWER(description) LIKE LOWER(:query)",
+        query: "%#{sanitize_sql_like(query)}%")
+    end
   }
   scope :active, -> { not_archived.not_deleted }
 

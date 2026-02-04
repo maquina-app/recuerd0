@@ -3,12 +3,7 @@ module SoftDeletable
   extend ActiveSupport::Concern
 
   included do
-    # Default scope excludes soft deleted records
-    default_scope { where(deleted_at: nil) }
-
-    # Scopes
-    scope :deleted, -> { unscoped.where.not(deleted_at: nil) }
-    scope :with_deleted, -> { unscoped }
+    scope :deleted, -> { where.not(deleted_at: nil) }
     scope :not_deleted, -> { where(deleted_at: nil) }
     scope :deleted_ordered, -> { deleted.order(deleted_at: :desc) }
   end
@@ -41,7 +36,7 @@ module SoftDeletable
   # Really destroy the record (bypass soft delete)
   def destroy!
     with_lock do
-      self.class.unscoped.where(id: id).delete_all
+      self.class.where(id: id).delete_all
     end
   end
 

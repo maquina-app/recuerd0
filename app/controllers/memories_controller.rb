@@ -53,7 +53,7 @@ class MemoriesController < ApplicationController
   private
 
   def set_workspace
-    @workspace = Current.user.workspaces.with_deleted.find(params[:workspace_id])
+    @workspace = Current.user.workspaces.find(params[:workspace_id])
   end
 
   def set_memory
