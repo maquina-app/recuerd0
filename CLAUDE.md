@@ -44,19 +44,19 @@ bin/kamal console                # Remote Rails console
 - **Pin** → polymorphic; allows users to pin Workspaces or Memories with position ordering
 - **Session** → belongs to User; stores ip_address and user_agent
 
-### Use Cases Pattern
+### Rich Model Methods
 
-Business logic for complex operations is extracted into `app/use_cases/`. Each class exposes `.call` and wraps work in a transaction.
+Multi-model operations (Memory + Content) are handled by model methods wrapped in transactions:
 
 ```ruby
 # Creating a memory with content
-CreateMemory.call(workspace, title: "...", content: "...", tags: [...])
+Memory.create_with_content(workspace, title: "...", content: "...", tags: [...])
 
 # Updating memory and content in transaction
-UpdateMemory.call(memory, title: "...", content: "...")
+memory.update_with_content(title: "...", content: "...")
 
 # Creating a new version (branches from any version, resolves root parent)
-CreateMemoryVersion.call(original_memory, content: "...")
+memory.create_version!(content: "...")
 ```
 
 ### Model Concerns

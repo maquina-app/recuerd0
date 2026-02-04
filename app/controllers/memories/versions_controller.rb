@@ -14,7 +14,7 @@ class Memories::VersionsController < ApplicationController
   end
 
   def create
-    @new_version = CreateMemoryVersion.call(@memory)
+    @new_version = @memory.create_version!
 
     if @new_version.persisted?
       redirect_to [@workspace, @new_version], notice: t(".created")

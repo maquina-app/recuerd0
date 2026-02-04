@@ -19,6 +19,36 @@ class Memory < ApplicationRecord
 
   validates :title, length: {maximum: 255}
 
+  def self.create_with_content(workspace, attributes)
+    memory = workspace.memories.build(attributes.slice(:title, :tags, :source))
+
+    transaction do
+      memory.save!
+      memory.create_content!(body: attributes[:content].presence || "")
+    end
+
+    memory
+  rescue ActiveRecord::RecordInvalid
+    memory
+  end
+
+  def update_with_content(attributes)
+    transaction do
+      update!(attributes.slice(:title, :tags, :source))
+
+      content_body = attributes[:content] || ""
+      if content
+        content.update!(body: content_body)
+      else
+        create_content!(body: content_body)
+      end
+    end
+
+    self
+  rescue ActiveRecord::RecordInvalid
+    self
+  end
+
   # Override pinning to respect workspace state
   def can_be_pinned?
     workspace.active?
@@ -46,9 +76,24 @@ class Memory < ApplicationRecord
     end
   end
 
-  # Create a new version from this memory
   def create_version!(attributes = {})
-    CreateMemoryVersion.call(self, attributes)
+    root = root_memory
+
+    new_version = root.child_versions.build(
+      workspace: root.workspace,
+      title: attributes[:title] || title,
+      tags: attributes[:tags] || tags,
+      source: attributes[:source] || source
+    )
+
+    transaction do
+      new_version.save!
+      new_version.create_content!(body: attributes[:content] || content&.body || "")
+    end
+
+    new_version
+  rescue ActiveRecord::RecordInvalid
+    new_version
   end
 
   # Display title with fallback for untitled memories

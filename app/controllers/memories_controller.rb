@@ -17,7 +17,7 @@ class MemoriesController < ApplicationController
   end
 
   def create
-    @memory = CreateMemory.call(@workspace, memory_params)
+    @memory = Memory.create_with_content(@workspace, memory_params)
 
     if @memory.persisted?
       redirect_to [@workspace, @memory], notice: t(".created")
@@ -33,7 +33,7 @@ class MemoriesController < ApplicationController
   end
 
   def update
-    @memory = UpdateMemory.call(@memory, memory_params)
+    @memory.update_with_content(memory_params)
 
     if @memory.errors.empty?
       redirect_to [@workspace, @memory], notice: t(".updated")

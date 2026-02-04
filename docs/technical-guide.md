@@ -102,15 +102,15 @@ Adds `version` (integer) and `parent_memory_id` (self-referential FK).
 - `has_versions?` / `consolidate_versions!`
 - Auto-sets version number on create
 
-## Use Cases
+## Rich Model Methods
 
-Business logic for multi-model operations lives in `app/use_cases/`. Each class exposes a `.call` class method that wraps work in a transaction.
+Multi-model operations (Memory + Content) are handled by model methods on `Memory`, each wrapped in a transaction:
 
-| Use Case | Purpose |
-|----------|---------|
-| `CreateMemory` | Builds Memory + Content in a transaction. Accepts title, tags, source, content. |
-| `UpdateMemory` | Updates Memory attributes and Content body atomically. |
-| `CreateMemoryVersion` | Branches a new version from any existing version. Copies attributes from original, resolves root parent. |
+| Method | Purpose |
+|--------|---------|
+| `Memory.create_with_content(workspace, attrs)` | Builds Memory + Content in a transaction. Accepts title, tags, source, content. |
+| `memory.update_with_content(attrs)` | Updates Memory attributes and Content body atomically. |
+| `memory.create_version!(attrs)` | Branches a new version from any existing version. Copies attributes from original, resolves root parent. |
 
 ## Controllers
 
@@ -306,7 +306,7 @@ Fixtures cover: users, sessions, workspaces (including archived/deleted variants
 
 ## Project Conventions
 
-- **Use cases** for multi-model transactions (`app/use_cases/`)
+- **Rich model methods** for multi-model transactions (e.g., `Memory.create_with_content`, `memory.update_with_content`)
 - **Concerns** for shared model behaviors (soft delete, archive, pin, version)
 - **Namespaced controllers** for workspace state-specific routes
 - **Gem components** for all UI elements -- never hand-write HTML that replicates a gem component
