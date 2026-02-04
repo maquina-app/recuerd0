@@ -4,6 +4,9 @@ Rails.application.routes.draw do
 
   resources :workspaces do
     resources :memories do
+      collection do
+        post :preview
+      end
       resources :versions, only: [:index, :show, :create, :destroy], controller: "memories/versions"
     end
 

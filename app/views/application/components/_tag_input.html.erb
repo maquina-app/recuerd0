@@ -6,10 +6,9 @@
 >
   <div
     class="
-      flex flex-row flex-wrap items-center gap-2 p-2 w-full rounded-md
-      border border-input bg-background text-sm ring-offset-background
-      focus-within:outline-none focus-within:ring-2 focus-within:ring-ring
-      focus-within:ring-offset-2
+      tag-input-container flex flex-row flex-wrap items-center gap-2
+      p-2 w-full min-w-0 rounded-md border border-input
+      bg-transparent text-base md:text-sm outline-none
     "
   >
     <%# Existing tags %>
@@ -46,12 +45,11 @@
     <input
       type="text"
       class="
-        flex rounded-md border-input px-3 py-1 text-sm shadow-sm
-        transition-colors placeholder:text-muted-foreground
-        focus-visible:outline-none disabled:cursor-not-allowed
-        disabled:opacity-50 border-0 h-5 bg-transparent focus-visible:ring-0
-        focus-visible:ring-transparent focus-visible:ring-offset-0 flex-1
-        w-full
+        flex px-1 py-1 text-sm bg-transparent border-0
+        placeholder:text-muted-foreground
+        focus-visible:outline-none focus-visible:ring-0
+        focus-visible:ring-transparent disabled:cursor-not-allowed
+        disabled:opacity-50 flex-1 min-w-[120px]
       "
       placeholder="Add a tag"
       autocomplete="off"

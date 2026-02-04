@@ -170,3 +170,31 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Tag input container: match [data-component="input"] shadow & focus ring */
+.tag-input-container {
+  box-shadow: var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+  transition: color 150ms, box-shadow 150ms;
+}
+.tag-input-container:focus-within {
+  border-color: var(--ring);
+  box-shadow:
+    var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05)),
+    0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+.dark .tag-input-container {
+  background-color: color-mix(in oklch, var(--input) 30%, transparent);
+}
+
+/* Editor textarea: flush inside bordered editor container */
+.editor-textarea[data-component="textarea"] {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  min-height: 0;
+  resize: none;
+}
+.editor-textarea[data-component="textarea"]:focus,
+.editor-textarea[data-component="textarea"]:focus-visible {
+  box-shadow: none;
+}

@@ -1,91 +1,108 @@
 <%# locals: (workspace:, memory:) %>
 
-<%= form_with model: [workspace, memory], local: true, class: "flex flex-col h-full space-y-4", data: { component: "form" } do |form| %>
-  <%# Title field %>
-  <div data-form-part="group">
-    <%= form.label :title, data: { component: "label" } %>
-    <%= form.text_field :title,
-        placeholder: "Untitled Memory",
-        data: { component: "input" } %>
-    <% if memory.errors[:title].any? %>
-      <p data-form-part="error"><%= memory.errors[:title].first %></p>
-    <% end %>
-  </div>
-
-  <%# Content field - takes remaining space %>
-  <div class="flex-1 flex flex-col min-h-0" data-form-part="group">
-    <%= form.label :content, "Content (Markdown)", data: { component: "label" } %>
-    <%= text_area_tag "memory[content]",
-        memory.content&.body,
-        class: "flex-1 resize-none overflow-y-auto font-mono text-sm",
-        placeholder: "Enter your memory content using Markdown...",
-        data: { component: "textarea" } %>
-    <p class="text-xs text-muted-foreground mt-1.5">
-      Supports Markdown formatting
-    </p>
-  </div>
-
-  <%# Collapsible metadata section with animation %>
-  <details
-    class="group border rounded-md border-border"
-    data-controller="details"
-    data-action="toggle->details#handleToggle"
-  >
-    <summary
-      class="
-        flex items-center justify-between px-4 py-3 cursor-pointer
-        hover:bg-accent/50 transition-colors list-none
-        [&::-webkit-details-marker]:hidden
-      "
-    >
-      <span class="flex items-center gap-2 text-sm font-medium">
-        <%= icon_for(:info, class: "w-4 h-4 text-muted-foreground") %> Additional Information
-      </span>
-      <span
-        class="
-          text-muted-foreground transition-transform duration-200
-          group-open:rotate-180
-        "
-      >
-        <%= icon_for(:chevron_down, class: "w-4 h-4") %>
-      </span>
-    </summary>
-
-    <div
-      class="
-        grid grid-rows-[0fr] group-open:grid-rows-[1fr]
-        transition-[grid-template-rows] duration-200 ease-out
-      "
-    >
-      <div class="overflow-hidden">
-        <div class="px-4 pb-4 pt-2 space-y-4 border-t border-border bg-muted/20">
-          <%# Source field %>
-          <div data-form-part="group">
-            <%= form.label :source, data: { component: "label" } %>
-            <%= form.text_field :source,
-                placeholder: "e.g., Claude, Book Title, URL...",
-                data: { component: "input" } %>
-            <% if memory.errors[:source].any? %>
-              <p data-form-part="error"><%= memory.errors[:source].first %></p>
-            <% end %>
-          </div>
-
-          <%# Tags field %>
-          <div data-form-part="group">
-            <%= form.label :tags, data: { component: "label" } %>
-            <%= render "application/components/tag_input", form: form, field: :tags, value: memory.tags %>
-            <p class="text-xs text-muted-foreground mt-1.5">
-              Press Enter or comma to add tags
-            </p>
-          </div>
-        </div>
+<div class="h-full flex flex-col" data-controller="markdown-editor">
+  <%# Custom form layout — intentionally omits data-component="form" to avoid
+      the gem's grid/gap styling. This editor layout uses its own flex structure
+      to maximize the writing area. Individual inputs still use data-component
+      attributes for consistent styling.
+      Uses local: true to bypass Turbo Drive form submission because the
+      markdown editor Stimulus controller and preview form require a standard
+      page navigation lifecycle for reliable teardown/reinit. %>
+  <%= form_with model: [workspace, memory], local: true, class: "flex flex-col h-full gap-3" do |form| %>
+    <%# Toolbar: title + actions %>
+    <div class="shrink-0 flex items-center gap-3">
+      <div class="flex-1 min-w-0">
+        <%= form.text_field :title,
+            placeholder: "Untitled Memory",
+            maxlength: 255,
+            autocomplete: "off",
+            data: { component: "input" } %>
+        <% if memory.errors[:title].any? %>
+          <p data-form-part="error" class="text-destructive"><%= memory.errors[:title].first %></p>
+        <% end %>
+      </div>
+      <div class="shrink-0 flex items-center gap-2">
+        <%= link_to "Cancel",
+            memory.persisted? ? workspace_memory_path(workspace, memory) : workspace_path(workspace),
+            data: { component: "button", variant: "outline", size: "sm" } %>
+        <%= form.submit memory.persisted? ? "Save" : "Create",
+            data: { component: "button", variant: "primary", size: "sm" } %>
       </div>
     </div>
-  </details>
 
-  <%# Submit buttons %>
-  <div data-form-part="actions">
-    <%= form.submit data: { component: "button" } %>
-    <%= link_to "Cancel", workspace_path(workspace), data: { component: "button", variant: "outline" } %>
-  </div>
-<% end %>
+    <%# Metadata row: source + tags %>
+    <div class="shrink-0 flex items-start gap-4">
+      <div class="w-1/3 min-w-0" data-form-part="group">
+        <%= form.label :source, data: { component: "label" } %>
+        <%= form.text_field :source,
+            placeholder: "e.g., Claude, Book Title, URL...",
+            autocomplete: "off",
+            data: { component: "input" } %>
+        <% if memory.errors[:source].any? %>
+          <p data-form-part="error" class="text-destructive"><%= memory.errors[:source].first %></p>
+        <% end %>
+      </div>
+      <div class="flex-1 min-w-0" data-form-part="group">
+        <%= form.label :tags, data: { component: "label" } %>
+        <%= render "application/components/tag_input", form: form, field: :tags, value: memory.tags %>
+      </div>
+    </div>
+
+    <%# Editor area %>
+    <div class="flex-1 min-h-0 flex flex-col rounded-md border border-border overflow-hidden">
+      <%# Tab bar %>
+      <div class="shrink-0 flex items-center border-b border-border bg-muted/30 px-3" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected="true"
+          data-state="active"
+          data-markdown-editor-target="writeTab"
+          data-action="markdown-editor#showWrite"
+          class="px-3 py-1.5 text-sm font-medium border-b-2 -mb-px cursor-pointer transition-colors
+                 data-[state=active]:border-primary data-[state=active]:text-foreground
+                 data-[state=inactive]:border-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground"
+        >
+          Write
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected="false"
+          data-state="inactive"
+          data-markdown-editor-target="previewTab"
+          data-action="markdown-editor#showPreview"
+          class="px-3 py-1.5 text-sm font-medium border-b-2 -mb-px cursor-pointer transition-colors
+                 data-[state=active]:border-primary data-[state=active]:text-foreground
+                 data-[state=inactive]:border-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground"
+        >
+          Preview
+        </button>
+        <span class="ml-auto text-xs text-muted-foreground">Markdown</span>
+      </div>
+
+      <%# Write pane %>
+      <div data-markdown-editor-target="writePane" class="flex-1 flex flex-col min-h-0">
+        <%= text_area_tag "memory[content]",
+            memory.content&.body,
+            class: "editor-textarea flex-1 overflow-y-auto font-mono text-sm p-3",
+            placeholder: "Enter your memory content using Markdown...",
+            data: { component: "textarea", markdown_editor_target: "textarea" } %>
+      </div>
+
+      <%# Preview pane %>
+      <div data-markdown-editor-target="previewPane" class="hidden flex-1 overflow-y-auto p-4">
+        <%= turbo_frame_tag "markdown_preview" do %>
+          <p class="text-sm text-muted-foreground italic">Click Preview to render your markdown</p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Hidden preview form (sibling, not nested) %>
+  <%= form_with url: preview_workspace_memories_path(workspace),
+      data: { turbo_frame: "markdown_preview", markdown_editor_target: "previewForm" },
+      class: "hidden" do |preview_form| %>
+    <%= preview_form.hidden_field :content, value: "", data: { markdown_editor_target: "contentInput" } %>
+  <% end %>
+</div>

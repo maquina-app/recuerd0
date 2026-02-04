@@ -1,0 +1,9 @@
+<%= turbo_frame_tag "markdown_preview" do %>
+  <% if @content.present? %>
+    <div class="prose max-w-none dark:prose-invert">
+      <%= render_markdown(@content) %>
+    </div>
+  <% else %>
+    <p class="text-sm text-muted-foreground italic">Nothing to preview</p>
+  <% end %>
+<% end %>
