@@ -1,9 +1,11 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
 one:
-  body: MyText
+  body: "# Meeting Notes\n\nDiscussed project timeline."
   memory: one
 
 two:
-  body: MyText
+  body: "# Shopping List\n\n- Milk\n- Bread"
   memory: two
+
+versioned_parent:
+  body: "# Design Doc\n\nInitial architecture overview."
+  memory: versioned_parent

@@ -7,8 +7,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     @archived_workspace = workspaces(:archived)
     @deleted_workspace = workspaces(:deleted)
 
-    # Sign in via the sessions endpoint
-    post session_url, params: { email_address: @user.email_address, password: "password" }
+    sign_in_as(@user)
   end
 
   # -- new --
@@ -22,7 +21,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
 
   test "should create workspace with valid params" do
     assert_difference("Workspace.count") do
-      post workspaces_url, params: { workspace: { name: "New Workspace", description: "A description" } }
+      post workspaces_url, params: {workspace: {name: "New Workspace", description: "A description"}}
     end
 
     assert_redirected_to workspace_url(Workspace.last)
@@ -31,7 +30,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
 
   test "should not create workspace without name" do
     assert_no_difference("Workspace.count") do
-      post workspaces_url, params: { workspace: { name: "", description: "A description" } }
+      post workspaces_url, params: {workspace: {name: "", description: "A description"}}
     end
 
     assert_response :unprocessable_entity
@@ -40,7 +39,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
 
   test "should not create workspace with name exceeding max length" do
     assert_no_difference("Workspace.count") do
-      post workspaces_url, params: { workspace: { name: "a" * 101 } }
+      post workspaces_url, params: {workspace: {name: "a" * 101}}
     end
 
     assert_response :unprocessable_entity
@@ -70,7 +69,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
   # -- update --
 
   test "should update workspace with valid params" do
-    patch workspace_url(@workspace), params: { workspace: { name: "Updated Name" } }
+    patch workspace_url(@workspace), params: {workspace: {name: "Updated Name"}}
 
     assert_redirected_to workspace_url(@workspace)
     assert_equal I18n.t("workspaces.update.updated"), flash[:notice]
@@ -78,14 +77,14 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should not update workspace with blank name" do
-    patch workspace_url(@workspace), params: { workspace: { name: "" } }
+    patch workspace_url(@workspace), params: {workspace: {name: ""}}
 
     assert_response :unprocessable_entity
     assert_equal I18n.t("workspaces.update.errors"), flash[:alert]
   end
 
   test "should redirect update for archived workspace" do
-    patch workspace_url(@archived_workspace), params: { workspace: { name: "New Name" } }
+    patch workspace_url(@archived_workspace), params: {workspace: {name: "New Name"}}
 
     assert_redirected_to workspaces_path
     assert_equal I18n.t("workspaces.inactive_workspace"), flash[:alert]
@@ -93,7 +92,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should redirect update for deleted workspace" do
-    patch workspace_url(@deleted_workspace), params: { workspace: { name: "New Name" } }
+    patch workspace_url(@deleted_workspace), params: {workspace: {name: "New Name"}}
 
     assert_redirected_to workspaces_path
     assert_equal I18n.t("workspaces.inactive_workspace"), flash[:alert]

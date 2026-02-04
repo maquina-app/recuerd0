@@ -1,7 +1,14 @@
 require "test_helper"
 
 class HomeControllerTest < ActionDispatch::IntegrationTest
-  # test "the truth" do
-  #   assert true
-  # end
+  test "renders for unauthenticated visitor" do
+    get root_url
+    assert_response :success
+  end
+
+  test "renders for authenticated user" do
+    sign_in_as(users(:one))
+    get root_url
+    assert_response :success
+  end
 end

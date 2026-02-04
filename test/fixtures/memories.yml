@@ -1,13 +1,20 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
 one:
-  title: MyString
-  tags: MyText
-  source: MyString
+  title: "Meeting Notes"
+  tags: '["work", "meetings"]'
+  source: "manual"
   workspace: one
+  version: 1
 
 two:
-  title: MyString
-  tags: MyText
-  source: MyString
+  title: "Shopping List"
+  tags: '["personal"]'
+  source: "manual"
   workspace: two
+  version: 1
+
+versioned_parent:
+  title: "Design Doc"
+  tags: '["design"]'
+  source: "manual"
+  workspace: one
+  version: 1

@@ -5,7 +5,7 @@ class MemoriesControllerPreviewTest < ActionDispatch::IntegrationTest
     @user = users(:one)
     @workspace = workspaces(:one)
 
-    post session_url, params: {email_address: @user.email_address, password: "password"}
+    sign_in_as(@user)
   end
 
   test "preview renders markdown content in turbo frame" do
