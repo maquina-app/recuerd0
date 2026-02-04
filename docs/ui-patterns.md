@@ -54,7 +54,7 @@ Every page sets two blocks consumed by the layout header:
 <% content_for :page_title, "Page Title" %>
 
 <% content_for :breadcrumb do %>
-  <%= breadcrumbs({ "Home" => root_path, "Parent" => parent_path }, "Current Page") %>
+  <%= breadcrumbs({ "Parent" => parent_path }, "Current Page") %>
 <% end %>
 ```
 
@@ -364,10 +364,10 @@ Icons at `w-4 h-4`. Each item is `inline-flex items-center gap-1`. Can mix badge
 ## Breadcrumbs
 
 ```erb
-<%= breadcrumbs({ "Home" => root_path, "Parent" => parent_path }, "Current Page") %>
+<%= breadcrumbs({ "Workspaces" => workspaces_path }, "Current Page") %>
 ```
 
-Workspace breadcrumbs adapt to state via `workspace_breadcrumb_links` helper -- inserts "Archived Workspaces" or "Deleted Workspaces" intermediate link based on workspace state.
+Workspace breadcrumbs adapt to state via `workspace_breadcrumb_links` helper -- inserts "Archived Workspaces" or "Deleted Workspaces" intermediate link based on workspace state. "Workspaces" is the top-level breadcrumb (Home/root is not included since it serves as the marketing page).
 
 ## Toasts
 

@@ -10,7 +10,7 @@ module WorkspacesHelper
   end
 
   def workspace_breadcrumb_links(workspace)
-    base = {"Home" => root_path, "Workspaces" => workspaces_path}
+    base = {"Workspaces" => workspaces_path}
 
     if workspace.archived?
       base.merge("Archived Workspaces" => archived_workspaces_path)

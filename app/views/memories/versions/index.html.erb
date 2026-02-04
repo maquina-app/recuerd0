@@ -3,7 +3,6 @@
 <% content_for :breadcrumb do %>
   <%= breadcrumbs(
     {
-      "Home" => root_path,
       "Workspaces" => workspaces_path,
       @workspace.name => workspace_path(@workspace),
       @root_memory.display_title => workspace_memory_path(@workspace, @root_memory)

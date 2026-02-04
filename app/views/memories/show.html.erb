@@ -5,7 +5,6 @@
 <% content_for :breadcrumb do %>
   <%= breadcrumbs(
     {
-      "Home" => root_path,
       "Workspaces" => workspaces_path,
       @workspace.name => workspace_path(@workspace)
     },

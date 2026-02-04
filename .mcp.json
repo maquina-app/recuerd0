@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "rails": {
+      "command": "/Users/mariochavez/.rbenv/shims/rails-mcp-server",
+      "args": ["--project-path", "."],
+      "env": {}
+    }
+  }
+}
