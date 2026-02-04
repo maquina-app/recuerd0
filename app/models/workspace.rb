@@ -22,6 +22,7 @@ class Workspace < ApplicationRecord
     end
   }
   scope :active, -> { not_archived.not_deleted }
+  scope :archived_ordered, -> { archived.not_deleted.order(archived_at: :desc) }
 
   # Additional scopes that consider pinning
   scope :ordered_with_pins_first, ->(user) {
