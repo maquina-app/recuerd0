@@ -198,3 +198,8 @@
 .editor-textarea[data-component="textarea"]:focus-visible {
   box-shadow: none;
 }
+
+/* Search input: extra left padding for the search icon overlay */
+.search-input[data-component="input"] {
+  padding-left: 2rem;
+}

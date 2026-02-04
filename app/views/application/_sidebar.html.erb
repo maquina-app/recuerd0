@@ -30,6 +30,19 @@
         <% else %>
           <h1 class="text-base font-medium"><%= content_for(:page_title) || "Dashboard" %></h1>
         <% end %>
+
+        <%# Compact inline search — omits data-component="form" and data-form-part="group"
+            because the gem's grid layout is not appropriate for a single-field header bar form. %>
+        <% if Current.user %>
+          <%= form_with url: search_path, method: :get, data: { turbo_action: "advance" }, class: "ml-auto" do |f| %>
+            <div class="relative">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
+                <%= icon_for(:search, class: "w-3.5 h-3.5 text-muted-foreground") %>
+              </div>
+              <%= f.search_field :q, value: (defined?(@query) ? @query : params[:q]), placeholder: t("search.placeholder"), maxlength: 30, data: { component: "input" }, class: "search-input h-9 w-48 lg:w-64 text-sm" %>
+            </div>
+          <% end %>
+        <% end %>
       </div>
     </header>
 

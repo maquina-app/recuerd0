@@ -8,7 +8,7 @@
   <%= render "components/empty/content" do %>
     <%= link_to workspaces_path, data: { component: "button", variant: "secondary" } do %>
       <%= icon_for(:arrow_left, class: "w-4 h-4") %>
-      Back to Workspaces
+      <%= t("shared.back_to_workspaces") %>
     <% end %>
   <% end %>
 <% end %>

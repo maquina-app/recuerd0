@@ -44,12 +44,13 @@ Memory
  ├── belongs_to :parent_memory (optional, for versioning)
  ├── has_one :content
  ├── has_many :child_versions
- ├── concerns: Pinnable, Versionable
+ ├── concerns: Pinnable, Versionable, Searchable
  └── serializes :tags as JSON Array
 
 Content
  ├── belongs_to :memory        (touch: true)
- └── stores :body (markdown text)
+ ├── stores :body (markdown text)
+ └── after_save_commit: triggers search reindex on parent memory
 
 Pin
  ├── belongs_to :user
@@ -101,6 +102,17 @@ Adds `version` (integer) and `parent_memory_id` (self-referential FK).
 - `next_version_number` / `version_label` (e.g., "v3")
 - `has_versions?` / `consolidate_versions!`
 - Auto-sets version number on create
+
+### Searchable (`app/models/concerns/searchable.rb`)
+
+FTS5 full-text search backed by the `memories_search` virtual table (trigram tokenizer).
+
+- `full_search(query)` scope — joins on `memories_search.memory_id`, returns root memories ordered by FTS rank. Returns `none` for queries shorter than 3 characters.
+- `rebuild_search_index` — public method to manually reindex a memory.
+- `update_search_index` (private, `after_save_commit`) — resolves the root memory, finds the newest version (highest `version` among children, or root itself), and indexes that version's title and body under the root's ID. This ensures `full_search` returns root memories compatible with the `latest_versions` scope.
+- `delete_search_index` (private, `after_destroy_commit`) — deletes the FTS entry by root ID.
+- Content changes trigger reindexing via `Content#reindex_memory` (`after_save_commit`).
+- Bulk reindex: `bin/rails search:reindex`
 
 ## Rich Model Methods
 
@@ -253,7 +265,7 @@ Custom overrides:
 
 ### Schema
 
-SQLite with 6 tables: `users`, `sessions`, `workspaces`, `memories`, `contents`, `pins`.
+SQLite with 6 tables: `users`, `sessions`, `workspaces`, `memories`, `contents`, `pins`. Plus one FTS5 virtual table: `memories_search` (trigram tokenizer, columns: `title`, `body`, `memory_id UNINDEXED`).
 
 **Notable indexes**:
 - `users.email_address` (unique)
@@ -275,6 +287,7 @@ SQLite with 6 tables: `users`, `sessions`, `workspaces`, `memories`, `contents`,
 4. **2025-07-14**: Counter cache (`memories_count` on workspaces)
 5. **2025-07-27**: Pins (polymorphic with position ordering)
 6. **2025-09-30**: Versioning (`version` + `parent_memory_id` on memories)
+7. **2026-02-04**: Full-text search (`memories_search` FTS5 virtual table with trigram tokenizer)
 
 ## Deployment
 

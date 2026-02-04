@@ -1,15 +1,20 @@
 module Searchable
   extend ActiveSupport::Concern
 
+  MIN_QUERY_LENGTH = 3
+
   included do
     after_save_commit :update_search_index
     after_destroy_commit :delete_search_index
 
     scope :full_search, ->(query) {
-      return none if query.blank? || query.length < 3
+      return none if query.blank? || query.length < MIN_QUERY_LENGTH
+
+      # Quote the query as an FTS5 phrase to neutralize special syntax characters
+      sanitized = '"' + query.gsub('"', '""') + '"'
 
       joins("INNER JOIN memories_search ON memories_search.memory_id = memories.id")
-        .where("memories_search MATCH ?", query)
+        .where("memories_search MATCH ?", sanitized)
         .order(Arel.sql("memories_search.rank"))
     }
   end

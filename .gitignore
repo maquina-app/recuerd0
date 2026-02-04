@@ -38,3 +38,6 @@
 
 # Ignore TODO files (local notes, not committed)
 TODO*
+
+# Ignore session transcripts
+/transcripts/

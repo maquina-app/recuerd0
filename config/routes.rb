@@ -34,6 +34,9 @@ Rails.application.routes.draw do
   # Pinned memories
   get "memories/pinned", to: "memories/pinned#index", as: :pinned_memories
 
+  # Search
+  get "search", to: "search#index", as: :search
+
   # Pin routes
   post "pins/:pinnable_type/:pinnable_id", to: "pins#create", as: :create_pin
   delete "pins/:pinnable_type/:pinnable_id", to: "pins#destroy", as: :destroy_pin

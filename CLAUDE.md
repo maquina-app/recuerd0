@@ -28,6 +28,9 @@ bundle exec standardrb --fix     # Auto-fix Ruby style issues
 bin/rails db:migrate             # Run migrations
 bin/rails db:rollback            # Rollback last migration
 
+# Search
+bin/rails search:reindex         # Rebuild FTS5 search index for all memories
+
 # Deployment
 bin/kamal deploy                 # Deploy via Kamal
 bin/kamal console                # Remote Rails console
@@ -39,8 +42,8 @@ bin/kamal console                # Remote Rails console
 
 - **User** → has many Workspaces, Sessions, Pins (max 10 pins, enforced in controller)
 - **Workspace** → has many Memories (counter cached); supports soft delete (30-day retention), archiving, and pinning
-- **Memory** → belongs to Workspace (touch: true); has one Content; supports versioning (flat branching from any version) and pinning
-- **Content** → stores the body text of a Memory (Markdown via Commonmarker); touches parent Memory
+- **Memory** → belongs to Workspace (touch: true); has one Content; supports versioning (flat branching from any version), pinning, and full-text search
+- **Content** → stores the body text of a Memory (Markdown via Commonmarker); touches parent Memory; triggers search reindex on save
 - **Pin** → polymorphic; allows users to pin Workspaces or Memories with position ordering
 - **Session** → belongs to User; stores ip_address and user_agent
 
@@ -67,6 +70,7 @@ Located in `app/models/concerns/`:
 - **Archivable** - `archived_at` timestamp, `archive`/`unarchive`/`toggle_archive` methods
 - **Pinnable** - polymorphic pinning with position ordering, `pin!`/`unpin!`/`toggle_pin_for!` methods. Validates `active?` before pinning.
 - **Versionable** - memory versioning with parent/child relationships. All versions share a root parent (flat tree). `consolidate_versions!` to collapse history.
+- **Searchable** - FTS5 full-text search via `memories_search` virtual table (trigram tokenizer). Always indexes the **newest version's** title and body under the **root memory's ID**. `full_search(query)` scope, `rebuild_search_index` public method. Reindex all: `bin/rails search:reindex`.
 
 Workspace state hierarchy: active (default) → archived → deleted. State changes auto-unpin.
 
@@ -213,7 +217,7 @@ Uses Rails 8 built-in authentication generator with `Current.user` for accessing
 
 ### Database
 
-SQLite for everything. Production uses 4 separate SQLite files (primary, cache, queue, cable) in a persistent Docker volume. Counter cache on `workspaces.memories_count`. Key composite indexes: `memories(parent_memory_id, version)` and `pins(user_id, pinnable_type, pinnable_id)` (unique).
+SQLite for everything. Production uses 4 separate SQLite files (primary, cache, queue, cable) in a persistent Docker volume. Counter cache on `workspaces.memories_count`. FTS5 virtual table `memories_search` with trigram tokenizer for full-text search. Key composite indexes: `memories(parent_memory_id, version)` and `pins(user_id, pinnable_type, pinnable_id)` (unique).
 
 ### Deployment
 
