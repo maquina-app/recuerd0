@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Recuerd0 is a Rails 8 application for managing memories organized into workspaces. Built with Hotwire (Turbo + Stimulus), Tailwind CSS, and SQLite. Follows the One Person Framework philosophy: SQLite for all data needs (including cache, jobs, and WebSockets via Solid libraries), Kamal for deployment, importmaps instead of Node.js.
 
-See `docs/technical-guide.md` for a comprehensive technical reference and `docs/ui-patterns.md` for the complete UI patterns catalog.
+See `docs/technical-guide.md` for a comprehensive technical reference, `docs/ui-patterns.md` for the complete UI patterns catalog, and `docs/brand-guide.md` for logo, color system, typography, and voice guidelines.
 
 ## Workflow Discipline
 
