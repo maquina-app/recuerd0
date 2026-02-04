@@ -9,7 +9,7 @@ class Workspaces::ArchivesController < ApplicationController
   # GET /workspaces/archived/:id
   def show
     unless @workspace.archived?
-      redirect_to workspaces_path, alert: "This workspace is not archived."
+      redirect_to workspaces_path, alert: t("workspaces/archives.not_archived")
       return
     end
 
@@ -21,18 +21,18 @@ class Workspaces::ArchivesController < ApplicationController
   # POST /workspaces/:id/archive
   def create
     if @workspace.archive
-      redirect_to workspaces_path, notice: "Workspace was successfully archived."
+      redirect_to workspaces_path, notice: t(".created")
     else
-      redirect_to workspaces_path, alert: "Failed to archive workspace."
+      redirect_to workspaces_path, alert: t(".error")
     end
   end
 
   # DELETE /workspaces/:id/archive
   def destroy
     if @workspace.unarchive
-      redirect_to workspaces_path, notice: "Workspace was successfully unarchived."
+      redirect_to workspaces_path, notice: t(".destroyed")
     else
-      redirect_to workspaces_path, alert: "Failed to unarchive workspace."
+      redirect_to workspaces_path, alert: t(".error")
     end
   end
 end

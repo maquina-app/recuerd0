@@ -98,6 +98,6 @@ class Memory < ApplicationRecord
 
   # Display title with fallback for untitled memories
   def display_title
-    title.presence || "Untitled Memory"
+    title.presence || I18n.t("models.memory.untitled")
   end
 end

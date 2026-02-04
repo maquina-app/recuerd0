@@ -1,0 +1,68 @@
+en:
+  workspaces:
+    inactive_workspace: "This workspace cannot be modified."
+    create:
+      created: "Workspace was successfully created."
+      errors: "Please review the errors below."
+    update:
+      updated: "Workspace was successfully updated."
+      errors: "Please review the errors below."
+    destroy:
+      destroyed: "Workspace was successfully deleted."
+
+  memories:
+    create:
+      created: "Memory was successfully created."
+      errors: "Please review the errors below."
+    update:
+      updated: "Memory was successfully updated."
+      errors: "Please review the errors below."
+    destroy:
+      destroyed: "Memory was successfully deleted."
+    versions:
+      read_only: "Cannot modify versions in a read-only workspace."
+      create:
+        created: "New version created successfully."
+        failed: "Failed to create new version."
+      destroy:
+        destroyed: "All other versions have been deleted."
+
+  pins:
+    create:
+      created: "Pinned successfully."
+      error: "Could not pin this item."
+    destroy:
+      destroyed: "Unpinned successfully."
+    not_found: "Item not found."
+    limit_reached: "You've reached the maximum number of pins (%{limit})."
+
+  sessions:
+    create:
+      invalid: "Try another email address or password."
+      rate_limited: "Try again later."
+
+  passwords:
+    create:
+      sent: "Password reset instructions sent (if user with that email address exists)."
+    update:
+      success: "Password has been reset."
+      mismatch: "Passwords did not match."
+    invalid_token: "Password reset link is invalid or has expired."
+
+  workspaces/archives:
+    not_archived: "This workspace is not archived."
+    create:
+      created: "Workspace was successfully archived."
+      error: "Failed to archive workspace."
+    destroy:
+      destroyed: "Workspace was successfully unarchived."
+      error: "Failed to unarchive workspace."
+
+  workspaces/deleted:
+    not_deleted: "This workspace is not deleted."
+    restore:
+      restored: "Workspace was successfully restored."
+      error: "Failed to restore workspace."
+    destroy:
+      destroyed: "Workspace was permanently deleted."
+      error: "Failed to permanently delete workspace."

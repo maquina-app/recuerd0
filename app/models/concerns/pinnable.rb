@@ -40,10 +40,8 @@ module Pinnable
 
     # Check if the item can be pinned (must be active)
     if respond_to?(:active?) && !active?
-      raise ActiveRecord::RecordInvalid.new(self).tap do |e|
-        errors.add(:base, "Cannot pin inactive items")
-        e.record = self
-      end
+      errors.add(:base, I18n.t("models.pinnable.inactive"))
+      raise ActiveRecord::RecordInvalid.new(self)
     end
 
     pins.create!(user: user)

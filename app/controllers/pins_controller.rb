@@ -7,7 +7,7 @@ class PinsController < ApplicationController
   def create
     @pin = @pinnable.pin!(Current.user)
 
-    redirect_back(fallback_location: workspaces_path, notice: "Pinned successfully")
+    redirect_back(fallback_location: workspaces_path, notice: t(".created"))
   rescue ActiveRecord::RecordInvalid => e
     redirect_back(fallback_location: workspaces_path, alert: e.message)
   end
@@ -15,7 +15,7 @@ class PinsController < ApplicationController
   def destroy
     @unpinned = @pinnable.unpin!(Current.user)
 
-    redirect_back(fallback_location: workspaces_path, notice: "Unpinned successfully")
+    redirect_back(fallback_location: workspaces_path, notice: t(".destroyed"))
   end
 
   private
@@ -23,7 +23,7 @@ class PinsController < ApplicationController
   def set_pinnable
     @pinnable = find_pinnable
   rescue ActiveRecord::RecordNotFound
-    redirect_back(fallback_location: workspaces_path, alert: "Item not found")
+    redirect_back(fallback_location: workspaces_path, alert: t("pins.not_found"))
   end
 
   def find_pinnable
@@ -37,10 +37,10 @@ class PinsController < ApplicationController
     unless Current.user.can_pin_more?(10)
       respond_to do |format|
         format.turbo_stream {
-          flash.now[:alert] = "You've reached the maximum number of pins (10)"
+          flash.now[:alert] = t("pins.limit_reached", limit: 10)
           render turbo_stream: turbo_stream.refresh
         }
-        format.html { redirect_back(fallback_location: workspaces_path, alert: "You've reached the maximum number of pins (10)") }
+        format.html { redirect_back(fallback_location: workspaces_path, alert: t("pins.limit_reached", limit: 10)) }
       end
     end
   end

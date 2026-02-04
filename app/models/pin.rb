@@ -5,8 +5,7 @@ class Pin < ApplicationRecord
   # Validations
   validates :position, presence: true, numericality: {greater_than_or_equal_to: 0}
   validates :user_id, uniqueness: {
-    scope: [:pinnable_type, :pinnable_id],
-    message: "has already pinned this item"
+    scope: [:pinnable_type, :pinnable_id]
   }
 
   # Scopes

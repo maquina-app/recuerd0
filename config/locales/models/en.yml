@@ -1,0 +1,57 @@
+en:
+  activerecord:
+    errors:
+      models:
+        workspace:
+          attributes:
+            name:
+              blank: "Give your workspace a name so you can find it later."
+              too_long: "Workspace name is too long (maximum is %{count} characters)."
+            description:
+              too_long: "Description is too long (maximum is %{count} characters)."
+        memory:
+          attributes:
+            title:
+              too_long: "Title is too long (maximum is %{count} characters)."
+        pin:
+          attributes:
+            position:
+              blank: "Pin position is required."
+              not_a_number: "Pin position must be a number."
+              greater_than_or_equal_to: "Pin position cannot be negative."
+            user_id:
+              taken: "This item is already pinned."
+        user:
+          attributes:
+            password:
+              too_short: "Password is too short (minimum is %{count} characters)."
+
+    models:
+      workspace: "Workspace"
+      memory: "Memory"
+      content: "Content"
+      pin: "Pin"
+      user: "User"
+      session: "Session"
+
+    attributes:
+      workspace:
+        name: "Name"
+        description: "Description"
+      memory:
+        title: "Title"
+        tags: "Tags"
+        source: "Source"
+      content:
+        body: "Content"
+      pin:
+        position: "Position"
+      user:
+        email_address: "Email address"
+        password: "Password"
+
+  models:
+    memory:
+      untitled: "Untitled Memory"
+    pinnable:
+      inactive: "Cannot pin inactive items."
