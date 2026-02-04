@@ -1,6 +1,8 @@
 class Workspaces::ArchivesController < ApplicationController
   include WorkspaceScoped
 
+  before_action :set_workspace, except: [:index]
+
   # GET /workspaces/archived
   def index
     @pagy, @workspaces = pagy(Current.user.workspaces.archived_ordered)
@@ -13,8 +15,7 @@ class Workspaces::ArchivesController < ApplicationController
       return
     end
 
-    @pagy, @memories = pagy(@workspace.memories.includes(:content, :pins).order(created_at: :desc), items: 10)
-    @pinned_memories, @regular_memories = @memories.partition { |m| m.pinned_by?(Current.user) }
+    load_workspace_memories
     render "workspaces/show"
   end
 

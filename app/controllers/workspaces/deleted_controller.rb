@@ -1,6 +1,8 @@
 class Workspaces::DeletedController < ApplicationController
   include WorkspaceScoped
 
+  before_action :set_workspace, except: [:index]
+
   # GET /workspaces/deleted
   def index
     @pagy, @workspaces = pagy(Current.user.workspaces.deleted_ordered)
@@ -13,8 +15,7 @@ class Workspaces::DeletedController < ApplicationController
       return
     end
 
-    @pagy, @memories = pagy(@workspace.memories.includes(:content, :pins).order(created_at: :desc), items: 10)
-    @pinned_memories, @regular_memories = @memories.partition { |m| m.pinned_by?(Current.user) }
+    load_workspace_memories
     render "workspaces/show"
   end
 

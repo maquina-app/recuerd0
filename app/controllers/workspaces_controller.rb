@@ -1,4 +1,6 @@
 class WorkspacesController < ApplicationController
+  include WorkspaceScoped
+
   before_action :set_workspace, only: %i[show edit update destroy]
   before_action :require_active_workspace, only: %i[edit update]
 
@@ -20,13 +22,12 @@ class WorkspacesController < ApplicationController
       return
     end
 
-    memories_scope = @workspace.memories
+    scope = @workspace.memories
       .latest_versions
       .includes(:content, :child_versions, :pins)
       .order(updated_at: :desc)
 
-    @pagy, @memories = pagy(memories_scope, items: 10)
-    @pinned_memories, @regular_memories = @memories.partition { |m| m.pinned_by?(Current.user) }
+    load_workspace_memories(scope)
   end
 
   def new
@@ -62,16 +63,6 @@ class WorkspacesController < ApplicationController
   end
 
   private
-
-  def set_workspace
-    @workspace = Current.user.workspaces.find(params[:id])
-  end
-
-  def require_active_workspace
-    return if @workspace.active?
-
-    redirect_to workspaces_path, alert: t("workspaces.inactive_workspace")
-  end
 
   def workspace_params
     params.require(:workspace).permit(:name, :description)

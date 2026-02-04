@@ -1,4 +1,6 @@
 class MemoriesController < ApplicationController
+  include WorkspaceScoped
+
   before_action :set_workspace
   before_action :set_memory, only: %i[show edit update destroy]
   before_action :require_active_workspace, only: %i[new create edit update destroy]
@@ -51,10 +53,6 @@ class MemoriesController < ApplicationController
   end
 
   private
-
-  def set_workspace
-    @workspace = Current.user.workspaces.find(params[:workspace_id])
-  end
 
   def set_memory
     @memory = @workspace.memories.find(params[:id])
