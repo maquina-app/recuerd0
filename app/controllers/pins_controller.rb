@@ -39,13 +39,14 @@ class PinsController < ApplicationController
   end
 
   def check_pin_limit
-    unless Current.user.can_pin_more?(10)
+    unless Current.user.can_pin_more?
+      alert = t("pins.limit_reached", limit: User::PIN_LIMIT)
       respond_to do |format|
         format.turbo_stream {
-          flash.now[:alert] = t("pins.limit_reached", limit: 10)
+          flash.now[:alert] = alert
           render turbo_stream: turbo_stream.refresh
         }
-        format.html { redirect_back(fallback_location: workspaces_path, alert: t("pins.limit_reached", limit: 10)) }
+        format.html { redirect_back(fallback_location: workspaces_path, alert: alert) }
       end
     end
   end

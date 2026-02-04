@@ -1,6 +1,6 @@
-<%# locals: (src: nil, alt: "", fallback: nil, size: "h-10 w-10", grayscale: false, class_names: "", **attributes) %>
+<%# locals: (src: nil, alt: "", fallback: nil, size: "h-10 w-10", grayscale: false, css_classes: "", **attributes) %>
 
-<%= content_tag :span, class: avatar_classes(size: size, grayscale: grayscale, class_names: class_names), **attributes do %>
+<%= content_tag :span, class: avatar_classes(size: size, grayscale: grayscale, css_classes: css_classes), **attributes do %>
   <% if src.present? %>
     <%= image_tag src,
     alt: alt,

@@ -2,12 +2,6 @@ module ApplicationHelper
   include Pagy::Frontend
   include MaquinaComponentsHelper
 
-  # Merges CSS classes using Tailwind's convention
-  # Similar to clsx or cn() in JavaScript
-  def cn(*classes)
-    classes.compact.flatten.select(&:present?).join(" ")
-  end
-
   # Render Markdown content as HTML
   def render_markdown(text)
     return "".html_safe if text.blank?
@@ -17,11 +11,13 @@ module ApplicationHelper
   end
 
   # Avatar helper methods
-  def avatar_classes(size: "h-10 w-10", grayscale: false, class_names: "")
-    base_classes = "relative flex shrink-0 overflow-hidden rounded-full"
-    grayscale_classes = grayscale ? "grayscale" : ""
-
-    cn(base_classes, size, grayscale_classes, class_names)
+  def avatar_classes(size: "h-10 w-10", grayscale: false, css_classes: "")
+    class_names(
+      "relative flex shrink-0 overflow-hidden rounded-full",
+      size,
+      "grayscale" => grayscale,
+      css_classes => css_classes.present?
+    )
   end
 
   def avatar_fallback(alt, fallback = nil)

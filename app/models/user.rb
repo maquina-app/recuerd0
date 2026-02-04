@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  PIN_LIMIT = 10
+
   has_secure_password
   has_many :sessions, dependent: :destroy
 
@@ -24,8 +26,8 @@ class User < ApplicationRecord
     pins.count
   end
 
-  def can_pin_more?(limit = 10)
-    pinned_items_count < limit
+  def can_pin_more?
+    pinned_items_count < PIN_LIMIT
   end
 
   def reorder_pins!(pinnable_type, new_order)
