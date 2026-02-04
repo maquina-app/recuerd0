@@ -1,5 +1,5 @@
 <%# locals: (sidebar_open: true) %>
-<%= render "components/sidebar/provider", default_open: sidebar_open, variant: :inset do %>
+<%= render "components/sidebar/provider", default_open: sidebar_open, variant: :inset, cookie_name: "recuerd0_sidebar_state" do %>
   <%= render "components/sidebar", collapsible: :offcanvas, variant: :inset, css_classes: "h-full" do %>
     <%= render "application/sidebar/header" %>
 
