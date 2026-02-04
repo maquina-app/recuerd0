@@ -273,6 +273,19 @@ font-family: 'Instrument Sans', system-ui, sans-serif; /* Body */
 font-family: 'Geist Mono', ui-monospace, monospace; /* Code */
 ```
 
+### Font Loading (Recuerd0 App)
+
+Fonts are self-hosted as woff2 files in `app/assets/fonts/`, declared in `app/assets/tailwind/fonts.css`. Propshaft serves them at root URLs (e.g., `/jura-v34-latin-regular.woff2`).
+
+```css
+/* Tailwind @theme utilities (app/assets/tailwind/application.css) */
+--font-sans: 'Instrument Sans', system-ui, sans-serif;    /* font-sans — Body */
+--font-mono: 'Geist Mono', ui-monospace, monospace;        /* font-mono — Code */
+--font-display: 'Jura', system-ui, sans-serif;             /* font-display — Headings */
+```
+
+Headings use `font-display font-medium` (Jura 500). Body text inherits `font-sans` (Instrument Sans 400).
+
 ---
 
 ## 07 — Usage Guidelines

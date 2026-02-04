@@ -9,7 +9,7 @@
   <%# Header %>
   <div class="mb-6 flex items-center justify-between">
     <div class="min-w-0">
-      <h1 class="text-2xl font-bold tracking-tight"><%= @workspace.name %></h1>
+      <h1 class="font-display text-2xl font-medium tracking-tight"><%= @workspace.name %></h1>
       <% if @workspace.description.present? %>
         <p class="text-muted-foreground mt-1"><%= @workspace.description %></p>
       <% end %>

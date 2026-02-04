@@ -257,6 +257,18 @@ Defined in `app/assets/tailwind/application.css` using oklch color space. Primar
 
 Key variables: `--primary`, `--secondary`, `--destructive`, `--success`, `--warning`, `--info` (each with `-foreground` variant).
 
+### Typography
+
+Three self-hosted font families in `app/assets/fonts/` (woff2), declared in `app/assets/tailwind/fonts.css`:
+
+- `font-sans` → Instrument Sans 400 (body text)
+- `font-mono` → Geist Mono 400 (code, metadata)
+- `font-display` → Jura 400/500 (headings, navigation, brand)
+
+Headings use `font-display font-medium` (Jura 500). Body text uses `font-sans` (default).
+
+**Propshaft font paths:** Files in `app/assets/fonts/` are served at the root URL (e.g., `/jura-v34-latin-regular.woff2`). Use `url('/filename.woff2')` in CSS — not relative paths or `/assets/` prefix.
+
 Custom overrides:
 - `.tag-input-container` - Mirrors gem's input focus ring for the tag input component
 - `.editor-textarea` - Removes border/shadow/radius for flush textarea inside editor container

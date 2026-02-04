@@ -164,6 +164,27 @@ The `sidebar/menu_button` partial accepts `active:` (default `false`) to highlig
     active: current_page?(workspaces_path) %>
 ```
 
+#### Typography / Font setup
+
+Three font families defined in `app/assets/tailwind/fonts.css` (self-hosted woff2 files in `app/assets/fonts/`):
+
+| Tailwind utility | Font            | Weights | Usage                    |
+|------------------|-----------------|---------|--------------------------|
+| `font-sans`      | Instrument Sans | 400     | Body text, UI elements   |
+| `font-mono`      | Geist Mono      | 400     | Code, metadata           |
+| `font-display`   | Jura            | 400, 500| Headings, navigation     |
+
+Configured in the `@theme` block of `app/assets/tailwind/application.css`:
+```css
+--font-sans: 'Instrument Sans', system-ui, sans-serif;
+--font-mono: 'Geist Mono', ui-monospace, monospace;
+--font-display: 'Jura', system-ui, sans-serif;
+```
+
+Headings (`h1`–`h3`) and brand text use `font-display font-medium` (Jura 500). Body text uses `font-sans` (the default).
+
+**Propshaft font paths:** Font files in `app/assets/fonts/` are served at the root URL by Propshaft (e.g., `/jura-v34-latin-regular.woff2`). CSS `url()` references must use `url('/filename.woff2')` — not relative paths like `../fonts/` and not `/assets/filename.woff2`.
+
 #### Theme color variables
 
 The app's CSS theme is defined in `app/assets/tailwind/application.css` using oklch colors with **hue 150 (green)** as the primary. The gem's component CSS references raw CSS variables (e.g., `var(--success)`, `var(--warning-foreground)`) — these must be defined in `:root` and `.dark` blocks. The `@theme` block maps them to Tailwind utilities with `--color-` prefix.

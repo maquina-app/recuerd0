@@ -1,6 +1,9 @@
 /* Tailwind base imports */
 @import "tailwindcss";
+
+@import "./fonts.css";
 @import "../builds/tailwind/maquina_components_engine.css";
+
 @plugin "@tailwindcss/typography";
 
 /* Base styles */
@@ -77,8 +80,9 @@
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Instrument Sans', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --font-display: 'Jura', system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
