@@ -15,4 +15,12 @@ class ContentTest < ActiveSupport::TestCase
       assert_operator memory.reload.updated_at, :>, original_updated_at
     end
   end
+
+  test "updating body reindexes parent memory for search" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Test", content: "initial text")
+    assert_includes Memory.full_search("initial"), memory
+    memory.content.update!(body: "replaced text")
+    assert_not_includes Memory.full_search("initial"), memory
+    assert_includes Memory.full_search("replaced"), memory
+  end
 end

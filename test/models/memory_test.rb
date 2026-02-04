@@ -43,4 +43,54 @@ class MemoryTest < ActiveSupport::TestCase
     memory = Memory.create_with_content(workspaces(:one), title: "New", content: "content")
     assert_equal 1, memory.version
   end
+
+  # Full-text search tests
+
+  test "full_search finds memory by title" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Architecture Overview", content: "body")
+    assert_includes Memory.full_search("Architect"), memory
+  end
+
+  test "full_search finds memory by content body" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Notes", content: "kubernetes cluster running")
+    assert_includes Memory.full_search("kubernetes"), memory
+  end
+
+  test "full_search returns none for blank or short query" do
+    assert_empty Memory.full_search("").to_a
+    assert_empty Memory.full_search(nil).to_a
+    assert_empty Memory.full_search("ab").to_a
+  end
+
+  test "full_search indexes newest version content" do
+    parent = Memory.create_with_content(workspaces(:one), title: "OriginalTitle", content: "original body")
+    assert_includes Memory.full_search("OriginalTitle"), parent
+
+    parent.create_version!(title: "NewestTitle", content: "newest body")
+    assert_includes Memory.full_search("NewestTitle"), parent
+    assert_empty Memory.full_search("OriginalTitle").to_a
+  end
+
+  test "full_search scoped to workspace" do
+    m1 = Memory.create_with_content(workspaces(:one), title: "SharedTerm", content: "body")
+    m2 = Memory.create_with_content(workspaces(:two), title: "SharedTerm", content: "body")
+    results = workspaces(:one).memories.full_search("SharedTerm")
+    assert_includes results, m1
+    assert_not_includes results, m2
+  end
+
+  test "full_search updates index when content changes" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Title", content: "original text here")
+    assert_includes Memory.full_search("original"), memory
+    memory.update_with_content(title: "Title", content: "changed text here")
+    assert_not_includes Memory.full_search("original"), memory
+    assert_includes Memory.full_search("changed"), memory
+  end
+
+  test "full_search removes entry on destroy" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Deletable", content: "body")
+    assert_includes Memory.full_search("Deletable"), memory
+    memory.destroy!
+    assert_empty Memory.full_search("Deletable").to_a
+  end
 end

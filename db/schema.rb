@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_30_230353) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_04_180309) do
   create_table "contents", force: :cascade do |t|
     t.text "body"
     t.integer "memory_id", null: false
@@ -84,4 +84,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_30_230353) do
   add_foreign_key "pins", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "workspaces", "users"
+
+  # Virtual tables defined in this database.
+  # Note that virtual tables may not work with other database engines. Be careful if changing database.
+  create_virtual_table "memories_search", "fts5", ["title", "body", "memory_id UNINDEXED", "tokenize='trigram'"]
 end
