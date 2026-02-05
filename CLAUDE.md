@@ -18,7 +18,7 @@ See `docs/technical-guide.md` for a comprehensive technical reference, `docs/ui-
 
 ```bash
 # Development
-bin/dev                          # Start server with Tailwind CSS watcher (foreman, port 3820)
+bin/dev                          # Start server, Tailwind watcher, and Solid Queue worker (foreman, port 3820)
 bin/rails server                 # Rails server only
 
 # Testing
@@ -138,7 +138,7 @@ JSON API for programmatic access. See `docs/API.md` for full documentation.
   - `details` - Closes `<details>` on outside click (100ms delay prevents immediate close)
   - `scroll-to-top` - FAB appears at 300px scroll, smooth scroll, teardown hides button
   - `navigate` - Navigates on `<select>` change via Turbo.visit
-  - `clipboard` - Copy text to clipboard via `navigator.clipboard.writeText()`, toggles copy/check icons for 2s feedback, includes `teardown()` for Turbo cache cleanup
+  - `clipboard` - Copy text to clipboard via `navigator.clipboard.writeText()`, `selectAll()` for input click-to-select, toggles copy/check icons for 2s feedback, includes `teardown()` for Turbo cache cleanup
   - Toast/toaster/sidebar/dropdown controllers are provided by the gem.
 - **Component partials** in `app/views/components/` — provided by the `maquina-components` gem (not local files). Components include: card, badge, alert, breadcrumb, dropdown_menu, sidebar, pagination, empty, separator, toaster, toast
 - **App-specific components** in `app/views/application/components/` — `tag_input`, pin buttons
@@ -302,7 +302,11 @@ Uses Rails 8 built-in authentication generator with `Current.user` and `Current.
 
 ### Database
 
-SQLite for everything. Production uses 4 separate SQLite files (primary, cache, queue, cable) in a persistent Docker volume. 8 tables: `accounts`, `users`, `sessions`, `access_tokens`, `workspaces`, `memories`, `contents`, `pins`. Counter cache on `workspaces.memories_count`. FTS5 virtual table `memories_search` with trigram tokenizer for full-text search. Key indexes: `users.account_id`, `users.role`, `accounts.deleted_at`, `workspaces.account_id`, `access_tokens.token_digest` (unique), `memories(parent_memory_id, version)`, and `pins(user_id, pinnable_type, pinnable_id)` (unique).
+SQLite for everything. All environments use 4 separate SQLite databases (primary, cache, queue, cable) — except test, which omits cache (uses `:null_store`). Schema files: `db/queue_schema.rb`, `db/cable_schema.rb`, `db/cache_schema.rb`. Production databases live in a persistent Docker volume. 8 primary tables: `accounts`, `users`, `sessions`, `access_tokens`, `workspaces`, `memories`, `contents`, `pins`. Counter cache on `workspaces.memories_count`. FTS5 virtual table `memories_search` with trigram tokenizer for full-text search. Key indexes: `users.account_id`, `users.role`, `accounts.deleted_at`, `workspaces.account_id`, `access_tokens.token_digest` (unique), `memories(parent_memory_id, version)`, and `pins(user_id, pinnable_type, pinnable_id)` (unique).
+
+### Mailers
+
+`ApplicationMailer` uses `letter_opener` in development (emails open in browser). All mailers inherit an inline PNG logo attachment via `before_action :attach_logo` — the logo (`app/assets/images/recuerdo-email.png`) is a 2x retina PNG rendered at 32px height in the mailer layout. The layout (`app/views/layouts/mailer.html.erb`) uses inline CSS for email client compatibility.
 
 ### Deployment
 
