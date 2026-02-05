@@ -1,5 +1,7 @@
-# Create or find demo user
+# Create or find demo account and user
+account = Account.find_or_create_by!(name: "demo")
 user = User.find_or_create_by!(email_address: "demo@recuerd0.com") do |u|
+  u.account = account
   u.password = "password123"
   u.password_confirmation = "password123"
 end
@@ -7,14 +9,14 @@ end
 # Create or find workspaces
 ai_research = Workspace.find_or_create_by!(
   name: "AI Research Notes",
-  user: user
+  account: account
 ) do |w|
   w.description = "Collection of interesting AI conversations and insights"
 end
 
 project_ideas = Workspace.find_or_create_by!(
   name: "Project Ideas",
-  user: user
+  account: account
 ) do |w|
   w.description = "Brainstorming sessions and project planning discussions"
 end
@@ -135,7 +137,7 @@ additional_workspaces = [
 created_workspaces = additional_workspaces.map do |workspace_data|
   Workspace.find_or_create_by!(
     name: workspace_data[:name],
-    user: user
+    account: account
   ) do |w|
     w.description = workspace_data[:description]
   end
