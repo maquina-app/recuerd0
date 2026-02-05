@@ -17,6 +17,16 @@ module Searchable
         .where("memories_search MATCH ?", sanitized)
         .order(Arel.sql("memories_search.rank"))
     }
+
+    # API search: passes raw FTS5 query with full operator support
+    # (AND, OR, NOT, "phrase", title:term, body:term, grouping)
+    scope :api_search, ->(query) {
+      return none if query.blank? || query.length < MIN_QUERY_LENGTH
+
+      joins("INNER JOIN memories_search ON memories_search.memory_id = memories.id")
+        .where("memories_search MATCH ?", query)
+        .order(Arel.sql("memories_search.rank"))
+    }
   end
 
   def rebuild_search_index

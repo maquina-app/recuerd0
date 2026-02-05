@@ -426,6 +426,112 @@ POST /workspaces/:workspace_id/memories/:memory_id/versions.json
 
 ---
 
+## Search
+
+### Search Memories
+
+Full-text search across all memories in active workspaces. Supports FTS5 query operators for advanced search patterns. Requires `read_only` or `full_access` token.
+
+```
+GET /search.json?q=<query>
+```
+
+**Parameters**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| q | string | Yes | Search query (3-100 characters) |
+| page | integer | No | Page number (default: 1) |
+| workspace_id | integer | No | Filter results to a specific workspace |
+
+**Query Operators**
+
+The search query supports full FTS5 syntax:
+
+| Operator | Example | Description |
+|----------|---------|-------------|
+| Term | `architecture` | Matches documents containing the substring |
+| AND | `architecture AND design` | Both terms must appear |
+| OR | `meeting OR standup` | Either term can appear |
+| NOT | `design NOT draft` | First term must appear, second must not |
+| Phrase | `"project timeline"` | Exact phrase match |
+| Column filter | `title:architecture` | Search only in title field |
+| Column filter | `body:implementation` | Search only in body field |
+| Grouping | `(meeting OR standup) AND notes` | Parentheses for precedence |
+
+**Response**
+
+```json
+{
+  "query": "architecture AND design",
+  "total_results": 3,
+  "results": [
+    {
+      "id": 1,
+      "title": "Design Doc",
+      "version": 1,
+      "version_label": "v1",
+      "has_versions": false,
+      "tags": ["design"],
+      "source": "manual",
+      "snippet": "Initial architecture overview. The system uses a layered design...",
+      "created_at": "2026-01-20T09:00:00Z",
+      "updated_at": "2026-02-03T16:45:00Z",
+      "url": "https://recuerd0.com/workspaces/1/memories/1",
+      "workspace": {
+        "id": 1,
+        "name": "Project Notes",
+        "url": "https://recuerd0.com/workspaces/1"
+      }
+    }
+  ]
+}
+```
+
+**Headers**
+
+Same pagination headers as other list endpoints. Pagination links preserve the `q` parameter.
+
+**Errors**
+
+Missing or empty query:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Query parameter is required",
+    "status": 422
+  }
+}
+```
+
+Query too short:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Query must be at least 3 characters",
+    "status": 422
+  }
+}
+```
+
+Invalid FTS5 syntax:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid search query syntax",
+    "status": 422
+  }
+}
+```
+
+---
+
 ## Common Errors
 
 ### 401 Unauthorized

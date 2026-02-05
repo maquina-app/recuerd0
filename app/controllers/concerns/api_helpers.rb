@@ -14,11 +14,13 @@ module ApiHelpers
   def pagination_link_header(pagy)
     links = []
     base_url = request.path
+    extra = request.query_parameters.except("page").to_query
+    joiner = extra.present? ? "#{extra}&" : ""
 
-    links << %(<#{base_url}?page=1>; rel="first")
-    links << %(<#{base_url}?page=#{pagy.prev}>; rel="prev") if pagy.prev
-    links << %(<#{base_url}?page=#{pagy.next}>; rel="next") if pagy.next
-    links << %(<#{base_url}?page=#{pagy.pages}>; rel="last")
+    links << %(<#{base_url}?#{joiner}page=1>; rel="first")
+    links << %(<#{base_url}?#{joiner}page=#{pagy.prev}>; rel="prev") if pagy.prev
+    links << %(<#{base_url}?#{joiner}page=#{pagy.next}>; rel="next") if pagy.next
+    links << %(<#{base_url}?#{joiner}page=#{pagy.pages}>; rel="last")
 
     links.join(", ")
   end

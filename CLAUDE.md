@@ -124,6 +124,7 @@ JSON API for programmatic access. See `docs/API.md` for full documentation.
 - `GET/POST /workspaces/:id/memories.json` — list/create memories
 - `GET/PATCH/DELETE /workspaces/:id/memories/:id.json` — show/update/destroy memory
 - `POST /workspaces/:id/memories/:id/versions.json` — create new version
+- `GET /search.json?q=<query>` — full-text search across memories (supports FTS5 operators: AND, OR, NOT, `"phrase"`, `title:term`, `body:term`)
 
 **Error format**:
 ```json
