@@ -3,10 +3,12 @@ class AccessToken < ApplicationRecord
 
   belongs_to :user
 
+  scope :recent, -> { order(created_at: :desc) }
+
   attr_reader :raw_token
 
   validates :permission, presence: true, inclusion: {in: PERMISSIONS}
-  validates :description, length: {maximum: 255}, allow_blank: true
+  validates :description, length: {maximum: 60}, allow_blank: true
 
   before_create :generate_token
 

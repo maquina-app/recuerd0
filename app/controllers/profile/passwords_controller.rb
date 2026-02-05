@@ -3,24 +3,15 @@ class Profile::PasswordsController < ApplicationController
     @user = Current.user
 
     unless @user.authenticate(params[:current_password])
-      flash[:alert] = t(".current_password_invalid")
-      respond_to do |format|
-        format.turbo_stream { render turbo_stream: turbo_stream.refresh }
-        format.html { redirect_to profile_path }
-      end
+      redirect_to profile_path, alert: t(".current_password_invalid")
       return
     end
 
     if @user.update(password_params)
       ProfileMailer.password_changed(@user).deliver_later
-      flash[:notice] = t(".updated")
+      redirect_to profile_path, notice: t(".updated")
     else
-      flash[:alert] = @user.errors.full_messages.to_sentence
-    end
-
-    respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.refresh }
-      format.html { redirect_to profile_path }
+      redirect_to profile_path, alert: @user.errors.full_messages.to_sentence
     end
   end
 

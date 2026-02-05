@@ -61,7 +61,7 @@ en:
 
   profiles:
     update:
-      updated: "Profile updated successfully."
+      updated: "Profile was successfully updated."
       errors: "Please review the errors below."
 
   profile:

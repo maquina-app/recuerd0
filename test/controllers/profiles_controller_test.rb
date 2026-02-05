@@ -16,7 +16,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@user)
     get profile_url
     assert_response :success
-    assert_select "table" # tokens table is present
+    assert_select "div.divide-y" # tokens list is present
   end
 
   test "show redirects unauthenticated user to login" do
@@ -35,7 +35,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
 
   test "update rejects name that is too long" do
     sign_in_as(@user)
-    patch profile_url, params: {user: {name: "a" * 101}}
+    patch profile_url, params: {user: {name: "a" * 81}}
 
     assert_response :unprocessable_entity
   end

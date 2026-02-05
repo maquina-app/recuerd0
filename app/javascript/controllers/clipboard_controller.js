@@ -3,6 +3,10 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["source", "copyIcon", "checkIcon"]
 
+  selectAll() {
+    this.sourceTarget.select()
+  }
+
   copy() {
     const text = this.sourceTarget.value
     navigator.clipboard.writeText(text).then(() => {

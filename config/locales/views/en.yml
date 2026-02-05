@@ -25,12 +25,16 @@ en:
       min_length_title: "Query too short"
       min_length_description: "Please enter at least 3 characters to search."
 
+  components:
+    sidebar:
+      nav_user:
+        account: "Account"
+        profile: "Profile"
+        log_out: "Log out"
+
   profiles:
     show:
       page_title: "Profile"
-    update:
-      updated: "Profile updated."
-      errors: "Could not update profile."
     personal_info:
       title: "Personal Information"
       description: "Manage your name and email address."
@@ -51,13 +55,11 @@ en:
       token_created: "Token created successfully!"
       copy_tooltip: "Copy to clipboard"
       token_warning: "Make sure to copy your token now. You won't be able to see it again."
-      col_description: "Description"
-      col_permission: "Permission"
-      col_created: "Created"
-      col_last_used: "Last Used"
       full_access: "Full Access"
       read_only: "Read Only"
-      never_used: "Never"
+      created_ago: "Created %{time} ago"
+      used_ago: "Used %{time} ago"
+      never_used: "Never used"
       untitled: "Untitled"
       delete_confirm: "This token will be permanently revoked. Any applications using it will lose access."
       empty_title: "No tokens yet"

@@ -10,10 +10,10 @@ class AccessTokenDescriptionTest < ActiveSupport::TestCase
     assert_equal "My CI token", token.reload.description
   end
 
-  test "description rejects values over 255 characters" do
-    token = @user.access_tokens.build(permission: "read_only", description: "a" * 256)
+  test "description rejects values over 60 characters" do
+    token = @user.access_tokens.build(permission: "read_only", description: "a" * 61)
     assert_not token.valid?
-    assert_includes token.errors[:description], "is too long (maximum is 255 characters)"
+    assert_includes token.errors[:description], "is too long (maximum is 60 characters)"
   end
 
   test "description allows blank value" do

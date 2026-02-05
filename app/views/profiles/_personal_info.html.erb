@@ -16,7 +16,7 @@
         <%= form.label :name, t("profiles.personal_info.name_label"), data: { component: "label" } %>
         <%= form.text_field :name,
             placeholder: t("profiles.personal_info.name_placeholder"),
-            maxlength: 100,
+            maxlength: 80,
             autocomplete: "name",
             data: { component: "input" } %>
         <% if user.errors[:name].any? %>

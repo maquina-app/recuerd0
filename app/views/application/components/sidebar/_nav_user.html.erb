@@ -25,7 +25,7 @@
               </span>
             </div>
             <%= icon_for :dots_vertical,
-            class: "w-4 h-4 ml-auto data-[state=collapsed]:hidden" %>
+            class: "size-4 ml-auto data-[state=collapsed]:hidden" %>
           </div>
         </button>
       <% end %>
@@ -57,13 +57,13 @@
 
         <%= render "components/dropdown_menu/group" do %>
           <%= render "components/dropdown_menu/item", href: account_path do %>
-            <%= icon_for :user_circle, class: "w-4 h-4" %>
-            Account
+            <%= icon_for :user_circle, class: "size-4" %>
+            <%= t("components.sidebar.nav_user.account") %>
           <% end %>
 
           <%= render "components/dropdown_menu/item", href: profile_path do %>
-            <%= icon_for :user, class: "w-4 h-4" %>
-            Profile
+            <%= icon_for :user, class: "size-4" %>
+            <%= t("components.sidebar.nav_user.profile") %>
           <% end %>
         <% end %>
 
@@ -72,8 +72,8 @@
         <%= render "components/dropdown_menu/item",
             href: session_path,
             data: { turbo_method: :delete } do %>
-          <%= icon_for :log_out, class: "w-4 h-4" %>
-          Log out
+          <%= icon_for :log_out, class: "size-4" %>
+          <%= t("components.sidebar.nav_user.log_out") %>
         <% end %>
       <% end %>
     <% end %>

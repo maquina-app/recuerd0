@@ -15,7 +15,7 @@
             <input type="text"
                    value="<%= flash[:new_token] %>"
                    readonly
-                   onclick="this.select()"
+                   data-action="click->clipboard#selectAll"
                    data-component="input"
                    data-clipboard-target="source"
                    class="font-mono text-xs flex-1" />
@@ -37,66 +37,55 @@
 
     <%# Token list %>
     <% if access_tokens.any? %>
-      <%= render "components/table" do %>
-        <%= render "components/table/header" do %>
-          <%= render "components/table/row" do %>
-            <%= render "components/table/head" do %><%= t("profiles.access_tokens.col_description") %><% end %>
-            <%= render "components/table/head" do %><%= t("profiles.access_tokens.col_permission") %><% end %>
-            <%= render "components/table/head", css_classes: "hidden sm:table-cell" do %><%= t("profiles.access_tokens.col_created") %><% end %>
-            <%= render "components/table/head", css_classes: "hidden sm:table-cell" do %><%= t("profiles.access_tokens.col_last_used") %><% end %>
-            <%= render "components/table/head", css_classes: "w-12" do %><% end %>
-          <% end %>
-        <% end %>
+      <div class="divide-y divide-border">
+        <% access_tokens.each do |token| %>
+          <div class="group flex items-center gap-4 py-3">
+            <div class="flex items-center justify-center size-8 rounded-md bg-muted shrink-0">
+              <%= icon_for(:key, class: "size-4 text-muted-foreground") %>
+            </div>
 
-        <%= render "components/table/body" do %>
-          <% access_tokens.each do |token| %>
-            <%= render "components/table/row" do %>
-              <%= render "components/table/cell" do %>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
                 <% if token.description.present? %>
-                  <span class="text-sm font-medium"><%= token.description %></span>
+                  <p class="text-sm font-medium truncate"><%= token.description %></p>
                 <% else %>
-                  <span class="text-sm text-muted-foreground italic"><%= t("profiles.access_tokens.untitled") %></span>
+                  <p class="text-sm text-muted-foreground italic"><%= t("profiles.access_tokens.untitled") %></p>
                 <% end %>
-              <% end %>
-              <%= render "components/table/cell" do %>
                 <% if token.full_access? %>
                   <%= render "components/badge", variant: :default do %><%= t("profiles.access_tokens.full_access") %><% end %>
                 <% else %>
                   <%= render "components/badge", variant: :secondary do %><%= t("profiles.access_tokens.read_only") %><% end %>
                 <% end %>
+              </div>
+              <p class="text-xs text-muted-foreground mt-0.5">
+                <%= t("profiles.access_tokens.created_ago", time: time_ago_in_words(token.created_at)) %>
+                · <%= token.last_used_at ? t("profiles.access_tokens.used_ago", time: time_ago_in_words(token.last_used_at)) : t("profiles.access_tokens.never_used") %>
+              </p>
+            </div>
+
+            <div class="shrink-0">
+              <%= button_to profile_access_token_path(token),
+                  method: :delete,
+                  data: {
+                    component: "button",
+                    variant: "ghost",
+                    size: "icon-sm",
+                    turbo_confirm: t("profiles.access_tokens.delete_confirm")
+                  },
+                  class: "text-destructive hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity" do %>
+                <%= icon_for(:trash_2, class: "size-4") %>
               <% end %>
-              <%= render "components/table/cell", css_classes: "hidden sm:table-cell" do %>
-                <span class="text-sm text-muted-foreground"><%= time_ago_in_words(token.created_at) %> ago</span>
-              <% end %>
-              <%= render "components/table/cell", css_classes: "hidden sm:table-cell" do %>
-                <span class="text-sm text-muted-foreground">
-                  <%= token.last_used_at ? "#{time_ago_in_words(token.last_used_at)} ago" : t("profiles.access_tokens.never_used") %>
-                </span>
-              <% end %>
-              <%= render "components/table/cell" do %>
-                <%= button_to profile_access_token_path(token),
-                    method: :delete,
-                    data: {
-                      component: "button",
-                      variant: "ghost",
-                      size: "icon-sm",
-                      turbo_confirm: t("profiles.access_tokens.delete_confirm")
-                    },
-                    class: "text-destructive hover:text-destructive" do %>
-                  <%= icon_for(:trash_2, class: "size-4") %>
-                <% end %>
-              <% end %>
-            <% end %>
-          <% end %>
+            </div>
+          </div>
         <% end %>
-      <% end %>
+      </div>
     <% else %>
       <%= render "components/empty", variant: :outline do %>
-        <%= render "components/empty/media" do %>
-          <%= icon_for(:key, class: "w-12 h-12 text-muted-foreground") %>
+        <%= render "components/empty/header" do %>
+          <%= render "components/empty/media", icon: :key %>
+          <%= render "components/empty/title", text: t("profiles.access_tokens.empty_title") %>
+          <%= render "components/empty/description", text: t("profiles.access_tokens.empty_description") %>
         <% end %>
-        <%= render "components/empty/title", text: t("profiles.access_tokens.empty_title") %>
-        <%= render "components/empty/description", text: t("profiles.access_tokens.empty_description") %>
       <% end %>
     <% end %>
 
@@ -109,7 +98,7 @@
             <%= form.label "access_token[description]", t("profiles.access_tokens.description_label"), data: { component: "label" } %>
             <%= form.text_field "access_token[description]",
                 placeholder: t("profiles.access_tokens.description_placeholder"),
-                maxlength: 255,
+                maxlength: 60,
                 autocomplete: "off",
                 data: { component: "input" } %>
           </div>

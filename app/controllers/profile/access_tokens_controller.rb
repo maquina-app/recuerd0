@@ -9,21 +9,14 @@ class Profile::AccessTokensController < ApplicationController
       flash[:alert] = @access_token.errors.full_messages.to_sentence
     end
 
-    respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.refresh }
-      format.html { redirect_to profile_path }
-    end
+    redirect_to profile_path
   end
 
   def destroy
     @access_token = Current.user.access_tokens.find(params[:id])
     @access_token.destroy
 
-    flash[:notice] = t(".deleted")
-    respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.refresh }
-      format.html { redirect_to profile_path }
-    end
+    redirect_to profile_path, notice: t(".deleted")
   end
 
   private
