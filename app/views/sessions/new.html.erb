@@ -9,47 +9,44 @@
   <% end %>
 
   <%= render "components/card/content" do %>
-    <%= form_with url: session_url do |form| %>
-      <div class="grid gap-6">
-        <div class="grid gap-6">
-          <div class="grid gap-3">
-            <%= form.label :email_address, "Email", data: { component: "label" } %>
-            <%= form.email_field :email_address,
-                             required: true,
-                             autofocus: true,
-                             autocomplete: "username",
-                             autocapitalize: "none",
-                             maxlength: 80,
-                             placeholder: "m@example.com",
-                             value: params[:email_address],
-                             data: { component: "input" },
-                             class: "w-full" %>
-          </div>
+    <%= form_with url: session_url, data: { component: "form" } do |form| %>
+      <div data-form-part="group">
+        <%= form.label :email_address, "Email", data: { component: "label" } %>
+        <%= form.email_field :email_address,
+            required: true,
+            autofocus: true,
+            autocomplete: "username",
+            autocapitalize: "none",
+            maxlength: 80,
+            placeholder: "m@example.com",
+            value: params[:email_address],
+            data: { component: "input" } %>
+      </div>
 
-          <div class="grid gap-3">
-            <div class="flex items-center">
-              <%= form.label :password, data: { component: "label" } %>
-              <%= link_to "Forgot your password?",
+      <div data-form-part="group">
+        <div class="flex items-center">
+          <%= form.label :password, data: { component: "label" } %>
+          <%= link_to "Forgot your password?",
               new_password_path,
               class: "ml-auto text-sm underline-offset-4 hover:underline" %>
-            </div>
-            <%= form.password_field :password,
-                                required: true,
-                                autocomplete: "current-password",
-                                placeholder: "Enter your password",
-                                maxlength: 72,
-                                spellcheck: "false",
-                                data: { component: "input" },
-                                class: "w-full" %>
-          </div>
-
-          <%= form.submit "Sign in", class: "btn-default w-full" %>
         </div>
+        <%= form.password_field :password,
+            required: true,
+            autocomplete: "current-password",
+            placeholder: "Enter your password",
+            maxlength: 72,
+            spellcheck: "false",
+            data: { component: "input" } %>
+      </div>
 
-        <div class="text-center text-sm">
-          Don't have an account?
-          <%= link_to "Sign up", new_registration_path, class: "underline underline-offset-4" %>
-        </div>
+      <div data-form-part="actions">
+        <%= form.submit "Sign in",
+            data: { component: "button", variant: "primary" }, class: "w-full" %>
+      </div>
+
+      <div class="text-center text-sm">
+        Don't have an account?
+        <%= link_to "Sign up", new_registration_path, class: "underline underline-offset-4" %>
       </div>
     <% end %>
   <% end %>

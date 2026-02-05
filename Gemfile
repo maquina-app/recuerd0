@@ -60,6 +60,7 @@ group :development, :test do
 end
 
 group :development do
+  gem "letter_opener"
   gem "log_bench", "~> 0.3.1"
   gem "reactionview", "~> 0.1.2"
   gem "standard", "~> 1.51.0"

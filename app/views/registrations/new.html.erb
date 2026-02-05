@@ -9,62 +9,58 @@
   <% end %>
 
   <%= render "components/card/content" do %>
-    <%= form_with model: @user, url: registration_url do |form| %>
-      <div class="grid gap-6">
-        <div class="grid gap-6">
-          <div class="grid gap-3">
-            <%= form.label :email_address, "Email", data: { component: "label" } %>
-            <%= form.email_field :email_address,
-                             required: true,
-                             autofocus: true,
-                             autocomplete: "email",
-                             autocapitalize: "none",
-                             maxlength: 80,
-                             placeholder: "m@example.com",
-                             data: { component: "input" },
-                             class: "w-full" %>
-            <% if @user.errors[:email_address].any? %>
-              <p data-form-part="error" class="text-destructive"><%= @user.errors[:email_address].first %></p>
-            <% end %>
-          </div>
+    <%= form_with model: @user, url: registration_url, data: { component: "form" } do |form| %>
+      <div data-form-part="group">
+        <%= form.label :email_address, "Email", data: { component: "label" } %>
+        <%= form.email_field :email_address,
+            required: true,
+            autofocus: true,
+            autocomplete: "email",
+            autocapitalize: "none",
+            maxlength: 80,
+            placeholder: "m@example.com",
+            data: { component: "input" } %>
+        <% if @user.errors[:email_address].any? %>
+          <p data-form-part="error" class="text-destructive"><%= @user.errors[:email_address].first %></p>
+        <% end %>
+      </div>
 
-          <div class="grid gap-3">
-            <%= form.label :password, data: { component: "label" } %>
-            <%= form.password_field :password,
-                                required: true,
-                                autocomplete: "new-password",
-                                placeholder: "Choose a password",
-                                maxlength: 72,
-                                spellcheck: "false",
-                                data: { component: "input" },
-                                class: "w-full" %>
-            <% if @user.errors[:password].any? %>
-              <p data-form-part="error" class="text-destructive"><%= @user.errors[:password].first %></p>
-            <% end %>
-          </div>
+      <div data-form-part="group">
+        <%= form.label :password, data: { component: "label" } %>
+        <%= form.password_field :password,
+            required: true,
+            autocomplete: "new-password",
+            placeholder: "Choose a password",
+            maxlength: 72,
+            spellcheck: "false",
+            data: { component: "input" } %>
+        <% if @user.errors[:password].any? %>
+          <p data-form-part="error" class="text-destructive"><%= @user.errors[:password].first %></p>
+        <% end %>
+      </div>
 
-          <div class="grid gap-3">
-            <%= form.label :password_confirmation, "Confirm password", data: { component: "label" } %>
-            <%= form.password_field :password_confirmation,
-                                required: true,
-                                autocomplete: "new-password",
-                                placeholder: "Confirm your password",
-                                maxlength: 72,
-                                spellcheck: "false",
-                                data: { component: "input" },
-                                class: "w-full" %>
-            <% if @user.errors[:password_confirmation].any? %>
-              <p data-form-part="error" class="text-destructive"><%= @user.errors[:password_confirmation].first %></p>
-            <% end %>
-          </div>
+      <div data-form-part="group">
+        <%= form.label :password_confirmation, "Confirm password", data: { component: "label" } %>
+        <%= form.password_field :password_confirmation,
+            required: true,
+            autocomplete: "new-password",
+            placeholder: "Confirm your password",
+            maxlength: 72,
+            spellcheck: "false",
+            data: { component: "input" } %>
+        <% if @user.errors[:password_confirmation].any? %>
+          <p data-form-part="error" class="text-destructive"><%= @user.errors[:password_confirmation].first %></p>
+        <% end %>
+      </div>
 
-          <%= form.submit "Create account", class: "btn-default w-full" %>
-        </div>
+      <div data-form-part="actions">
+        <%= form.submit "Create account",
+            data: { component: "button", variant: "primary" }, class: "w-full" %>
+      </div>
 
-        <div class="text-center text-sm">
-          Already have an account?
-          <%= link_to "Sign in", new_session_path, class: "underline underline-offset-4" %>
-        </div>
+      <div class="text-center text-sm">
+        Already have an account?
+        <%= link_to "Sign in", new_session_path, class: "underline underline-offset-4" %>
       </div>
     <% end %>
   <% end %>
