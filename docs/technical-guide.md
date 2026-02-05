@@ -26,15 +26,20 @@ Recuerd0 is a personal knowledge management application built with Rails 8, Hotw
 ## Domain Model
 
 ```
-User
- ├── has_many :sessions        (auth sessions)
+Account
+ ├── has_many :users           (account members)
  ├── has_many :workspaces      (owned workspaces)
+ └── validates :name presence
+
+User
+ ├── belongs_to :account       (required)
+ ├── has_many :sessions        (auth sessions)
  ├── has_many :pins            (polymorphic bookmarks)
  ├── has_many :pinned_workspaces  (through pins, active only)
  └── has_many :pinned_memories    (through pins)
 
 Workspace
- ├── belongs_to :user
+ ├── belongs_to :account
  ├── has_many :memories        (counter cached)
  ├── concerns: SoftDeletable, Archivable, Pinnable
  └── state hierarchy: active → archived → deleted
@@ -57,6 +62,15 @@ Pin
  ├── belongs_to :pinnable      (polymorphic: Workspace or Memory)
  └── position-ordered, max 10 per user
 ```
+
+### Multi-Tenancy
+
+Account serves as the multi-tenant container. Each user belongs to exactly one account, and workspaces belong to accounts (not users directly). This enables future multi-user accounts while maintaining data isolation.
+
+- `Current.account` — derived from `Current.user.account`, available throughout the request
+- All workspace queries scope to `Current.account.workspaces`
+- Pins remain user-scoped (within account context)
+- Sessions remain user-scoped (authentication is user-level)
 
 ### Key Model Behaviors
 
@@ -116,10 +130,11 @@ FTS5 full-text search backed by the `memories_search` virtual table (trigram tok
 
 ## Rich Model Methods
 
-Multi-model operations (Memory + Content) are handled by model methods on `Memory`, each wrapped in a transaction:
+Multi-model operations are handled by model methods wrapped in transactions:
 
 | Method | Purpose |
 |--------|---------|
+| `Account.create_with_user(email:, password:, password_confirmation:)` | Creates Account + User atomically. Returns user on success, invalid user with errors on failure. |
 | `Memory.create_with_content(workspace, attrs)` | Builds Memory + Content in a transaction. Accepts title, tags, source, content. |
 | `memory.update_with_content(attrs)` | Updates Memory attributes and Content body atomically. |
 | `memory.create_version!(attrs)` | Branches a new version from any existing version. Copies attributes from original, resolves root parent. |
@@ -135,6 +150,7 @@ Multi-model operations (Memory + Content) are handled by model methods on `Memor
 | `PinsController` | Create/destroy pins. Validates pinnable type against whitelist. Enforces 10-pin limit. |
 | `HomeController` | Public landing page. |
 | `SessionsController` | Login/logout. Rate-limited to 10 attempts per 3 minutes. |
+| `RegistrationsController` | Self-service user signup. Creates Account + User atomically. Rate-limited to 10 attempts per hour. |
 | `PasswordsController` | Token-based password reset via email. Anti-enumeration (always shows success). |
 
 ### Namespaced Controllers
@@ -155,6 +171,7 @@ Multi-model operations (Memory + Content) are handled by model methods on `Memor
 ```
 Root:       GET /                                → home#index (public)
 Auth:       resource  :session                   → sessions (login/logout)
+            resource  :registration              → registrations (signup)
             resources :passwords, param: :token  → passwords (reset flow)
 
 Workspaces: resources :workspaces do
@@ -179,10 +196,11 @@ Health:     GET /up → rails/health#show
 Rails 8 built-in authentication with `has_secure_password` (bcrypt).
 
 - **Session model**: stores user_id, ip_address, user_agent in database
-- **Current context**: `Current.session` / `Current.user` via `ActiveSupport::CurrentAttributes`
+- **Current context**: `Current.session` / `Current.user` / `Current.account` via `ActiveSupport::CurrentAttributes`
 - **Cookie**: signed, permanent, httponly, same_site: lax (key: `:session_id`)
+- **Registration**: self-service signup creates Account + User atomically, auto-login after success
 - **Password reset**: encrypted token via Rails message verifier, delivered by `PasswordsMailer`
-- **Rate limiting**: 10 login attempts per 3 minutes
+- **Rate limiting**: 10 login attempts per 3 minutes, 10 registration attempts per hour
 
 ## Frontend Architecture
 
@@ -277,10 +295,12 @@ Custom overrides:
 
 ### Schema
 
-SQLite with 6 tables: `users`, `sessions`, `workspaces`, `memories`, `contents`, `pins`. Plus one FTS5 virtual table: `memories_search` (trigram tokenizer, columns: `title`, `body`, `memory_id UNINDEXED`).
+SQLite with 7 tables: `accounts`, `users`, `sessions`, `workspaces`, `memories`, `contents`, `pins`. Plus one FTS5 virtual table: `memories_search` (trigram tokenizer, columns: `title`, `body`, `memory_id UNINDEXED`).
 
 **Notable indexes**:
 - `users.email_address` (unique)
+- `users.account_id` (foreign key to accounts)
+- `workspaces.account_id` (foreign key to accounts)
 - `memories(parent_memory_id, version)` (composite, for version lookups)
 - `pins(user_id, pinnable_type, pinnable_id)` (unique, prevents duplicate pins)
 - `pins(user_id, pinnable_type, position)` (composite, for ordered pin lists)
@@ -300,6 +320,7 @@ SQLite with 6 tables: `users`, `sessions`, `workspaces`, `memories`, `contents`,
 5. **2025-07-27**: Pins (polymorphic with position ordering)
 6. **2025-09-30**: Versioning (`version` + `parent_memory_id` on memories)
 7. **2026-02-04**: Full-text search (`memories_search` FTS5 virtual table with trigram tokenizer)
+8. **2026-02-05**: Accounts (multi-tenancy container), user.account_id, workspace.account_id (replaces user_id)
 
 ## Deployment
 

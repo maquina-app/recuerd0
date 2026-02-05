@@ -46,18 +46,24 @@ bin/kamal console                # Remote Rails console
 
 ### Domain Model
 
-- **User** → has many Workspaces, Sessions, Pins (max 10 pins, enforced in controller)
-- **Workspace** → has many Memories (counter cached); supports soft delete (30-day retention), archiving, and pinning
+- **Account** → has many Users, Workspaces; serves as multi-tenant container
+- **User** → belongs to Account; has many Sessions, Pins (max 10 pins, enforced in controller)
+- **Workspace** → belongs to Account; has many Memories (counter cached); supports soft delete (30-day retention), archiving, and pinning
 - **Memory** → belongs to Workspace (touch: true); has one Content; supports versioning (flat branching from any version), pinning, and full-text search
 - **Content** → stores the body text of a Memory (Markdown via Commonmarker); touches parent Memory; triggers search reindex on save
 - **Pin** → polymorphic; allows users to pin Workspaces or Memories with position ordering
 - **Session** → belongs to User; stores ip_address and user_agent
 
+All workspace queries scope to `Current.account.workspaces` for data isolation.
+
 ### Rich Model Methods
 
-Multi-model operations (Memory + Content) are handled by model methods wrapped in transactions:
+Multi-model operations are handled by model methods wrapped in transactions:
 
 ```ruby
+# Creating an account with user (used by RegistrationsController)
+Account.create_with_user(email_address: "...", password: "...", password_confirmation: "...")
+
 # Creating a memory with content
 Memory.create_with_content(workspace, title: "...", content: "...", tags: [...])
 
@@ -89,8 +95,8 @@ Controllers under `workspaces/` handle specific workspace states:
 
 ### Controller Concerns
 
-- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Uses `Current.user` / `Current.session`.
-- **WorkspaceScoped** (`app/controllers/concerns/workspace_scoped.rb`) - Loads workspace with `with_deleted` scope for namespaced controllers.
+- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Uses `Current.user` / `Current.session` / `Current.account`.
+- **WorkspaceScoped** (`app/controllers/concerns/workspace_scoped.rb`) - Loads workspace scoped to `Current.account.workspaces`.
 
 ### Frontend
 
@@ -240,11 +246,11 @@ Always use the gem's `render "components/..."` partials — never hand-write inl
 
 ### Authentication
 
-Uses Rails 8 built-in authentication generator with `Current.user` for accessing the logged-in user. Sessions stored in database with signed permanent cookies (httponly, same_site: lax). Login rate-limited to 10 attempts per 3 minutes. Password reset via encrypted token in email.
+Uses Rails 8 built-in authentication generator with `Current.user` and `Current.account` for accessing the logged-in user and their account. Sessions stored in database with signed permanent cookies (httponly, same_site: lax). Self-service registration creates Account + User atomically with auto-login. Login rate-limited to 10 attempts per 3 minutes. Registration rate-limited to 10 attempts per hour. Password reset via encrypted token in email.
 
 ### Database
 
-SQLite for everything. Production uses 4 separate SQLite files (primary, cache, queue, cable) in a persistent Docker volume. Counter cache on `workspaces.memories_count`. FTS5 virtual table `memories_search` with trigram tokenizer for full-text search. Key composite indexes: `memories(parent_memory_id, version)` and `pins(user_id, pinnable_type, pinnable_id)` (unique).
+SQLite for everything. Production uses 4 separate SQLite files (primary, cache, queue, cable) in a persistent Docker volume. 7 tables: `accounts`, `users`, `sessions`, `workspaces`, `memories`, `contents`, `pins`. Counter cache on `workspaces.memories_count`. FTS5 virtual table `memories_search` with trigram tokenizer for full-text search. Key indexes: `users.account_id`, `workspaces.account_id`, `memories(parent_memory_id, version)`, and `pins(user_id, pinnable_type, pinnable_id)` (unique).
 
 ### Deployment
 
