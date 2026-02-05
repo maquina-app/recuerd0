@@ -4,8 +4,6 @@ class ApplicationController < ActionController::Base
   include HttpCacheable
   include ApiHelpers
 
-  before_action :load_ui_cookies
-
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern, if: -> { !request.format.json? }
 
@@ -25,10 +23,6 @@ class ApplicationController < ActionController::Base
     else
       raise
     end
-  end
-
-  def load_ui_cookies
-    @sidebar_open = cookies["recuerd0_sidebar_state"] == "true"
   end
 
   def require_full_access

@@ -3,6 +3,20 @@ module MaquinaComponentsHelper
   include MaquinaComponents::PaginationHelper
   include MaquinaComponents::BreadcrumbsHelper
   include MaquinaComponents::ToastHelper
+  include MaquinaComponents::SidebarHelper
+
+  # Sidebar cookie name for this application
+  SIDEBAR_COOKIE_NAME = "recuerd0_sidebar_state"
+
+  # Check if sidebar is open (reads from cookie)
+  def recuerd0_sidebar_open?
+    sidebar_open?(SIDEBAR_COOKIE_NAME)
+  end
+
+  # Get sidebar state symbol (:expanded or :collapsed)
+  def recuerd0_sidebar_state
+    sidebar_state(SIDEBAR_COOKIE_NAME)
+  end
 
   # Provides fallback icons for maquina-components gem.
   # Called when the gem doesn't have a built-in icon.
