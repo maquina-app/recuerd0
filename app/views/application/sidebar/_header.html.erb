@@ -1,12 +1,6 @@
 <%# locals: () %>
 <%= render "components/sidebar/header" do %>
-  <%= render "components/sidebar/menu", css_classes: "w-full" do %>
-    <%= render "components/sidebar/menu_item" do %>
-      <%= render "components/sidebar/menu_button",
-          title: "Recuerd0",
-          url: workspaces_path,
-          icon_name: :brain,
-          css_classes: "!p-2 w-full justify-start" %>
-    <% end %>
+  <%= link_to workspaces_path, class: "flex items-center p-2" do %>
+    <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "h-6" %>
   <% end %>
 <% end %>
