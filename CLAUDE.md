@@ -47,7 +47,8 @@ bin/kamal console                # Remote Rails console
 ### Domain Model
 
 - **Account** → has many Users, Workspaces; serves as multi-tenant container
-- **User** → belongs to Account; has many Sessions, Pins (max 10 pins, enforced in controller)
+- **User** → belongs to Account; has many Sessions, AccessTokens, Pins (max 10 pins, enforced in controller)
+- **AccessToken** → belongs to User; two permission levels (`read_only`, `full_access`); SHA256 hashed token storage; tracks `last_used_at`
 - **Workspace** → belongs to Account; has many Memories (counter cached); supports soft delete (30-day retention), archiving, and pinning
 - **Memory** → belongs to Workspace (touch: true); has one Content; supports versioning (flat branching from any version), pinning, and full-text search
 - **Content** → stores the body text of a Memory (Markdown via Commonmarker); touches parent Memory; triggers search reindex on save
@@ -95,8 +96,32 @@ Controllers under `workspaces/` handle specific workspace states:
 
 ### Controller Concerns
 
-- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Uses `Current.user` / `Current.session` / `Current.account`.
-- **WorkspaceScoped** (`app/controllers/concerns/workspace_scoped.rb`) - Loads workspace scoped to `Current.account.workspaces`.
+- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Uses `Current.user` / `Current.session` / `Current.account`. Supports both session cookies and Bearer token authentication for API requests.
+- **WorkspaceScoped** (`app/controllers/concerns/workspace_scoped.rb`) - Loads workspace scoped to `Current.account.workspaces`. Includes `require_active_workspace` for both HTML and JSON formats.
+- **ApiHelpers** (`app/controllers/concerns/api_helpers.rb`) - Pagination headers (`X-Page`, `X-Total`, `X-Total-Pages`, `Link`), error response helpers (`render_validation_errors`, `render_not_found`, `render_unauthorized`, `render_forbidden`, `render_rate_limited`).
+
+### REST API
+
+JSON API for programmatic access. See `docs/API.md` for full documentation.
+
+**Authentication**: Bearer token via `Authorization: Bearer <token>` header. Tokens have two permission levels:
+- `read_only` — GET endpoints only
+- `full_access` — all CRUD operations
+
+**Rate limiting**: 100 requests/minute per token (Rails 8 `rate_limit`).
+
+**Endpoints**:
+- `GET/POST /workspaces.json` — list/create workspaces
+- `GET/PATCH /workspaces/:id.json` — show/update workspace
+- `POST/DELETE /workspaces/:id/archive.json` — archive/unarchive
+- `GET/POST /workspaces/:id/memories.json` — list/create memories
+- `GET/PATCH/DELETE /workspaces/:id/memories/:id.json` — show/update/destroy memory
+- `POST /workspaces/:id/memories/:id/versions.json` — create new version
+
+**Error format**:
+```json
+{"error": {"code": "NOT_FOUND", "message": "Resource not found", "status": 404}}
+```
 
 ### Frontend
 
@@ -250,7 +275,7 @@ Uses Rails 8 built-in authentication generator with `Current.user` and `Current.
 
 ### Database
 
-SQLite for everything. Production uses 4 separate SQLite files (primary, cache, queue, cable) in a persistent Docker volume. 7 tables: `accounts`, `users`, `sessions`, `workspaces`, `memories`, `contents`, `pins`. Counter cache on `workspaces.memories_count`. FTS5 virtual table `memories_search` with trigram tokenizer for full-text search. Key indexes: `users.account_id`, `workspaces.account_id`, `memories(parent_memory_id, version)`, and `pins(user_id, pinnable_type, pinnable_id)` (unique).
+SQLite for everything. Production uses 4 separate SQLite files (primary, cache, queue, cable) in a persistent Docker volume. 8 tables: `accounts`, `users`, `sessions`, `access_tokens`, `workspaces`, `memories`, `contents`, `pins`. Counter cache on `workspaces.memories_count`. FTS5 virtual table `memories_search` with trigram tokenizer for full-text search. Key indexes: `users.account_id`, `workspaces.account_id`, `access_tokens.token_digest` (unique), `memories(parent_memory_id, version)`, and `pins(user_id, pinnable_type, pinnable_id)` (unique).
 
 ### Deployment
 
@@ -276,3 +301,9 @@ Load guides with `execute_tool("load_guide", { library: "<library>", guide: "<gu
 - `get_routes` — list HTTP routes with filtering
 - `get_schema` — database schema for all or specific tables
 - `project_info` — Rails version, directory structure, project overview
+
+## Project Tracking
+
+Engineering tasks are tracked on the Fizzy board: **Recuerd0 Engineering**
+- Board URL: https://fizzy.maquina.app/0000001/boards/03fip3ticfveu2xub49cypi30
+- Use `fizzy` CLI to manage cards, comments, and task status

@@ -34,9 +34,16 @@ Account
 User
  ├── belongs_to :account       (required)
  ├── has_many :sessions        (auth sessions)
+ ├── has_many :access_tokens   (API tokens)
  ├── has_many :pins            (polymorphic bookmarks)
  ├── has_many :pinned_workspaces  (through pins, active only)
  └── has_many :pinned_memories    (through pins)
+
+AccessToken
+ ├── belongs_to :user
+ ├── permission: read_only | full_access
+ ├── token_digest (SHA256 hashed)
+ └── last_used_at (touched on each API request)
 
 Workspace
  ├── belongs_to :account
@@ -163,8 +170,10 @@ Multi-model operations are handled by model methods wrapped in transactions:
 
 ### Controller Concerns
 
-- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Session stored in signed permanent cookie (httponly, same_site: lax).
-- **WorkspaceScoped** (`app/controllers/concerns/workspace_scoped.rb`) - Loads workspace with `with_deleted` scope for namespaced controllers.
+- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Session stored in signed permanent cookie (httponly, same_site: lax). Also handles Bearer token authentication for API requests.
+- **WorkspaceScoped** (`app/controllers/concerns/workspace_scoped.rb`) - Loads workspace with `with_deleted` scope for namespaced controllers. Includes `require_active_workspace` with HTML/JSON format support.
+- **ApiHelpers** (`app/controllers/concerns/api_helpers.rb`) - JSON API utilities: pagination headers (`X-Page`, `X-Per-Page`, `X-Total`, `X-Total-Pages`, `Link`), error response helpers (`render_validation_errors`, `render_not_found`, `render_unauthorized`, `render_forbidden`, `render_rate_limited`).
+- **HttpCacheable** (`app/controllers/concerns/http_cacheable.rb`) - HTTP caching helpers: `fresh_when_private` (ETags with `Cache-Control: private`), `collection_cache_key` (composite cache keys for paginated collections).
 
 ## Routing Structure
 
@@ -189,6 +198,78 @@ Workspaces: resources :workspaces do
 Pins:       POST/DELETE pins/:pinnable_type/:pinnable_id → pins (polymorphic)
 
 Health:     GET /up → rails/health#show
+
+API:        All routes accept .json format for JSON API access
+            Authentication via Bearer token in Authorization header
+            Rate limited: 100 requests/minute per token
+```
+
+## REST API
+
+JSON API for programmatic access to workspaces and memories. Full documentation in `docs/API.md`.
+
+### Authentication
+
+All API requests require Bearer token authentication:
+
+```
+Authorization: Bearer <token>
+```
+
+**Token permissions**:
+- `read_only` — GET endpoints only
+- `full_access` — all CRUD operations (GET, POST, PATCH, DELETE)
+
+Tokens are created via `AccessToken.create(user: user, permission: "full_access")`. The raw token is only available immediately after creation via `access_token.raw_token`.
+
+### Rate Limiting
+
+100 requests per minute per token, enforced via Rails 8 `rate_limit`. Exceeded requests receive `429 Too Many Requests` with `Retry-After: 60` header.
+
+### Endpoints
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| GET | `/workspaces.json` | read_only | List workspaces (paginated) |
+| GET | `/workspaces/:id.json` | read_only | Show workspace |
+| POST | `/workspaces.json` | full_access | Create workspace |
+| PATCH | `/workspaces/:id.json` | full_access | Update workspace |
+| POST | `/workspaces/:id/archive.json` | full_access | Archive workspace |
+| DELETE | `/workspaces/:id/archive.json` | full_access | Unarchive workspace |
+| GET | `/workspaces/:id/memories.json` | read_only | List memories (paginated) |
+| GET | `/workspaces/:id/memories/:id.json` | read_only | Show memory with content |
+| POST | `/workspaces/:id/memories.json` | full_access | Create memory |
+| PATCH | `/workspaces/:id/memories/:id.json` | full_access | Update memory |
+| DELETE | `/workspaces/:id/memories/:id.json` | full_access | Delete memory |
+| POST | `/workspaces/:id/memories/:id/versions.json` | full_access | Create new version |
+
+### Pagination Headers
+
+List endpoints return pagination metadata in response headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-Page` | Current page number |
+| `X-Per-Page` | Items per page |
+| `X-Total` | Total item count |
+| `X-Total-Pages` | Total pages |
+| `Link` | RFC 5988 pagination links (first, prev, next, last) |
+
+### Error Responses
+
+All errors follow a consistent JSON structure:
+
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Resource not found",
+    "status": 404
+  }
+}
+```
+
+**Error codes**: `UNAUTHORIZED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `VALIDATION_ERROR` (422), `RATE_LIMITED` (429)
 ```
 
 ## Authentication
@@ -295,11 +376,13 @@ Custom overrides:
 
 ### Schema
 
-SQLite with 7 tables: `accounts`, `users`, `sessions`, `workspaces`, `memories`, `contents`, `pins`. Plus one FTS5 virtual table: `memories_search` (trigram tokenizer, columns: `title`, `body`, `memory_id UNINDEXED`).
+SQLite with 8 tables: `accounts`, `users`, `sessions`, `access_tokens`, `workspaces`, `memories`, `contents`, `pins`. Plus one FTS5 virtual table: `memories_search` (trigram tokenizer, columns: `title`, `body`, `memory_id UNINDEXED`).
 
 **Notable indexes**:
 - `users.email_address` (unique)
 - `users.account_id` (foreign key to accounts)
+- `access_tokens.token_digest` (unique, for token lookup)
+- `access_tokens.user_id` (foreign key to users)
 - `workspaces.account_id` (foreign key to accounts)
 - `memories(parent_memory_id, version)` (composite, for version lookups)
 - `pins(user_id, pinnable_type, pinnable_id)` (unique, prevents duplicate pins)
@@ -321,6 +404,7 @@ SQLite with 7 tables: `accounts`, `users`, `sessions`, `workspaces`, `memories`,
 6. **2025-09-30**: Versioning (`version` + `parent_memory_id` on memories)
 7. **2026-02-04**: Full-text search (`memories_search` FTS5 virtual table with trigram tokenizer)
 8. **2026-02-05**: Accounts (multi-tenancy container), user.account_id, workspace.account_id (replaces user_id)
+9. **2026-02-05**: Access tokens (API authentication with read_only/full_access permissions)
 
 ## Deployment
 
