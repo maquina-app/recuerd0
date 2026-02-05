@@ -332,7 +332,10 @@ Rails 8 built-in authentication with `has_secure_password` (bcrypt).
 
 ### Turbo / Hotwire Patterns
 
-- **Morph mode**: `turbo_refresh_method_tag :morph` enables page morphing with cached snapshots
+> See `docs/hotwire-patterns.md` for the full Hotwire reference with event lifecycle, data attributes, and Stimulus controller details.
+
+- **Morph mode**: `turbo_refresh_method_tag :morph` + `turbo_refresh_scroll_tag :preserve` enables smooth page morphing with scroll preservation
+- **Form submissions with morph**: Use standard `redirect_to` (303 See Other) after successful form submissions. Turbo Drive follows the redirect, and because the morph meta tag is present, it morphs only the changed DOM elements instead of replacing the entire body. This is the canonical Turbo 8 pattern. **Do NOT use `turbo_stream.refresh` for form responses** — it is designed for WebSocket broadcasting and will be silently ignored due to request_id deduplication when used as a direct form response.
 - **Stateful cleanup**: `turbo:before-cache` cleans live DOM; `turbo:before-render` cleans incoming body on Back/Forward
 - **Global teardown**: `application.js` calls `teardown()` on all Stimulus controllers that implement it (Better Stimulus pattern)
 - **Manual dropdown cleanup**: `application.js` handles gem-provided dropdown menus until the gem adds its own teardown

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Recuerd0 is a Rails 8 application for managing memories organized into workspaces. Built with Hotwire (Turbo + Stimulus), Tailwind CSS, and SQLite. Follows the One Person Framework philosophy: SQLite for all data needs (including cache, jobs, and WebSockets via Solid libraries), Kamal for deployment, importmaps instead of Node.js.
 
-See `docs/technical-guide.md` for a comprehensive technical reference, `docs/ui-patterns.md` for the complete UI patterns catalog, and `docs/brand-guide.md` for logo, color system, typography, and voice guidelines.
+See `docs/technical-guide.md` for a comprehensive technical reference, `docs/ui-patterns.md` for the complete UI patterns catalog, `docs/hotwire-patterns.md` for Turbo Drive, Turbo Frames, and Stimulus patterns, and `docs/brand-guide.md` for logo, color system, typography, and voice guidelines.
 
 ## Workflow Discipline
 
@@ -286,7 +286,8 @@ This applies to any code inside `do...end` blocks for gem-rendered partials (car
 
 ### Turbo / Hotwire Notes
 
-- Layout uses `turbo_refresh_method_tag :morph` — Turbo caches page snapshots
+- Layout uses `turbo_refresh_method_tag :morph` + `turbo_refresh_scroll_tag :preserve` — enables smooth page morphing with scroll preservation
+- **Form submissions with morph**: After a successful form submission, use `redirect_to` (sends 303 See Other automatically). Turbo follows the redirect and morphs only changed DOM elements. This is the canonical Turbo 8 pattern. **Do NOT use `turbo_stream.refresh` for form responses** — it is designed for broadcasting (WebSockets) and gets silently ignored due to request_id deduplication when returned as a direct form response.
 - `data-turbo-temporary` does **not** work with morph mode for cleaning up stateful elements
 - Stateful Stimulus components (dropdowns, modals) need cleanup via Turbo cache events:
   - `turbo:before-cache` — clean the live DOM before Turbo snapshots it
