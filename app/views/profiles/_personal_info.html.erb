@@ -1,0 +1,33 @@
+<%# locals: (user:) %>
+<%= render "components/card" do %>
+  <%= render "components/card/header" do %>
+    <%= render "components/card/title", text: t("profiles.personal_info.title") %>
+    <%= render "components/card/description", text: t("profiles.personal_info.description") %>
+  <% end %>
+
+  <%= render "components/card/content" do %>
+    <%= form_with(model: user, url: profile_path, method: :patch, data: { component: "form" }) do |form| %>
+      <div class="flex items-center gap-2 text-sm">
+        <span class="font-medium text-muted-foreground"><%= t("profiles.personal_info.email_label") %></span>
+        <span><%= user.email_address %></span>
+      </div>
+
+      <div data-form-part="group">
+        <%= form.label :name, t("profiles.personal_info.name_label"), data: { component: "label" } %>
+        <%= form.text_field :name,
+            placeholder: t("profiles.personal_info.name_placeholder"),
+            maxlength: 100,
+            autocomplete: "name",
+            data: { component: "input" } %>
+        <% if user.errors[:name].any? %>
+          <p data-form-part="error" class="text-destructive"><%= user.errors[:name].first %></p>
+        <% end %>
+      </div>
+
+      <div data-form-part="actions">
+        <%= form.submit t("profiles.personal_info.submit"),
+            data: { component: "button", variant: "primary" } %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

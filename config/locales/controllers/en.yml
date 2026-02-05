@@ -59,6 +59,22 @@ en:
       mismatch: "Passwords did not match."
     invalid_token: "Password reset link is invalid or has expired."
 
+  profiles:
+    update:
+      updated: "Profile updated successfully."
+      errors: "Please review the errors below."
+
+  profile:
+    passwords:
+      update:
+        updated: "Password changed successfully."
+        current_password_invalid: "Current password is incorrect."
+    access_tokens:
+      create:
+        created: "Token created successfully."
+      destroy:
+        deleted: "Token was permanently revoked."
+
   accounts:
     unauthorized: "You don't have permission to perform this action."
     update:

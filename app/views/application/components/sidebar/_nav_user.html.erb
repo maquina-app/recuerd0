@@ -19,7 +19,7 @@
             grayscale: true,
             css_classes: "avatar rounded-lg" %>
             <div class="grid flex-1 text-left text-sm leading-tight data-[state=collapsed]:hidden">
-              <span class="truncate font-medium"><%= user.email_address.split("@").first %></span>
+              <span class="truncate font-medium"><%= user.name.presence || user.email_address.split("@").first %></span>
               <span class="truncate text-xs text-muted-foreground">
                 <%= user.email_address %>
               </span>
@@ -45,7 +45,7 @@
             size: "h-8 w-8",
             css_classes: "avatar rounded-lg" %>
             <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-medium"><%= user.email_address.split("@").first %></span>
+              <span class="truncate font-medium"><%= user.name.presence || user.email_address.split("@").first %></span>
               <span class="truncate text-xs text-muted-foreground">
                 <%= user.email_address %>
               </span>
@@ -61,14 +61,9 @@
             Account
           <% end %>
 
-          <%= render "components/dropdown_menu/item", href: "#" do %>
-            <%= icon_for :credit_card, class: "w-4 h-4" %>
-            Billing
-          <% end %>
-
-          <%= render "components/dropdown_menu/item", href: "#" do %>
-            <%= icon_for :bell, class: "w-4 h-4" %>
-            Notifications
+          <%= render "components/dropdown_menu/item", href: profile_path do %>
+            <%= icon_for :user, class: "w-4 h-4" %>
+            Profile
           <% end %>
         <% end %>
 

@@ -6,6 +6,7 @@ class AccessToken < ApplicationRecord
   attr_reader :raw_token
 
   validates :permission, presence: true, inclusion: {in: PERMISSIONS}
+  validates :description, length: {maximum: 255}, allow_blank: true
 
   before_create :generate_token
 

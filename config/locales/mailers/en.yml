@@ -5,3 +5,6 @@ en:
   registrations_mailer:
     welcome:
       subject: "Welcome to recuerd0"
+  profile_mailer:
+    password_changed:
+      subject: "Your password was changed"

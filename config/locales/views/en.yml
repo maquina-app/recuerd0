@@ -25,6 +25,49 @@ en:
       min_length_title: "Query too short"
       min_length_description: "Please enter at least 3 characters to search."
 
+  profiles:
+    show:
+      page_title: "Profile"
+    update:
+      updated: "Profile updated."
+      errors: "Could not update profile."
+    personal_info:
+      title: "Personal Information"
+      description: "Manage your name and email address."
+      email_label: "Email:"
+      name_label: "Name"
+      name_placeholder: "Your display name"
+      submit: "Update Profile"
+    change_password:
+      title: "Change Password"
+      description: "Update your password. You'll receive an email notification."
+      current_password_label: "Current password"
+      new_password_label: "New password"
+      confirm_password_label: "Confirm new password"
+      submit: "Change Password"
+    access_tokens:
+      title: "Personal Access Tokens"
+      description: "Tokens allow programmatic access to the API."
+      token_created: "Token created successfully!"
+      copy_tooltip: "Copy to clipboard"
+      token_warning: "Make sure to copy your token now. You won't be able to see it again."
+      col_description: "Description"
+      col_permission: "Permission"
+      col_created: "Created"
+      col_last_used: "Last Used"
+      full_access: "Full Access"
+      read_only: "Read Only"
+      never_used: "Never"
+      untitled: "Untitled"
+      delete_confirm: "This token will be permanently revoked. Any applications using it will lose access."
+      empty_title: "No tokens yet"
+      empty_description: "Create a token to access the API programmatically."
+      create_title: "Create New Token"
+      description_label: "Description"
+      description_placeholder: "e.g., CI/CD pipeline"
+      permission_label: "Permission"
+      create_submit: "Create Token"
+
   accounts:
     show:
       page_title: "Account"

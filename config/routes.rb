@@ -9,6 +9,12 @@ Rails.application.routes.draw do
     resource :invitation, only: %i[create], controller: "account/invitations"
   end
 
+  # User profile
+  resource :profile, only: %i[show update] do
+    resource :password, only: %i[update], controller: "profile/passwords"
+    resources :access_tokens, only: %i[create destroy], controller: "profile/access_tokens"
+  end
+
   # Invitations (public)
   resources :invitations, only: %i[show create], param: :token
 

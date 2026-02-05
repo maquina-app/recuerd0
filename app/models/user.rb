@@ -25,6 +25,7 @@ class User < ApplicationRecord
   scope :active, -> { where.not("email_address LIKE 'deleted-%'") }
 
   validates :role, presence: true, inclusion: {in: ROLES}
+  validates :name, length: {maximum: 100}, allow_blank: true
 
   def admin?
     role == "admin"

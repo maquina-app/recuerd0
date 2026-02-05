@@ -5,6 +5,7 @@ one:
   password_digest: <%= password_digest %>
   account: one
   role: admin
+  name: Alice
 
 two:
   email_address: two@example.com
@@ -17,3 +18,4 @@ member:
   password_digest: <%= password_digest %>
   account: one
   role: member
+  name: Bob

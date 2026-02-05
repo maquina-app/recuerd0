@@ -1,0 +1,19 @@
+<% content_for :page_title, t("profiles.show.page_title") %>
+
+<% content_for :breadcrumb do %>
+  <%= breadcrumbs({}, t("profiles.show.page_title")) %>
+<% end %>
+
+<%# Two-column layout: main content left, password right %>
+<div class="mx-auto max-w-5xl grid grid-cols-1 lg:grid-cols-5 items-start gap-6">
+  <div class="lg:col-span-3 space-y-6">
+    <%= render "profiles/personal_info", user: @user %>
+    <%= render "profiles/access_tokens", user: @user, access_tokens: @access_tokens %>
+  </div>
+
+  <div class="lg:col-span-2">
+    <div class="lg:sticky lg:top-6">
+      <%= render "profiles/change_password", user: @user %>
+    </div>
+  </div>
+</div>
