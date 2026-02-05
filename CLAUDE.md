@@ -83,7 +83,7 @@ Located in `app/models/concerns/`:
 - **Archivable** - `archived_at` timestamp, `archive`/`unarchive`/`toggle_archive` methods
 - **Pinnable** - polymorphic pinning with position ordering, `pin!`/`unpin!`/`toggle_pin_for!` methods. Validates `active?` before pinning.
 - **Versionable** - memory versioning with parent/child relationships. All versions share a root parent (flat tree). `consolidate_versions!` to collapse history.
-- **Searchable** - FTS5 full-text search via `memories_search` virtual table (trigram tokenizer). Always indexes the **newest version's** title and body under the **root memory's ID**. `full_search(query)` scope, `rebuild_search_index` public method. Reindex all: `bin/rails search:reindex`.
+- **Searchable** - FTS5 full-text search via `memories_search` virtual table (trigram tokenizer). Always indexes the **newest version's** title and body under the **root memory's ID**. Two search scopes: `full_search(query)` wraps queries as quoted phrases (safe for browser use), `api_search(query)` passes raw FTS5 syntax with full operator support (AND, OR, NOT, `"phrase"`, `title:term`, `body:term`, grouping). `rebuild_search_index` public method. Reindex all: `bin/rails search:reindex`. FTS5 syntax errors surface as `ActiveRecord::StatementInvalid` (not `SQLite3::SQLException` directly).
 
 Workspace state hierarchy: active (default) → archived → deleted. State changes auto-unpin.
 

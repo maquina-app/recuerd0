@@ -147,7 +147,8 @@ Adds `version` (integer) and `parent_memory_id` (self-referential FK).
 
 FTS5 full-text search backed by the `memories_search` virtual table (trigram tokenizer).
 
-- `full_search(query)` scope — joins on `memories_search.memory_id`, returns root memories ordered by FTS rank. Returns `none` for queries shorter than 3 characters.
+- `full_search(query)` scope — wraps query as a quoted FTS5 phrase (neutralizes special syntax). Used by HTML search for safe browser input. Returns `none` for queries shorter than 3 characters.
+- `api_search(query)` scope — passes raw FTS5 query with full operator support: AND, OR, NOT, `"phrase"`, `title:term`, `body:term`, `(grouping)`. Used by JSON API search. FTS5 syntax errors surface as `ActiveRecord::StatementInvalid` (not `SQLite3::SQLException` directly).
 - `rebuild_search_index` — public method to manually reindex a memory.
 - `update_search_index` (private, `after_save_commit`) — resolves the root memory, finds the newest version (highest `version` among children, or root itself), and indexes that version's title and body under the root's ID. This ensures `full_search` returns root memories compatible with the `latest_versions` scope.
 - `delete_search_index` (private, `after_destroy_commit`) — deletes the FTS entry by root ID.
@@ -178,6 +179,7 @@ Multi-model operations are handled by model methods wrapped in transactions:
 | `SessionsController` | Login/logout. Rate-limited to 10 attempts per 3 minutes. |
 | `RegistrationsController` | Self-service user signup. Creates Account + User atomically. Rate-limited to 10 attempts per hour. |
 | `PasswordsController` | Token-based password reset via email. Anti-enumeration (always shows success). |
+| `SearchController` | Cross-workspace memory search. HTML uses `full_search` (phrase-quoted). JSON API uses `api_search` (raw FTS5 operators). Validates query presence/length for API, rescues FTS5 syntax errors. Optional `workspace_id` filter. |
 
 ### Namespaced Controllers
 
@@ -223,6 +225,8 @@ Account:    resource  :account (show, update, destroy)
               resources :users, controller: account/users (destroy)
               resource  :invitation, controller: account/invitations (create)
             resources :invitations, param: :token (show, create — public)
+
+Search:     GET /search(.json)                  → search#index (HTML + JSON API)
 
 Pins:       POST/DELETE pins/:pinnable_type/:pinnable_id → pins (polymorphic)
 
@@ -271,6 +275,7 @@ Tokens are created via `AccessToken.create(user: user, permission: "full_access"
 | PATCH | `/workspaces/:id/memories/:id.json` | full_access | Update memory |
 | DELETE | `/workspaces/:id/memories/:id.json` | full_access | Delete memory |
 | POST | `/workspaces/:id/memories/:id/versions.json` | full_access | Create new version |
+| GET | `/search.json?q=<query>` | read_only | Full-text search across memories (FTS5 operators: AND, OR, NOT, phrase, column filters) |
 
 ### Pagination Headers
 
