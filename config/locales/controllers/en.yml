@@ -1,4 +1,7 @@
 en:
+  authentication:
+    account_deleted: "This account has been deleted."
+
   workspaces:
     inactive_workspace: "This workspace cannot be modified."
     create:
@@ -55,6 +58,32 @@ en:
       success: "Password has been reset."
       mismatch: "Passwords did not match."
     invalid_token: "Password reset link is invalid or has expired."
+
+  accounts:
+    unauthorized: "You don't have permission to perform this action."
+    update:
+      updated: "Account was successfully updated."
+      errors: "Please review the errors below."
+    destroy:
+      deleted: "Your account has been deleted. All data will be permanently removed in 30 days."
+
+  account:
+    users:
+      destroy:
+        removed: "User was removed from the account."
+        cannot_remove_self: "You cannot remove yourself from the account."
+        cannot_remove_admin: "You cannot remove an admin user."
+    invitations:
+      create:
+        created: "Invitation link generated."
+        limit_reached: "Account has reached the maximum number of users."
+
+  invitations:
+    create:
+      success: "Welcome! You have joined the account."
+    invalid_token: "This invitation link is invalid or has expired."
+    account_full: "This account has reached its user limit."
+    account_deleted: "Account has been deleted."
 
   workspaces/archives:
     not_archived: "This workspace is not archived."

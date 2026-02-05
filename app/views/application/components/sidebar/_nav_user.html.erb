@@ -56,7 +56,7 @@
         <%= render "components/dropdown_menu/separator" %>
 
         <%= render "components/dropdown_menu/group" do %>
-          <%= render "components/dropdown_menu/item", href: "#" do %>
+          <%= render "components/dropdown_menu/item", href: account_path do %>
             <%= icon_for :user_circle, class: "w-4 h-4" %>
             Account
           <% end %>

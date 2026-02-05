@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   PIN_LIMIT = 10
+  ROLES = %w[admin member].freeze
 
   has_secure_password
   belongs_to :account
@@ -20,6 +21,27 @@ class User < ApplicationRecord
     source_type: "Memory"
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
+
+  scope :active, -> { where.not("email_address LIKE 'deleted-%'") }
+
+  validates :role, presence: true, inclusion: {in: ROLES}
+
+  def admin?
+    role == "admin"
+  end
+
+  def member?
+    role == "member"
+  end
+
+  def anonymize_email!
+    domain = email_address.split("@").last
+    update!(email_address: "deleted-#{SecureRandom.hex(8)}@#{domain}")
+  end
+
+  def anonymized?
+    email_address.start_with?("deleted-")
+  end
 
   # Helper methods
   def pinned_items_count

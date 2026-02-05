@@ -199,6 +199,19 @@ module MaquinaComponentsHelper
           <line x1="12" x2="12.01" y1="16" y2="16"></line>
         </svg>
       SVG
+    when :copy
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+        </svg>
+      SVG
+    when :check
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <path d="M20 6 9 17l-5-5"></path>
+        </svg>
+      SVG
     when :copy_plus
       <<~SVG.freeze
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">

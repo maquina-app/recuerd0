@@ -4,6 +4,7 @@ User.find_or_create_by!(email_address: "demo@recuerd0.com") do |u|
   u.account = account
   u.password = "password123"
   u.password_confirmation = "password123"
+  u.role = "admin"
 end
 
 # Create or find workspaces

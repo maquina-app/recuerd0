@@ -1,0 +1,57 @@
+<% content_for :title, "#{t('invitations.show.page_title', account: @account.name)} — recuerd0" %>
+
+<div>
+  <%= render "components/card" do %>
+    <%= render "components/card/header", css_classes: "text-center" do %>
+      <%= render "components/card/title", text: t("invitations.show.heading", account: @account.name) %>
+      <%= render "components/card/description", text: t("invitations.show.description") %>
+    <% end %>
+
+    <%= render "components/card/content" do %>
+      <%= form_with(model: @user, url: invitations_path, data: { component: "form" }) do |form| %>
+        <%= form.hidden_field :token, value: @token, name: "token" %>
+
+        <div data-form-part="group">
+          <%= form.label :email_address, t("invitations.show.email_label"), data: { component: "label" } %>
+          <%= form.email_field :email_address, required: true, autofocus: true,
+              autocomplete: "email", placeholder: t("invitations.show.email_placeholder"),
+              data: { component: "input" } %>
+          <% if @user.errors[:email_address].any? %>
+            <p data-form-part="error" class="text-destructive"><%= @user.errors[:email_address].first %></p>
+          <% end %>
+        </div>
+
+        <div data-form-part="group">
+          <%= form.label :password, data: { component: "label" } %>
+          <%= form.password_field :password, required: true,
+              autocomplete: "new-password", placeholder: t("invitations.show.password_placeholder"),
+              data: { component: "input" } %>
+          <% if @user.errors[:password].any? %>
+            <p data-form-part="error" class="text-destructive"><%= @user.errors[:password].first %></p>
+          <% end %>
+        </div>
+
+        <div data-form-part="group">
+          <%= form.label :password_confirmation, t("invitations.show.password_confirmation_label"), data: { component: "label" } %>
+          <%= form.password_field :password_confirmation, required: true,
+              autocomplete: "new-password", placeholder: t("invitations.show.password_confirmation_placeholder"),
+              data: { component: "input" } %>
+          <% if @user.errors[:password_confirmation].any? %>
+            <p data-form-part="error" class="text-destructive"><%= @user.errors[:password_confirmation].first %></p>
+          <% end %>
+        </div>
+
+        <div data-form-part="actions">
+          <%= form.submit t("invitations.show.submit"),
+              data: { component: "button", variant: "primary" }, class: "w-full" %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <div class="text-center mt-6">
+    <%= link_to new_session_path, class: "inline-flex items-center gap-1 text-sm underline underline-offset-4 hover:text-primary" do %>
+      <%= icon_for :arrow_left, class: "size-4" %> <%= t("invitations.show.back_to_sign_in") %>
+    <% end %>
+  </div>
+</div>

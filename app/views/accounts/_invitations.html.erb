@@ -1,0 +1,48 @@
+<%# locals: (account:) %>
+<%= render "components/card" do %>
+  <%= render "components/card/header" do %>
+    <%= render "components/card/title", text: t("accounts.invitations.title") %>
+    <%= render "components/card/description", text: t("accounts.invitations.description") %>
+  <% end %>
+
+  <%= render "components/card/content" do %>
+    <% if account.at_user_limit? %>
+      <p class="text-sm text-muted-foreground">
+        <%= t("accounts.invitations.limit_reached", limit: Account::USER_LIMIT) %>
+      </p>
+    <% else %>
+      <div class="space-y-4">
+        <% if flash[:invitation_url].present? %>
+          <div data-form-part="group" data-controller="clipboard">
+            <label data-component="label"><%= t("accounts.invitations.link_label") %></label>
+            <div class="flex items-center gap-2">
+              <input type="text"
+                     value="<%= flash[:invitation_url] %>"
+                     readonly
+                     onclick="this.select()"
+                     data-component="input"
+                     data-clipboard-target="source"
+                     class="font-mono text-xs flex-1" />
+              <button type="button"
+                      data-action="clipboard#copy"
+                      data-component="button"
+                      data-variant="outline"
+                      data-size="icon"
+                      class="shrink-0"
+                      title="<%= t("accounts.invitations.copy_tooltip") %>">
+                <span data-clipboard-target="copyIcon"><%= icon_for(:copy, class: "size-4") %></span>
+                <span data-clipboard-target="checkIcon" class="hidden"><%= icon_for(:check, class: "size-4") %></span>
+              </button>
+            </div>
+            <p class="text-xs text-muted-foreground"><%= t("accounts.invitations.link_hint") %></p>
+          </div>
+        <% end %>
+
+        <%= button_to t("accounts.invitations.generate"),
+            account_invitation_path,
+            method: :post,
+            data: { component: "button", variant: "outline" } %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

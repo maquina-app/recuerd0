@@ -1,0 +1,37 @@
+<%# locals: (account:) %>
+<%= render "components/card" do %>
+  <%= render "components/card/header" do %>
+    <%= render "components/card/title", text: t("accounts.details.title") %>
+    <%= render "components/card/description", text: t("accounts.details.description") %>
+  <% end %>
+
+  <%= render "components/card/content" do %>
+    <% if Current.user.admin? %>
+      <%= form_with(model: account, url: account_path, method: :patch, data: { component: "form" }) do |form| %>
+        <div data-form-part="group">
+          <%= form.label :name, data: { component: "label" } %>
+          <%= form.text_field :name,
+              autofocus: true,
+              placeholder: t("accounts.details.name_placeholder"),
+              required: true,
+              maxlength: 100,
+              autocomplete: "off",
+              data: { component: "input" } %>
+          <% if account.errors[:name].any? %>
+            <p data-form-part="error" class="text-destructive"><%= account.errors[:name].first %></p>
+          <% end %>
+        </div>
+
+        <div data-form-part="actions">
+          <%= form.submit t("accounts.details.submit"),
+              data: { component: "button", variant: "primary" } %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="flex items-center gap-2 text-sm">
+        <span class="font-medium text-muted-foreground"><%= t("accounts.details.name_label") %></span>
+        <span><%= account.name %></span>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

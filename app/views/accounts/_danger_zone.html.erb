@@ -1,0 +1,22 @@
+<%# locals: () %>
+<%= render "components/card", css_classes: "border-destructive" do %>
+  <%= render "components/card/header" do %>
+    <%= render "components/card/title", text: t("accounts.danger_zone.title"), css_classes: "text-destructive" %>
+  <% end %>
+
+  <%= render "components/card/content" do %>
+    <%= render "components/alert", variant: :warning, icon: :alert_triangle, css_classes: "mb-4" do %>
+      <strong><%= t("accounts.danger_zone.warning_title") %></strong>
+      <p class="mt-1"><%= t("accounts.danger_zone.warning_description") %></p>
+    <% end %>
+
+    <%= button_to t("accounts.danger_zone.submit"),
+        account_path,
+        method: :delete,
+        data: {
+          component: "button",
+          variant: "destructive",
+          turbo_confirm: t("accounts.danger_zone.confirm")
+        } %>
+  <% end %>
+<% end %>

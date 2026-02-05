@@ -22,6 +22,7 @@ module Authentication
 
   def require_authentication
     authenticate_via_token || resume_session || request_authentication
+    check_account_not_deleted if Current.user
   end
 
   def resume_session
@@ -82,5 +83,16 @@ module Authentication
   def terminate_session
     Current.session.destroy
     cookies.delete(:session_id)
+  end
+
+  def check_account_not_deleted
+    return unless Current.account&.deleted?
+
+    if request.format.json?
+      render_unauthorized
+    else
+      terminate_session if Current.session
+      redirect_to new_session_path, alert: I18n.t("authentication.account_deleted")
+    end
   end
 end

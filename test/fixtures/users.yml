@@ -4,8 +4,16 @@ one:
   email_address: one@example.com
   password_digest: <%= password_digest %>
   account: one
+  role: admin
 
 two:
   email_address: two@example.com
   password_digest: <%= password_digest %>
   account: two
+  role: admin
+
+member:
+  email_address: member@example.com
+  password_digest: <%= password_digest %>
+  account: one
+  role: member

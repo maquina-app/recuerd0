@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_05_015703) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_05_035719) do
   create_table "access_tokens", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "token_digest", null: false
@@ -27,6 +27,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_05_015703) do
     t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "deleted_at"
+    t.index ["deleted_at"], name: "index_accounts_on_deleted_at"
   end
 
   create_table "contents", force: :cascade do |t|
@@ -80,8 +82,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_05_015703) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "account_id", null: false
+    t.string "role", default: "member", null: false
     t.index ["account_id"], name: "index_users_on_account_id"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
+    t.index ["role"], name: "index_users_on_role"
   end
 
   create_table "workspaces", force: :cascade do |t|

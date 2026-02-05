@@ -1,0 +1,50 @@
+<%# locals: (account:, users:) %>
+<%= render "components/card" do %>
+  <%= render "components/card/header" do %>
+    <%= render "components/card/title", text: t("accounts.users.title") %>
+    <%= render "components/card/description",
+        text: t("accounts.users.description", count: account.active_users_count, limit: Account::USER_LIMIT) %>
+  <% end %>
+
+  <%= render "components/card/content" do %>
+    <div class="divide-y divide-border">
+      <% users.each do |user| %>
+        <div class="flex items-center gap-4 py-3">
+          <%= render "application/components/avatar",
+              alt: user.email_address,
+              size: "h-8 w-8",
+              css_classes: "rounded-full shrink-0" %>
+
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate"><%= user.email_address %></p>
+            <p class="text-xs text-muted-foreground">
+              <%= t("accounts.users.joined_ago", time: time_ago_in_words(user.created_at)) %>
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <% if user.admin? %>
+              <%= render "components/badge", variant: :default do %><%= t("accounts.users.role_admin") %><% end %>
+            <% else %>
+              <%= render "components/badge", variant: :secondary do %><%= t("accounts.users.role_member") %><% end %>
+            <% end %>
+
+            <% if Current.user.admin? && !user.admin? && user != Current.user %>
+              <%= button_to account_user_path(user),
+                  method: :delete,
+                  data: {
+                    component: "button",
+                    variant: "ghost",
+                    size: "icon-sm",
+                    turbo_confirm: t("accounts.users.remove_confirm")
+                  },
+                  class: "text-destructive hover:text-destructive" do %>
+                <%= icon_for :x, class: "size-4" %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

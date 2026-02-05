@@ -3,6 +3,15 @@ Rails.application.routes.draw do
   resource :registration, only: %i[new create]
   resources :passwords, param: :token
 
+  # Account management
+  resource :account, only: %i[show update destroy] do
+    resources :users, only: %i[destroy], controller: "account/users"
+    resource :invitation, only: %i[create], controller: "account/invitations"
+  end
+
+  # Invitations (public)
+  resources :invitations, only: %i[show create], param: :token
+
   # Legal pages
   get "terms", to: "pages#terms", as: :terms
   get "privacy", to: "pages#privacy", as: :privacy

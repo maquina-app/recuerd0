@@ -1,0 +1,21 @@
+<% content_for :page_title, "Account" %>
+
+<% content_for :breadcrumb do %>
+  <%= breadcrumbs({}, "Account") %>
+<% end %>
+
+<div class="mx-auto max-w-4xl space-y-6">
+  <%# Section 1: Account Settings %>
+  <%= render "accounts/details", account: @account %>
+
+  <%# Section 2: Users %>
+  <%= render "accounts/users", account: @account, users: @users %>
+
+  <% if Current.user.admin? %>
+    <%# Section 3: Invitations (admin only) %>
+    <%= render "accounts/invitations", account: @account %>
+
+    <%# Section 4: Danger Zone (admin only) %>
+    <%= render "accounts/danger_zone" %>
+  <% end %>
+</div>

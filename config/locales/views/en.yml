@@ -24,3 +24,54 @@ en:
       empty_description: "Enter a search term to find memories across all your workspaces."
       min_length_title: "Query too short"
       min_length_description: "Please enter at least 3 characters to search."
+
+  accounts:
+    show:
+      page_title: "Account"
+    details:
+      title: "Account Settings"
+      description: "Manage your account name and details."
+      name_placeholder: "Account name"
+      name_label: "Account name:"
+      submit: "Update Account"
+    users:
+      title: "Users"
+      description: "%{count} of %{limit} users in this account."
+      joined_ago: "Joined %{time} ago"
+      role_admin: "Admin"
+      role_member: "Member"
+      remove_confirm: "This will permanently remove this user's access to the account. They will not be able to log in again."
+    invitations:
+      title: "Invite Users"
+      description: "Generate a shareable link for new members to join your account."
+      limit_reached: "Your account has reached the maximum of %{limit} users. Remove a user to generate a new invitation."
+      link_label: "Invitation Link"
+      copy_tooltip: "Copy to clipboard"
+      link_hint: "Share this link with the person you want to invite. Expires in 7 days."
+      generate: "Generate Invitation Link"
+    danger_zone:
+      title: "Delete Account"
+      warning_title: "This action cannot be undone."
+      warning_description: "Deleting your account will permanently remove all workspaces, memories, and user data after 30 days. All users will lose access immediately."
+      submit: "Delete Account"
+      confirm: "This will permanently delete your account and all data after 30 days. All users will lose access immediately. This action cannot be undone."
+
+  invitations:
+    show:
+      page_title: "Join %{account}"
+      heading: "Join %{account}"
+      description: "Create your account to join this workspace."
+      email_label: "Email"
+      email_placeholder: "you@example.com"
+      password_placeholder: "At least 8 characters"
+      password_confirmation_label: "Confirm password"
+      password_confirmation_placeholder: "Repeat your password"
+      submit: "Create Account & Join"
+      back_to_sign_in: "Back to sign in"
+    error:
+      page_title: "Invalid Invitation"
+      heading: "Invalid Invitation"
+      description: "This invitation link is invalid or has expired. Please ask the account administrator for a new one."
+      create_account: "Create your own account"
+      or: "or"
+      back_to_sign_in: "Back to sign in"

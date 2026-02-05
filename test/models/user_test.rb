@@ -17,4 +17,41 @@ class UserTest < ActiveSupport::TestCase
   test "pinned_items_count reflects pins" do
     assert_equal 2, users(:one).pinned_items_count
   end
+
+  # Role tests
+  test "validates role inclusion" do
+    user = users(:one)
+    user.role = "superadmin"
+    assert_not user.valid?
+    assert_includes user.errors[:role], "is not included in the list"
+  end
+
+  test "admin? returns true for admin role" do
+    assert users(:one).admin?
+    assert_not users(:one).member?
+  end
+
+  test "member? returns true for member role" do
+    assert users(:member).member?
+    assert_not users(:member).admin?
+  end
+
+  # Email anonymization tests
+  test "anonymize_email! replaces name part with deleted-hex" do
+    user = users(:member)
+    original_domain = user.email_address.split("@").last
+
+    user.anonymize_email!
+    user.reload
+
+    assert_match(/\Adeleted-[a-f0-9]{16}@#{original_domain}\z/, user.email_address)
+  end
+
+  test "anonymized? returns true for anonymized emails" do
+    user = users(:member)
+    assert_not user.anonymized?
+
+    user.anonymize_email!
+    assert user.anonymized?
+  end
 end
