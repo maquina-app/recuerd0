@@ -1,6 +1,8 @@
+<% content_for :title, "Create account — recuerd0" %>
+
 <%= render "components/card" do %>
   <%= render "components/card/header", css_classes: "text-center" do %>
-    <h2 class="text-xl font-semibold">Create an account</h2>
+    <h2 class="text-xl font-display font-medium">Create an account</h2>
     <p class="text-sm text-muted-foreground mt-1">
       Enter your email and choose a password to get started
     </p>
@@ -10,42 +12,50 @@
     <%= form_with model: @user, url: registration_url do |form| %>
       <div class="grid gap-6">
         <div class="grid gap-6">
-          <% if @user.errors.any? %>
-            <div class="text-sm text-destructive">
-              <% @user.errors.full_messages.each do |message| %>
-                <p><%= message %></p>
-              <% end %>
-            </div>
-          <% end %>
-
           <div class="grid gap-3">
-            <%= form.label :email_address, "Email", class: "text-sm font-medium" %>
+            <%= form.label :email_address, "Email", data: { component: "label" } %>
             <%= form.email_field :email_address,
                              required: true,
                              autofocus: true,
                              autocomplete: "email",
+                             autocapitalize: "none",
+                             maxlength: 80,
                              placeholder: "m@example.com",
+                             data: { component: "input" },
                              class: "w-full" %>
+            <% if @user.errors[:email_address].any? %>
+              <p data-form-part="error" class="text-destructive"><%= @user.errors[:email_address].first %></p>
+            <% end %>
           </div>
 
           <div class="grid gap-3">
-            <%= form.label :password, class: "text-sm font-medium" %>
+            <%= form.label :password, data: { component: "label" } %>
             <%= form.password_field :password,
                                 required: true,
                                 autocomplete: "new-password",
                                 placeholder: "Choose a password",
                                 maxlength: 72,
+                                spellcheck: "false",
+                                data: { component: "input" },
                                 class: "w-full" %>
+            <% if @user.errors[:password].any? %>
+              <p data-form-part="error" class="text-destructive"><%= @user.errors[:password].first %></p>
+            <% end %>
           </div>
 
           <div class="grid gap-3">
-            <%= form.label :password_confirmation, "Confirm password", class: "text-sm font-medium" %>
+            <%= form.label :password_confirmation, "Confirm password", data: { component: "label" } %>
             <%= form.password_field :password_confirmation,
                                 required: true,
                                 autocomplete: "new-password",
                                 placeholder: "Confirm your password",
                                 maxlength: 72,
+                                spellcheck: "false",
+                                data: { component: "input" },
                                 class: "w-full" %>
+            <% if @user.errors[:password_confirmation].any? %>
+              <p data-form-part="error" class="text-destructive"><%= @user.errors[:password_confirmation].first %></p>
+            <% end %>
           </div>
 
           <%= form.submit "Create account", class: "btn-default w-full" %>
@@ -61,12 +71,12 @@
 <% end %>
 
 <div class="text-center text-xs text-muted-foreground">
-  By clicking continue, you agree to our
+  By creating an account, you agree to our
   <%= link_to "Terms of Service",
-  "#",
+  terms_path,
   class: "underline underline-offset-4 hover:text-primary" %>
   and
   <%= link_to "Privacy Policy",
-  "#",
+  privacy_path,
   class: "underline underline-offset-4 hover:text-primary" %>.
 </div>

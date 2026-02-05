@@ -3,13 +3,17 @@ Rails.application.routes.draw do
   resource :registration, only: %i[new create]
   resources :passwords, param: :token
 
+  # Legal pages
+  get "terms", to: "pages#terms", as: :terms
+  get "privacy", to: "pages#privacy", as: :privacy
+
   resources :workspaces do
     resources :memories do
       collection do
         post :preview, to: "memories/previews#create"
       end
-      resources :versions, only: [:index, :show, :create], controller: "memories/versions" do
-        resource :consolidation, only: [:create], controller: "memories/versions/consolidations"
+      resources :versions, only: %i[index show create], controller: "memories/versions" do
+        resource :consolidation, only: %i[create], controller: "memories/versions/consolidations"
       end
     end
 
@@ -42,14 +46,8 @@ Rails.application.routes.draw do
   post "pins/:pinnable_type/:pinnable_id", to: "pins#create", as: :create_pin
   delete "pins/:pinnable_type/:pinnable_id", to: "pins#destroy", as: :destroy_pin
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", :as => :rails_health_check
+  get "up", to: "rails/health#show", as: :rails_health_check
+  get "manifest", to: "rails/pwa#manifest", as: :pwa_manifest
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  get "manifest" => "rails/pwa#manifest", :as => :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Defines the root path route ("/")
   root "home#index"
 end

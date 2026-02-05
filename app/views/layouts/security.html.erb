@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Recuerd0 - Sign In" %></title>
+    <title><%= content_for(:title) || "Sign in — recuerd0" %></title>
+    <meta name="description" content="<%= content_for(:description) || "Preserve, version, and organize your AI conversations." %>">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#009D39">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
@@ -10,9 +12,11 @@
 
     <%= yield :head %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <%= stylesheet_link_tag :tailwind, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
@@ -21,34 +25,28 @@
   <body>
     <div
       class="
-        min-h-screen bg-muted flex flex-col items-center justify-center gap-6 p-6
+        min-h-screen bg-muted flex flex-col items-center gap-6 p-6
         md:p-10
+        <%= content_for?(:wide_layout) ? 'py-10' : 'justify-center' %>
       "
     >
-      <div class="w-full max-w-sm space-y-6">
-        <%= link_to root_path, class: "flex items-center gap-2 self-center font-medium mx-auto w-fit" do %>
-          <div
-            class="
-              bg-primary text-primary-foreground flex w-6 h-6 items-center justify-center
-              rounded-md
-            "
-          >
-            <%= icon_for :gallery_vertical_end, class: "w-4 h-4" %>
-          </div>
-          <span class="font-display text-xl font-medium">Recuerd0</span>
+      <div class="w-full <%= content_for?(:wide_layout) ? 'max-w-2xl' : 'max-w-sm' %> space-y-6">
+        <%= link_to root_path, class: "flex items-center gap-2 self-center mx-auto w-fit" do %>
+          <%= image_tag "icon.svg", alt: "recuerd0", class: "h-8" %>
+          <span class="font-display text-xl font-light tracking-wide">recuerd<span class="font-medium text-primary">0</span></span>
         <% end %>
 
         <% if flash.any? %>
           <div class="space-y-4">
             <% flash.each do |type, message| %>
-              <% variant =
+              <% variant, flash_icon =
                 case type.to_s
                 when "notice", "success"
-                  "success"
+                  [:success, :check_circle]
                 when "alert", "error"
-                  "destructive"
+                  [:destructive, :x_circle]
                 else
-                  "default"
+                  [:default, :info]
                 end %>
 
               <div
@@ -56,22 +54,12 @@
                 data-alert-dismiss-after-value="5000"
                 data-alert-remove-after-value="300"
               >
-                <%= render "components/alert", variant: variant.to_sym, css_classes: "text-sm" do %>
+                <%= render "components/alert", variant: variant, icon: flash_icon, css_classes: "text-sm" do %>
                   <div class="flex items-start gap-3">
-                    <% if variant == "success" %>
-                      <%= icon_for :check_circle,
-                      class: "w-4 h-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" %>
-                    <% elsif variant == "destructive" %>
-                      <%= icon_for :x_circle, class: "w-4 h-4 flex-shrink-0" %>
-                    <% else %>
-                      <%= icon_for :info, class: "w-4 h-4 flex-shrink-0" %>
-                    <% end %>
                     <div class="flex-1"><%= message %></div>
                     <button
                       type="button"
-                      class="
-                        flex-shrink-0 ml-4 text-current opacity-70 hover:opacity-100 transition-opacity
-                      "
+                      class="flex-shrink-0 ml-4 text-current opacity-70 hover:opacity-100 transition-opacity"
                       data-action="click->alert#dismiss"
                       aria-label="Dismiss"
                     >

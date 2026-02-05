@@ -2,3 +2,6 @@ en:
   passwords_mailer:
     reset:
       subject: "Reset your password"
+  registrations_mailer:
+    welcome:
+      subject: "Welcome to recuerd0"

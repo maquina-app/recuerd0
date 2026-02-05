@@ -9,18 +9,13 @@ class RegistrationsController < ApplicationController
   end
 
   def create
-    result = Account.create_with_user(
-      email_address: registration_params[:email_address],
-      password: registration_params[:password],
-      password_confirmation: registration_params[:password_confirmation]
-    )
+    @user = Account.create_with_user(**registration_params)
 
-    if result.is_a?(User) && result.persisted?
-      start_new_session_for result
+    if @user.persisted?
+      RegistrationsMailer.welcome(@user).deliver_later
+      start_new_session_for @user
       redirect_to workspaces_path, notice: t(".success")
     else
-      @user = result.is_a?(User) ? result : User.new(registration_params.except(:password, :password_confirmation))
-      @user.errors.add(:base, t(".failed")) if @user.errors.empty?
       render :new, status: :unprocessable_entity
     end
   end
@@ -28,6 +23,6 @@ class RegistrationsController < ApplicationController
   private
 
   def registration_params
-    params.require(:user).permit(:email_address, :password, :password_confirmation)
+    params.require(:user).permit(:email_address, :password, :password_confirmation).to_h.symbolize_keys
   end
 end

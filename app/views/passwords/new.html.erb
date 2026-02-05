@@ -1,6 +1,8 @@
+<% content_for :title, "Reset password — recuerd0" %>
+
 <%= render "components/card" do %>
   <%= render "components/card/header", css_classes: "text-center" do %>
-    <h2 class="text-xl font-semibold">Forgot your password?</h2>
+    <h2 class="text-xl font-display font-medium">Forgot your password?</h2>
     <p class="text-sm text-muted-foreground mt-1">
       Enter your email and we'll send you reset instructions
     </p>
@@ -10,13 +12,16 @@
     <%= form_with url: passwords_path do |form| %>
       <div class="grid gap-6">
         <div class="grid gap-3">
-          <%= form.label :email_address, "Email", class: "text-sm font-medium" %>
+          <%= form.label :email_address, "Email", data: { component: "label" } %>
           <%= form.email_field :email_address,
                            required: true,
                            autofocus: true,
                            autocomplete: "username",
+                           autocapitalize: "none",
+                           maxlength: 80,
                            placeholder: "m@example.com",
                            value: params[:email_address],
+                           data: { component: "input" },
                            class: "w-full" %>
         </div>
 

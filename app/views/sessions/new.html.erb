@@ -1,6 +1,8 @@
+<% content_for :title, "Sign in — recuerd0" %>
+
 <%= render "components/card" do %>
   <%= render "components/card/header", css_classes: "text-center" do %>
-    <h2 class="text-xl font-semibold">Welcome back</h2>
+    <h2 class="text-xl font-display font-medium">Welcome back</h2>
     <p class="text-sm text-muted-foreground mt-1">
       Enter your email and password to sign in
     </p>
@@ -11,19 +13,22 @@
       <div class="grid gap-6">
         <div class="grid gap-6">
           <div class="grid gap-3">
-            <%= form.label :email_address, "Email", class: "text-sm font-medium" %>
+            <%= form.label :email_address, "Email", data: { component: "label" } %>
             <%= form.email_field :email_address,
                              required: true,
                              autofocus: true,
                              autocomplete: "username",
+                             autocapitalize: "none",
+                             maxlength: 80,
                              placeholder: "m@example.com",
                              value: params[:email_address],
+                             data: { component: "input" },
                              class: "w-full" %>
           </div>
 
           <div class="grid gap-3">
             <div class="flex items-center">
-              <%= form.label :password, class: "text-sm font-medium" %>
+              <%= form.label :password, data: { component: "label" } %>
               <%= link_to "Forgot your password?",
               new_password_path,
               class: "ml-auto text-sm underline-offset-4 hover:underline" %>
@@ -33,6 +38,8 @@
                                 autocomplete: "current-password",
                                 placeholder: "Enter your password",
                                 maxlength: 72,
+                                spellcheck: "false",
+                                data: { component: "input" },
                                 class: "w-full" %>
           </div>
 
@@ -51,10 +58,10 @@
 <div class="text-center text-xs text-muted-foreground">
   By clicking continue, you agree to our
   <%= link_to "Terms of Service",
-  "#",
+  terms_path,
   class: "underline underline-offset-4 hover:text-primary" %>
   and
   <%= link_to "Privacy Policy",
-  "#",
+  privacy_path,
   class: "underline underline-offset-4 hover:text-primary" %>.
 </div>

@@ -1,6 +1,8 @@
+<% content_for :title, "Update password — recuerd0" %>
+
 <%= render "components/card" do %>
   <%= render "components/card/header", css_classes: "text-center" do %>
-    <h2 class="text-xl font-semibold">Update your password</h2>
+    <h2 class="text-xl font-display font-medium">Update your password</h2>
     <p class="text-sm text-muted-foreground mt-1">
       Enter your new password below
     </p>
@@ -10,25 +12,29 @@
     <%= form_with url: password_path(params[:token]), method: :put do |form| %>
       <div class="grid gap-6">
         <div class="grid gap-3">
-          <%= form.label :password, "New password", class: "text-sm font-medium" %>
+          <%= form.label :password, "New password", data: { component: "label" } %>
           <%= form.password_field :password,
                               required: true,
                               autofocus: true,
                               autocomplete: "new-password",
                               placeholder: "Enter new password",
                               maxlength: 72,
+                              spellcheck: "false",
+                              data: { component: "input" },
                               class: "w-full" %>
         </div>
 
         <div class="grid gap-3">
           <%= form.label :password_confirmation,
                      "Confirm password",
-                     class: "text-sm font-medium" %>
+                     data: { component: "label" } %>
           <%= form.password_field :password_confirmation,
                               required: true,
                               autocomplete: "new-password",
                               placeholder: "Repeat new password",
                               maxlength: 72,
+                              spellcheck: "false",
+                              data: { component: "input" },
                               class: "w-full" %>
         </div>
 

@@ -1,2 +1,9 @@
-You can reset your password within the next 15 minutes on this password reset page:
+Hi,
+
+We received a request to reset your password. You can reset it using the link below:
+
 <%= edit_password_url(@user.password_reset_token) %>
+
+This link will expire in 15 minutes.
+
+If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
