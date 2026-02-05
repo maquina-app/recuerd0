@@ -1,21 +1,28 @@
-<% content_for :page_title, "Account" %>
+<% content_for :page_title, t("accounts.show.page_title") %>
 
 <% content_for :breadcrumb do %>
-  <%= breadcrumbs({}, "Account") %>
+  <%= breadcrumbs({}, t("accounts.show.page_title")) %>
 <% end %>
 
-<div class="mx-auto max-w-4xl space-y-6">
-  <%# Section 1: Account Settings %>
-  <%= render "accounts/details", account: @account %>
+<% if Current.user.admin? %>
+  <%# Two-column layout for admins: main content left, admin actions right %>
+  <div class="mx-auto max-w-5xl grid grid-cols-1 lg:grid-cols-5 items-start gap-6">
+    <div class="lg:col-span-3 space-y-6">
+      <%= render "accounts/details", account: @account %>
+      <%= render "accounts/users", account: @account, users: @users %>
+      <%= render "accounts/danger_zone" %>
+    </div>
 
-  <%# Section 2: Users %>
-  <%= render "accounts/users", account: @account, users: @users %>
-
-  <% if Current.user.admin? %>
-    <%# Section 3: Invitations (admin only) %>
-    <%= render "accounts/invitations", account: @account %>
-
-    <%# Section 4: Danger Zone (admin only) %>
-    <%= render "accounts/danger_zone" %>
-  <% end %>
-</div>
+    <div class="lg:col-span-2">
+      <div class="lg:sticky lg:top-6">
+        <%= render "accounts/invitations", account: @account %>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <%# Single-column layout for members %>
+  <div class="mx-auto max-w-4xl space-y-6">
+    <%= render "accounts/details", account: @account %>
+    <%= render "accounts/users", account: @account, users: @users %>
+  </div>
+<% end %>

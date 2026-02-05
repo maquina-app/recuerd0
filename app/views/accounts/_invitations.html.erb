@@ -19,7 +19,7 @@
               <input type="text"
                      value="<%= flash[:invitation_url] %>"
                      readonly
-                     onclick="this.select()"
+                     data-action="click->clipboard#selectAll"
                      data-component="input"
                      data-clipboard-target="source"
                      class="font-mono text-xs flex-1" />
