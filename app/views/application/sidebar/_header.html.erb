@@ -1,6 +1,9 @@
 <%# locals: () %>
 <%= render "components/sidebar/header" do %>
   <%= link_to workspaces_path, class: "flex items-center p-2" do %>
-    <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "h-6" %>
+    <%# Full logo when sidebar is expanded %>
+    <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "h-6 group-data-[collapsible=icon]:hidden" %>
+    <%# Icon only when sidebar is collapsed to icon mode %>
+    <%= image_tag "icon.svg", alt: "recuerd0", class: "h-6 hidden group-data-[collapsible=icon]:block" %>
   <% end %>
 <% end %>
