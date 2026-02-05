@@ -10,7 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_05_010214) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_05_015703) do
+  create_table "access_tokens", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "token_digest", null: false
+    t.string "description"
+    t.string "permission", default: "read_only", null: false
+    t.datetime "last_used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token_digest"], name: "index_access_tokens_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_access_tokens_on_user_id"
+  end
+
   create_table "accounts", force: :cascade do |t|
     t.string "name", null: false
     t.datetime "created_at", null: false
@@ -86,6 +98,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_05_010214) do
     t.index ["deleted_at"], name: "index_workspaces_on_deleted_at"
   end
 
+  add_foreign_key "access_tokens", "users"
   add_foreign_key "contents", "memories"
   add_foreign_key "memories", "memories", column: "parent_memory_id"
   add_foreign_key "memories", "workspaces"

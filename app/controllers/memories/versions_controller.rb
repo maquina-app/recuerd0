@@ -4,6 +4,7 @@ class Memories::VersionsController < ApplicationController
   before_action :set_workspace
   before_action :set_memory
   before_action :require_active_workspace, only: %i[create]
+  before_action :require_full_access, only: %i[create], if: :api_request?
 
   def index
     @all_versions = @memory.all_versions.includes(:content)
@@ -26,12 +27,21 @@ class Memories::VersionsController < ApplicationController
   end
 
   def create
-    @new_version = @memory.create_version!
+    @new_version = @memory.create_version!(version_params)
 
     if @new_version.persisted?
-      redirect_to [@workspace, @new_version], notice: t(".created")
+      respond_to do |format|
+        format.html { redirect_to [@workspace, @new_version], notice: t(".created") }
+        format.json do
+          @memory = @new_version
+          render "memories/show", status: :created
+        end
+      end
     else
-      redirect_to [@workspace, @memory], alert: t(".failed")
+      respond_to do |format|
+        format.html { redirect_to [@workspace, @memory], alert: t(".failed") }
+        format.json { render_validation_errors(@new_version) }
+      end
     end
   end
 
@@ -44,6 +54,17 @@ class Memories::VersionsController < ApplicationController
   def require_active_workspace
     return if @workspace.active?
 
-    redirect_to [@workspace, @memory], alert: t("memories.versions.read_only")
+    respond_to do |format|
+      format.html { redirect_to [@workspace, @memory], alert: t("memories.versions.read_only") }
+      format.json do
+        render json: {
+          error: {code: "FORBIDDEN", message: "Workspace is not active", status: 403}
+        }, status: :forbidden
+      end
+    end
+  end
+
+  def version_params
+    params.fetch(:memory, {}).permit(:title, :content, :source, tags: [])
   end
 end

@@ -1,0 +1,17 @@
+read_only_token:
+  user: one
+  token_digest: <%= Digest::SHA256.hexdigest("test_read_token_123") %>
+  description: "Read-only test token"
+  permission: read_only
+
+full_access_token:
+  user: one
+  token_digest: <%= Digest::SHA256.hexdigest("test_full_token_456") %>
+  description: "Full access test token"
+  permission: full_access
+
+other_user_token:
+  user: two
+  token_digest: <%= Digest::SHA256.hexdigest("other_user_token_789") %>
+  description: "Other user token"
+  permission: full_access

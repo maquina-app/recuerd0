@@ -4,6 +4,8 @@ module Authentication
   included do
     before_action :require_authentication
     helper_method :authenticated?
+
+    attr_reader :current_access_token
   end
 
   class_methods do
@@ -13,47 +15,74 @@ module Authentication
   end
 
   private
-    def authenticated?
-      resume_session
-    end
 
-    def require_authentication
-      resume_session || request_authentication
-    end
+  def authenticated?
+    Current.user.present?
+  end
 
-    def resume_session
-      Current.session ||= find_session_by_cookie
-    end
+  def require_authentication
+    authenticate_via_token || resume_session || request_authentication
+  end
 
-    def find_session_by_cookie
-      Session.find_by(id: cookies.signed[:session_id]) if cookies.signed[:session_id]
-    end
+  def resume_session
+    Current.session ||= find_session_by_cookie
+  end
 
-    def request_authentication
+  def find_session_by_cookie
+    Session.find_by(id: cookies.signed[:session_id]) if cookies.signed[:session_id]
+  end
+
+  def authenticate_via_token
+    token = extract_bearer_token
+    return false unless token
+
+    access_token = AccessToken.find_by_token(token)
+    return false unless access_token
+
+    access_token.touch_last_used!
+    Current.session = nil
+    Current.user = access_token.user
+    @current_access_token = access_token
+    true
+  end
+
+  def extract_bearer_token
+    auth_header = request.headers["Authorization"]
+    return nil unless auth_header&.start_with?("Bearer ")
+    auth_header.split(" ", 2).last
+  end
+
+  def request_authentication
+    if request.format.json?
+      render json: {
+        error: {code: "UNAUTHORIZED", message: "Invalid or missing access token", status: 401}
+      }, status: :unauthorized
+    else
       session[:return_to_after_authenticating] = request.url
       redirect_to new_session_path
     end
+  end
 
-    def after_authentication_url
-      return_url = session.delete(:return_to_after_authenticating)
+  def after_authentication_url
+    return_url = session.delete(:return_to_after_authenticating)
 
-      # If return URL is home or not set, go to workspaces
-      if return_url.blank? || return_url == root_url
-        workspaces_url
-      else
-        return_url
-      end
+    # If return URL is home or not set, go to workspaces
+    if return_url.blank? || return_url == root_url
+      workspaces_url
+    else
+      return_url
     end
+  end
 
-    def start_new_session_for(user)
-      user.sessions.create!(user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
-        Current.session = session
-        cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax }
-      end
+  def start_new_session_for(user)
+    user.sessions.create!(user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
+      Current.session = session
+      cookies.signed.permanent[:session_id] = {value: session.id, httponly: true, same_site: :lax}
     end
+  end
 
-    def terminate_session
-      Current.session.destroy
-      cookies.delete(:session_id)
-    end
+  def terminate_session
+    Current.session.destroy
+    cookies.delete(:session_id)
+  end
 end

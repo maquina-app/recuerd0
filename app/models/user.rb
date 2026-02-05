@@ -4,6 +4,7 @@ class User < ApplicationRecord
   has_secure_password
   belongs_to :account
   has_many :sessions, dependent: :destroy
+  has_many :access_tokens, dependent: :destroy
 
   # Pin associations
   has_many :pins, dependent: :destroy

@@ -2,6 +2,7 @@ class Workspaces::ArchivesController < ApplicationController
   include WorkspaceScoped
 
   before_action :set_workspace, except: [:index]
+  before_action :require_full_access, only: %i[create destroy], if: :api_request?
 
   # GET /workspaces/archived
   def index
@@ -40,18 +41,30 @@ class Workspaces::ArchivesController < ApplicationController
   # POST /workspaces/:id/archive
   def create
     if @workspace.archive
-      redirect_to workspaces_path, notice: t(".created")
+      respond_to do |format|
+        format.html { redirect_to workspaces_path, notice: t(".created") }
+        format.json { render "workspaces/show", status: :ok }
+      end
     else
-      redirect_to workspaces_path, alert: t(".error")
+      respond_to do |format|
+        format.html { redirect_to workspaces_path, alert: t(".error") }
+        format.json { render_validation_errors(@workspace) }
+      end
     end
   end
 
   # DELETE /workspaces/:id/archive
   def destroy
     if @workspace.unarchive
-      redirect_to workspaces_path, notice: t(".destroyed")
+      respond_to do |format|
+        format.html { redirect_to workspaces_path, notice: t(".destroyed") }
+        format.json { render "workspaces/show", status: :ok }
+      end
     else
-      redirect_to workspaces_path, alert: t(".error")
+      respond_to do |format|
+        format.html { redirect_to workspaces_path, alert: t(".error") }
+        format.json { render_validation_errors(@workspace) }
+      end
     end
   end
 end

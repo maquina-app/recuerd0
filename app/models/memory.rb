@@ -127,7 +127,7 @@ class Memory < ApplicationRecord
   private
 
   def set_version
-    self.version ||= next_version_number
+    self.version = next_version_number
   end
 
   def next_version_number
