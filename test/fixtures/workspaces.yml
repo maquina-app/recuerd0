@@ -1,21 +1,21 @@
 one:
   name: "Project Notes"
   description: "Notes for the main project"
-  user: one
+  account: one
 
 two:
   name: "Personal"
   description: "Personal workspace"
-  user: two
+  account: two
 
 archived:
   name: "Old Project"
   description: "An archived workspace"
-  user: one
+  account: one
   archived_at: <%= 1.week.ago %>
 
 deleted:
   name: "Deleted Project"
   description: "A deleted workspace"
-  user: one
+  account: one
   deleted_at: <%= 1.day.ago %>

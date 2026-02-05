@@ -42,6 +42,12 @@ en:
       invalid: "Try another email address or password."
       rate_limited: "Try again later."
 
+  registrations:
+    create:
+      success: "Welcome! Your account has been created."
+      failed: "Could not create account. Please try again."
+      rate_limited: "Too many attempts. Try again later."
+
   passwords:
     create:
       sent: "Password reset instructions sent (if user with that email address exists)."

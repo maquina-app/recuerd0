@@ -2,15 +2,19 @@ require "test_helper"
 
 class WorkspaceTest < ActiveSupport::TestCase
   test "requires name" do
-    workspace = Workspace.new(name: "", user: users(:one))
+    workspace = Workspace.new(name: "", account: accounts(:one))
     assert_not workspace.valid?
     assert workspace.errors[:name].any?
   end
 
   test "enforces name max length" do
-    workspace = Workspace.new(name: "a" * 101, user: users(:one))
+    workspace = Workspace.new(name: "a" * 101, account: accounts(:one))
     assert_not workspace.valid?
     assert workspace.errors[:name].any?
+  end
+
+  test "belongs to account" do
+    assert_equal accounts(:one), workspaces(:one).account
   end
 
   test "status returns :active for normal workspace" do

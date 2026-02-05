@@ -5,7 +5,7 @@ class Workspaces::ArchivesController < ApplicationController
 
   # GET /workspaces/archived
   def index
-    @pagy, @workspaces = pagy(Current.user.workspaces.archived_ordered)
+    @pagy, @workspaces = pagy(Current.account.workspaces.archived_ordered)
   end
 
   # GET /workspaces/archived/:id

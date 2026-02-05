@@ -4,7 +4,7 @@ module WorkspaceScoped
   private
 
   def set_workspace
-    @workspace = Current.user.workspaces.find(params[:workspace_id] || params[:id])
+    @workspace = Current.account.workspaces.find(params[:workspace_id] || params[:id])
   end
 
   def require_active_workspace

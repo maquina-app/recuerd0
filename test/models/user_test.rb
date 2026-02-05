@@ -6,8 +6,8 @@ class UserTest < ActiveSupport::TestCase
     assert_equal "foo@bar.com", user.email_address
   end
 
-  test "has associated workspaces" do
-    assert_includes users(:one).workspaces, workspaces(:one)
+  test "belongs to account" do
+    assert_equal accounts(:one), users(:one).account
   end
 
   test "can_pin_more? returns true under limit" do

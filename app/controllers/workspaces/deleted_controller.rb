@@ -5,7 +5,7 @@ class Workspaces::DeletedController < ApplicationController
 
   # GET /workspaces/deleted
   def index
-    @pagy, @workspaces = pagy(Current.user.workspaces.deleted_ordered)
+    @pagy, @workspaces = pagy(Current.account.workspaces.deleted_ordered)
   end
 
   # GET /workspaces/deleted/:id

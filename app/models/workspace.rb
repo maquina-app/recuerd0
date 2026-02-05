@@ -3,7 +3,7 @@ class Workspace < ApplicationRecord
   include Archivable
   include Pinnable
 
-  belongs_to :user
+  belongs_to :account
   has_many :memories, dependent: :destroy
 
   # Validations

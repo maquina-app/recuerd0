@@ -3,7 +3,7 @@ class SearchController < ApplicationController
     @query = params[:q].to_s.strip.first(30)
 
     memories = Memory.joins(:workspace)
-      .where(workspaces: {user_id: Current.user.id})
+      .where(workspaces: {account_id: Current.account.id})
       .latest_versions
       .full_search(@query)
       .order("memories.updated_at DESC")

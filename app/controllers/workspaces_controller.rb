@@ -5,7 +5,7 @@ class WorkspacesController < ApplicationController
   before_action :require_active_workspace, only: %i[edit update]
 
   def index
-    workspaces = Current.user.workspaces
+    workspaces = Current.account.workspaces
       .active
       .ordered_with_pins_first(Current.user)
       .includes(:pins)
@@ -31,14 +31,14 @@ class WorkspacesController < ApplicationController
   end
 
   def new
-    @workspace = Current.user.workspaces.build
+    @workspace = Current.account.workspaces.build
   end
 
   def edit
   end
 
   def create
-    @workspace = Current.user.workspaces.build(workspace_params)
+    @workspace = Current.account.workspaces.build(workspace_params)
 
     if @workspace.save
       redirect_to @workspace, notice: t(".created")

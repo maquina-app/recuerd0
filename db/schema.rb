@@ -10,7 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_04_180309) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_05_010214) do
+  create_table "accounts", force: :cascade do |t|
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "contents", force: :cascade do |t|
     t.text "body"
     t.integer "memory_id", null: false
@@ -61,21 +67,23 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_04_180309) do
     t.string "password_digest", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "account_id", null: false
+    t.index ["account_id"], name: "index_users_on_account_id"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
   create_table "workspaces", force: :cascade do |t|
     t.string "name"
     t.text "description"
-    t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "deleted_at"
     t.datetime "archived_at"
     t.integer "memories_count", default: 0, null: false
+    t.integer "account_id", null: false
+    t.index ["account_id"], name: "index_workspaces_on_account_id"
     t.index ["archived_at"], name: "index_workspaces_on_archived_at"
     t.index ["deleted_at"], name: "index_workspaces_on_deleted_at"
-    t.index ["user_id"], name: "index_workspaces_on_user_id"
   end
 
   add_foreign_key "contents", "memories"
@@ -83,7 +91,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_04_180309) do
   add_foreign_key "memories", "workspaces"
   add_foreign_key "pins", "users"
   add_foreign_key "sessions", "users"
-  add_foreign_key "workspaces", "users"
+  add_foreign_key "users", "accounts"
+  add_foreign_key "workspaces", "accounts"
 
   # Virtual tables defined in this database.
   # Note that virtual tables may not work with other database engines. Be careful if changing database.

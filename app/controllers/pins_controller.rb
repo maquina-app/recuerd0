@@ -32,9 +32,9 @@ class PinsController < ApplicationController
 
     case type
     when "Workspace"
-      Current.user.workspaces.find(params[:pinnable_id])
+      Current.account.workspaces.find(params[:pinnable_id])
     when "Memory"
-      Memory.joins(:workspace).where(workspaces: {user_id: Current.user.id}).find(params[:pinnable_id])
+      Memory.joins(:workspace).where(workspaces: {account_id: Current.account.id}).find(params[:pinnable_id])
     end
   end
 

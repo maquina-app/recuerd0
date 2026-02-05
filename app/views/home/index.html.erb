@@ -20,7 +20,7 @@
             </div>
           <% end %>
           <%= render "components/card/content" do %>
-            <p class="text-2xl font-bold"><%= Current.user.workspaces.count %></p>
+            <p class="text-2xl font-bold"><%= Current.account.workspaces.count %></p>
             <p class="text-xs text-muted-foreground">Total workspaces</p>
           <% end %>
         <% end %>
@@ -37,7 +37,7 @@
       <% end %>
     </div>
 
-    <% recent_workspaces = Current.user.workspaces.ordered.limit(5) %>
+    <% recent_workspaces = Current.account.workspaces.ordered.limit(5) %>
     <% if recent_workspaces.any? %>
       <div>
         <h2 class="font-display text-xl font-medium mb-4">Recent Workspaces</h2>
