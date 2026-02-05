@@ -11,6 +11,15 @@ class WorkspacesController < ApplicationController
       .includes(:pins)
 
     @pagy, @workspaces = pagy(workspaces)
+
+    fresh_when_private(
+      etag: collection_cache_key(
+        Current.account.workspaces.active,
+        @pagy,
+        Current.user.pins.where(pinnable_type: "Workspace").maximum(:updated_at)
+      ),
+      last_modified: Current.account.workspaces.active.maximum(:updated_at)
+    )
   end
 
   def show
@@ -28,6 +37,16 @@ class WorkspacesController < ApplicationController
       .order(updated_at: :desc)
 
     load_workspace_memories(scope)
+
+    fresh_when_private(
+      etag: collection_cache_key(
+        @workspace.memories,
+        @pagy,
+        @workspace.updated_at,
+        Current.user.pins.where(pinnable_type: "Memory").maximum(:updated_at)
+      ),
+      last_modified: @workspace.updated_at
+    )
   end
 
   def new

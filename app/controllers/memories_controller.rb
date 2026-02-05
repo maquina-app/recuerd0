@@ -7,6 +7,11 @@ class MemoriesController < ApplicationController
 
   def show
     @all_versions = @memory.all_versions
+
+    fresh_when_private(
+      etag: [@memory, @all_versions.maximum(:updated_at)],
+      last_modified: @memory.updated_at
+    )
   end
 
   def new

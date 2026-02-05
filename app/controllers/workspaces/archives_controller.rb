@@ -6,6 +6,14 @@ class Workspaces::ArchivesController < ApplicationController
   # GET /workspaces/archived
   def index
     @pagy, @workspaces = pagy(Current.account.workspaces.archived_ordered)
+
+    fresh_when_private(
+      etag: collection_cache_key(
+        Current.account.workspaces.archived,
+        @pagy
+      ),
+      last_modified: Current.account.workspaces.archived.maximum(:updated_at)
+    )
   end
 
   # GET /workspaces/archived/:id
@@ -16,6 +24,16 @@ class Workspaces::ArchivesController < ApplicationController
     end
 
     load_workspace_memories
+
+    fresh_when_private(
+      etag: collection_cache_key(
+        @workspace.memories,
+        @pagy,
+        @workspace.updated_at
+      ),
+      last_modified: @workspace.updated_at
+    )
+
     render "workspaces/show"
   end
 

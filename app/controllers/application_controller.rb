@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   include Authentication
   include Pagy::Backend
+  include HttpCacheable
 
   before_action :load_ui_cookies
 
