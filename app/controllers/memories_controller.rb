@@ -96,19 +96,6 @@ class MemoriesController < ApplicationController
     @memory = @workspace.memories.find(params[:id])
   end
 
-  def require_active_workspace
-    return if @workspace.active?
-
-    respond_to do |format|
-      format.html { redirect_to workspace_path(@workspace), alert: t("workspaces.inactive_workspace") }
-      format.json do
-        render json: {
-          error: {code: "FORBIDDEN", message: "Workspace is not active", status: 403}
-        }, status: :forbidden
-      end
-    end
-  end
-
   def memory_params
     params.require(:memory).permit(:title, :source, :content, tags: [])
   end

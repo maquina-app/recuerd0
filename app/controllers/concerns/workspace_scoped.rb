@@ -10,7 +10,10 @@ module WorkspaceScoped
   def require_active_workspace
     return if @workspace.active?
 
-    redirect_to workspaces_path, alert: t("workspaces.inactive_workspace")
+    respond_to do |format|
+      format.html { redirect_to workspaces_path, alert: t("workspaces.inactive_workspace") }
+      format.json { render_forbidden("Workspace is not active") }
+    end
   end
 
   def load_workspace_memories(scope = nil)

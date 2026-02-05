@@ -35,9 +35,7 @@ class ApplicationController < ActionController::Base
     return true unless current_access_token
     return true if current_access_token.full_access?
 
-    render json: {
-      error: {code: "FORBIDDEN", message: "Insufficient permissions", status: 403}
-    }, status: :forbidden
+    render_forbidden
     false
   end
 

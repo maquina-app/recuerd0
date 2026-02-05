@@ -54,9 +54,7 @@ module Authentication
 
   def request_authentication
     if request.format.json?
-      render json: {
-        error: {code: "UNAUTHORIZED", message: "Invalid or missing access token", status: 401}
-      }, status: :unauthorized
+      render_unauthorized
     else
       session[:return_to_after_authenticating] = request.url
       redirect_to new_session_path

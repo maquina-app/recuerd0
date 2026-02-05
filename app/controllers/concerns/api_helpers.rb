@@ -46,4 +46,16 @@ module ApiHelpers
       error: {code: "RATE_LIMITED", message: "Too many requests", status: 429}
     }, status: :too_many_requests
   end
+
+  def render_unauthorized(message = "Invalid or missing access token")
+    render json: {
+      error: {code: "UNAUTHORIZED", message: message, status: 401}
+    }, status: :unauthorized
+  end
+
+  def render_forbidden(message = "Insufficient permissions")
+    render json: {
+      error: {code: "FORBIDDEN", message: message, status: 403}
+    }, status: :forbidden
+  end
 end

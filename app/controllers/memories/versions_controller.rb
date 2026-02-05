@@ -56,11 +56,7 @@ class Memories::VersionsController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to [@workspace, @memory], alert: t("memories.versions.read_only") }
-      format.json do
-        render json: {
-          error: {code: "FORBIDDEN", message: "Workspace is not active", status: 403}
-        }, status: :forbidden
-      end
+      format.json { render_forbidden("Workspace is not active") }
     end
   end
 
