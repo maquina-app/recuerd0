@@ -27,9 +27,12 @@ Recuerd0 is a personal knowledge management application built with Rails 8, Hotw
 
 ```
 Account
- ├── has_many :users           (account members)
+ ├── has_many :users           (account members, max 5 active)
  ├── has_many :workspaces      (owned workspaces)
- └── validates :name presence
+ ├── concerns: SoftDeletable   (30-day retention)
+ ├── validates :name presence
+ ├── generate_invitation_token (MessageVerifier, 7-day expiry)
+ └── anonymize_users!          (email anonymization on delete)
 
 User
  ├── belongs_to :account       (required)
@@ -37,7 +40,10 @@ User
  ├── has_many :access_tokens   (API tokens)
  ├── has_many :pins            (polymorphic bookmarks)
  ├── has_many :pinned_workspaces  (through pins, active only)
- └── has_many :pinned_memories    (through pins)
+ ├── has_many :pinned_memories    (through pins)
+ ├── role: admin | member      (first user is admin)
+ ├── scope :active             (excludes anonymized emails)
+ └── anonymize_email!          (replaces with deleted-<hex>@domain)
 
 AccessToken
  ├── belongs_to :user
@@ -72,12 +78,25 @@ Pin
 
 ### Multi-Tenancy
 
-Account serves as the multi-tenant container. Each user belongs to exactly one account, and workspaces belong to accounts (not users directly). This enables future multi-user accounts while maintaining data isolation.
+Account serves as the multi-tenant container. Each user belongs to exactly one account, and workspaces belong to accounts (not users directly).
 
 - `Current.account` — derived from `Current.user.account`, available throughout the request
 - All workspace queries scope to `Current.account.workspaces`
 - Pins remain user-scoped (within account context)
 - Sessions remain user-scoped (authentication is user-level)
+
+### User Roles & Account Management
+
+Users have a `role` field: `admin` or `member`. The first user created with an account is always admin.
+
+- **Admin**: can edit account name, manage users, generate invitations, delete account
+- **Member**: read-only view of account details and user list
+
+**Invitation flow**: Admin generates a signed token (`Rails.application.message_verifier(:account_invitations)`, 7-day expiry). The token encodes the account ID. Recipients visit the invitation URL, create an account (as member role), and are auto-logged-in.
+
+**Account deletion**: Soft-deletes the account, anonymizes all user emails (replaces with `deleted-<hex>@domain`), destroys all sessions. Deleted accounts are blocked at the authentication layer. 30-day retention before permanent deletion.
+
+**User removal**: Admin anonymizes a user's email and destroys their sessions. Cannot remove self or other admins.
 
 ### Key Model Behaviors
 
@@ -167,10 +186,15 @@ Multi-model operations are handled by model methods wrapped in transactions:
 | `Workspaces::ArchivesController` | List/show archived workspaces, archive/unarchive actions. |
 | `Workspaces::DeletedController` | List/show deleted workspaces, restore/permanent-delete actions. |
 | `Memories::VersionsController` | List/show/create versions. `destroy` consolidates (keeps one, removes others). |
+| `AccountsController` | Show/update/destroy account. Admin-only for update/destroy. |
+| `Account::UsersController` | Admin-only user removal via email anonymization. |
+| `Account::InvitationsController` | Admin-only invitation link generation with user limit check. |
+| `InvitationsController` | Public invitation acceptance. Security layout, rate-limited. |
 
 ### Controller Concerns
 
-- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Session stored in signed permanent cookie (httponly, same_site: lax). Also handles Bearer token authentication for API requests.
+- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Session stored in signed permanent cookie (httponly, same_site: lax). Also handles Bearer token authentication for API requests. Blocks deleted accounts (session redirect + API 401).
+- **AdminAuthorizable** (`app/controllers/concerns/admin_authorizable.rb`) - `require_admin` method redirects non-admin users to `account_path`. Shared by account management controllers.
 - **WorkspaceScoped** (`app/controllers/concerns/workspace_scoped.rb`) - Loads workspace with `with_deleted` scope for namespaced controllers. Includes `require_active_workspace` with HTML/JSON format support.
 - **ApiHelpers** (`app/controllers/concerns/api_helpers.rb`) - JSON API utilities: pagination headers (`X-Page`, `X-Per-Page`, `X-Total`, `X-Total-Pages`, `Link`), error response helpers (`render_validation_errors`, `render_not_found`, `render_unauthorized`, `render_forbidden`, `render_rate_limited`).
 - **HttpCacheable** (`app/controllers/concerns/http_cacheable.rb`) - HTTP caching helpers: `fresh_when_private` (ETags with `Cache-Control: private`), `collection_cache_key` (composite cache keys for paginated collections).
@@ -194,6 +218,11 @@ Workspaces: resources :workspaces do
 
             Scoped: GET/POST/DELETE workspaces/archived/:id
                     GET/POST/DELETE workspaces/deleted/:id
+
+Account:    resource  :account (show, update, destroy)
+              resources :users, controller: account/users (destroy)
+              resource  :invitation, controller: account/invitations (create)
+            resources :invitations, param: :token (show, create — public)
 
 Pins:       POST/DELETE pins/:pinnable_type/:pinnable_id → pins (polymorphic)
 
@@ -299,6 +328,7 @@ Rails 8 built-in authentication with `has_secure_password` (bcrypt).
 | `details` | Closes `<details>` elements on outside click. 100ms delay prevents immediate close. | N/A |
 | `scroll-to-top` | FAB appears at 300px scroll. Smooth scroll back to top. Works with `<main>` or window. | Hides button |
 | `navigate` | Navigates on `<select>` change via `Turbo.visit`. | N/A |
+| `clipboard` | Copy text to clipboard via `navigator.clipboard.writeText()`. Toggles copy/check icons for 2s feedback. | Clears timeout, resets icons |
 
 ### Turbo / Hotwire Patterns
 
@@ -381,6 +411,8 @@ SQLite with 8 tables: `accounts`, `users`, `sessions`, `access_tokens`, `workspa
 **Notable indexes**:
 - `users.email_address` (unique)
 - `users.account_id` (foreign key to accounts)
+- `users.role` (for role-based queries)
+- `accounts.deleted_at` (for soft delete filtering)
 - `access_tokens.token_digest` (unique, for token lookup)
 - `access_tokens.user_id` (foreign key to users)
 - `workspaces.account_id` (foreign key to accounts)
@@ -405,6 +437,7 @@ SQLite with 8 tables: `accounts`, `users`, `sessions`, `access_tokens`, `workspa
 7. **2026-02-04**: Full-text search (`memories_search` FTS5 virtual table with trigram tokenizer)
 8. **2026-02-05**: Accounts (multi-tenancy container), user.account_id, workspace.account_id (replaces user_id)
 9. **2026-02-05**: Access tokens (API authentication with read_only/full_access permissions)
+10. **2026-02-05**: User roles (`role` column: admin/member) and account soft delete (`deleted_at` on accounts)
 
 ## Deployment
 
@@ -440,6 +473,7 @@ Fixtures cover: users, sessions, workspaces (including archived/deleted variants
 - **Concerns** for shared model behaviors (soft delete, archive, pin, version)
 - **Namespaced controllers** for workspace state-specific routes
 - **Gem components** for all UI elements -- never hand-write HTML that replicates a gem component
+- **Full I18n keys inside gem component blocks** — lazy `t(".key")` resolves to the gem partial's scope, not your app partial's scope. Always use `t("accounts.details.title")` instead of `t(".title")` when inside `do...end` blocks of gem-rendered partials. View locale keys go in `config/locales/views/en.yml`; partial key paths strip the underscore (e.g., `_details.html.erb` → `accounts.details.*`).
 - **Data attributes** for component styling (`data-component`, `data-form-part`, `data-variant`, `data-size`)
 - **Teardown pattern** for Stimulus controllers that manage state (implement `teardown()` method)
 - **Custom form layouts** may omit `data-component="form"` with an explanatory comment; individual inputs still use their data-component attributes

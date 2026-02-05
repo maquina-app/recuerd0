@@ -46,8 +46,8 @@ bin/kamal console                # Remote Rails console
 
 ### Domain Model
 
-- **Account** → has many Users, Workspaces; serves as multi-tenant container
-- **User** → belongs to Account; has many Sessions, AccessTokens, Pins (max 10 pins, enforced in controller)
+- **Account** → has many Users, Workspaces; serves as multi-tenant container. Includes SoftDeletable (30-day retention). User limit of 5. Invitation tokens via `Rails.application.message_verifier(:account_invitations)` with 7-day expiry.
+- **User** → belongs to Account; has many Sessions, AccessTokens, Pins (max 10 pins, enforced in controller). Roles: `admin` (first user) or `member`. `scope :active` excludes anonymized users. Email anonymization via `anonymize_email!` for user removal.
 - **AccessToken** → belongs to User; two permission levels (`read_only`, `full_access`); SHA256 hashed token storage; tracks `last_used_at`
 - **Workspace** → belongs to Account; has many Memories (counter cached); supports soft delete (30-day retention), archiving, and pinning
 - **Memory** → belongs to Workspace (touch: true); has one Content; supports versioning (flat branching from any version), pinning, and full-text search
@@ -94,9 +94,16 @@ Controllers under `workspaces/` handle specific workspace states:
 - `Workspaces::DeletedController` - deleted workspace operations (restore, permanent delete)
 - `Memories::VersionsController` - memory version operations (`destroy` consolidates, doesn't delete)
 
+Controllers under `account/` handle account administration:
+- `AccountsController` - show/update/destroy account (uses `AdminAuthorizable`)
+- `Account::UsersController` - admin-only user removal via email anonymization
+- `Account::InvitationsController` - admin-only invitation link generation
+- `InvitationsController` - public invitation acceptance (unauthenticated, security layout)
+
 ### Controller Concerns
 
-- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Uses `Current.user` / `Current.session` / `Current.account`. Supports both session cookies and Bearer token authentication for API requests.
+- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Uses `Current.user` / `Current.session` / `Current.account`. Supports both session cookies and Bearer token authentication for API requests. Blocks deleted accounts (redirects sessions, returns 401 for API).
+- **AdminAuthorizable** (`app/controllers/concerns/admin_authorizable.rb`) - `require_admin` method redirects non-admin users to `account_path`. Used by `AccountsController`, `Account::UsersController`, `Account::InvitationsController`.
 - **WorkspaceScoped** (`app/controllers/concerns/workspace_scoped.rb`) - Loads workspace scoped to `Current.account.workspaces`. Includes `require_active_workspace` for both HTML and JSON formats.
 - **ApiHelpers** (`app/controllers/concerns/api_helpers.rb`) - Pagination headers (`X-Page`, `X-Total`, `X-Total-Pages`, `Link`), error response helpers (`render_validation_errors`, `render_not_found`, `render_unauthorized`, `render_forbidden`, `render_rate_limited`).
 
@@ -131,6 +138,7 @@ JSON API for programmatic access. See `docs/API.md` for full documentation.
   - `details` - Closes `<details>` on outside click (100ms delay prevents immediate close)
   - `scroll-to-top` - FAB appears at 300px scroll, smooth scroll, teardown hides button
   - `navigate` - Navigates on `<select>` change via Turbo.visit
+  - `clipboard` - Copy text to clipboard via `navigator.clipboard.writeText()`, toggles copy/check icons for 2s feedback, includes `teardown()` for Turbo cache cleanup
   - Toast/toaster/sidebar/dropdown controllers are provided by the gem.
 - **Component partials** in `app/views/components/` — provided by the `maquina-components` gem (not local files). Components include: card, badge, alert, breadcrumb, dropdown_menu, sidebar, pagination, empty, separator, toaster, toast
 - **App-specific components** in `app/views/application/components/` — `tag_input`, pin buttons
@@ -258,6 +266,24 @@ Individual toasts are rendered with `render "components/toast"`:
 
 Always use the gem's `render "components/..."` partials — never hand-write inline HTML to replicate a gem component's output. The gem manages data attributes, Stimulus controllers, and CSS selectors internally.
 
+#### I18n lazy lookup gotcha with gem components
+
+**CRITICAL**: Do NOT use lazy I18n lookup (`t(".key")`) inside blocks passed to gem component partials. When a block is yielded inside a gem partial, Rails resolves the lazy scope to the **gem partial's** path, not your app partial's path.
+
+```erb
+<%# BAD — inside card/header block, t(".title") resolves to components.card.header.title %>
+<%= render "components/card/header" do %>
+  <%= render "components/card/title", text: t(".title") %>
+<% end %>
+
+<%# GOOD — use full I18n keys inside gem component blocks %>
+<%= render "components/card/header" do %>
+  <%= render "components/card/title", text: t("accounts.details.title") %>
+<% end %>
+```
+
+This applies to any code inside `do...end` blocks for gem-rendered partials (card, alert, dropdown_menu, etc.). View-level locale keys go in `config/locales/views/en.yml`. For partials like `_details.html.erb`, the key path strips the underscore: `accounts.details.*` (not `accounts._details.*`).
+
 ### Turbo / Hotwire Notes
 
 - Layout uses `turbo_refresh_method_tag :morph` — Turbo caches page snapshots
@@ -271,11 +297,11 @@ Always use the gem's `render "components/..."` partials — never hand-write inl
 
 ### Authentication
 
-Uses Rails 8 built-in authentication generator with `Current.user` and `Current.account` for accessing the logged-in user and their account. Sessions stored in database with signed permanent cookies (httponly, same_site: lax). Self-service registration creates Account + User atomically with auto-login. Login rate-limited to 10 attempts per 3 minutes. Registration rate-limited to 10 attempts per hour. Password reset via encrypted token in email.
+Uses Rails 8 built-in authentication generator with `Current.user` and `Current.account` for accessing the logged-in user and their account. Sessions stored in database with signed permanent cookies (httponly, same_site: lax). Self-service registration creates Account + User atomically with auto-login (first user is admin). Login rate-limited to 10 attempts per 3 minutes. Registration rate-limited to 10 attempts per hour. Password reset via encrypted token in email. Deleted accounts are blocked at the authentication layer (session redirect + API 401).
 
 ### Database
 
-SQLite for everything. Production uses 4 separate SQLite files (primary, cache, queue, cable) in a persistent Docker volume. 8 tables: `accounts`, `users`, `sessions`, `access_tokens`, `workspaces`, `memories`, `contents`, `pins`. Counter cache on `workspaces.memories_count`. FTS5 virtual table `memories_search` with trigram tokenizer for full-text search. Key indexes: `users.account_id`, `workspaces.account_id`, `access_tokens.token_digest` (unique), `memories(parent_memory_id, version)`, and `pins(user_id, pinnable_type, pinnable_id)` (unique).
+SQLite for everything. Production uses 4 separate SQLite files (primary, cache, queue, cable) in a persistent Docker volume. 8 tables: `accounts`, `users`, `sessions`, `access_tokens`, `workspaces`, `memories`, `contents`, `pins`. Counter cache on `workspaces.memories_count`. FTS5 virtual table `memories_search` with trigram tokenizer for full-text search. Key indexes: `users.account_id`, `users.role`, `accounts.deleted_at`, `workspaces.account_id`, `access_tokens.token_digest` (unique), `memories(parent_memory_id, version)`, and `pins(user_id, pinnable_type, pinnable_id)` (unique).
 
 ### Deployment
 
