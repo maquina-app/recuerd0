@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   resource :account, only: %i[show update destroy] do
     resources :users, only: %i[destroy], controller: "account/users"
     resource :invitation, only: %i[create], controller: "account/invitations"
+    resources :exports, only: %i[create show], controller: "account/exports"
   end
 
   # User profile

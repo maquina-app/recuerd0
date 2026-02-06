@@ -1,0 +1,9 @@
+<p>Hi,</p>
+
+<p>Your data export is ready to download!</p>
+
+<p style="margin: 24px 0;">
+  <a href="<%= account_export_url(@export) %>" class="btn">Download Export</a>
+</p>
+
+<p class="muted">This download link will expire on <%= l(@export.expires_at, format: :long) %>. After that, you'll need to request a new export.</p>

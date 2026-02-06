@@ -45,6 +45,7 @@ gem "thruster", require: false
 gem "commonmarker"
 gem "pagy", "~> 9.3"
 gem "maquina-components"
+gem "rubyzip", "~> 3.0", require: "zip"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

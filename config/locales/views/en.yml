@@ -94,6 +94,15 @@ en:
       copy_tooltip: "Copy to clipboard"
       link_hint: "Share this link with the person you want to invite. Expires in 7 days."
       generate: "Generate Invitation Link"
+    data_export:
+      title: "Data Export"
+      description: "Download a complete backup of your workspaces and memories."
+      usage: "%{count} of %{limit} exports used this month"
+      in_progress: "Export in progress..."
+      download: "Download Export"
+      expires: "Expires %{date}"
+      request: "Request Export"
+      confirm: "This will create a full backup of all your workspaces and memories. You will receive an email when it's ready."
     danger_zone:
       title: "Delete Account"
       warning_title: "This action cannot be undone."

@@ -3,7 +3,7 @@
 
 project: recuerd0
 created: 2026-02-05T00:53:52Z
-updated: 2026-02-06T01:30:00Z
+updated: 2026-02-06T02:45:00Z
 
 product_planning:
   status: complete
@@ -11,7 +11,17 @@ product_planning:
   roadmap: true
   tech_stack: true
 
-current_spec: null
+current_spec:
+  name: 2026-02-05-account-data-export
+  path: sdd/specs/2026-02-05-account-data-export
+  fizzy_card: 156
+  phases:
+    shape_spec:    { status: complete, requirements_gathered: true, visuals_analyzed: true }
+    write_spec:    { status: complete, spec_created: true }
+    verify_spec:   { status: complete, verified: true }
+    create_tasks:  { status: complete, tasks_created: true, task_count: 29 }
+    implement:     { status: complete, mode: simple, tasks_completed: 29, tasks_total: 29 }
+    verify_final:  { status: complete, tests_passed: true, roadmap_updated: false }
 
 # Pending specs (paused)
 pending_specs:

@@ -1,0 +1,47 @@
+<%# locals: (exports_this_month:, current_export:, latest_export:) %>
+<%= render "components/card" do %>
+  <%= render "components/card/header" do %>
+    <%= render "components/card/title", text: t("accounts.data_export.title") %>
+    <%= render "components/card/description", text: t("accounts.data_export.description") %>
+  <% end %>
+
+  <%= render "components/card/content" do %>
+    <div class="space-y-4">
+      <p class="text-sm text-muted-foreground">
+        <%= t("accounts.data_export.usage", count: exports_this_month, limit: AccountExport::MONTHLY_LIMIT) %>
+      </p>
+
+      <% if current_export %>
+        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+          <%= icon_for(:loader, class: "size-4 animate-spin") %>
+          <%= t("accounts.data_export.in_progress") %>
+        </div>
+      <% end %>
+
+      <% if latest_export&.downloadable? %>
+        <div class="flex items-center gap-2">
+          <a href="<%= account_export_path(latest_export) %>"
+             data-component="button" data-variant="outline" data-size="sm">
+            <%= icon_for(:download, class: "size-4") %>
+            <%= t("accounts.data_export.download") %>
+          </a>
+          <span class="text-xs text-muted-foreground">
+            <%= t("accounts.data_export.expires", date: l(latest_export.expires_at, format: :short)) %>
+          </span>
+        </div>
+      <% end %>
+
+      <% if current_export.nil? %>
+        <%= button_to t("accounts.data_export.request"),
+            account_exports_path,
+            method: :post,
+            disabled: exports_this_month >= AccountExport::MONTHLY_LIMIT,
+            data: {
+              component: "button",
+              variant: "outline",
+              turbo_confirm: t("accounts.data_export.confirm")
+            } %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

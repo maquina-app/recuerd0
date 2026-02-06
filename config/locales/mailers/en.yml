@@ -8,3 +8,8 @@ en:
   profile_mailer:
     password_changed:
       subject: "Your password was changed"
+  account_export_mailer:
+    started:
+      subject: "Your data export has started"
+    completed:
+      subject: "Your data export is ready"

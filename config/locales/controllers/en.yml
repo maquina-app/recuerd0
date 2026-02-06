@@ -93,6 +93,12 @@ en:
       create:
         created: "Invitation link generated."
         limit_reached: "Account has reached the maximum number of users."
+    exports:
+      create:
+        started: "Your data export has been started. You'll receive an email when it's ready."
+        limit_reached: "You've reached the maximum of 2 exports per month."
+      show:
+        expired: "This export has expired or is not available."
 
   invitations:
     create:

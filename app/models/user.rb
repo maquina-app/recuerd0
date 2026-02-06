@@ -6,6 +6,7 @@ class User < ApplicationRecord
   belongs_to :account
   has_many :sessions, dependent: :destroy
   has_many :access_tokens, dependent: :destroy
+  has_many :account_exports, dependent: :destroy
 
   # Pin associations
   has_many :pins, dependent: :destroy

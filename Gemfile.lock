@@ -442,6 +442,7 @@ DEPENDENCIES
   puma (>= 5.0)
   rails (~> 8.0.2)
   reactionview (~> 0.1.2)
+  rubyzip (~> 3.0)
   selenium-webdriver
   solid_cable
   solid_cache
