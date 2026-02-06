@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>recuerd0 — API Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300;400;500;600&family=Instrument+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: oklch(0.480 0.190 150);
+      --primary-hover: oklch(0.420 0.180 150);
+      --primary-dim: oklch(0.550 0.140 150);
+      --primary-glow: oklch(0.480 0.190 150 / 0.10);
+      --primary-ghost: oklch(0.480 0.190 150 / 0.05);
+      --primary-wash: oklch(0.480 0.190 150 / 0.03);
+      --bg: #f8f9f8;
+      --bg-warm: #f3f5f3;
+      --bg-elevated: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f6f8f6;
+      --surface: #eef1ee;
+      --border: oklch(0.750 0.015 150 / 0.6);
+      --border-subtle: oklch(0.820 0.010 150 / 0.5);
+      --border-strong: oklch(0.650 0.020 150 / 0.5);
+      --text: #1a2420;
+      --text-secondary: oklch(0.420 0.020 150);
+      --text-dim: oklch(0.550 0.015 150);
+      --code-bg: #f0f3f1;
+      --code-border: oklch(0.800 0.020 150 / 0.5);
+      --get: oklch(0.450 0.160 250);
+      --get-bg: oklch(0.450 0.160 250 / 0.06);
+      --get-border: oklch(0.450 0.160 250 / 0.15);
+      --post: oklch(0.480 0.190 150);
+      --post-bg: oklch(0.480 0.190 150 / 0.06);
+      --post-border: oklch(0.480 0.190 150 / 0.15);
+      --patch: oklch(0.520 0.160 70);
+      --patch-bg: oklch(0.520 0.160 70 / 0.06);
+      --patch-border: oklch(0.520 0.160 70 / 0.15);
+      --delete: oklch(0.500 0.170 25);
+      --delete-bg: oklch(0.500 0.170 25 / 0.06);
+      --delete-border: oklch(0.500 0.170 25 / 0.15);
+      --shadow-sm: 0 1px 3px oklch(0.480 0.050 150 / 0.06);
+      --shadow-md: 0 4px 16px oklch(0.480 0.050 150 / 0.06), 0 1px 4px oklch(0 0 0 / 0.03);
+      --shadow-lg: 0 12px 40px oklch(0.480 0.050 150 / 0.08), 0 2px 8px oklch(0 0 0 / 0.03);
+      --font-display: 'Jura', system-ui, sans-serif;
+      --font-body: 'Instrument Sans', system-ui, sans-serif;
+      --font-mono: 'Fira Code', 'SF Mono', ui-monospace, monospace;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --sidebar-w: 260px;
+      --header-h: 60px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: calc(var(--header-h) + 2rem);
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    ::selection { background: oklch(0.480 0.190 150 / 0.18); color: var(--text); }
+    a { color: var(--primary); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--primary-hover); }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      background-size: 256px;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* HEADER */
+    .doc-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: var(--header-h);
+      display: flex; align-items: center; padding: 0 2rem;
+      background: oklch(0.98 0.005 150 / 0.85);
+      backdrop-filter: blur(20px) saturate(1.3);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .header-inner { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .header-left { display: flex; align-items: center; gap: 1.5rem; }
+    .header-brand { display: flex; align-items: center; gap: 0.6rem; }
+    .header-brand svg { height: 24px; width: auto; }
+    .header-wordmark { font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; letter-spacing: 1px; color: var(--text); }
+    .header-wordmark .zero { font-weight: 600; color: var(--primary); }
+    .header-divider { width: 1px; height: 20px; background: var(--border); }
+    .header-section { font-family: var(--font-display); font-weight: 400; font-size: 0.9rem; color: var(--text-dim); letter-spacing: 0.5px; }
+    .header-right { display: flex; align-items: center; gap: 1.5rem; }
+    .header-link { font-family: var(--font-display); font-weight: 400; font-size: 0.85rem; color: var(--text-secondary); letter-spacing: 0.5px; }
+    .header-link:hover { color: var(--text); }
+    .header-cta { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; padding: 0.4rem 1rem; border: 1px solid var(--primary); border-radius: 5px; color: var(--primary); transition: all 0.25s var(--ease-out); }
+    .header-cta:hover { background: var(--primary); color: #fff; }
+    .mobile-toggle { display: none; background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.25rem; }
+
+    /* SIDEBAR */
+    .doc-sidebar {
+      position: fixed; top: var(--header-h); left: 0; bottom: 0;
+      width: var(--sidebar-w); padding: 1.5rem 0;
+      overflow-y: auto; background: var(--bg);
+      border-right: 1px solid var(--border-subtle); z-index: 50;
+    }
+    .doc-sidebar::-webkit-scrollbar { width: 4px; }
+    .doc-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .sidebar-group { margin-bottom: 1.75rem; padding: 0 1.25rem; }
+    .sidebar-heading { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.6rem; padding-left: 0.75rem; }
+    .sidebar-link { display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; color: var(--text-secondary); padding: 0.35rem 0.75rem; border-radius: 5px; transition: all 0.2s; margin-bottom: 1px; }
+    .sidebar-link:hover { color: var(--text); background: var(--primary-ghost); }
+    .sidebar-link.active { color: var(--primary); background: var(--primary-ghost); font-weight: 500; }
+    .sidebar-method { font-family: var(--font-mono); font-size: 0.55rem; font-weight: 500; letter-spacing: 0.5px; padding: 0.1rem 0.35rem; border-radius: 3px; flex-shrink: 0; min-width: 36px; text-align: center; }
+    .sidebar-method.get { color: var(--get); background: var(--get-bg); }
+    .sidebar-method.post { color: var(--post); background: var(--post-bg); }
+    .sidebar-method.patch { color: var(--patch); background: var(--patch-bg); }
+    .sidebar-method.delete { color: var(--delete); background: var(--delete-bg); }
+
+    /* MAIN CONTENT */
+    .doc-main { margin-left: var(--sidebar-w); margin-top: var(--header-h); min-height: calc(100vh - var(--header-h)); }
+    .doc-content { max-width: 820px; margin: 0 auto; padding: 3rem 3rem 6rem; }
+
+    /* PAGE HEADER */
+    .page-header { margin-bottom: 3.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--border-subtle); }
+    .page-header h1 { font-family: var(--font-display); font-weight: 300; font-size: 2.4rem; letter-spacing: -0.5px; margin-bottom: 0.75rem; }
+    .page-header h1 em { font-style: normal; color: var(--primary); font-weight: 500; }
+    .page-header p { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.7; max-width: 580px; }
+    .base-url-bar { display: inline-flex; align-items: center; gap: 0.75rem; margin-top: 1.25rem; padding: 0.55rem 1rem; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 6px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary); }
+    .base-url-bar .label { font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); }
+    .base-url-bar code { color: var(--primary); font-family: inherit; }
+
+    /* SECTIONS */
+    .api-section { margin-bottom: 2rem; scroll-margin-top: calc(var(--header-h) + 1.5rem); }
+    .section-divider { height: 1px; background: var(--border-subtle); margin: 3rem 0; }
+    .resource-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem; }
+    .resource-label::before { content: ''; width: 20px; height: 1px; background: var(--primary); }
+    .resource-header { margin-bottom: 2rem; }
+    .resource-header h2 { font-family: var(--font-display); font-weight: 300; font-size: 1.6rem; letter-spacing: -0.3px; margin-bottom: 0.5rem; }
+    .resource-header p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.7; }
+
+    /* ENDPOINT */
+    .endpoint { margin-bottom: 3rem; scroll-margin-top: calc(var(--header-h) + 1.5rem); }
+    .endpoint-head { margin-bottom: 1rem; }
+    .endpoint-head h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.15rem; margin-bottom: 0.4rem; }
+    .endpoint-head p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ROUTE BAR */
+    .route-bar { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; border-radius: 8px; border: 1px solid; margin-bottom: 1.5rem; font-family: var(--font-mono); font-size: 0.82rem; }
+    .route-bar.get { background: var(--get-bg); border-color: var(--get-border); }
+    .route-bar.post { background: var(--post-bg); border-color: var(--post-border); }
+    .route-bar.patch { background: var(--patch-bg); border-color: var(--patch-border); }
+    .route-bar.delete { background: var(--delete-bg); border-color: var(--delete-border); }
+    .route-method { font-weight: 500; font-size: 0.72rem; letter-spacing: 0.5px; padding: 0.2rem 0.5rem; border-radius: 4px; min-width: 52px; text-align: center; }
+    .route-bar.get .route-method { color: var(--get); background: oklch(0.450 0.160 250 / 0.1); }
+    .route-bar.post .route-method { color: var(--post); background: oklch(0.480 0.190 150 / 0.1); }
+    .route-bar.patch .route-method { color: var(--patch); background: oklch(0.520 0.160 70 / 0.1); }
+    .route-bar.delete .route-method { color: var(--delete); background: oklch(0.500 0.170 25 / 0.1); }
+    .route-path { color: var(--text); }
+    .route-path .param { color: var(--primary-dim); }
+    .route-badge { margin-left: auto; font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); padding: 0.15rem 0.5rem; border: 1px solid var(--border); border-radius: 3px; background: var(--bg-elevated); }
+
+    /* TABLES */
+    .param-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.85rem; }
+    .param-table-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.5rem; }
+    .param-table thead th { font-weight: 500; font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-dim); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .param-table thead th:first-child { border-radius: 6px 0 0 0; }
+    .param-table thead th:last-child { border-radius: 0 6px 0 0; }
+    .param-table tbody td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary); vertical-align: top; }
+    .param-table tbody tr:last-child td { border-bottom: none; }
+    .param-name { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text); white-space: nowrap; }
+    .param-type { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); }
+    .param-required { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.5px; color: var(--primary); background: var(--primary-ghost); padding: 0.1rem 0.35rem; border-radius: 3px; }
+
+    /* CODE BLOCKS */
+    .code-block { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm); }
+    .code-head { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border-subtle); background: var(--surface); }
+    .code-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); }
+    .code-status { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.5px; padding: 0.15rem 0.45rem; border-radius: 3px; }
+    .code-status.s201 { color: var(--post); background: var(--post-bg); }
+    .code-status.s200 { color: var(--get); background: var(--get-bg); }
+    .code-status.s204 { color: var(--text-dim); background: var(--surface); }
+    .code-status.s4xx { color: var(--delete); background: var(--delete-bg); }
+    .code-body { padding: 1rem 1.25rem; font-family: var(--font-mono); font-size: 0.76rem; line-height: 1.75; overflow-x: auto; background: var(--code-bg); color: var(--text-secondary); }
+    .code-body .ck { color: oklch(0.450 0.180 280); }
+    .code-body .cs { color: oklch(0.440 0.170 150); }
+    .code-body .cn { color: oklch(0.500 0.150 50); }
+    .code-body .cb { color: oklch(0.450 0.160 250); }
+    .code-body .cc { color: var(--text-dim); }
+
+    /* INFO BOXES */
+    .info-box { display: flex; gap: 0.75rem; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary); }
+    .info-box.note { background: var(--get-bg); border: 1px solid var(--get-border); }
+    .info-box.warn { background: var(--patch-bg); border: 1px solid var(--patch-border); }
+    .info-box-icon { flex-shrink: 0; margin-top: 2px; }
+    .info-box code { font-family: var(--font-mono); font-size: 0.78rem; background: oklch(0 0 0 / 0.04); padding: 0.1rem 0.3rem; border-radius: 3px; }
+
+    /* TOKEN GRID */
+    .token-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .token-card { padding: 1.25rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); box-shadow: var(--shadow-sm); }
+    .token-card h4 { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text); margin-bottom: 0.35rem; }
+    .token-card p { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+    .token-badge { display: inline-block; font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 1px; text-transform: uppercase; padding: 0.15rem 0.4rem; border-radius: 3px; margin-bottom: 0.5rem; }
+    .token-badge.read { color: var(--get); background: var(--get-bg); border: 1px solid var(--get-border); }
+    .token-badge.full { color: var(--post); background: var(--post-bg); border: 1px solid var(--post-border); }
+
+    /* OP TABLE */
+    .op-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.85rem; }
+    .op-table thead th { font-weight: 500; font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-dim); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .op-table thead th:first-child { border-radius: 6px 0 0 0; }
+    .op-table thead th:last-child { border-radius: 0 6px 0 0; }
+    .op-table tbody td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary); }
+    .op-table tbody tr:last-child td { border-bottom: none; }
+    .op-table code { font-family: var(--font-mono); font-size: 0.76rem; background: var(--code-bg); padding: 0.15rem 0.4rem; border-radius: 3px; color: var(--text); }
+
+    /* FOOTER */
+    .doc-footer { border-top: 1px solid var(--border-subtle); padding: 2rem 0; margin-top: 3rem; }
+    .doc-footer-inner { display: flex; justify-content: space-between; align-items: center; }
+    .doc-footer-brand { font-family: var(--font-display); font-weight: 400; font-size: 0.9rem; letter-spacing: 1px; color: var(--text-dim); }
+    .doc-footer-brand .zero { font-weight: 600; color: var(--primary-dim); }
+    .doc-footer-links { display: flex; gap: 1.5rem; list-style: none; }
+    .doc-footer-links a { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); }
+    .doc-footer-links a:hover { color: var(--text-secondary); }
+
+    @media (max-width: 900px) {
+      .doc-sidebar { transform: translateX(-100%); transition: transform 0.3s var(--ease-out); background: var(--bg-elevated); box-shadow: var(--shadow-lg); }
+      .doc-sidebar.open { transform: translateX(0); }
+      .doc-main { margin-left: 0; }
+      .doc-content { padding: 2rem 1.5rem 4rem; }
+      .mobile-toggle { display: block; }
+      .header-right .header-link { display: none; }
+      .token-grid { grid-template-columns: 1fr; }
+      .route-bar { flex-wrap: wrap; }
+      .route-badge { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="doc-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <button class="mobile-toggle" onclick="document.querySelector('.doc-sidebar').classList.toggle('open')" aria-label="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <a href="#" class="header-brand">
+          <svg viewBox="0 0 52 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="16" y="2" width="32" height="38" rx="7" fill="oklch(0.480 0.190 150)" opacity="0.15"/>
+            <rect x="8" y="10" width="32" height="38" rx="7" fill="oklch(0.480 0.190 150)" opacity="0.40"/>
+            <rect x="0" y="18" width="32" height="38" rx="7" fill="oklch(0.480 0.190 150)"/>
+          </svg>
+          <span class="header-wordmark">recuerd<span class="zero">0</span></span>
+        </a>
+        <div class="header-divider"></div>
+        <span class="header-section">API Reference</span>
+      </div>
+      <div class="header-right">
+        <a href="#" class="header-link">Guides</a>
+        <a href="#" class="header-link">CLI</a>
+        <a href="#" class="header-link">GitHub</a>
+        <a href="#" class="header-cta">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <aside class="doc-sidebar" id="sidebar">
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Getting Started</div>
+      <a href="#auth" class="sidebar-link active" data-section="auth">Authentication</a>
+      <a href="#rate-limits" class="sidebar-link" data-section="rate-limits">Rate Limiting</a>
+      <a href="#errors" class="sidebar-link" data-section="errors">Error Handling</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Workspaces</div>
+      <a href="#list-workspaces" class="sidebar-link" data-section="list-workspaces"><span class="sidebar-method get">GET</span> List</a>
+      <a href="#get-workspace" class="sidebar-link" data-section="get-workspace"><span class="sidebar-method get">GET</span> Get</a>
+      <a href="#create-workspace" class="sidebar-link" data-section="create-workspace"><span class="sidebar-method post">POST</span> Create</a>
+      <a href="#update-workspace" class="sidebar-link" data-section="update-workspace"><span class="sidebar-method patch">PATCH</span> Update</a>
+      <a href="#archive-workspace" class="sidebar-link" data-section="archive-workspace"><span class="sidebar-method post">POST</span> Archive</a>
+      <a href="#unarchive-workspace" class="sidebar-link" data-section="unarchive-workspace"><span class="sidebar-method delete">DEL</span> Unarchive</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Memories</div>
+      <a href="#list-memories" class="sidebar-link" data-section="list-memories"><span class="sidebar-method get">GET</span> List</a>
+      <a href="#get-memory" class="sidebar-link" data-section="get-memory"><span class="sidebar-method get">GET</span> Get</a>
+      <a href="#create-memory" class="sidebar-link" data-section="create-memory"><span class="sidebar-method post">POST</span> Create</a>
+      <a href="#update-memory" class="sidebar-link" data-section="update-memory"><span class="sidebar-method patch">PATCH</span> Update</a>
+      <a href="#delete-memory" class="sidebar-link" data-section="delete-memory"><span class="sidebar-method delete">DEL</span> Delete</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Versions</div>
+      <a href="#create-version" class="sidebar-link" data-section="create-version"><span class="sidebar-method post">POST</span> Create Version</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Search</div>
+      <a href="#search" class="sidebar-link" data-section="search"><span class="sidebar-method get">GET</span> Search</a>
+    </div>
+  </aside>
+
+  <main class="doc-main">
+    <div class="doc-content">
+
+      <div class="page-header">
+        <h1>API <em>Reference</em></h1>
+        <p>Programmatic access to workspaces and memories. Organize, version, and serve project context to any LLM via REST.</p>
+        <div class="base-url-bar">
+          <span class="label">Base URL</span>
+          <code>https://your-server.com</code>
+        </div>
+      </div>
+
+      <!-- AUTHENTICATION -->
+      <div class="api-section" id="auth">
+        <div class="resource-header">
+          <div class="resource-label">getting started</div>
+          <h2>Authentication</h2>
+          <p>All API requests require a Bearer token in the Authorization header.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">request header</span></div>
+          <div class="code-body"><span class="ck">Authorization</span>: Bearer <span class="cs">your_token_here</span></div>
+        </div>
+        <div class="token-grid">
+          <div class="token-card">
+            <span class="token-badge read">read_only</span>
+            <h4>Read-Only Token</h4>
+            <p>Access GET endpoints only. Perfect for AI tools that consume context.</p>
+          </div>
+          <div class="token-card">
+            <span class="token-badge full">full_access</span>
+            <h4>Full Access Token</h4>
+            <p>Access all endpoints — GET, POST, PATCH, DELETE. For management and automation.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RATE LIMITS -->
+      <div class="api-section" id="rate-limits">
+        <div class="endpoint-head">
+          <h3>Rate Limiting</h3>
+          <p>API requests are limited to <strong>100 requests per minute</strong> per token.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head">
+            <span class="code-label">429 response</span>
+            <span class="code-status s4xx">429 Too Many Requests</span>
+          </div>
+          <div class="code-body">
+{
+  <span class="ck">"error"</span>: {
+    <span class="ck">"code"</span>: <span class="cs">"RATE_LIMITED"</span>,
+    <span class="ck">"message"</span>: <span class="cs">"Rate limit exceeded. Please try again later."</span>,
+    <span class="ck">"status"</span>: <span class="cn">429</span>
+  }
+}
+          </div>
+        </div>
+      </div>
+
+      <!-- ERRORS -->
+      <div class="api-section" id="errors">
+        <div class="endpoint-head">
+          <h3>Error Handling</h3>
+          <p>All errors follow a consistent JSON structure with a code, message, and HTTP status.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">error format</span></div>
+          <div class="code-body">
+{
+  <span class="ck">"error"</span>: {
+    <span class="ck">"code"</span>: <span class="cs">"ERROR_CODE"</span>,
+    <span class="ck">"message"</span>: <span class="cs">"Human-readable description"</span>,
+    <span class="ck">"details"</span>: { ... },    <span class="cc">// optional, for validation errors</span>
+    <span class="ck">"status"</span>: <span class="cn">4xx</span>
+  }
+}
+          </div>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Status</th><th>Code</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>401</code></td><td><code>UNAUTHORIZED</code></td><td>Invalid or missing access token</td></tr>
+            <tr><td><code>403</code></td><td><code>FORBIDDEN</code></td><td>Insufficient permissions or inactive workspace</td></tr>
+            <tr><td><code>404</code></td><td><code>NOT_FOUND</code></td><td>Resource not found</td></tr>
+            <tr><td><code>422</code></td><td><code>VALIDATION_ERROR</code></td><td>Invalid request data (includes <code>details</code>)</td></tr>
+            <tr><td><code>429</code></td><td><code>RATE_LIMITED</code></td><td>Rate limit exceeded</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- WORKSPACES -->
+      <div class="api-section" id="workspaces-section">
+        <div class="resource-header">
+          <div class="resource-label">resource</div>
+          <h2>Workspaces</h2>
+        </div>
+      </div>
+
+      <div class="endpoint" id="list-workspaces">
+        <div class="endpoint-head">
+          <h3>List Workspaces</h3>
+          <p>Returns all active workspaces for the current account.</p>
+        </div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces.json</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody><tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr></tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body">
+[
+  {
+    <span class="ck">"id"</span>: <span class="cn">1</span>,
+    <span class="ck">"name"</span>: <span class="cs">"Project Alpha"</span>,
+    <span class="ck">"description"</span>: <span class="cs">"Main project workspace"</span>,
+    <span class="ck">"memories_count"</span>: <span class="cn">42</span>,
+    <span class="ck">"archived"</span>: <span class="cb">false</span>,
+    <span class="ck">"created_at"</span>: <span class="cs">"2026-01-15T10:30:00Z"</span>,
+    <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T14:22:00Z"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.com/workspaces/1"</span>
+  }
+]
+          </div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Pagination headers <code>X-Page</code>, <code>X-Per-Page</code>, <code>X-Total</code>, <code>X-Total-Pages</code>, and <code>Link</code> are included in all list responses.</span>
+        </div>
+      </div>
+
+      <div class="endpoint" id="get-workspace">
+        <div class="endpoint-head"><h3>Get Workspace</h3><p>Returns a single workspace with memory count and pinned status.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:id</span>.json</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body">
+{
+  <span class="ck">"id"</span>: <span class="cn">1</span>,
+  <span class="ck">"name"</span>: <span class="cs">"Project Alpha"</span>,
+  <span class="ck">"description"</span>: <span class="cs">"Main project workspace"</span>,
+  <span class="ck">"memories_count"</span>: <span class="cn">42</span>,
+  <span class="ck">"archived"</span>: <span class="cb">false</span>,
+  <span class="ck">"created_at"</span>: <span class="cs">"2026-01-15T10:30:00Z"</span>,
+  <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T14:22:00Z"</span>,
+  <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.com/workspaces/1"</span>
+}
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="create-workspace">
+        <div class="endpoint-head"><h3>Create Workspace</h3><p>Creates a new workspace.</p></div>
+        <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">workspace[name]</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>Workspace name (max 100 characters)</td></tr>
+            <tr><td><span class="param-name">workspace[description]</span></td><td><span class="param-type">string</span></td><td></td><td>Workspace description</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">request</span></div>
+          <div class="code-body">
+{
+  <span class="ck">"workspace"</span>: {
+    <span class="ck">"name"</span>: <span class="cs">"New Project"</span>,
+    <span class="ck">"description"</span>: <span class="cs">"A new workspace for the team"</span>
+  }
+}
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s201">201 Created</span></div>
+          <div class="code-body">
+{
+  <span class="ck">"id"</span>: <span class="cn">2</span>,
+  <span class="ck">"name"</span>: <span class="cs">"New Project"</span>,
+  <span class="ck">"description"</span>: <span class="cs">"A new workspace for the team"</span>,
+  <span class="ck">"memories_count"</span>: <span class="cn">0</span>,
+  <span class="ck">"archived"</span>: <span class="cb">false</span>,
+  <span class="ck">"created_at"</span>: <span class="cs">"2026-02-04T15:00:00Z"</span>,
+  <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T15:00:00Z"</span>,
+  <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.com/workspaces/2"</span>
+}
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="update-workspace">
+        <div class="endpoint-head"><h3>Update Workspace</h3><p>Updates an existing workspace.</p></div>
+        <div class="route-bar patch"><span class="route-method">PATCH</span><span class="route-path">/workspaces/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">workspace[name]</span></td><td><span class="param-type">string</span></td><td>Workspace name</td></tr>
+            <tr><td><span class="param-name">workspace[description]</span></td><td><span class="param-type">string</span></td><td>Workspace description</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><span class="cc">Returns the updated workspace object.</span></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="archive-workspace">
+        <div class="endpoint-head"><h3>Archive Workspace</h3><p>Archives a workspace. Archived workspaces become read-only.</p></div>
+        <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:id</span>/archive.json</span><span class="route-badge">full_access</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><span class="cc">Returns the workspace with</span> <span class="ck">"archived"</span>: <span class="cb">true</span></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="unarchive-workspace">
+        <div class="endpoint-head"><h3>Unarchive Workspace</h3><p>Restores an archived workspace.</p></div>
+        <div class="route-bar delete"><span class="route-method">DELETE</span><span class="route-path">/workspaces/<span class="param">:id</span>/archive.json</span><span class="route-badge">full_access</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><span class="cc">Returns the workspace with</span> <span class="ck">"archived"</span>: <span class="cb">false</span></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- MEMORIES -->
+      <div class="api-section" id="memories-section">
+        <div class="resource-header"><div class="resource-label">resource</div><h2>Memories</h2></div>
+      </div>
+
+      <div class="endpoint" id="list-memories">
+        <div class="endpoint-head"><h3>List Memories</h3><p>Returns all memories (latest versions only) for a workspace.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories.json</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody><tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr></tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body">
+[
+  {
+    <span class="ck">"id"</span>: <span class="cn">1</span>,
+    <span class="ck">"title"</span>: <span class="cs">"Meeting Notes"</span>,
+    <span class="ck">"version"</span>: <span class="cn">1</span>,
+    <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+    <span class="ck">"tags"</span>: [<span class="cs">"meetings"</span>, <span class="cs">"q1"</span>],
+    <span class="ck">"created_at"</span>: <span class="cs">"2026-01-20T09:00:00Z"</span>,
+    <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-03T16:45:00Z"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.com/workspaces/1/memories/1"</span>
+  }
+]
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="get-memory">
+        <div class="endpoint-head"><h3>Get Memory</h3><p>Returns a memory with its content.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body">
+{
+  <span class="ck">"id"</span>: <span class="cn">1</span>,
+  <span class="ck">"title"</span>: <span class="cs">"Meeting Notes"</span>,
+  <span class="ck">"version"</span>: <span class="cn">1</span>,
+  <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+  <span class="ck">"tags"</span>: [<span class="cs">"meetings"</span>, <span class="cs">"q1"</span>],
+  <span class="ck">"created_at"</span>: <span class="cs">"2026-01-20T09:00:00Z"</span>,
+  <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-03T16:45:00Z"</span>,
+  <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.com/workspaces/1/memories/1"</span>,
+  <span class="ck">"content"</span>: {
+    <span class="ck">"body"</span>: <span class="cs">"# Meeting Notes\n\nDiscussed Q1 goals..."</span>
+  },
+  <span class="ck">"workspace"</span>: {
+    <span class="ck">"id"</span>: <span class="cn">1</span>,
+    <span class="ck">"name"</span>: <span class="cs">"Project Alpha"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.com/workspaces/1"</span>
+  }
+}
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="create-memory">
+        <div class="endpoint-head"><h3>Create Memory</h3><p>Creates a new memory with content.</p></div>
+        <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">memory[title]</span></td><td><span class="param-type">string</span></td><td>Memory title (max 255 characters)</td></tr>
+            <tr><td><span class="param-name">memory[content]</span></td><td><span class="param-type">string</span></td><td>Memory body (Markdown)</td></tr>
+            <tr><td><span class="param-name">memory[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier</td></tr>
+            <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Array of tag strings</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">request</span></div>
+          <div class="code-body">
+{
+  <span class="ck">"memory"</span>: {
+    <span class="ck">"title"</span>: <span class="cs">"API Documentation"</span>,
+    <span class="ck">"content"</span>: <span class="cs">"# Overview\n\nThis document describes..."</span>,
+    <span class="ck">"tags"</span>: [<span class="cs">"docs"</span>, <span class="cs">"api"</span>]
+  }
+}
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s201">201 Created</span></div>
+          <div class="code-body"><span class="cc">Returns the created memory object with content.</span></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="update-memory">
+        <div class="endpoint-head"><h3>Update Memory</h3><p>Updates an existing memory.</p></div>
+        <div class="route-bar patch"><span class="route-method">PATCH</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">memory[title]</span></td><td><span class="param-type">string</span></td><td>Memory title</td></tr>
+            <tr><td><span class="param-name">memory[content]</span></td><td><span class="param-type">string</span></td><td>Memory body</td></tr>
+            <tr><td><span class="param-name">memory[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier</td></tr>
+            <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Array of tags</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><span class="cc">Returns the updated memory object with content.</span></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="delete-memory">
+        <div class="endpoint-head"><h3>Delete Memory</h3><p>Deletes a memory and all its versions.</p></div>
+        <div class="route-bar delete"><span class="route-method">DELETE</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s204">204 No Content</span></div>
+          <div class="code-body"><span class="cc">Empty response body.</span></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- VERSIONS -->
+      <div class="api-section" id="versions-section">
+        <div class="resource-header"><div class="resource-label">resource</div><h2>Memory Versions</h2></div>
+      </div>
+
+      <div class="endpoint" id="create-version">
+        <div class="endpoint-head"><h3>Create Version</h3><p>Creates a new version of a memory. Fields default to the parent version values if not provided.</p></div>
+        <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/versions.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">memory[title]</span></td><td><span class="param-type">string</span></td><td>Version title (defaults to parent)</td></tr>
+            <tr><td><span class="param-name">memory[content]</span></td><td><span class="param-type">string</span></td><td>Version body (defaults to parent)</td></tr>
+            <tr><td><span class="param-name">memory[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier (defaults to parent)</td></tr>
+            <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Tags (defaults to parent)</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">request</span></div>
+          <div class="code-body">
+{
+  <span class="ck">"memory"</span>: {
+    <span class="ck">"content"</span>: <span class="cs">"# Updated Content\n\nRevised version..."</span>
+  }
+}
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s201">201 Created</span></div>
+          <div class="code-body">
+{
+  <span class="ck">"id"</span>: <span class="cn">5</span>,
+  <span class="ck">"title"</span>: <span class="cs">"Meeting Notes"</span>,
+  <span class="ck">"version"</span>: <span class="cn">2</span>,
+  <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+  <span class="ck">"tags"</span>: [<span class="cs">"meetings"</span>, <span class="cs">"q1"</span>],
+  <span class="ck">"created_at"</span>: <span class="cs">"2026-02-04T16:00:00Z"</span>,
+  <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T16:00:00Z"</span>,
+  <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.com/workspaces/1/memories/5"</span>,
+  <span class="ck">"content"</span>: {
+    <span class="ck">"body"</span>: <span class="cs">"# Updated Content\n\nRevised version..."</span>
+  },
+  <span class="ck">"workspace"</span>: {
+    <span class="ck">"id"</span>: <span class="cn">1</span>,
+    <span class="ck">"name"</span>: <span class="cs">"Project Alpha"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.com/workspaces/1"</span>
+  }
+}
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- SEARCH -->
+      <div class="api-section" id="search-section">
+        <div class="resource-header"><div class="resource-label">resource</div><h2>Search</h2></div>
+      </div>
+
+      <div class="endpoint" id="search">
+        <div class="endpoint-head"><h3>Search Memories</h3><p>Full-text search across all memories in active workspaces. Supports FTS5 query operators.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/search.json?q=<span class="param">&lt;query&gt;</span></span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">q</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>Search query (3–100 characters)</td></tr>
+            <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td></td><td>Page number (default: 1)</td></tr>
+            <tr><td><span class="param-name">workspace_id</span></td><td><span class="param-type">integer</span></td><td></td><td>Filter results to a specific workspace</td></tr>
+          </tbody>
+        </table>
+        <div class="param-table-label">Query Operators (FTS5)</div>
+        <table class="op-table">
+          <thead><tr><th>Operator</th><th>Example</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>Term</td><td><code>architecture</code></td><td>Matches documents containing the substring</td></tr>
+            <tr><td>AND</td><td><code>architecture AND design</code></td><td>Both terms must appear</td></tr>
+            <tr><td>OR</td><td><code>meeting OR standup</code></td><td>Either term can appear</td></tr>
+            <tr><td>NOT</td><td><code>design NOT draft</code></td><td>First term must appear, second must not</td></tr>
+            <tr><td>Phrase</td><td><code>"project timeline"</code></td><td>Exact phrase match</td></tr>
+            <tr><td>Column</td><td><code>title:architecture</code></td><td>Search only in title field</td></tr>
+            <tr><td>Column</td><td><code>body:implementation</code></td><td>Search only in body field</td></tr>
+            <tr><td>Grouping</td><td><code>(meeting OR standup) AND notes</code></td><td>Parentheses for precedence</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body">
+{
+  <span class="ck">"query"</span>: <span class="cs">"architecture AND design"</span>,
+  <span class="ck">"total_results"</span>: <span class="cn">3</span>,
+  <span class="ck">"results"</span>: [
+    {
+      <span class="ck">"id"</span>: <span class="cn">1</span>,
+      <span class="ck">"title"</span>: <span class="cs">"Design Doc"</span>,
+      <span class="ck">"version"</span>: <span class="cn">1</span>,
+      <span class="ck">"version_label"</span>: <span class="cs">"v1"</span>,
+      <span class="ck">"has_versions"</span>: <span class="cb">false</span>,
+      <span class="ck">"tags"</span>: [<span class="cs">"design"</span>],
+      <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+      <span class="ck">"snippet"</span>: <span class="cs">"Initial architecture overview..."</span>,
+      <span class="ck">"created_at"</span>: <span class="cs">"2026-01-20T09:00:00Z"</span>,
+      <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-03T16:45:00Z"</span>,
+      <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.com/workspaces/1/memories/1"</span>,
+      <span class="ck">"workspace"</span>: {
+        <span class="ck">"id"</span>: <span class="cn">1</span>,
+        <span class="ck">"name"</span>: <span class="cs">"Project Notes"</span>,
+        <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.com/workspaces/1"</span>
+      }
+    }
+  ]
+}
+          </div>
+        </div>
+        <div class="info-box warn">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--patch)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <span>Query must be 3–100 characters. Invalid FTS5 syntax returns a <code>422</code> with <code>VALIDATION_ERROR</code>.</span>
+        </div>
+      </div>
+
+      <div class="doc-footer">
+        <div class="doc-footer-inner">
+          <span class="doc-footer-brand">recuerd<span class="zero">0</span> · 2026</span>
+          <ul class="doc-footer-links">
+            <li><a href="#">guides</a></li>
+            <li><a href="#">cli</a></li>
+            <li><a href="#">github</a></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const sections = document.querySelectorAll('.endpoint, .api-section');
+    const sidebarLinks = document.querySelectorAll('.sidebar-link[data-section]');
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          sidebarLinks.forEach(link => link.classList.toggle('active', link.dataset.section === id));
+        }
+      });
+    }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+    sections.forEach(s => { if (s.id) sectionObserver.observe(s); });
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', () => document.querySelector('.doc-sidebar').classList.remove('open'));
+    });
+  </script>
+</body>
+</html>

@@ -19,7 +19,8 @@ Rails.application.routes.draw do
   # Invitations (public)
   resources :invitations, only: %i[show create], param: :token
 
-  # Legal pages
+  # Marketing / legal pages
+  get "api-docs", to: "pages#api_docs", as: :api_docs
   get "terms", to: "pages#terms", as: :terms
   get "privacy", to: "pages#privacy", as: :privacy
 

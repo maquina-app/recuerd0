@@ -1,0 +1,382 @@
+<% content_for :title, "recuerd0 — The knowledge base your AI tools deserve" %>
+<% content_for :description, "Organize, version, and serve project context to any LLM — from Claude Code to Cursor to ChatGPT. Human-curated memory, instantly accessible via REST API." %>
+<% content_for :canonical_url, "https://recuerd0.ai/" %>
+
+<div data-controller="marketing-nav marketing-reveal">
+
+  <%# ========== NAVIGATION ========== %>
+  <%= render "pages/marketing_nav", show_anchors: true %>
+
+  <%# ========== HERO ========== %>
+  <section class="hero">
+    <div class="m-container">
+      <div class="hero-content">
+        <div class="hero-text">
+          <div class="hero-badge">self-hosted · open source</div>
+          <h1>The knowledge base your <em>AI tools</em> deserve</h1>
+          <p class="hero-sub">
+            Organize, version, and serve project context to any LLM — from Claude Code to Cursor to ChatGPT.
+            Human-curated memory, instantly accessible via REST API.
+          </p>
+          <div class="hero-actions">
+            <%= link_to "Start preserving →", new_registration_path, class: "btn-primary" %>
+            <a href="#api" class="btn-ghost" data-action="click->marketing-nav#smoothScroll">
+              View API
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="memory-layer">
+            <div class="layer-body">
+              <div class="line" style="width:90%"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </div>
+          <div class="memory-layer">
+            <div class="layer-header">
+              <span class="layer-title">auth-patterns.md</span>
+              <span class="layer-version">v2</span>
+            </div>
+            <div class="layer-tags">
+              <span class="layer-tag">auth</span>
+              <span class="layer-tag">rails</span>
+            </div>
+            <div class="layer-body">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </div>
+          <div class="memory-layer">
+            <div class="layer-header">
+              <span class="layer-title">Architecture Guide</span>
+              <span class="layer-version">v3</span>
+            </div>
+            <div class="layer-tags">
+              <span class="layer-tag">architecture</span>
+              <span class="layer-tag">conventions</span>
+              <span class="layer-tag">models</span>
+            </div>
+            <div class="layer-body" style="font-size:0.75rem; color: var(--m-text-dim); font-family: 'Geist Mono', ui-monospace, monospace; line-height: 1.6;">
+              <span style="color: var(--m-text-secondary)"># Models</span><br>
+              Use concerns for shared<br>
+              behaviors: SoftDeletable,<br>
+              Archivable, Pinnable...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# ========== PROBLEM ========== %>
+  <section class="problem" id="problem">
+    <div class="m-container">
+      <div class="reveal">
+        <div class="section-label">the problem</div>
+        <h2 class="m-section-title">Your AI tools forget everything.<br>Every. Single. Session.</h2>
+        <p class="section-desc">
+          Context engineering has become a core developer skill, yet there are no dedicated tools for it.
+          You're using scattered files and copy-paste as makeshift solutions.
+        </p>
+      </div>
+
+      <div class="problem-grid">
+        <div class="problem-card reveal reveal-delay-1">
+          <div class="problem-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 8v4l3 3"/>
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M4 4l4 4M20 4l-4 4" opacity="0.4"/>
+            </svg>
+          </div>
+          <h3>Context Amnesia</h3>
+          <p>You re-explain architecture, conventions, and decisions at the start of every session. Five minutes of context setup, every time.</p>
+        </div>
+
+        <div class="problem-card reveal reveal-delay-2">
+          <div class="problem-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="3" width="8" height="8" rx="2"/>
+              <rect x="14" y="13" width="8" height="8" rx="2"/>
+              <path d="M10 7h4M14 17H10" opacity="0.4"/>
+            </svg>
+          </div>
+          <h3>Context Silos</h3>
+          <p>Knowledge prepared for Claude doesn't transfer to Cursor. You maintain duplicate context across every tool in your stack.</p>
+        </div>
+
+        <div class="problem-card reveal reveal-delay-3">
+          <div class="problem-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 3v18M3 12h18" opacity="0.15"/>
+              <path d="M5 19c2-4 5-8 7-9s5 1 7 5" stroke-dasharray="3 3"/>
+              <circle cx="12" cy="10" r="2"/>
+            </svg>
+          </div>
+          <h3>Context Drift</h3>
+          <p>Your architecture decisions evolve, but stale context leads to AI generating patterns you abandoned months ago. No versioning, no history.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# ========== HOW IT WORKS ========== %>
+  <section class="how-it-works" id="how">
+    <div class="m-container">
+      <div class="reveal" style="text-align:center; max-width:560px; margin:0 auto;">
+        <div class="section-label" style="justify-content:center;">
+          <span style="display:none;">—</span>how it works
+        </div>
+        <h2 class="m-section-title">Curate once, access everywhere</h2>
+        <p class="section-desc" style="margin:0 auto;">
+          Organize project knowledge into workspaces. Write versioned markdown memories.
+          Serve them to any AI tool via API.
+        </p>
+      </div>
+
+      <div class="flow-diagram reveal">
+        <div class="flow-step">
+          <div class="flow-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--m-primary)" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <path d="M3 9h18M9 3v18" opacity="0.4"/>
+            </svg>
+          </div>
+          <h3>Organize</h3>
+          <p>Group memories into workspaces — one per project, domain, or team context.</p>
+        </div>
+
+        <div class="flow-arrow">
+          <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
+            <path d="M0 8h28M22 2l6 6-6 6" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--m-primary)" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="9" y1="13" x2="15" y2="13" opacity="0.4"/>
+              <line x1="9" y1="17" x2="13" y2="17" opacity="0.4"/>
+            </svg>
+          </div>
+          <h3>Write</h3>
+          <p>Create markdown memories with tags, versioning, and full-text search.</p>
+        </div>
+
+        <div class="flow-arrow">
+          <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
+            <path d="M0 8h28M22 2l6 6-6 6" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--m-primary)" stroke-width="1.5">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+              <line x1="4" y1="22" x2="4" y2="15" opacity="0.4"/>
+            </svg>
+          </div>
+          <h3>Serve</h3>
+          <p>REST API with Bearer auth. Point any AI tool at your knowledge, instantly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# ========== API SHOWCASE ========== %>
+  <section class="code-section" id="api">
+    <div class="m-container">
+      <div class="reveal">
+        <div class="section-label">api &amp; cli</div>
+        <h2 class="m-section-title">Built for developer workflows</h2>
+        <p class="section-desc">
+          Full REST API with token authentication and rate limiting.
+          Use the CLI for quick access from your terminal.
+        </p>
+        <div style="margin-top: 1.5rem;">
+          <%= link_to "Full API Reference →", api_docs_path, class: "btn-ghost" %>
+        </div>
+      </div>
+
+      <div class="code-layout">
+        <div class="code-block reveal reveal-delay-1">
+          <div class="code-header">
+            <div class="code-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="code-lang">rest api</span>
+          </div>
+          <div class="code-body">
+<code><span class="comment"># List workspace memories</span>
+<span class="keyword">GET</span> /workspaces/<span class="num">1</span>/memories.json
+
+<span class="comment"># Search across all memories</span>
+<span class="keyword">GET</span> /search.json?q=<span class="string">authentication</span>
+
+<span class="comment"># Create a new memory</span>
+<span class="keyword">POST</span> /workspaces/<span class="num">1</span>/memories.json
+{
+  <span class="string">"memory"</span>: {
+    <span class="string">"title"</span>: <span class="string">"Auth Conventions"</span>,
+    <span class="string">"content"</span>: <span class="string">"# Authentication\n..."</span>,
+    <span class="string">"tags"</span>: [<span class="string">"auth"</span>, <span class="string">"rails"</span>]
+  }
+}
+
+<span class="comment"># Version a memory</span>
+<span class="keyword">POST</span> /workspaces/<span class="num">1</span>/memories/<span class="num">5</span>/versions.json</code>
+          </div>
+        </div>
+
+        <div class="code-block reveal reveal-delay-2">
+          <div class="code-header">
+            <div class="code-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="code-lang">cli tool</span>
+          </div>
+          <div class="code-body">
+<code><span class="comment"># Configure once</span>
+$ <span class="fn">recuerd0</span> <span class="flag">config</span>
+<span class="var">→</span> URL: https://memory.dev:3000
+<span class="var">→</span> Token: ••••••••
+
+<span class="comment"># Search your knowledge</span>
+$ <span class="fn">recuerd0</span> <span class="flag">search</span> <span class="string">"turbo streams"</span>
+<span class="var">Found 3 memories across 2 workspaces</span>
+
+<span class="comment"># Read a memory</span>
+$ <span class="fn">recuerd0</span> <span class="flag">memory</span> <span class="num">1</span> <span class="num">42</span>
+
+<span class="comment"># Export workspace for context</span>
+$ <span class="fn">recuerd0</span> <span class="flag">export</span> <span class="num">1</span> > context.md
+
+<span class="comment"># Pipe directly to your AI tool</span>
+$ <span class="fn">recuerd0</span> <span class="flag">export</span> <span class="num">1</span> | <span class="fn">claude</span> <span class="flag">--pipe</span></code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# ========== FEATURES ========== %>
+  <section class="features" id="features">
+    <div class="m-container">
+      <div class="reveal">
+        <div class="section-label">features</div>
+        <h2 class="m-section-title">Everything you need, nothing you don't</h2>
+        <p class="section-desc">
+          Built with Rails 8, SQLite, and a philosophy of simplicity.
+          No external services, no data leaving your network.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-marker"></div>
+          <div>
+            <h3>Version History</h3>
+            <p>Branch from any version with a flat versioning model. Track how your project knowledge evolves — like Git for context.</p>
+            <div class="feature-meta">
+              <span class="feature-chip">branching</span>
+              <span class="feature-chip">consolidation</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-marker"></div>
+          <div>
+            <h3>Full-Text Search</h3>
+            <p>SQLite FTS5 with trigram tokenizer. Find any memory in milliseconds with minimum 3-character queries across all workspaces.</p>
+            <div class="feature-meta">
+              <span class="feature-chip">fts5</span>
+              <span class="feature-chip">trigram</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-marker"></div>
+          <div>
+            <h3>Tool Agnostic</h3>
+            <p>REST API with Bearer token auth works with Claude Code, Cursor, ChatGPT, or your own scripts. No vendor lock-in, ever.</p>
+            <div class="feature-meta">
+              <span class="feature-chip">rest api</span>
+              <span class="feature-chip">cli</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-marker"></div>
+          <div>
+            <h3>Self-Hosted</h3>
+            <p>Runs on your own infrastructure with SQLite. Zero external dependencies. Your proprietary knowledge never leaves your network.</p>
+            <div class="feature-meta">
+              <span class="feature-chip">sqlite</span>
+              <span class="feature-chip">rails 8</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-marker"></div>
+          <div>
+            <h3>Team Sharing</h3>
+            <p>Account-based multi-tenancy with admin and member roles. Invite up to 5 users with signed tokens. Share canonical project knowledge.</p>
+            <div class="feature-meta">
+              <span class="feature-chip">roles</span>
+              <span class="feature-chip">invitations</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-marker"></div>
+          <div>
+            <h3>Workspace Organization</h3>
+            <p>Pin, archive, soft-delete. Tag memories for filtering. Counter caches for instant workspace health. Designed for 5–20 memories per workspace.</p>
+            <div class="feature-meta">
+              <span class="feature-chip">pins</span>
+              <span class="feature-chip">tags</span>
+              <span class="feature-chip">archive</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# ========== CTA ========== %>
+  <section class="cta-section" id="start">
+    <div class="m-container">
+      <div class="reveal">
+        <div class="section-label" style="justify-content:center;">
+          <span style="display:none;">—</span>get started
+        </div>
+        <h2 class="m-section-title">Stop re-explaining your project.<br>Start <em style="color:var(--m-primary);font-style:normal;font-family:'Jura',system-ui,sans-serif;font-weight:500;">preserving</em>.</h2>
+        <p class="section-desc">
+          One command. Your server, your data, your context — accessible from any AI tool.
+        </p>
+      </div>
+
+      <div class="cta-actions reveal reveal-delay-1">
+        <div class="install-cmd">
+          <span class="prompt">$</span>
+          <span>git clone https://github.com/maquina/recuerd0 && cd recuerd0 && bin/setup</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# ========== FOOTER ========== %>
+  <%= render "pages/marketing_footer" %>
+
+</div>

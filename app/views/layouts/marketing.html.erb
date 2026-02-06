@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "recuerd0 — The knowledge base your AI tools deserve" %></title>
+    <meta name="description" content="<%= content_for(:description) || "Organize, version, and serve project context to any LLM. Human-curated memory, instantly accessible via REST API." %>">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#009D39">
+
+    <meta property="og:title" content="<%= content_for(:og_title) || content_for(:title) || "recuerd0 — The knowledge base your AI tools deserve" %>">
+    <meta property="og:description" content="<%= content_for(:og_description) || content_for(:description) || "Organize, version, and serve project context to any LLM. Human-curated memory, instantly accessible via REST API." %>">
+    <meta property="og:url" content="<%= content_for(:canonical_url) || request.original_url %>">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="recuerd0">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= content_for(:og_title) || content_for(:title) || "recuerd0" %>">
+    <meta name="twitter:description" content="<%= content_for(:og_description) || content_for(:description) || "Organize, version, and serve project context to any LLM." %>">
+
+    <link rel="canonical" href="<%= content_for(:canonical_url) || request.original_url %>">
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <%= stylesheet_link_tag :tailwind, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="marketing">
+    <%= yield %>
+  </body>
+</html>

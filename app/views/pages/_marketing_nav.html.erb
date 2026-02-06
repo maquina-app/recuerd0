@@ -1,0 +1,21 @@
+<nav class="m-nav" data-marketing-nav-target="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <%= link_to root_path do %>
+        <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "nav-logo-img" %>
+      <% end %>
+    </div>
+    <ul class="nav-links">
+      <% if local_assigns[:show_anchors] %>
+        <li><a href="#problem" data-action="click->marketing-nav#smoothScroll">why</a></li>
+        <li><a href="#how" data-action="click->marketing-nav#smoothScroll">how it works</a></li>
+        <li><a href="#api" data-action="click->marketing-nav#smoothScroll">api</a></li>
+        <li><a href="#features" data-action="click->marketing-nav#smoothScroll">features</a></li>
+      <% else %>
+        <li><%= link_to "Home", root_path %></li>
+        <li><%= link_to "API Docs", api_docs_path %></li>
+      <% end %>
+      <li><%= link_to "Get Started", new_registration_path, class: "nav-cta" %></li>
+    </ul>
+  </div>
+</nav>

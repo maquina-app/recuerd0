@@ -1,5 +1,5 @@
 class PagesController < ApplicationController
-  layout "security"
+  layout "marketing"
 
   allow_unauthenticated_access
 
@@ -7,5 +7,8 @@ class PagesController < ApplicationController
   end
 
   def privacy
+  end
+
+  def api_docs
   end
 end

@@ -2,6 +2,7 @@
 @import "tailwindcss";
 
 @import "./fonts.css";
+@import "./marketing.css";
 @import "../builds/tailwind/maquina_components_engine.css";
 
 @plugin "@tailwindcss/typography";

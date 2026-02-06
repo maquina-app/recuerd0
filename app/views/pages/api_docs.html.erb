@@ -1,0 +1,530 @@
+<% content_for :title, "API Reference — recuerd0" %>
+<% content_for :description, "REST API reference for recuerd0. Bearer token auth, workspaces, memories, search." %>
+<% content_for :canonical_url, "https://recuerd0.ai/api-docs" %>
+
+<div data-controller="marketing-sidebar">
+
+  <%# ========== HEADER ========== %>
+  <header class="doc-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <button class="mobile-toggle" data-action="click->marketing-sidebar#toggleSidebar" aria-label="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <%= link_to root_path, class: "header-brand" do %>
+          <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "header-logo-img" %>
+        <% end %>
+        <div class="header-divider"></div>
+        <span class="header-section">API Reference</span>
+      </div>
+      <div class="header-right">
+        <%= link_to "Home", root_path, class: "header-link" %>
+        <%= link_to "Get Started", new_registration_path, class: "header-cta" %>
+      </div>
+    </div>
+  </header>
+
+  <%# ========== SIDEBAR ========== %>
+  <aside class="doc-sidebar" data-marketing-sidebar-target="sidebar">
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Getting Started</div>
+      <a href="#auth" class="sidebar-link active" data-section="auth" data-action="click->marketing-sidebar#closeSidebar">Authentication</a>
+      <a href="#rate-limits" class="sidebar-link" data-section="rate-limits" data-action="click->marketing-sidebar#closeSidebar">Rate Limiting</a>
+      <a href="#errors" class="sidebar-link" data-section="errors" data-action="click->marketing-sidebar#closeSidebar">Error Handling</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Workspaces</div>
+      <a href="#list-workspaces" class="sidebar-link" data-section="list-workspaces" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> List</a>
+      <a href="#get-workspace" class="sidebar-link" data-section="get-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Get</a>
+      <a href="#create-workspace" class="sidebar-link" data-section="create-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create</a>
+      <a href="#update-workspace" class="sidebar-link" data-section="update-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method patch">PATCH</span> Update</a>
+      <a href="#archive-workspace" class="sidebar-link" data-section="archive-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Archive</a>
+      <a href="#unarchive-workspace" class="sidebar-link" data-section="unarchive-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method delete">DEL</span> Unarchive</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Memories</div>
+      <a href="#list-memories" class="sidebar-link" data-section="list-memories" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> List</a>
+      <a href="#get-memory" class="sidebar-link" data-section="get-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Get</a>
+      <a href="#create-memory" class="sidebar-link" data-section="create-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create</a>
+      <a href="#update-memory" class="sidebar-link" data-section="update-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method patch">PATCH</span> Update</a>
+      <a href="#delete-memory" class="sidebar-link" data-section="delete-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method delete">DEL</span> Delete</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Versions</div>
+      <a href="#create-version" class="sidebar-link" data-section="create-version" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create Version</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Search</div>
+      <a href="#search" class="sidebar-link" data-section="search" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Search</a>
+    </div>
+  </aside>
+
+  <%# ========== MAIN CONTENT ========== %>
+  <main class="doc-main">
+    <div class="doc-content">
+
+      <div class="page-header">
+        <h1>API <em>Reference</em></h1>
+        <p>Programmatic access to workspaces and memories. Organize, version, and serve project context to any LLM via REST.</p>
+        <div class="base-url-bar">
+          <span class="label">Base URL</span>
+          <code>https://recuerd0.ai</code>
+        </div>
+      </div>
+
+      <%# ===== AUTHENTICATION ===== %>
+      <div class="api-section" id="auth">
+        <div class="resource-header">
+          <div class="resource-label">getting started</div>
+          <h2>Authentication</h2>
+          <p>All API requests require a Bearer token in the Authorization header.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">request header</span></div>
+          <div class="code-body"><span class="ck">Authorization</span>: Bearer <span class="cs">your_token_here</span></div>
+        </div>
+        <div class="token-grid">
+          <div class="token-card">
+            <span class="token-badge read">read_only</span>
+            <h4>Read-Only Token</h4>
+            <p>Access GET endpoints only. Perfect for AI tools that consume context.</p>
+          </div>
+          <div class="token-card">
+            <span class="token-badge full">full_access</span>
+            <h4>Full Access Token</h4>
+            <p>Access all endpoints — GET, POST, PATCH, DELETE. For management and automation.</p>
+          </div>
+        </div>
+      </div>
+
+      <%# ===== RATE LIMITS ===== %>
+      <div class="api-section" id="rate-limits">
+        <div class="endpoint-head">
+          <h3>Rate Limiting</h3>
+          <p>API requests are limited to <strong>100 requests per minute</strong> per token.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head">
+            <span class="code-label">429 response</span>
+            <span class="code-status s4xx">429 Too Many Requests</span>
+          </div>
+          <div class="code-body"><code>{
+  <span class="ck">"error"</span>: {
+    <span class="ck">"code"</span>: <span class="cs">"RATE_LIMITED"</span>,
+    <span class="ck">"message"</span>: <span class="cs">"Rate limit exceeded. Please try again later."</span>,
+    <span class="ck">"status"</span>: <span class="cn">429</span>
+  }
+}</code></div>
+        </div>
+      </div>
+
+      <%# ===== ERRORS ===== %>
+      <div class="api-section" id="errors">
+        <div class="endpoint-head">
+          <h3>Error Handling</h3>
+          <p>All errors follow a consistent JSON structure with a code, message, and HTTP status.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">error format</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"error"</span>: {
+    <span class="ck">"code"</span>: <span class="cs">"ERROR_CODE"</span>,
+    <span class="ck">"message"</span>: <span class="cs">"Human-readable description"</span>,
+    <span class="ck">"details"</span>: { ... },    <span class="cc">// optional, for validation errors</span>
+    <span class="ck">"status"</span>: <span class="cn">4xx</span>
+  }
+}</code></div>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Status</th><th>Code</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>401</code></td><td><code>UNAUTHORIZED</code></td><td>Invalid or missing access token</td></tr>
+            <tr><td><code>403</code></td><td><code>FORBIDDEN</code></td><td>Insufficient permissions or inactive workspace</td></tr>
+            <tr><td><code>404</code></td><td><code>NOT_FOUND</code></td><td>Resource not found</td></tr>
+            <tr><td><code>422</code></td><td><code>VALIDATION_ERROR</code></td><td>Invalid request data (includes <code>details</code>)</td></tr>
+            <tr><td><code>429</code></td><td><code>RATE_LIMITED</code></td><td>Rate limit exceeded</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== WORKSPACES ===== %>
+      <div class="api-section" id="workspaces-section">
+        <div class="resource-header">
+          <div class="resource-label">resource</div>
+          <h2>Workspaces</h2>
+        </div>
+      </div>
+
+      <div class="endpoint" id="list-workspaces">
+        <div class="endpoint-head">
+          <h3>List Workspaces</h3>
+          <p>Returns all active workspaces for the current account.</p>
+        </div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces.json</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody><tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr></tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code>[
+  {
+    <span class="ck">"id"</span>: <span class="cn">1</span>,
+    <span class="ck">"name"</span>: <span class="cs">"Project Alpha"</span>,
+    <span class="ck">"description"</span>: <span class="cs">"Main project workspace"</span>,
+    <span class="ck">"memories_count"</span>: <span class="cn">42</span>,
+    <span class="ck">"archived"</span>: <span class="cb">false</span>,
+    <span class="ck">"created_at"</span>: <span class="cs">"2026-01-15T10:30:00Z"</span>,
+    <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T14:22:00Z"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>
+  }
+]</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Pagination headers <code>X-Page</code>, <code>X-Per-Page</code>, <code>X-Total</code>, <code>X-Total-Pages</code>, and <code>Link</code> are included in all list responses.</span>
+        </div>
+      </div>
+
+      <div class="endpoint" id="get-workspace">
+        <div class="endpoint-head"><h3>Get Workspace</h3><p>Returns a single workspace with memory count and pinned status.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:id</span>.json</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"id"</span>: <span class="cn">1</span>,
+  <span class="ck">"name"</span>: <span class="cs">"Project Alpha"</span>,
+  <span class="ck">"description"</span>: <span class="cs">"Main project workspace"</span>,
+  <span class="ck">"memories_count"</span>: <span class="cn">42</span>,
+  <span class="ck">"archived"</span>: <span class="cb">false</span>,
+  <span class="ck">"created_at"</span>: <span class="cs">"2026-01-15T10:30:00Z"</span>,
+  <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T14:22:00Z"</span>,
+  <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>
+}</code></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="create-workspace">
+        <div class="endpoint-head"><h3>Create Workspace</h3><p>Creates a new workspace.</p></div>
+        <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">workspace[name]</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>Workspace name (max 100 characters)</td></tr>
+            <tr><td><span class="param-name">workspace[description]</span></td><td><span class="param-type">string</span></td><td></td><td>Workspace description</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">request</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"workspace"</span>: {
+    <span class="ck">"name"</span>: <span class="cs">"New Project"</span>,
+    <span class="ck">"description"</span>: <span class="cs">"A new workspace for the team"</span>
+  }
+}</code></div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s201">201 Created</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"id"</span>: <span class="cn">2</span>,
+  <span class="ck">"name"</span>: <span class="cs">"New Project"</span>,
+  <span class="ck">"description"</span>: <span class="cs">"A new workspace for the team"</span>,
+  <span class="ck">"memories_count"</span>: <span class="cn">0</span>,
+  <span class="ck">"archived"</span>: <span class="cb">false</span>,
+  <span class="ck">"created_at"</span>: <span class="cs">"2026-02-04T15:00:00Z"</span>,
+  <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T15:00:00Z"</span>,
+  <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/2"</span>
+}</code></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="update-workspace">
+        <div class="endpoint-head"><h3>Update Workspace</h3><p>Updates an existing workspace.</p></div>
+        <div class="route-bar patch"><span class="route-method">PATCH</span><span class="route-path">/workspaces/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">workspace[name]</span></td><td><span class="param-type">string</span></td><td>Workspace name</td></tr>
+            <tr><td><span class="param-name">workspace[description]</span></td><td><span class="param-type">string</span></td><td>Workspace description</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><span class="cc">Returns the updated workspace object.</span></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="archive-workspace">
+        <div class="endpoint-head"><h3>Archive Workspace</h3><p>Archives a workspace. Archived workspaces become read-only.</p></div>
+        <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:id</span>/archive.json</span><span class="route-badge">full_access</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><span class="cc">Returns the workspace with</span> <span class="ck">"archived"</span>: <span class="cb">true</span></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="unarchive-workspace">
+        <div class="endpoint-head"><h3>Unarchive Workspace</h3><p>Restores an archived workspace.</p></div>
+        <div class="route-bar delete"><span class="route-method">DELETE</span><span class="route-path">/workspaces/<span class="param">:id</span>/archive.json</span><span class="route-badge">full_access</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><span class="cc">Returns the workspace with</span> <span class="ck">"archived"</span>: <span class="cb">false</span></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== MEMORIES ===== %>
+      <div class="api-section" id="memories-section">
+        <div class="resource-header"><div class="resource-label">resource</div><h2>Memories</h2></div>
+      </div>
+
+      <div class="endpoint" id="list-memories">
+        <div class="endpoint-head"><h3>List Memories</h3><p>Returns all memories (latest versions only) for a workspace.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories.json</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody><tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr></tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code>[
+  {
+    <span class="ck">"id"</span>: <span class="cn">1</span>,
+    <span class="ck">"title"</span>: <span class="cs">"Meeting Notes"</span>,
+    <span class="ck">"version"</span>: <span class="cn">1</span>,
+    <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+    <span class="ck">"tags"</span>: [<span class="cs">"meetings"</span>, <span class="cs">"q1"</span>],
+    <span class="ck">"created_at"</span>: <span class="cs">"2026-01-20T09:00:00Z"</span>,
+    <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-03T16:45:00Z"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1/memories/1"</span>
+  }
+]</code></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="get-memory">
+        <div class="endpoint-head"><h3>Get Memory</h3><p>Returns a memory with its content.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"id"</span>: <span class="cn">1</span>,
+  <span class="ck">"title"</span>: <span class="cs">"Meeting Notes"</span>,
+  <span class="ck">"version"</span>: <span class="cn">1</span>,
+  <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+  <span class="ck">"tags"</span>: [<span class="cs">"meetings"</span>, <span class="cs">"q1"</span>],
+  <span class="ck">"created_at"</span>: <span class="cs">"2026-01-20T09:00:00Z"</span>,
+  <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-03T16:45:00Z"</span>,
+  <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1/memories/1"</span>,
+  <span class="ck">"content"</span>: {
+    <span class="ck">"body"</span>: <span class="cs">"# Meeting Notes\n\nDiscussed Q1 goals..."</span>
+  },
+  <span class="ck">"workspace"</span>: {
+    <span class="ck">"id"</span>: <span class="cn">1</span>,
+    <span class="ck">"name"</span>: <span class="cs">"Project Alpha"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>
+  }
+}</code></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="create-memory">
+        <div class="endpoint-head"><h3>Create Memory</h3><p>Creates a new memory with content.</p></div>
+        <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">memory[title]</span></td><td><span class="param-type">string</span></td><td>Memory title (max 255 characters)</td></tr>
+            <tr><td><span class="param-name">memory[content]</span></td><td><span class="param-type">string</span></td><td>Memory body (Markdown)</td></tr>
+            <tr><td><span class="param-name">memory[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier</td></tr>
+            <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Array of tag strings</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">request</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"memory"</span>: {
+    <span class="ck">"title"</span>: <span class="cs">"API Documentation"</span>,
+    <span class="ck">"content"</span>: <span class="cs">"# Overview\n\nThis document describes..."</span>,
+    <span class="ck">"tags"</span>: [<span class="cs">"docs"</span>, <span class="cs">"api"</span>]
+  }
+}</code></div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s201">201 Created</span></div>
+          <div class="code-body"><span class="cc">Returns the created memory object with content.</span></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="update-memory">
+        <div class="endpoint-head"><h3>Update Memory</h3><p>Updates an existing memory.</p></div>
+        <div class="route-bar patch"><span class="route-method">PATCH</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">memory[title]</span></td><td><span class="param-type">string</span></td><td>Memory title</td></tr>
+            <tr><td><span class="param-name">memory[content]</span></td><td><span class="param-type">string</span></td><td>Memory body</td></tr>
+            <tr><td><span class="param-name">memory[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier</td></tr>
+            <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Array of tags</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><span class="cc">Returns the updated memory object with content.</span></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="delete-memory">
+        <div class="endpoint-head"><h3>Delete Memory</h3><p>Deletes a memory and all its versions.</p></div>
+        <div class="route-bar delete"><span class="route-method">DELETE</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s204">204 No Content</span></div>
+          <div class="code-body"><span class="cc">Empty response body.</span></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== VERSIONS ===== %>
+      <div class="api-section" id="versions-section">
+        <div class="resource-header"><div class="resource-label">resource</div><h2>Memory Versions</h2></div>
+      </div>
+
+      <div class="endpoint" id="create-version">
+        <div class="endpoint-head"><h3>Create Version</h3><p>Creates a new version of a memory. Fields default to the parent version values if not provided.</p></div>
+        <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/versions.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">memory[title]</span></td><td><span class="param-type">string</span></td><td>Version title (defaults to parent)</td></tr>
+            <tr><td><span class="param-name">memory[content]</span></td><td><span class="param-type">string</span></td><td>Version body (defaults to parent)</td></tr>
+            <tr><td><span class="param-name">memory[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier (defaults to parent)</td></tr>
+            <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Tags (defaults to parent)</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">request</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"memory"</span>: {
+    <span class="ck">"content"</span>: <span class="cs">"# Updated Content\n\nRevised version..."</span>
+  }
+}</code></div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s201">201 Created</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"id"</span>: <span class="cn">5</span>,
+  <span class="ck">"title"</span>: <span class="cs">"Meeting Notes"</span>,
+  <span class="ck">"version"</span>: <span class="cn">2</span>,
+  <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+  <span class="ck">"tags"</span>: [<span class="cs">"meetings"</span>, <span class="cs">"q1"</span>],
+  <span class="ck">"created_at"</span>: <span class="cs">"2026-02-04T16:00:00Z"</span>,
+  <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T16:00:00Z"</span>,
+  <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1/memories/5"</span>,
+  <span class="ck">"content"</span>: {
+    <span class="ck">"body"</span>: <span class="cs">"# Updated Content\n\nRevised version..."</span>
+  },
+  <span class="ck">"workspace"</span>: {
+    <span class="ck">"id"</span>: <span class="cn">1</span>,
+    <span class="ck">"name"</span>: <span class="cs">"Project Alpha"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>
+  }
+}</code></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== SEARCH ===== %>
+      <div class="api-section" id="search-section">
+        <div class="resource-header"><div class="resource-label">resource</div><h2>Search</h2></div>
+      </div>
+
+      <div class="endpoint" id="search">
+        <div class="endpoint-head"><h3>Search Memories</h3><p>Full-text search across all memories in active workspaces. Supports FTS5 query operators.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/search.json?q=<span class="param">&lt;query&gt;</span></span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">q</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>Search query (3–100 characters)</td></tr>
+            <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td></td><td>Page number (default: 1)</td></tr>
+            <tr><td><span class="param-name">workspace_id</span></td><td><span class="param-type">integer</span></td><td></td><td>Filter results to a specific workspace</td></tr>
+          </tbody>
+        </table>
+        <div class="param-table-label">Query Operators (FTS5)</div>
+        <table class="op-table">
+          <thead><tr><th>Operator</th><th>Example</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>Term</td><td><code>architecture</code></td><td>Matches documents containing the substring</td></tr>
+            <tr><td>AND</td><td><code>architecture AND design</code></td><td>Both terms must appear</td></tr>
+            <tr><td>OR</td><td><code>meeting OR standup</code></td><td>Either term can appear</td></tr>
+            <tr><td>NOT</td><td><code>design NOT draft</code></td><td>First term must appear, second must not</td></tr>
+            <tr><td>Phrase</td><td><code>"project timeline"</code></td><td>Exact phrase match</td></tr>
+            <tr><td>Column</td><td><code>title:architecture</code></td><td>Search only in title field</td></tr>
+            <tr><td>Column</td><td><code>body:implementation</code></td><td>Search only in body field</td></tr>
+            <tr><td>Grouping</td><td><code>(meeting OR standup) AND notes</code></td><td>Parentheses for precedence</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"query"</span>: <span class="cs">"architecture AND design"</span>,
+  <span class="ck">"total_results"</span>: <span class="cn">3</span>,
+  <span class="ck">"results"</span>: [
+    {
+      <span class="ck">"id"</span>: <span class="cn">1</span>,
+      <span class="ck">"title"</span>: <span class="cs">"Design Doc"</span>,
+      <span class="ck">"version"</span>: <span class="cn">1</span>,
+      <span class="ck">"version_label"</span>: <span class="cs">"v1"</span>,
+      <span class="ck">"has_versions"</span>: <span class="cb">false</span>,
+      <span class="ck">"tags"</span>: [<span class="cs">"design"</span>],
+      <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+      <span class="ck">"snippet"</span>: <span class="cs">"Initial architecture overview..."</span>,
+      <span class="ck">"created_at"</span>: <span class="cs">"2026-01-20T09:00:00Z"</span>,
+      <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-03T16:45:00Z"</span>,
+      <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1/memories/1"</span>,
+      <span class="ck">"workspace"</span>: {
+        <span class="ck">"id"</span>: <span class="cn">1</span>,
+        <span class="ck">"name"</span>: <span class="cs">"Project Notes"</span>,
+        <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>
+      }
+    }
+  ]
+}</code></div>
+        </div>
+        <div class="info-box warn">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-patch)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <span>Query must be 3–100 characters. Invalid FTS5 syntax returns a <code>422</code> with <code>VALIDATION_ERROR</code>.</span>
+        </div>
+      </div>
+
+      <%# ===== FOOTER ===== %>
+      <div class="doc-footer">
+        <div class="doc-footer-inner">
+          <div class="doc-footer-brand">
+            <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "doc-footer-logo-img" %>
+            <span class="doc-footer-year">· 2026</span>
+          </div>
+          <ul class="doc-footer-links">
+            <li><%= link_to "home", root_path %></li>
+            <li><%= link_to "terms", terms_path %></li>
+            <li><%= link_to "privacy", privacy_path %></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</div>

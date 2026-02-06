@@ -1,86 +1,83 @@
 <% content_for :title, "Privacy Policy — recuerd0" %>
-<% content_for :wide_layout, "true" %>
+<% content_for :description, "Privacy policy for recuerd0." %>
+<% content_for :canonical_url, "https://recuerd0.ai/privacy" %>
 
-<div>
-  <%= render "components/card" do %>
-    <%= render "components/card/header", css_classes: "text-center" do %>
-      <h1 class="text-xl font-display font-medium">Privacy Policy</h1>
-      <p class="text-sm text-muted-foreground mt-1">Last updated: February 2026</p>
-    <% end %>
+<div data-controller="marketing-nav">
 
-    <%= render "components/card/content" do %>
-      <div class="prose prose-sm max-w-none dark:prose-invert">
-        <h2>1. Information we collect</h2>
-        <p>We collect only what we need to provide the service:</p>
-        <ul>
-          <li><strong>Account information:</strong> your email address and a hashed password (we never store your password in plain text)</li>
-          <li><strong>Content you create:</strong> workspaces, memories, versions, and tags</li>
-          <li><strong>Session data:</strong> IP address and user agent for active sessions, used only for security purposes</li>
-        </ul>
+  <%= render "pages/marketing_nav" %>
 
-        <h2>2. How we use your information</h2>
-        <p>Your data is used exclusively to provide and improve the recuerd0 service:</p>
-        <ul>
-          <li>To authenticate you and maintain your session</li>
-          <li>To store and serve your workspaces and memories</li>
-          <li>To send you service-related emails (password resets, account notifications)</li>
-          <li>To detect and prevent unauthorized access</li>
-        </ul>
+  <div class="legal-content">
+    <h1>Privacy Policy</h1>
+    <p class="legal-date">Last updated: February 2026</p>
 
-        <h2>3. What we don't do</h2>
-        <p>We believe your data is yours. We commit to these principles:</p>
-        <ul>
-          <li>We <strong>do not sell</strong> your data to anyone, for any reason</li>
-          <li>We <strong>do not share</strong> your data with third parties for marketing, advertising, or analytics</li>
-          <li>We <strong>do not use</strong> your data to train AI or machine learning models — not ours, not anyone else's</li>
-          <li>We <strong>do not track</strong> you across websites or services</li>
-          <li>We <strong>do not display</strong> ads or engage in behavioral targeting</li>
-          <li>We <strong>do not use</strong> third-party analytics, tracking pixels, or social media integrations</li>
-        </ul>
+    <div class="legal-body">
+      <h2>1. Information we collect</h2>
+      <p>We collect only what we need to provide the service:</p>
+      <ul>
+        <li><strong>Account information:</strong> your email address and a hashed password (we never store your password in plain text)</li>
+        <li><strong>Content you create:</strong> workspaces, memories, versions, and tags</li>
+        <li><strong>Session data:</strong> IP address and user agent for active sessions, used only for security purposes</li>
+      </ul>
 
-        <h2>4. Data storage and security</h2>
-        <p>Your data is stored in encrypted databases. Passwords are hashed using bcrypt. Sessions use signed, HTTP-only cookies. We use HTTPS for all connections.</p>
-        <p>API access tokens are stored as SHA-256 hashes — the raw token is shown only once at creation.</p>
+      <h2>2. How we use your information</h2>
+      <p>Your data is used exclusively to provide and improve the recuerd0 service:</p>
+      <ul>
+        <li>To authenticate you and maintain your session</li>
+        <li>To store and serve your workspaces and memories</li>
+        <li>To send you service-related emails (password resets, account notifications)</li>
+        <li>To detect and prevent unauthorized access</li>
+      </ul>
 
-        <h2>5. Your rights</h2>
-        <p>You have full control over your data:</p>
-        <ul>
-          <li><strong>Access:</strong> view all your data through the application or API</li>
-          <li><strong>Export:</strong> download your data via the API at any time</li>
-          <li><strong>Correction:</strong> edit or update any of your content</li>
-          <li><strong>Deletion:</strong> delete individual memories, workspaces, or your entire account</li>
-          <li><strong>Portability:</strong> your data is stored in standard formats and accessible via API</li>
-        </ul>
+      <h2>3. What we don't do</h2>
+      <p>We believe your data is yours. We commit to these principles:</p>
+      <ul>
+        <li>We <strong>do not sell</strong> your data to anyone, for any reason</li>
+        <li>We <strong>do not share</strong> your data with third parties for marketing, advertising, or analytics</li>
+        <li>We <strong>do not use</strong> your data to train AI or machine learning models — not ours, not anyone else's</li>
+        <li>We <strong>do not track</strong> you across websites or services</li>
+        <li>We <strong>do not display</strong> ads or engage in behavioral targeting</li>
+        <li>We <strong>do not use</strong> third-party analytics, tracking pixels, or social media integrations</li>
+      </ul>
 
-        <h2>6. Data retention</h2>
-        <ul>
-          <li><strong>Active data:</strong> retained as long as your account exists</li>
-          <li><strong>Deleted workspaces:</strong> soft-deleted with a 30-day recovery window, then permanently removed</li>
-          <li><strong>Deleted memories:</strong> permanently removed immediately</li>
-          <li><strong>Account deletion:</strong> all data permanently removed upon account closure</li>
-          <li><strong>Session data:</strong> automatically cleaned up when sessions expire</li>
-        </ul>
+      <h2>4. Data storage and security</h2>
+      <p>Your data is stored in encrypted databases. Passwords are hashed using bcrypt. Sessions use signed, HTTP-only cookies. We use HTTPS for all connections.</p>
+      <p>API access tokens are stored as SHA-256 hashes — the raw token is shown only once at creation.</p>
 
-        <h2>7. Cookies</h2>
-        <p>We use only essential cookies:</p>
-        <ul>
-          <li><strong>Session cookie:</strong> a signed, HTTP-only cookie to maintain your login session</li>
-          <li><strong>UI preference cookie:</strong> remembers your sidebar state (open/closed)</li>
-        </ul>
-        <p>We do not use third-party cookies, tracking cookies, or advertising cookies.</p>
+      <h2>5. Your rights</h2>
+      <p>You have full control over your data:</p>
+      <ul>
+        <li><strong>Access:</strong> view all your data through the application or API</li>
+        <li><strong>Export:</strong> download your data via the API at any time</li>
+        <li><strong>Correction:</strong> edit or update any of your content</li>
+        <li><strong>Deletion:</strong> delete individual memories, workspaces, or your entire account</li>
+        <li><strong>Portability:</strong> your data is stored in standard formats and accessible via API</li>
+      </ul>
 
-        <h2>8. Changes to this policy</h2>
-        <p>If we change this policy, we will notify you by email or through the application before the changes take effect. The "last updated" date at the top reflects the most recent revision.</p>
+      <h2>6. Data retention</h2>
+      <ul>
+        <li><strong>Active data:</strong> retained as long as your account exists</li>
+        <li><strong>Deleted workspaces:</strong> soft-deleted with a 30-day recovery window, then permanently removed</li>
+        <li><strong>Deleted memories:</strong> permanently removed immediately</li>
+        <li><strong>Account deletion:</strong> all data permanently removed upon account closure</li>
+        <li><strong>Session data:</strong> automatically cleaned up when sessions expire</li>
+      </ul>
 
-        <h2>9. Contact</h2>
-        <p>Questions about your privacy? Reach out at <a href="mailto:privacy@recuerd0.ai">privacy@recuerd0.ai</a>.</p>
-      </div>
-    <% end %>
-  <% end %>
+      <h2>7. Cookies</h2>
+      <p>We use only essential cookies:</p>
+      <ul>
+        <li><strong>Session cookie:</strong> a signed, HTTP-only cookie to maintain your login session</li>
+        <li><strong>UI preference cookie:</strong> remembers your sidebar state (open/closed)</li>
+      </ul>
+      <p>We do not use third-party cookies, tracking cookies, or advertising cookies.</p>
 
-  <div class="text-center mt-6">
-    <%= link_to new_session_path, class: "inline-flex items-center gap-1 text-sm underline underline-offset-4 hover:text-primary" do %>
-      <%= icon_for :arrow_left, class: "w-4 h-4" %> Back to sign in
-    <% end %>
+      <h2>8. Changes to this policy</h2>
+      <p>If we change this policy, we will notify you by email or through the application before the changes take effect. The "last updated" date at the top reflects the most recent revision.</p>
+
+      <h2>9. Contact</h2>
+      <p>Questions about your privacy? Reach out at <a href="mailto:privacy@recuerd0.ai">privacy@recuerd0.ai</a>.</p>
+    </div>
   </div>
+
+  <%= render "pages/marketing_footer" %>
+
 </div>
