@@ -1,0 +1,14 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "3b2c792af7e259cf1b59cdfa9359e3c6d6081cb1e6ec93bacc5b3d416efe3ae8",
+      "note": "File path is sanitized via sanitize_filename which strips all non-alphanumeric characters"
+    },
+    {
+      "fingerprint": "aa61e5e0e53b1ff38c4b56932a99708a4b7c30701609ebdb7f70f43f76abb61e",
+      "note": "File path is sanitized via sanitize_filename which strips all non-alphanumeric characters"
+    }
+  ],
+  "updated": "2026-02-06",
+  "brakeman_version": "8.0.2"
+}

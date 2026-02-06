@@ -10,60 +10,60 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_06_023928) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_06_195405) do
   create_table "access_tokens", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.string "token_digest", null: false
-    t.string "description"
-    t.string "permission", default: "read_only", null: false
-    t.datetime "last_used_at"
     t.datetime "created_at", null: false
+    t.string "description"
+    t.datetime "last_used_at"
+    t.string "permission", default: "read_only", null: false
+    t.string "token_digest", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["token_digest"], name: "index_access_tokens_on_token_digest", unique: true
     t.index ["user_id"], name: "index_access_tokens_on_user_id"
   end
 
   create_table "account_exports", force: :cascade do |t|
     t.integer "account_id", null: false
-    t.integer "user_id", null: false
-    t.string "status", default: "pending", null: false
     t.datetime "completed_at"
-    t.datetime "expires_at"
-    t.text "error_message"
     t.datetime "created_at", null: false
+    t.text "error_message"
+    t.datetime "expires_at"
+    t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["account_id"], name: "index_account_exports_on_account_id"
     t.index ["expires_at"], name: "index_account_exports_on_expires_at"
     t.index ["user_id"], name: "index_account_exports_on_user_id"
   end
 
   create_table "accounts", force: :cascade do |t|
-    t.string "name", null: false
     t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.datetime "deleted_at"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
     t.index ["deleted_at"], name: "index_accounts_on_deleted_at"
   end
 
   create_table "active_storage_attachments", force: :cascade do |t|
-    t.string "name", null: false
-    t.string "record_type", null: false
-    t.bigint "record_id", null: false
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
 
   create_table "active_storage_blobs", force: :cascade do |t|
-    t.string "key", null: false
-    t.string "filename", null: false
-    t.string "content_type"
-    t.text "metadata"
-    t.string "service_name", null: false
     t.bigint "byte_size", null: false
     t.string "checksum"
+    t.string "content_type"
     t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
@@ -74,16 +74,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_023928) do
   end
 
   create_table "analytics_api_requests", force: :cascade do |t|
-    t.integer "account_id"
-    t.integer "user_id"
     t.integer "access_token_id"
+    t.integer "account_id"
+    t.datetime "created_at", null: false
+    t.integer "duration_ms"
     t.string "http_method", null: false
+    t.string "ip_address"
     t.string "path", null: false
     t.integer "status", null: false
-    t.integer "duration_ms"
-    t.string "ip_address"
     t.string "user_agent"
-    t.datetime "created_at", null: false
+    t.integer "user_id"
     t.index ["access_token_id", "created_at"], name: "idx_analytics_api_requests_token_time"
     t.index ["account_id", "created_at"], name: "idx_analytics_api_requests_account_time"
     t.index ["path", "http_method", "created_at"], name: "idx_analytics_api_requests_endpoint_time"
@@ -91,14 +91,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_023928) do
 
   create_table "analytics_events", force: :cascade do |t|
     t.integer "account_id"
-    t.integer "user_id"
-    t.string "event_type", null: false
-    t.string "resource_type"
-    t.integer "resource_id"
-    t.json "metadata"
-    t.string "ip_address"
-    t.string "user_agent"
     t.datetime "created_at", null: false
+    t.string "event_type", null: false
+    t.string "ip_address"
+    t.json "metadata"
+    t.integer "resource_id"
+    t.string "resource_type"
+    t.string "user_agent"
+    t.integer "user_id"
     t.index ["account_id", "event_type", "created_at"], name: "idx_analytics_events_account_type_time"
     t.index ["resource_type", "resource_id"], name: "idx_analytics_events_resource"
     t.index ["user_id", "created_at"], name: "idx_analytics_events_user_time"
@@ -106,21 +106,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_023928) do
 
   create_table "contents", force: :cascade do |t|
     t.text "body"
-    t.integer "memory_id", null: false
     t.datetime "created_at", null: false
+    t.integer "memory_id", null: false
     t.datetime "updated_at", null: false
     t.index ["memory_id"], name: "index_contents_on_memory_id"
   end
 
   create_table "memories", force: :cascade do |t|
-    t.string "title"
-    t.text "tags"
-    t.string "source"
-    t.integer "workspace_id", null: false
     t.datetime "created_at", null: false
+    t.integer "parent_memory_id"
+    t.string "source"
+    t.text "tags"
+    t.string "title"
     t.datetime "updated_at", null: false
     t.integer "version", default: 1, null: false
-    t.integer "parent_memory_id"
+    t.integer "workspace_id", null: false
     t.index ["parent_memory_id", "version"], name: "index_memories_on_parent_memory_id_and_version"
     t.index ["parent_memory_id"], name: "index_memories_on_parent_memory_id"
     t.index ["version"], name: "index_memories_on_version"
@@ -128,12 +128,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_023928) do
   end
 
   create_table "pins", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.string "pinnable_type", null: false
-    t.integer "pinnable_id", null: false
-    t.integer "position", default: 0, null: false
     t.datetime "created_at", null: false
+    t.integer "pinnable_id", null: false
+    t.string "pinnable_type", null: false
+    t.integer "position", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["pinnable_type", "pinnable_id"], name: "index_pins_on_pinnable"
     t.index ["user_id", "pinnable_type", "pinnable_id"], name: "index_pins_uniqueness", unique: true
     t.index ["user_id", "pinnable_type", "position"], name: "index_pins_user_type_position"
@@ -141,36 +141,36 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_023928) do
   end
 
   create_table "sessions", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.string "ip_address"
-    t.string "user_agent"
     t.datetime "created_at", null: false
+    t.string "ip_address"
     t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.integer "user_id", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "email_address", null: false
-    t.string "password_digest", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.integer "account_id", null: false
-    t.string "role", default: "member", null: false
+    t.datetime "created_at", null: false
+    t.string "email_address", null: false
     t.string "name"
+    t.string "password_digest", null: false
+    t.string "role", default: "member", null: false
+    t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_users_on_account_id"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["role"], name: "index_users_on_role"
   end
 
   create_table "workspaces", force: :cascade do |t|
-    t.string "name"
-    t.text "description"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.datetime "deleted_at"
-    t.datetime "archived_at"
-    t.integer "memories_count", default: 0, null: false
     t.integer "account_id", null: false
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.text "description"
+    t.integer "memories_count", default: 0, null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_workspaces_on_account_id"
     t.index ["archived_at"], name: "index_workspaces_on_archived_at"
     t.index ["deleted_at"], name: "index_workspaces_on_deleted_at"
