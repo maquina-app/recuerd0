@@ -11,6 +11,14 @@ class SearchController < ApplicationController
 
     @pagy, @memories = pagy(memories, items: 10)
 
+    if @query.present?
+      track_event("search.query", metadata: {
+        query: @query,
+        results_count: @pagy.count,
+        workspace_id: params[:workspace_id]
+      })
+    end
+
     respond_to do |format|
       format.html
       format.json { set_pagination_headers(@pagy) }

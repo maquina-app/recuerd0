@@ -39,6 +39,7 @@ class Workspaces::DeletedController < ApplicationController
 
   # DELETE /workspaces/deleted/:id
   def destroy
+    track_event("workspace.permanent_destroy", resource: @workspace)
     if @workspace.destroy!
       redirect_to deleted_workspaces_path, notice: t(".destroyed")
     else

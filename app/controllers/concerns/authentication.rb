@@ -38,7 +38,10 @@ module Authentication
     return false unless token
 
     access_token = AccessToken.find_by_token(token)
-    return false unless access_token
+    unless access_token
+      track_event("auth.token_failed")
+      return false
+    end
 
     access_token.touch_last_used!
     Current.session = nil

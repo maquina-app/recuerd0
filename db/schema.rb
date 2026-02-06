@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_05_174302) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_06_005859) do
   create_table "access_tokens", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "token_digest", null: false
@@ -29,6 +29,37 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_05_174302) do
     t.datetime "updated_at", null: false
     t.datetime "deleted_at"
     t.index ["deleted_at"], name: "index_accounts_on_deleted_at"
+  end
+
+  create_table "analytics_api_requests", force: :cascade do |t|
+    t.integer "account_id"
+    t.integer "user_id"
+    t.integer "access_token_id"
+    t.string "http_method", null: false
+    t.string "path", null: false
+    t.integer "status", null: false
+    t.integer "duration_ms"
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "created_at", null: false
+    t.index ["access_token_id", "created_at"], name: "idx_analytics_api_requests_token_time"
+    t.index ["account_id", "created_at"], name: "idx_analytics_api_requests_account_time"
+    t.index ["path", "http_method", "created_at"], name: "idx_analytics_api_requests_endpoint_time"
+  end
+
+  create_table "analytics_events", force: :cascade do |t|
+    t.integer "account_id"
+    t.integer "user_id"
+    t.string "event_type", null: false
+    t.string "resource_type"
+    t.integer "resource_id"
+    t.json "metadata"
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "created_at", null: false
+    t.index ["account_id", "event_type", "created_at"], name: "idx_analytics_events_account_type_time"
+    t.index ["resource_type", "resource_id"], name: "idx_analytics_events_resource"
+    t.index ["user_id", "created_at"], name: "idx_analytics_events_user_time"
   end
 
   create_table "contents", force: :cascade do |t|

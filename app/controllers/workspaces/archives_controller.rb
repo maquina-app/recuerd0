@@ -41,6 +41,7 @@ class Workspaces::ArchivesController < ApplicationController
   # POST /workspaces/:id/archive
   def create
     if @workspace.archive
+      track_event("workspace.archive", resource: @workspace)
       respond_to do |format|
         format.html { redirect_to workspaces_path, notice: t(".created") }
         format.json { render "workspaces/show", status: :ok }
@@ -56,6 +57,7 @@ class Workspaces::ArchivesController < ApplicationController
   # DELETE /workspaces/:id/archive
   def destroy
     if @workspace.unarchive
+      track_event("workspace.unarchive", resource: @workspace)
       respond_to do |format|
         format.html { redirect_to workspaces_path, notice: t(".destroyed") }
         format.json { render "workspaces/show", status: :ok }

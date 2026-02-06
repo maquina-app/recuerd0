@@ -6,6 +6,7 @@ class PinsController < ApplicationController
 
   def create
     @pin = @pinnable.pin!(Current.user)
+    track_event("pin.create", resource: @pinnable)
 
     redirect_back(fallback_location: workspaces_path, notice: t(".created"))
   rescue ActiveRecord::RecordInvalid => e
@@ -14,6 +15,7 @@ class PinsController < ApplicationController
 
   def destroy
     @unpinned = @pinnable.unpin!(Current.user)
+    track_event("pin.destroy", resource: @pinnable)
 
     redirect_back(fallback_location: workspaces_path, notice: t(".destroyed"))
   end

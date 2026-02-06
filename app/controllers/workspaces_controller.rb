@@ -39,6 +39,8 @@ class WorkspacesController < ApplicationController
           return
         end
 
+        track_event("workspace.view", resource: @workspace)
+
         scope = @workspace.memories
           .latest_versions
           .includes(:content, :child_versions, :pins)
@@ -71,6 +73,7 @@ class WorkspacesController < ApplicationController
     @workspace = Current.account.workspaces.build(workspace_params)
 
     if @workspace.save
+      track_event("workspace.create", resource: @workspace)
       respond_to do |format|
         format.html { redirect_to @workspace, notice: t(".created") }
         format.json { render :show, status: :created }
@@ -88,6 +91,7 @@ class WorkspacesController < ApplicationController
 
   def update
     if @workspace.update(workspace_params)
+      track_event("workspace.update", resource: @workspace)
       respond_to do |format|
         format.html { redirect_to @workspace, notice: t(".updated") }
         format.json { render :show }
@@ -104,6 +108,7 @@ class WorkspacesController < ApplicationController
   end
 
   def destroy
+    track_event("workspace.destroy", resource: @workspace)
     @workspace.soft_delete
 
     respond_to do |format|

@@ -8,6 +8,7 @@
 6. [x] Full-Text Search — FTS5 trigram search across all memory content `M`
 7. [x] Account Multi-Tenancy — Introduce Account model as container for users and workspaces `M`
 8. [x] User Registration — Self-service signup that creates account and user atomically `S`
+9. [x] Analytics Tracking — Track user activity events and API requests asynchronously to dedicated tables `M`
 
 > **Notes**
 > - Items ordered by technical dependencies and product architecture

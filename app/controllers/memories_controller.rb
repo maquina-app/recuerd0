@@ -22,6 +22,7 @@ class MemoriesController < ApplicationController
 
   def show
     @all_versions = @memory.all_versions
+    track_event("memory.view", resource: @memory)
 
     respond_to do |format|
       format.html do
@@ -42,6 +43,7 @@ class MemoriesController < ApplicationController
     @memory = Memory.create_with_content(@workspace, memory_params)
 
     if @memory.persisted?
+      track_event("memory.create", resource: @memory)
       respond_to do |format|
         format.html { redirect_to [@workspace, @memory], notice: t(".created") }
         format.json { render :show, status: :created }
@@ -66,6 +68,7 @@ class MemoriesController < ApplicationController
     @memory.update_with_content(memory_params)
 
     if @memory.errors.empty?
+      track_event("memory.update", resource: @memory)
       respond_to do |format|
         format.html { redirect_to [@workspace, @memory], notice: t(".updated") }
         format.json { render :show }
@@ -82,6 +85,7 @@ class MemoriesController < ApplicationController
   end
 
   def destroy
+    track_event("memory.destroy", resource: @memory)
     @memory.destroy
 
     respond_to do |format|

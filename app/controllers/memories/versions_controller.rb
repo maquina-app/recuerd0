@@ -30,6 +30,7 @@ class Memories::VersionsController < ApplicationController
     @new_version = @memory.create_version!(version_params)
 
     if @new_version.persisted?
+      track_event("version.create", resource: @new_version)
       respond_to do |format|
         format.html { redirect_to [@workspace, @new_version], notice: t(".created") }
         format.json do
