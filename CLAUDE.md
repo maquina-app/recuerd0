@@ -12,7 +12,7 @@ See `docs/technical-guide.md` for a comprehensive technical reference, `docs/ui-
 
 - When implementing a feature from a plan, ALWAYS re-read the full plan before starting and check off each requirement as you complete it. Before declaring done, verify every planned item was addressed.
 - After implementing UI components or interactive elements, verify they work end-to-end (open, close, state changes) by running relevant tests before considering the task complete.
-- After making changes, always run `bin/rails test` to verify nothing is broken. After multi-file changes, run the full suite rather than spot-checking individual files. For front-end changes, verify both server-side rendering and client-side behavior. Run `bundle exec standardrb` to check for lint violations in changed files.
+- After making changes, always run `bin/ci` to verify nothing is broken — it runs setup, linting, security audits, tests, and seed validation in one step. For quick iteration on a single file, `bin/rails test path/to/test.rb` is fine, but always finish with `bin/ci` before declaring done. Run `bin/rubocop` to check for lint violations in changed files.
 
 ## Commands
 
@@ -21,14 +21,20 @@ See `docs/technical-guide.md` for a comprehensive technical reference, `docs/ui-
 bin/dev                          # Start server, Tailwind watcher, and Solid Queue worker (foreman, port 3820)
 bin/rails server                 # Rails server only
 
-# Testing
+# CI (preferred — runs all checks)
+bin/ci                           # Setup, lint, security audits, tests, seeds (config/ci.rb)
+
+# Testing (for quick iteration)
 bin/rails test                   # Run all tests
 bin/rails test test/models/memory_test.rb           # Run single test file
 bin/rails test test/models/memory_test.rb:42        # Run single test at line
 
-# Linting
-bundle exec standardrb           # Check Ruby style
-bundle exec standardrb --fix     # Auto-fix Ruby style issues
+# Linting & Security
+bin/rubocop                      # Check Ruby style (Standard Ruby via .rubocop.yml)
+bin/rubocop -a                   # Auto-fix Ruby style issues
+bin/brakeman                     # Static security analysis
+bin/bundler-audit                # Gem vulnerability audit
+bin/importmap audit              # JS dependency audit
 
 # Database
 bin/rails db:migrate             # Run migrations

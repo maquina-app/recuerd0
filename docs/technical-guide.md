@@ -8,7 +8,8 @@ Recuerd0 is a personal knowledge management application built with Rails 8, Hotw
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Rails 8.0.2 |
+| Language | Ruby 4.0.0 |
+| Framework | Rails 8.1.2 |
 | Database | SQLite 3 (via sqlite3 gem 2.1+) |
 | Frontend | Hotwire (Turbo + Stimulus), Tailwind CSS 4 |
 | Asset pipeline | Propshaft + Importmaps (no Node.js) |
@@ -20,7 +21,8 @@ Recuerd0 is a personal knowledge management application built with Rails 8, Hotw
 | Caching | Solid Cache (SQLite-backed) |
 | WebSockets | Solid Cable (SQLite-backed) |
 | Deployment | Kamal 2.x + Docker + Thruster |
-| Linting | Standard Ruby (RuboCop wrapper) |
+| Linting | Standard Ruby (via RuboCop, `bin/rubocop`) |
+| CI | `bin/ci` — Rails 8.1 `ActiveSupport::ContinuousIntegration` |
 | Testing | Minitest + Capybara + Selenium |
 
 ## Domain Model
@@ -451,7 +453,7 @@ SQLite with 8 tables: `accounts`, `users`, `sessions`, `access_tokens`, `workspa
 
 ### Docker
 
-Multi-stage Dockerfile: Ruby 3.4.2-slim base, jemalloc for memory optimization, Thruster for HTTP acceleration. Runs as non-root `rails` user (UID 1000). Entrypoint auto-runs `db:prepare` on server start.
+Multi-stage Dockerfile: Ruby 4.0.0-slim base, jemalloc for memory optimization, Thruster for HTTP acceleration. Runs as non-root `rails` user (UID 1000). Entrypoint auto-runs `db:prepare` on server start.
 
 ### Kamal
 
@@ -463,15 +465,25 @@ Configured in `config/deploy.yml`. Single-server deployment with:
 
 ### CI/CD
 
-GitHub Actions (`.github/workflows/ci.yml`):
-1. **scan_ruby** - Brakeman security scan
-2. **scan_js** - `importmap audit` for JS dependencies
-3. **lint** - Standard Ruby (RuboCop) with GitHub annotations
-4. **test** - Full test suite + system tests with Chrome
+**Local CI** (`bin/ci`): Rails 8.1 introduces `ActiveSupport::ContinuousIntegration`, configured in `config/ci.rb`. Run `bin/ci` to execute the full pipeline locally:
+
+1. **Setup** — `bin/setup --skip-server` (bundle, db:prepare)
+2. **Style: Ruby** — `bin/rubocop` (Standard Ruby via `.rubocop.yml`)
+3. **Security: Gem audit** — `bin/bundler-audit`
+4. **Security: Importmap audit** — `bin/importmap audit`
+5. **Security: Brakeman** — `bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error`
+6. **Tests: Rails** — `bin/rails test`
+7. **Tests: Seeds** — `env RAILS_ENV=test bin/rails db:seed:replant`
+
+**GitHub Actions** (`.github/workflows/ci.yml`):
+1. **scan_ruby** — Brakeman security scan
+2. **scan_js** — `importmap audit` for JS dependencies
+3. **lint** — `bin/rubocop` with GitHub annotations
+4. **test** — Full test suite + system tests with Chrome
 
 ## Testing
 
-Minitest with fixtures. Test files in `test/models/` and `test/controllers/`. System tests use Capybara + Selenium with Chrome.
+Minitest with fixtures. Test files in `test/models/` and `test/controllers/`. System tests use Capybara + Selenium with Chrome. Always run `bin/ci` for full validation (linting + security + tests + seeds).
 
 Fixtures cover: users, sessions, workspaces (including archived/deleted variants), memories, contents.
 
