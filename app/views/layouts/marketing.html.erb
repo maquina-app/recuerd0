@@ -11,9 +11,11 @@
     <meta property="og:url" content="<%= content_for(:canonical_url) || request.original_url %>">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="recuerd0">
+    <meta property="og:image" content="<%= content_for(:og_image) || image_url("recuerdo-og.png") %>">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<%= content_for(:og_title) || content_for(:title) || "recuerd0" %>">
     <meta name="twitter:description" content="<%= content_for(:og_description) || content_for(:description) || "Organize, version, and serve project context to any LLM." %>">
+    <meta name="twitter:image" content="<%= content_for(:og_image) || image_url("recuerdo-og.png") %>">
 
     <link rel="canonical" href="<%= content_for(:canonical_url) || request.original_url %>">
 

@@ -7,6 +7,17 @@
     <meta name="theme-color" content="#009D39">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta property="og:title" content="<%= content_for(:title) || "Sign in — recuerd0" %>">
+    <meta property="og:description" content="<%= content_for(:description) || "Preserve, version, and organize your AI conversations." %>">
+    <meta property="og:url" content="<%= request.original_url %>">
+    <meta property="og:image" content="<%= image_url("recuerdo-og.png") %>">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="recuerd0">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= content_for(:title) || "recuerd0" %>">
+    <meta name="twitter:description" content="<%= content_for(:description) || "Preserve, version, and organize your AI conversations." %>">
+    <meta name="twitter:image" content="<%= image_url("recuerdo-og.png") %>">
+    <link rel="canonical" href="<%= request.original_url %>">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
