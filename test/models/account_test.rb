@@ -111,6 +111,83 @@ class AccountTest < ActiveSupport::TestCase
     assert_nil Account.find_by_invitation_token(token)
   end
 
+  # seed_start_here_workspace tests
+  test "seed_start_here_workspace creates Start Here workspace" do
+    account = accounts(:one)
+    user = users(:one)
+
+    account.seed_start_here_workspace(user)
+
+    workspace = account.workspaces.find_by(name: "Start Here")
+    assert workspace.present?, "Expected 'Start Here' workspace to exist"
+  end
+
+  test "seed_start_here_workspace creates five memories" do
+    account = accounts(:one)
+    user = users(:one)
+
+    account.seed_start_here_workspace(user)
+
+    workspace = account.workspaces.find_by(name: "Start Here")
+    assert_equal 5, workspace.memories.count
+    assert_equal ["Why recuerd0", "Quick Manual", "The API", "The CLI", "The Agent"],
+      workspace.memories.order(:id).pluck(:title)
+  end
+
+  test "seed_start_here_workspace memories have content" do
+    account = accounts(:one)
+    user = users(:one)
+
+    account.seed_start_here_workspace(user)
+
+    workspace = account.workspaces.find_by(name: "Start Here")
+    workspace.memories.each do |memory|
+      assert memory.content.present?, "Expected memory '#{memory.title}' to have content"
+      assert memory.content.body.present?, "Expected memory '#{memory.title}' to have non-empty body"
+    end
+  end
+
+  test "seed_start_here_workspace sets source to system" do
+    account = accounts(:one)
+    user = users(:one)
+
+    account.seed_start_here_workspace(user)
+
+    workspace = account.workspaces.find_by(name: "Start Here")
+    workspace.memories.each do |memory|
+      assert_equal "system", memory.source, "Expected memory '#{memory.title}' source to be 'system'"
+    end
+  end
+
+  test "seed_start_here_workspace pins Why recuerd0 for user" do
+    account = accounts(:one)
+    user = users(:one)
+
+    account.seed_start_here_workspace(user)
+
+    workspace = account.workspaces.find_by(name: "Start Here")
+    why_memory = workspace.memories.find_by(title: "Why recuerd0")
+    assert why_memory.pinned_by?(user), "Expected 'Why recuerd0' to be pinned for user"
+
+    # Other memories should not be pinned
+    workspace.memories.where.not(title: "Why recuerd0").each do |memory|
+      assert_not memory.pinned_by?(user), "Expected '#{memory.title}' NOT to be pinned"
+    end
+  end
+
+  test "create_with_user seeds Start Here workspace" do
+    user = Account.create_with_user(
+      email_address: "starhere@test.com",
+      password: "password123",
+      password_confirmation: "password123"
+    )
+
+    assert user.persisted?
+    workspace = user.account.workspaces.find_by(name: "Start Here")
+    assert workspace.present?, "Expected 'Start Here' workspace on new account"
+    assert_equal 5, workspace.memories.count
+  end
+
   # Anonymize users test
   test "anonymize_users! replaces all user emails and destroys sessions" do
     account = accounts(:one)

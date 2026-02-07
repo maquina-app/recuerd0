@@ -1,10 +1,15 @@
 # Create or find demo account and user
 account = Account.find_or_create_by!(name: "demo")
-User.find_or_create_by!(email_address: "demo@recuerd0.com") do |u|
+user = User.find_or_create_by!(email_address: "demo@recuerd0.com") do |u|
   u.account = account
   u.password = "password123"
   u.password_confirmation = "password123"
   u.role = "admin"
+end
+
+# Seed "Start Here" workspace (idempotent)
+unless account.workspaces.exists?(name: "Start Here")
+  account.seed_start_here_workspace(user)
 end
 
 # Create or find workspaces

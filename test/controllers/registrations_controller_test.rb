@@ -42,6 +42,33 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, user.sessions.count
   end
 
+  test "POST create seeds Start Here workspace with memories" do
+    post registration_url, params: {
+      user: {
+        email_address: "seedtest@example.com",
+        password: "password123",
+        password_confirmation: "password123"
+      }
+    }
+
+    user = User.find_by(email_address: "seedtest@example.com")
+    workspace = user.account.workspaces.find_by(name: "Start Here")
+    assert workspace.present?, "Expected 'Start Here' workspace after registration"
+    assert_equal 5, workspace.memories.count
+  end
+
+  test "POST create with invalid params does not create workspace" do
+    assert_no_difference "Workspace.count" do
+      post registration_url, params: {
+        user: {
+          email_address: "seedtest@example.com",
+          password: "password123",
+          password_confirmation: "different"
+        }
+      }
+    end
+  end
+
   test "POST create with invalid params re-renders form with errors" do
     assert_no_difference ["Account.count", "User.count"] do
       post registration_url, params: {

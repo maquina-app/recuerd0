@@ -11,17 +11,20 @@ class Account < ApplicationRecord
 
   # Creates an account with a user in a single transaction.
   # The first user is always an admin.
+  # Seeds a "Start Here" workspace with onboarding memories.
   # Returns the user on success, or an invalid user object on failure.
   def self.create_with_user(email_address:, password:, password_confirmation:)
     transaction do
       account_name = email_address.to_s.split("@").first.presence || "Account"
       account = create!(name: account_name)
-      account.users.create!(
+      user = account.users.create!(
         email_address: email_address,
         password: password,
         password_confirmation: password_confirmation,
         role: "admin"
       )
+      account.seed_start_here_workspace(user)
+      user
     end
   rescue ActiveRecord::RecordInvalid => e
     e.record
@@ -63,6 +66,20 @@ class Account < ApplicationRecord
         user.anonymize_email! unless user.anonymized?
         user.sessions.delete_all
       end
+    end
+  end
+
+  def seed_start_here_workspace(user)
+    workspace = workspaces.create!(name: "Start Here")
+
+    StartHereContent::MEMORIES.each do |memory_data|
+      memory = Memory.create_with_content(workspace,
+        title: memory_data[:title],
+        content: memory_data[:content],
+        tags: memory_data[:tags],
+        source: "system")
+
+      memory.pin!(user) if memory_data[:pinned]
     end
   end
 end
