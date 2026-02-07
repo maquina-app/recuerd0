@@ -1,0 +1,21 @@
+<header class="doc-header">
+  <div class="header-inner">
+    <div class="header-left">
+      <button class="mobile-toggle" data-action="click->marketing-sidebar#toggleSidebar" aria-label="Toggle sidebar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <%= link_to root_path, class: "header-brand" do %>
+        <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "header-logo-img" %>
+      <% end %>
+      <div class="header-divider"></div>
+      <span class="header-section"><%= section %></span>
+    </div>
+    <div class="header-right">
+      <%= link_to "Home", root_path, class: "header-link" %>
+      <%= link_to "API Docs", api_docs_path, class: "header-link" %>
+      <%= link_to "CLI", cli_path, class: "header-link" %>
+      <%= link_to "Agents", agents_path, class: "header-link" %>
+      <%= link_to "Get Started", new_registration_path, class: "header-cta" %>
+    </div>
+  </div>
+</header>
