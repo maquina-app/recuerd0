@@ -1,0 +1,392 @@
+<% content_for :title, "AI Agents — recuerd0" %>
+<% content_for :description, "Persistent, searchable memory for AI coding agents. Query context on demand instead of cramming everything into project files." %>
+<% content_for :canonical_url, "https://recuerd0.ai/agents" %>
+
+<div data-controller="marketing-sidebar">
+
+  <%# ========== HEADER ========== %>
+  <header class="doc-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <button class="mobile-toggle" data-action="click->marketing-sidebar#toggleSidebar" aria-label="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <%= link_to root_path, class: "header-brand" do %>
+          <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "header-logo-img" %>
+        <% end %>
+        <div class="header-divider"></div>
+        <span class="header-section">AI Agents</span>
+      </div>
+      <div class="header-right">
+        <%= link_to "Home", root_path, class: "header-link" %>
+        <%= link_to "API Docs", api_docs_path, class: "header-link" %>
+        <%= link_to "CLI", cli_path, class: "header-link" %>
+        <%= link_to "Get Started", new_registration_path, class: "header-cta" %>
+      </div>
+    </div>
+  </header>
+
+  <%# ========== SIDEBAR ========== %>
+  <aside class="doc-sidebar" data-marketing-sidebar-target="sidebar">
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Overview</div>
+      <a href="#why" class="sidebar-link active" data-section="why" data-action="click->marketing-sidebar#closeSidebar">Why recuerd0</a>
+      <a href="#three-layers" class="sidebar-link" data-section="three-layers" data-action="click->marketing-sidebar#closeSidebar">The Three Layers</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Setup</div>
+      <a href="#project-setup" class="sidebar-link" data-section="project-setup" data-action="click->marketing-sidebar#closeSidebar">Project Setup</a>
+      <a href="#claude-md" class="sidebar-link" data-section="claude-md" data-action="click->marketing-sidebar#closeSidebar">CLAUDE.md</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Workflows</div>
+      <a href="#pre-session" class="sidebar-link" data-section="pre-session" data-action="click->marketing-sidebar#closeSidebar">Pre-session Context</a>
+      <a href="#capture" class="sidebar-link" data-section="capture" data-action="click->marketing-sidebar#closeSidebar">Capture Knowledge</a>
+      <a href="#transcripts" class="sidebar-link" data-section="transcripts" data-action="click->marketing-sidebar#closeSidebar">Archive Transcripts</a>
+      <a href="#decisions" class="sidebar-link" data-section="decisions" data-action="click->marketing-sidebar#closeSidebar">Track Decisions</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Integrations</div>
+      <a href="#claude-code-plugin" class="sidebar-link" data-section="claude-code-plugin" data-action="click->marketing-sidebar#closeSidebar">Claude Code Plugin</a>
+      <a href="#other-tools" class="sidebar-link" data-section="other-tools" data-action="click->marketing-sidebar#closeSidebar">Other Tools</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Search</div>
+      <a href="#search-operators" class="sidebar-link" data-section="search-operators" data-action="click->marketing-sidebar#closeSidebar">Operators</a>
+      <a href="#tag-conventions" class="sidebar-link" data-section="tag-conventions" data-action="click->marketing-sidebar#closeSidebar">Tag Conventions</a>
+    </div>
+  </aside>
+
+  <%# ========== MAIN CONTENT ========== %>
+  <main class="doc-main">
+    <div class="doc-content">
+
+      <div class="page-header">
+        <h1>AI <em>Agents</em></h1>
+        <p>Persistent, searchable memory for coding agents. Query context on demand instead of cramming everything into project files.</p>
+      </div>
+
+      <%# ===== WHY RECUERD0 ===== %>
+      <div class="api-section" id="why">
+        <div class="resource-header">
+          <div class="resource-label">overview</div>
+          <h2>Why recuerd0</h2>
+          <p>MEMORY.md works — until it doesn't. 200 lines, project-scoped, no search, no versioning, no cross-project queries. Every session starts with the same truncated cheat sheet.</p>
+        </div>
+
+        <p style="font-size: 0.92rem; color: var(--m-text-secondary); line-height: 1.8; margin-bottom: 1.5rem;">
+          recuerd0 is the deep, searchable, cross-project knowledge layer. Your agent queries exactly the context it needs — architecture decisions, debugging patterns, API conventions — without bloating the system prompt. Keep MEMORY.md for quick hits. Use recuerd0 for everything else.
+        </p>
+      </div>
+
+      <%# ===== THREE LAYERS ===== %>
+      <div class="api-section" id="three-layers">
+        <div class="endpoint-head">
+          <h3>The Three Layers</h3>
+          <p>Each layer serves a different scope and lifespan.</p>
+        </div>
+
+        <table class="op-table">
+          <thead><tr><th>Layer</th><th>Role</th><th>Scope</th><th>Lifespan</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>MEMORY.md</code></td>
+              <td>Quick cheat sheet — linting rules, project conventions, gotchas</td>
+              <td>Single project</td>
+              <td>Overwritten often</td>
+            </tr>
+            <tr>
+              <td><code>recuerd0</code></td>
+              <td>Deep knowledge — architecture, patterns, decisions, debugging guides</td>
+              <td>Cross-project</td>
+              <td>Versioned, persistent</td>
+            </tr>
+            <tr>
+              <td><code>Transcripts</code></td>
+              <td>Session logs — raw conversation history for later mining</td>
+              <td>Single session</td>
+              <td>Archive, rarely queried</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== PROJECT SETUP ===== %>
+      <div class="api-section" id="project-setup">
+        <div class="resource-header">
+          <div class="resource-label">setup</div>
+          <h2>Project Setup</h2>
+          <p>Create a workspace and configure your project in two steps.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>1. Create a workspace</h3>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code>recuerd0 workspace create --name "my-rails-app" --description "Rails 8 monolith"</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>2. Add project-local config</h3>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">.recuerd0.yaml</span></div>
+          <div class="code-body"><code><span class="ck">account</span>: <span class="cs">personal</span>
+<span class="ck">workspace</span>: <span class="cn">1</span></code></div>
+        </div>
+
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>With <code>.recuerd0.yaml</code> in your project root, you can omit <code>--workspace</code> from all commands when working in that directory.</span>
+        </div>
+      </div>
+
+      <%# ===== CLAUDE.MD ===== %>
+      <div class="api-section" id="claude-md">
+        <div class="endpoint-head">
+          <h3>CLAUDE.md hint</h3>
+          <p>Add a one-liner to your CLAUDE.md so the agent knows recuerd0 is available.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">CLAUDE.md</span></div>
+          <div class="code-body"><code><span class="cc">## Project Knowledge</span>
+
+Deep project knowledge (architecture, patterns, decisions) is stored in recuerd0.
+Search with: recuerd0 search "&lt;query&gt;"
+Read with: recuerd0 memory show --workspace 1 &lt;id&gt;</code></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== WORKFLOWS ===== %>
+      <div class="api-section" id="workflows-section">
+        <div class="resource-header">
+          <div class="resource-label">workflows</div>
+          <h2>Workflows</h2>
+          <p>Common patterns for using recuerd0 with AI coding agents.</p>
+        </div>
+      </div>
+
+      <%# — Pre-session — %>
+      <div class="endpoint" id="pre-session">
+        <div class="endpoint-head">
+          <h3>Pre-session context loading</h3>
+          <p>Search for relevant context before starting a task. The agent can do this automatically if your CLAUDE.md tells it to.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code><span class="cc"># Find architecture decisions relevant to the task</span>
+recuerd0 search "authentication AND rails"
+
+<span class="cc"># Load a specific memory</span>
+recuerd0 memory show --workspace 1 12</code></div>
+        </div>
+      </div>
+
+      <%# — Capture — %>
+      <div class="endpoint" id="capture">
+        <div class="endpoint-head">
+          <h3>Capture knowledge during a session</h3>
+          <p>When you solve something worth remembering, save it immediately.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code>recuerd0 memory create --workspace 1 \
+  --title "FTS5 error handling in Rails" \
+  --tags "sqlite,fts5,errors,rails" \
+  --content "# FTS5 Error Handling
+
+SQLite FTS5 syntax errors surface as ActiveRecord::StatementInvalid,
+NOT as SQLite3::SQLException directly.
+
+Rescue ActiveRecord::StatementInvalid and check
+e.message.include?(\"fts5\") to distinguish from other SQL errors."</code></div>
+        </div>
+      </div>
+
+      <%# — Transcripts — %>
+      <div class="endpoint" id="transcripts">
+        <div class="endpoint-head">
+          <h3>Archive transcripts</h3>
+          <p>Pipe session transcripts into recuerd0 for later mining.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code>cat transcript-2026-02-05.md | recuerd0 memory create \
+  --workspace 2 \
+  --title "Session: Auth refactor" \
+  --tags "transcript,auth,2026-02" \
+  --content -</code></div>
+        </div>
+      </div>
+
+      <%# — Decisions — %>
+      <div class="endpoint" id="decisions">
+        <div class="endpoint-head">
+          <h3>Track evolving decisions</h3>
+          <p>Use versions to record how decisions change over time. The original stays intact; each update creates a new version.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code><span class="cc"># Initial decision</span>
+recuerd0 memory create --workspace 1 \
+  --title "Auth strategy" \
+  --tags "decision,auth" \
+  --content "# Auth Strategy\n\nUsing session-based auth with Rails 8 generator..."
+
+<span class="cc"># Months later — decision evolved</span>
+recuerd0 version create --workspace 1 42 \
+  --content "# Auth Strategy v2\n\nAdded Bearer token API auth alongside sessions..."</code></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== INTEGRATIONS ===== %>
+      <div class="api-section" id="integrations-section">
+        <div class="resource-header">
+          <div class="resource-label">integrations</div>
+          <h2>Integrations</h2>
+        </div>
+      </div>
+
+      <%# — Claude Code Plugin — %>
+      <div class="endpoint" id="claude-code-plugin">
+        <div class="endpoint-head">
+          <h3>Claude Code Plugin</h3>
+          <p>Native integration for Claude Code. Save sessions, search, and manage workspaces without leaving the agent.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">install</span></div>
+          <div class="code-body"><code>/plugin marketplace add maquina-app/rails-claude-code
+/plugin install recuerd0@maquina</code></div>
+        </div>
+        <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin-bottom: 1.5rem;">
+          The plugin provides slash commands for saving session knowledge, searching memories, and workspace management — all within the Claude Code conversation flow.
+        </p>
+      </div>
+
+      <%# — Other Tools — %>
+      <div class="endpoint" id="other-tools">
+        <div class="endpoint-head">
+          <h3>Other AI tools</h3>
+          <p>Any tool that supports HTTP or shell commands can use recuerd0.</p>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Tool</th><th>Integration</th></tr></thead>
+          <tbody>
+            <tr><td>Cursor</td><td>CLI commands in terminal, or REST API via custom tools</td></tr>
+            <tr><td>ChatGPT</td><td>REST API via custom GPT actions</td></tr>
+            <tr><td>Windsurf</td><td>CLI commands in terminal</td></tr>
+            <tr><td>Custom scripts</td><td>REST API directly — <code>curl</code>, Python, Ruby, anything</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== SEARCH ===== %>
+      <div class="api-section" id="search-section">
+        <div class="resource-header">
+          <div class="resource-label">search</div>
+          <h2>Search Tips</h2>
+          <p>recuerd0 uses SQLite FTS5 with a trigram tokenizer. Minimum 3-character queries.</p>
+        </div>
+      </div>
+
+      <div class="endpoint" id="search-operators">
+        <div class="endpoint-head">
+          <h3>Operators</h3>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Operator</th><th>Example</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>Term</td><td><code>architecture</code></td><td>Matches documents containing the substring</td></tr>
+            <tr><td>AND</td><td><code>auth AND rails</code></td><td>Both terms must appear</td></tr>
+            <tr><td>OR</td><td><code>meeting OR standup</code></td><td>Either term can appear</td></tr>
+            <tr><td>NOT</td><td><code>design NOT draft</code></td><td>Exclude matching documents</td></tr>
+            <tr><td>Phrase</td><td><code>"project timeline"</code></td><td>Exact phrase match</td></tr>
+            <tr><td>Column</td><td><code>title:architecture</code></td><td>Search only in title</td></tr>
+            <tr><td>Column</td><td><code>body:implementation</code></td><td>Search only in body</td></tr>
+            <tr><td>Grouping</td><td><code>(auth OR session) AND rails</code></td><td>Parentheses for precedence</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="endpoint" id="tag-conventions">
+        <div class="endpoint-head">
+          <h3>Tag conventions</h3>
+          <p>Suggested tag patterns for organizing memories.</p>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Pattern</th><th>Example</th><th>Use</th></tr></thead>
+          <tbody>
+            <tr><td>Domain</td><td><code>auth</code>, <code>deploy</code>, <code>testing</code></td><td>What area of the codebase</td></tr>
+            <tr><td>Framework</td><td><code>rails</code>, <code>react</code>, <code>go</code></td><td>Technology stack</td></tr>
+            <tr><td>Type</td><td><code>decision</code>, <code>pattern</code>, <code>debug</code></td><td>Nature of the knowledge</td></tr>
+            <tr><td>Source</td><td><code>transcript</code>, <code>manual</code>, <code>claude-code</code></td><td>How it was created</td></tr>
+            <tr><td>Date</td><td><code>2026-02</code>, <code>q1-2026</code></td><td>When it was relevant</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== EXAMPLE SESSION ===== %>
+      <div class="api-section" id="example-session">
+        <div class="resource-header">
+          <div class="resource-label">example</div>
+          <h2>Example Session</h2>
+          <p>A full workflow from context loading to knowledge capture.</p>
+        </div>
+
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">full workflow</span></div>
+          <div class="code-body"><code><span class="cc"># 1. Starting a new task — load relevant context</span>
+recuerd0 search "authentication AND patterns"
+
+<span class="cc"># 2. Read the most relevant memory</span>
+recuerd0 memory show --workspace 1 12
+
+<span class="cc"># 3. Do your work with the AI agent...</span>
+
+<span class="cc"># 4. Save what you learned</span>
+recuerd0 memory create --workspace 1 \
+  --title "Session auth token rotation" \
+  --tags "auth,tokens,security" \
+  --content "# Token Rotation\n\nImplemented automatic token rotation..."
+
+<span class="cc"># 5. Archive the session transcript</span>
+cat transcript.md | recuerd0 memory create \
+  --workspace 2 \
+  --title "Session: token rotation" \
+  --tags "transcript,auth,2026-02" \
+  --content -</code></div>
+        </div>
+      </div>
+
+      <%# ===== FOOTER ===== %>
+      <div class="doc-footer">
+        <div class="doc-footer-inner">
+          <div class="doc-footer-brand">
+            <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "doc-footer-logo-img" %>
+            <span class="doc-footer-year">· 2026</span>
+          </div>
+          <ul class="doc-footer-links">
+            <li><%= link_to "home", root_path %></li>
+            <li><%= link_to "api docs", api_docs_path %></li>
+            <li><%= link_to "cli", cli_path %></li>
+            <li><%= link_to "terms", terms_path %></li>
+            <li><%= link_to "privacy", privacy_path %></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</div>

@@ -136,6 +136,9 @@
           Organize project knowledge into workspaces. Write versioned markdown memories.
           Serve them to any AI tool via API.
         </p>
+        <p class="section-desc" style="margin:1rem auto 0; font-family:'Geist Mono',ui-monospace,monospace; font-size:0.85rem; color:var(--m-text-dim);">
+          MEMORY.md for the cheat sheet. recuerd0 for the deep knowledge. Query exactly the context you need.
+        </p>
       </div>
 
       <div class="flow-diagram reveal">
@@ -199,8 +202,9 @@
           Full REST API with token authentication and rate limiting.
           Use the CLI for quick access from your terminal.
         </p>
-        <div style="margin-top: 1.5rem;">
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
           <%= link_to "Full API Reference →", api_docs_path, class: "btn-ghost" %>
+          <%= link_to "CLI Reference →", cli_path, class: "btn-ghost" %>
         </div>
       </div>
 
@@ -242,23 +246,20 @@
             <span class="code-lang">cli tool</span>
           </div>
           <div class="code-body">
-<code><span class="comment"># Configure once</span>
-$ <span class="fn">recuerd0</span> <span class="flag">config</span>
-<span class="var">→</span> URL: https://memory.dev:3000
-<span class="var">→</span> Token: ••••••••
+<code><span class="comment"># Setup your account</span>
+$ <span class="fn">recuerd0</span> <span class="flag">account add</span> personal <span class="flag">--token</span> <span class="string">YOUR_TOKEN</span>
 
 <span class="comment"># Search your knowledge</span>
 $ <span class="fn">recuerd0</span> <span class="flag">search</span> <span class="string">"turbo streams"</span>
-<span class="var">Found 3 memories across 2 workspaces</span>
+
+<span class="comment"># Create a memory</span>
+$ <span class="fn">recuerd0</span> <span class="flag">memory create</span> <span class="flag">--workspace</span> <span class="num">1</span> <span class="flag">--title</span> <span class="string">"Go patterns"</span> <span class="flag">--content</span> <span class="string">"..."</span>
 
 <span class="comment"># Read a memory</span>
-$ <span class="fn">recuerd0</span> <span class="flag">memory</span> <span class="num">1</span> <span class="num">42</span>
+$ <span class="fn">recuerd0</span> <span class="flag">memory show</span> <span class="flag">--workspace</span> <span class="num">1</span> <span class="num">42</span>
 
-<span class="comment"># Export workspace for context</span>
-$ <span class="fn">recuerd0</span> <span class="flag">export</span> <span class="num">1</span> > context.md
-
-<span class="comment"># Pipe directly to your AI tool</span>
-$ <span class="fn">recuerd0</span> <span class="flag">export</span> <span class="num">1</span> | <span class="fn">claude</span> <span class="flag">--pipe</span></code>
+<span class="comment"># Pipe content from stdin</span>
+$ <span class="fn">cat</span> notes.md | <span class="fn">recuerd0</span> <span class="flag">memory create</span> <span class="flag">--workspace</span> <span class="num">1</span> <span class="flag">--title</span> <span class="string">"Notes"</span> <span class="flag">--content</span> -</code>
           </div>
         </div>
       </div>

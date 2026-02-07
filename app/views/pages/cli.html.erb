@@ -1,0 +1,455 @@
+<% content_for :title, "CLI Reference — recuerd0" %>
+<% content_for :description, "Command-line interface for recuerd0. Manage workspaces, memories, and search from your terminal." %>
+<% content_for :canonical_url, "https://recuerd0.ai/cli" %>
+
+<div data-controller="marketing-sidebar">
+
+  <%# ========== HEADER ========== %>
+  <header class="doc-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <button class="mobile-toggle" data-action="click->marketing-sidebar#toggleSidebar" aria-label="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <%= link_to root_path, class: "header-brand" do %>
+          <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "header-logo-img" %>
+        <% end %>
+        <div class="header-divider"></div>
+        <span class="header-section">CLI Reference</span>
+      </div>
+      <div class="header-right">
+        <%= link_to "Home", root_path, class: "header-link" %>
+        <%= link_to "API Docs", api_docs_path, class: "header-link" %>
+        <%= link_to "Agents", agents_path, class: "header-link" %>
+        <%= link_to "Get Started", new_registration_path, class: "header-cta" %>
+      </div>
+    </div>
+  </header>
+
+  <%# ========== SIDEBAR ========== %>
+  <aside class="doc-sidebar" data-marketing-sidebar-target="sidebar">
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Getting Started</div>
+      <a href="#installation" class="sidebar-link active" data-section="installation" data-action="click->marketing-sidebar#closeSidebar">Installation</a>
+      <a href="#quick-start" class="sidebar-link" data-section="quick-start" data-action="click->marketing-sidebar#closeSidebar">Quick Start</a>
+      <a href="#configuration" class="sidebar-link" data-section="configuration" data-action="click->marketing-sidebar#closeSidebar">Configuration</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Commands</div>
+      <a href="#cmd-account" class="sidebar-link" data-section="cmd-account" data-action="click->marketing-sidebar#closeSidebar">account</a>
+      <a href="#cmd-workspace" class="sidebar-link" data-section="cmd-workspace" data-action="click->marketing-sidebar#closeSidebar">workspace</a>
+      <a href="#cmd-memory" class="sidebar-link" data-section="cmd-memory" data-action="click->marketing-sidebar#closeSidebar">memory</a>
+      <a href="#cmd-version" class="sidebar-link" data-section="cmd-version" data-action="click->marketing-sidebar#closeSidebar">version</a>
+      <a href="#cmd-search" class="sidebar-link" data-section="cmd-search" data-action="click->marketing-sidebar#closeSidebar">search</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Reference</div>
+      <a href="#output-format" class="sidebar-link" data-section="output-format" data-action="click->marketing-sidebar#closeSidebar">Output Format</a>
+      <a href="#global-flags" class="sidebar-link" data-section="global-flags" data-action="click->marketing-sidebar#closeSidebar">Global Flags</a>
+      <a href="#exit-codes" class="sidebar-link" data-section="exit-codes" data-action="click->marketing-sidebar#closeSidebar">Exit Codes</a>
+    </div>
+  </aside>
+
+  <%# ========== MAIN CONTENT ========== %>
+  <main class="doc-main">
+    <div class="doc-content">
+
+      <div class="page-header">
+        <h1>CLI <em>Reference</em></h1>
+        <p>Manage workspaces, memories, and search from your terminal. The CLI wraps the REST API with multi-account support and structured output.</p>
+        <div class="base-url-bar" style="width: 100%; box-sizing: border-box;">
+          <span class="label">Install</span>
+          <code>brew install maquina-app/homebrew-tap/recuerd0-cli</code>
+        </div>
+      </div>
+
+      <%# ===== INSTALLATION ===== %>
+      <div class="api-section" id="installation">
+        <div class="resource-header">
+          <div class="resource-label">getting started</div>
+          <h2>Installation</h2>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Homebrew (macOS / Linux)</h3>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code>brew install maquina-app/homebrew-tap/recuerd0-cli</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Debian / Ubuntu</h3>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code>curl -fsSL https://pkg.recuerd0.ai/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/recuerd0.gpg
+echo "deb [signed-by=/usr/share/keyrings/recuerd0.gpg] https://pkg.recuerd0.ai/apt stable main" \
+  | sudo tee /etc/apt/sources.list.d/recuerd0.list
+sudo apt update && sudo apt install recuerd0-cli</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Fedora / RHEL</h3>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code>sudo dnf config-manager --add-repo https://pkg.recuerd0.ai/rpm/recuerd0.repo
+sudo dnf install recuerd0-cli</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Windows (scoop)</h3>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">powershell</span></div>
+          <div class="code-body"><code>scoop bucket add recuerd0 https://github.com/maquina-app/scoop-bucket
+scoop install recuerd0-cli</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Go install</h3>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code>go install github.com/maquina-app/recuerd0-cli@latest</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>From source</h3>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code>git clone https://github.com/maquina-app/recuerd0-cli.git
+cd recuerd0-cli
+make install</code></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== QUICK START ===== %>
+      <div class="api-section" id="quick-start">
+        <div class="resource-header">
+          <div class="resource-label">getting started</div>
+          <h2>Quick Start</h2>
+          <p>Four commands to go from install to search.</p>
+        </div>
+
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code><span class="cc"># 1. Add your account</span>
+recuerd0 account add personal --api-url https://your-server.com --token YOUR_TOKEN
+
+<span class="cc"># 2. List workspaces</span>
+recuerd0 workspace list
+
+<span class="cc"># 3. Create a memory</span>
+recuerd0 memory create --workspace 1 --title "Auth patterns" --content "# Auth\nUse Bearer tokens..."
+
+<span class="cc"># 4. Search across everything</span>
+recuerd0 search "authentication"</code></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== CONFIGURATION ===== %>
+      <div class="api-section" id="configuration">
+        <div class="resource-header">
+          <div class="resource-label">getting started</div>
+          <h2>Configuration</h2>
+          <p>Multi-account setup with local overrides per project.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Global config</h3>
+          <p>Stored at <code>~/.config/recuerd0/config.yaml</code>. Manages multiple accounts.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">~/.config/recuerd0/config.yaml</span></div>
+          <div class="code-body"><code><span class="ck">default_account</span>: <span class="cs">personal</span>
+<span class="ck">accounts</span>:
+  <span class="ck">personal</span>:
+    <span class="ck">api_url</span>: <span class="cs">https://recuerd0.example.com</span>
+    <span class="ck">token</span>: <span class="cs">r0_live_abc123...</span>
+  <span class="ck">work</span>:
+    <span class="ck">api_url</span>: <span class="cs">https://memory.company.io</span>
+    <span class="ck">token</span>: <span class="cs">r0_live_def456...</span></code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Project-local config</h3>
+          <p>Place a <code>.recuerd0.yaml</code> in any project root to set defaults for that directory.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">.recuerd0.yaml</span></div>
+          <div class="code-body"><code><span class="ck">account</span>: <span class="cs">work</span>
+<span class="ck">workspace</span>: <span class="cn">3</span></code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Resolution order</h3>
+          <p>Higher priority wins.</p>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Priority</th><th>Source</th><th>Example</th></tr></thead>
+          <tbody>
+            <tr><td>1 (highest)</td><td>CLI flags</td><td><code>--account work</code></td></tr>
+            <tr><td>2</td><td>Environment variables</td><td><code>RECUERD0_TOKEN=...</code></td></tr>
+            <tr><td>3</td><td>Project-local config</td><td><code>.recuerd0.yaml</code></td></tr>
+            <tr><td>4 (lowest)</td><td>Global config</td><td><code>~/.config/recuerd0/config.yaml</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== COMMANDS ===== %>
+      <div class="api-section" id="commands-section">
+        <div class="resource-header">
+          <div class="resource-label">commands</div>
+          <h2>Commands</h2>
+        </div>
+      </div>
+
+      <%# — account — %>
+      <div class="endpoint" id="cmd-account">
+        <div class="endpoint-head">
+          <h3>account</h3>
+          <p>Manage server connections.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">usage</span></div>
+          <div class="code-body"><code>recuerd0 account add &lt;name&gt; --api-url &lt;url&gt; --token &lt;token&gt;
+recuerd0 account list
+recuerd0 account remove &lt;name&gt;
+recuerd0 account default &lt;name&gt;</code></div>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Subcommand</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>add</code></td><td>Register a new account with API URL and token</td></tr>
+            <tr><td><code>list</code></td><td>Show all configured accounts</td></tr>
+            <tr><td><code>remove</code></td><td>Delete an account from config</td></tr>
+            <tr><td><code>default</code></td><td>Set the default account</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <%# — workspace — %>
+      <div class="endpoint" id="cmd-workspace">
+        <div class="endpoint-head">
+          <h3>workspace</h3>
+          <p>List and manage workspaces.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">usage</span></div>
+          <div class="code-body"><code>recuerd0 workspace list
+recuerd0 workspace show &lt;id&gt;
+recuerd0 workspace create --name &lt;name&gt; [--description &lt;desc&gt;]
+recuerd0 workspace update &lt;id&gt; --name &lt;name&gt;
+recuerd0 workspace archive &lt;id&gt;
+recuerd0 workspace unarchive &lt;id&gt;</code></div>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Subcommand</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>list</code></td><td>List all active workspaces</td></tr>
+            <tr><td><code>show</code></td><td>Show workspace details and memory count</td></tr>
+            <tr><td><code>create</code></td><td>Create a new workspace</td></tr>
+            <tr><td><code>update</code></td><td>Update workspace name or description</td></tr>
+            <tr><td><code>archive</code></td><td>Archive a workspace (read-only)</td></tr>
+            <tr><td><code>unarchive</code></td><td>Restore an archived workspace</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <%# — memory — %>
+      <div class="endpoint" id="cmd-memory">
+        <div class="endpoint-head">
+          <h3>memory</h3>
+          <p>Create, read, update, and delete memories.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">usage</span></div>
+          <div class="code-body"><code>recuerd0 memory list --workspace &lt;id&gt;
+recuerd0 memory show --workspace &lt;id&gt; &lt;memory_id&gt;
+recuerd0 memory create --workspace &lt;id&gt; --title &lt;title&gt; --content &lt;body|->
+recuerd0 memory update --workspace &lt;id&gt; &lt;memory_id&gt; [--title &lt;title&gt;] [--content &lt;body|->]
+recuerd0 memory delete --workspace &lt;id&gt; &lt;memory_id&gt;</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Use <code>--content -</code> to read from stdin. Pipe markdown files directly: <code>cat notes.md | recuerd0 memory create --workspace 1 --title "Notes" --content -</code></span>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Flag</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--workspace</code></td><td>Target workspace ID (required, or set in <code>.recuerd0.yaml</code>)</td></tr>
+            <tr><td><code>--title</code></td><td>Memory title</td></tr>
+            <tr><td><code>--content</code></td><td>Markdown body, or <code>-</code> for stdin</td></tr>
+            <tr><td><code>--tags</code></td><td>Comma-separated tags: <code>--tags "auth,rails,patterns"</code></td></tr>
+            <tr><td><code>--source</code></td><td>Source identifier (e.g. <code>cli</code>, <code>claude-code</code>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <%# — version — %>
+      <div class="endpoint" id="cmd-version">
+        <div class="endpoint-head">
+          <h3>version</h3>
+          <p>Create new versions of existing memories.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">usage</span></div>
+          <div class="code-body"><code>recuerd0 version create --workspace &lt;id&gt; &lt;memory_id&gt; --content &lt;body|->
+recuerd0 version list --workspace &lt;id&gt; &lt;memory_id&gt;
+recuerd0 version show --workspace &lt;id&gt; &lt;version_id&gt;</code></div>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Subcommand</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>create</code></td><td>Branch a new version from a memory. Omitted fields inherit from parent.</td></tr>
+            <tr><td><code>list</code></td><td>List all versions of a memory</td></tr>
+            <tr><td><code>show</code></td><td>Show a specific version with content</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <%# — search — %>
+      <div class="endpoint" id="cmd-search">
+        <div class="endpoint-head">
+          <h3>search</h3>
+          <p>Full-text search across all memories. Supports FTS5 operators.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">usage</span></div>
+          <div class="code-body"><code>recuerd0 search &lt;query&gt; [--workspace &lt;id&gt;]</code></div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">examples</span></div>
+          <div class="code-body"><code><span class="cc"># Simple search</span>
+recuerd0 search "authentication"
+
+<span class="cc"># FTS5 operators</span>
+recuerd0 search "auth AND rails NOT devise"
+
+<span class="cc"># Scope to a workspace</span>
+recuerd0 search "deploy" --workspace 3
+
+<span class="cc"># Column filter</span>
+recuerd0 search "title:architecture"</code></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== OUTPUT FORMAT ===== %>
+      <div class="api-section" id="output-format">
+        <div class="resource-header">
+          <div class="resource-label">reference</div>
+          <h2>Output Format</h2>
+          <p>All commands output JSON by default. Use <code>--pretty</code> for formatted output.</p>
+        </div>
+
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">search output</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"query"</span>: <span class="cs">"authentication"</span>,
+  <span class="ck">"total_results"</span>: <span class="cn">2</span>,
+  <span class="ck">"results"</span>: [
+    {
+      <span class="ck">"id"</span>: <span class="cn">12</span>,
+      <span class="ck">"title"</span>: <span class="cs">"Auth Patterns"</span>,
+      <span class="ck">"workspace"</span>: { <span class="ck">"id"</span>: <span class="cn">1</span>, <span class="ck">"name"</span>: <span class="cs">"Rails Project"</span> },
+      <span class="ck">"snippet"</span>: <span class="cs">"Bearer token authentication with..."</span>
+    }
+  ]
+}</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Error output</h3>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">error</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"error"</span>: {
+    <span class="ck">"code"</span>: <span class="cs">"NOT_FOUND"</span>,
+    <span class="ck">"message"</span>: <span class="cs">"Resource not found"</span>,
+    <span class="ck">"status"</span>: <span class="cn">404</span>
+  }
+}</code></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== GLOBAL FLAGS ===== %>
+      <div class="api-section" id="global-flags">
+        <div class="resource-header">
+          <div class="resource-label">reference</div>
+          <h2>Global Flags</h2>
+          <p>Available on all commands.</p>
+        </div>
+
+        <table class="op-table">
+          <thead><tr><th>Flag</th><th>Env Variable</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--account</code></td><td><code>RECUERD0_ACCOUNT</code></td><td>Account name to use</td></tr>
+            <tr><td><code>--token</code></td><td><code>RECUERD0_TOKEN</code></td><td>API token (overrides config)</td></tr>
+            <tr><td><code>--api-url</code></td><td><code>RECUERD0_API_URL</code></td><td>Server URL (overrides config)</td></tr>
+            <tr><td><code>--workspace</code></td><td><code>RECUERD0_WORKSPACE</code></td><td>Default workspace ID</td></tr>
+            <tr><td><code>--verbose</code></td><td></td><td>Show HTTP request/response details</td></tr>
+            <tr><td><code>--pretty</code></td><td></td><td>Pretty-print JSON output</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== EXIT CODES ===== %>
+      <div class="api-section" id="exit-codes">
+        <div class="resource-header">
+          <div class="resource-label">reference</div>
+          <h2>Exit Codes</h2>
+        </div>
+
+        <table class="op-table">
+          <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>0</code></td><td>Success</td></tr>
+            <tr><td><code>1</code></td><td>General error</td></tr>
+            <tr><td><code>2</code></td><td>Invalid arguments or usage</td></tr>
+            <tr><td><code>3</code></td><td>Configuration error (missing account, bad config file)</td></tr>
+            <tr><td><code>4</code></td><td>Authentication failed (401)</td></tr>
+            <tr><td><code>5</code></td><td>Permission denied (403)</td></tr>
+            <tr><td><code>6</code></td><td>Resource not found (404)</td></tr>
+            <tr><td><code>7</code></td><td>Validation error (422)</td></tr>
+            <tr><td><code>8</code></td><td>Rate limited (429)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <%# ===== FOOTER ===== %>
+      <div class="doc-footer">
+        <div class="doc-footer-inner">
+          <div class="doc-footer-brand">
+            <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "doc-footer-logo-img" %>
+            <span class="doc-footer-year">· 2026</span>
+          </div>
+          <ul class="doc-footer-links">
+            <li><%= link_to "home", root_path %></li>
+            <li><%= link_to "api docs", api_docs_path %></li>
+            <li><%= link_to "agents", agents_path %></li>
+            <li><%= link_to "terms", terms_path %></li>
+            <li><%= link_to "privacy", privacy_path %></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</div>

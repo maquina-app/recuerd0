@@ -4,11 +4,14 @@ The Recuerd0 API provides programmatic access to workspaces and memories. All re
 
 ## Authentication
 
-All API requests require authentication via Bearer token. Include your access token in the Authorization header:
+All API requests require authentication via Bearer token and a JSON content type. Include these headers with every request:
 
 ```
 Authorization: Bearer your_token_here
+Content-Type: application/json
 ```
+
+All responses use `Content-Type: application/json`.
 
 ### Token Permissions
 

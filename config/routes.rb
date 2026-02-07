@@ -21,6 +21,8 @@ Rails.application.routes.draw do
 
   # Marketing / legal pages
   get "api-docs", to: "pages#api_docs", as: :api_docs
+  get "cli", to: "pages#cli", as: :cli
+  get "agents", to: "pages#agents", as: :agents
   get "terms", to: "pages#terms", as: :terms
   get "privacy", to: "pages#privacy", as: :privacy
 

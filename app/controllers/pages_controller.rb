@@ -11,4 +11,10 @@ class PagesController < ApplicationController
 
   def api_docs
   end
+
+  def cli
+  end
+
+  def agents
+  end
 end

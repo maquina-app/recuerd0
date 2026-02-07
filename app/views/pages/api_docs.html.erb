@@ -19,6 +19,8 @@
       </div>
       <div class="header-right">
         <%= link_to "Home", root_path, class: "header-link" %>
+        <%= link_to "CLI", cli_path, class: "header-link" %>
+        <%= link_to "Agents", agents_path, class: "header-link" %>
         <%= link_to "Get Started", new_registration_path, class: "header-cta" %>
       </div>
     </div>
@@ -80,8 +82,13 @@
           <p>All API requests require a Bearer token in the Authorization header.</p>
         </div>
         <div class="code-block">
-          <div class="code-head"><span class="code-label">request header</span></div>
-          <div class="code-body"><span class="ck">Authorization</span>: Bearer <span class="cs">your_token_here</span></div>
+          <div class="code-head"><span class="code-label">request headers</span></div>
+          <div class="code-body"><span class="ck">Authorization</span>: Bearer <span class="cs">your_token_here</span>
+<span class="ck">Content-Type</span>: <span class="cs">application/json</span></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>All requests must include <code>Content-Type: application/json</code>. Responses use the same content type.</span>
         </div>
         <div class="token-grid">
           <div class="token-card">
