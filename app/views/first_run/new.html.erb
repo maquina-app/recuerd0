@@ -1,0 +1,62 @@
+<% content_for :title, t("first_run.new.page_title") %>
+
+<%= render "components/card" do %>
+  <%= render "components/card/header", css_classes: "text-center" do %>
+    <h2 class="text-xl font-display font-medium"><%= t("first_run.new.heading") %></h2>
+    <p class="text-sm text-muted-foreground mt-1">
+      <%= t("first_run.new.description") %>
+    </p>
+  <% end %>
+
+  <%= render "components/card/content" do %>
+    <%= form_with model: @user, url: first_run_url, data: { component: "form" } do |form| %>
+      <div data-form-part="group">
+        <%= form.label :email_address, t("first_run.new.email_label"), data: { component: "label" } %>
+        <%= form.email_field :email_address,
+            required: true,
+            autofocus: true,
+            autocomplete: "email",
+            autocapitalize: "none",
+            maxlength: 80,
+            placeholder: "m@example.com",
+            data: { component: "input" } %>
+        <% if @user.errors[:email_address].any? %>
+          <p data-form-part="error" class="text-destructive"><%= @user.errors[:email_address].first %></p>
+        <% end %>
+      </div>
+
+      <div data-form-part="group">
+        <%= form.label :password, data: { component: "label" } %>
+        <%= form.password_field :password,
+            required: true,
+            autocomplete: "new-password",
+            placeholder: t("first_run.new.password_placeholder"),
+            maxlength: 72,
+            spellcheck: "false",
+            data: { component: "input" } %>
+        <% if @user.errors[:password].any? %>
+          <p data-form-part="error" class="text-destructive"><%= @user.errors[:password].first %></p>
+        <% end %>
+      </div>
+
+      <div data-form-part="group">
+        <%= form.label :password_confirmation, t("first_run.new.password_confirmation_label"), data: { component: "label" } %>
+        <%= form.password_field :password_confirmation,
+            required: true,
+            autocomplete: "new-password",
+            placeholder: t("first_run.new.password_confirmation_placeholder"),
+            maxlength: 72,
+            spellcheck: "false",
+            data: { component: "input" } %>
+        <% if @user.errors[:password_confirmation].any? %>
+          <p data-form-part="error" class="text-destructive"><%= @user.errors[:password_confirmation].first %></p>
+        <% end %>
+      </div>
+
+      <div data-form-part="actions">
+        <%= form.submit t("first_run.new.submit"),
+            data: { component: "button", variant: "primary" }, class: "w-full" %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

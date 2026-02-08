@@ -25,5 +25,7 @@ module Recuerd0
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.i18n.load_path += Dir[Rails.root.join("config", "locales", "**", "*.yml")]
+
+    config.multi_tenant = ENV.fetch("MULTI_TENANT_ENABLED", "false") == "true"
   end
 end

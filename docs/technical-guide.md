@@ -78,7 +78,25 @@ Pin
  └── position-ordered, max 10 per user
 ```
 
-### Multi-Tenancy
+### Tenancy Modes
+
+The application supports two tenancy modes controlled by the `MULTI_TENANT_ENABLED` environment variable (default: `false`):
+
+**Single-tenant mode** (default):
+- No public registration — account creation only via first run setup
+- Marketing pages (landing, terms, privacy, api-docs, cli, agents) disabled
+- `FirstRunController` forces account creation on first visit when no accounts exist
+- Root route points to `workspaces#index` (requires authentication)
+- Login page hides sign-up link and terms/privacy footer
+- Invitations still available (admin can invite team members)
+
+**Multi-tenant mode** (`MULTI_TENANT_ENABLED=true`):
+- Public registration, marketing pages, and full landing page enabled
+- Root route points to `home#index` (landing page for visitors, dashboard for authenticated users)
+
+Configuration: `Rails.application.config.multi_tenant` (boolean). Helper: `multi_tenant?` available in all controllers and views.
+
+### Multi-Tenancy Data Model
 
 Account serves as the multi-tenant container. Each user belongs to exactly one account, and workspaces belong to accounts (not users directly).
 
@@ -177,9 +195,10 @@ Multi-model operations are handled by model methods wrapped in transactions:
 | `WorkspacesController` | CRUD for workspaces. `show` auto-redirects to archived/deleted namespaced routes based on state. Paginated index with pins-first ordering. |
 | `MemoriesController` | CRUD for memories (via use cases). Includes `preview` action for markdown rendering in a Turbo Frame. |
 | `PinsController` | Create/destroy pins. Validates pinnable type against whitelist. Enforces 10-pin limit. |
-| `HomeController` | Public landing page. |
+| `HomeController` | Public landing page (multi-tenant only). |
 | `SessionsController` | Login/logout. Rate-limited to 10 attempts per 3 minutes. |
-| `RegistrationsController` | Self-service user signup. Creates Account + User atomically. Rate-limited to 10 attempts per hour. |
+| `RegistrationsController` | Self-service user signup (multi-tenant only). Creates Account + User atomically. Rate-limited to 10 attempts per hour. |
+| `FirstRunController` | Single-tenant first run setup. Creates initial account when no accounts exist. Guards: `require_single_tenant_mode`, `require_no_accounts`. |
 | `PasswordsController` | Token-based password reset via email. Anti-enumeration (always shows success). |
 | `SearchController` | Cross-workspace memory search. HTML uses `full_search` (phrase-quoted). JSON API uses `api_search` (raw FTS5 operators). Validates query presence/length for API, rescues FTS5 syntax errors. Optional `workspace_id` filter. |
 
@@ -206,9 +225,10 @@ Multi-model operations are handled by model methods wrapped in transactions:
 ## Routing Structure
 
 ```
-Root:       GET /                                → home#index (public)
+Root:       GET / → home#index (multi-tenant) or workspaces#index (single-tenant)
 Auth:       resource  :session                   → sessions (login/logout)
-            resource  :registration              → registrations (signup)
+            resource  :registration              → registrations (multi-tenant only)
+            resource  :first_run                 → first_run (always routable, controller-guarded)
             resources :passwords, param: :token  → passwords (reset flow)
 
 Workspaces: resources :workspaces do
@@ -315,7 +335,8 @@ Rails 8 built-in authentication with `has_secure_password` (bcrypt).
 - **Session model**: stores user_id, ip_address, user_agent in database
 - **Current context**: `Current.session` / `Current.user` / `Current.account` via `ActiveSupport::CurrentAttributes`
 - **Cookie**: signed, permanent, httponly, same_site: lax (key: `:session_id`)
-- **Registration**: self-service signup creates Account + User atomically, auto-login after success
+- **Registration**: self-service signup creates Account + User atomically, auto-login after success (multi-tenant only)
+- **First run**: in single-tenant mode, unauthenticated requests redirect to `/first_run/new` when no accounts exist; once an account is created, redirects to login
 - **Password reset**: encrypted token via Rails message verifier, delivered by `PasswordsMailer`
 - **Rate limiting**: 10 login attempts per 3 minutes, 10 registration attempts per hour
 
@@ -461,6 +482,7 @@ Configured in `config/deploy.yml`. Single-server deployment with:
 - Let's Encrypt SSL via Kamal proxy
 - Persistent volume at `/rails/storage` for SQLite databases
 - `SOLID_QUEUE_IN_PUMA=true` runs jobs in-process (no separate worker)
+- `MULTI_TENANT_ENABLED=true` to enable public registration and marketing pages (default: single-tenant)
 - Secrets: `RAILS_MASTER_KEY` from `config/master.key`, registry password from environment
 
 ### CI/CD

@@ -1,7 +1,20 @@
 Rails.application.routes.draw do
   resource :session
-  resource :registration, only: %i[new create]
   resources :passwords, param: :token
+
+  if Rails.application.config.multi_tenant
+    resource :registration, only: %i[new create]
+
+    # Marketing / legal pages
+    get "api-docs", to: "pages#api_docs", as: :api_docs
+    get "cli", to: "pages#cli", as: :cli
+    get "agents", to: "pages#agents", as: :agents
+    get "terms", to: "pages#terms", as: :terms
+    get "privacy", to: "pages#privacy", as: :privacy
+  end
+
+  # First run setup — always routable, controller guards access
+  resource :first_run, only: %i[new create], controller: "first_run"
 
   # Account management
   resource :account, only: %i[show update destroy] do
@@ -16,15 +29,8 @@ Rails.application.routes.draw do
     resources :access_tokens, only: %i[create destroy], controller: "profile/access_tokens"
   end
 
-  # Invitations (public)
+  # Invitations (public — available in both modes for team member invites)
   resources :invitations, only: %i[show create], param: :token
-
-  # Marketing / legal pages
-  get "api-docs", to: "pages#api_docs", as: :api_docs
-  get "cli", to: "pages#cli", as: :cli
-  get "agents", to: "pages#agents", as: :agents
-  get "terms", to: "pages#terms", as: :terms
-  get "privacy", to: "pages#privacy", as: :privacy
 
   resources :workspaces do
     resources :memories do
@@ -68,5 +74,9 @@ Rails.application.routes.draw do
   get "up", to: "rails/health#show", as: :rails_health_check
   get "manifest", to: "rails/pwa#manifest", as: :pwa_manifest
 
-  root "home#index"
+  if Rails.application.config.multi_tenant
+    root "home#index"
+  else
+    root "workspaces#index"
+  end
 end

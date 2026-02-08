@@ -50,4 +50,8 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Enable multi-tenant mode in tests so all routes (registration, marketing pages) are available.
+  # Individual tests can stub Rails.application.config.multi_tenant = false to test single-tenant behavior.
+  config.multi_tenant = true
 end

@@ -110,6 +110,19 @@ en:
       submit: "Delete Account"
       confirm: "This will permanently delete your account and all data after 30 days. All users will lose access immediately. This action cannot be undone."
 
+  first_run:
+    new:
+      page_title: "Set up your instance — recuerd0"
+      heading: "Set up your instance"
+      description: "Create the admin account for your recuerd0 instance."
+      email_label: "Email"
+      password_placeholder: "Choose a password"
+      password_confirmation_label: "Confirm password"
+      password_confirmation_placeholder: "Confirm your password"
+      submit: "Create account"
+    create:
+      success: "Welcome to recuerd0! Your instance is ready."
+
   invitations:
     show:
       page_title: "Join %{account}"

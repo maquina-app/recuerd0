@@ -44,21 +44,25 @@
             data: { component: "button", variant: "primary" }, class: "w-full" %>
       </div>
 
-      <div class="text-center text-sm">
-        Don't have an account?
-        <%= link_to "Sign up", new_registration_path, class: "underline underline-offset-4" %>
-      </div>
+      <% if multi_tenant? %>
+        <div class="text-center text-sm">
+          Don't have an account?
+          <%= link_to "Sign up", new_registration_path, class: "underline underline-offset-4" %>
+        </div>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>
 
-<div class="text-center text-xs text-muted-foreground">
-  By clicking continue, you agree to our
-  <%= link_to "Terms of Service",
-  terms_path,
-  class: "underline underline-offset-4 hover:text-primary" %>
-  and
-  <%= link_to "Privacy Policy",
-  privacy_path,
-  class: "underline underline-offset-4 hover:text-primary" %>.
-</div>
+<% if multi_tenant? %>
+  <div class="text-center text-xs text-muted-foreground">
+    By clicking continue, you agree to our
+    <%= link_to "Terms of Service",
+    terms_path,
+    class: "underline underline-offset-4 hover:text-primary" %>
+    and
+    <%= link_to "Privacy Policy",
+    privacy_path,
+    class: "underline underline-offset-4 hover:text-primary" %>.
+  </div>
+<% end %>

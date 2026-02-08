@@ -5,6 +5,8 @@ class ApplicationController < ActionController::Base
   include ApiHelpers
   include Analytics::Trackable
 
+  helper_method :multi_tenant?
+
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern, if: -> { !request.format.json? }
 
@@ -32,6 +34,10 @@ class ApplicationController < ActionController::Base
 
     render_forbidden
     false
+  end
+
+  def multi_tenant?
+    Rails.application.config.multi_tenant
   end
 
   def api_request?

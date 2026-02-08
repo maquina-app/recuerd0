@@ -59,6 +59,8 @@ module Authentication
   def request_authentication
     if request.format.json?
       render_unauthorized
+    elsif !Rails.application.config.multi_tenant && !Account.exists?
+      redirect_to new_first_run_path
     else
       session[:return_to_after_authenticating] = request.url
       redirect_to new_session_path

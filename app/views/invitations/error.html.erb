@@ -7,11 +7,13 @@
   <% end %>
 
   <div class="text-center mt-6 space-y-3">
-    <%= link_to new_registration_path, class: "inline-flex items-center gap-1 text-sm underline underline-offset-4 hover:text-primary" do %>
-      <%= t("invitations.error.create_account") %>
-    <% end %>
+    <% if multi_tenant? %>
+      <%= link_to new_registration_path, class: "inline-flex items-center gap-1 text-sm underline underline-offset-4 hover:text-primary" do %>
+        <%= t("invitations.error.create_account") %>
+      <% end %>
 
-    <span class="text-muted-foreground text-sm mx-2"><%= t("invitations.error.or") %></span>
+      <span class="text-muted-foreground text-sm mx-2"><%= t("invitations.error.or") %></span>
+    <% end %>
 
     <%= link_to new_session_path, class: "inline-flex items-center gap-1 text-sm underline underline-offset-4 hover:text-primary" do %>
       <%= icon_for :arrow_left, class: "size-4" %> <%= t("invitations.error.back_to_sign_in") %>

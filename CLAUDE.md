@@ -50,6 +50,15 @@ bin/kamal console                # Remote Rails console
 
 ## Architecture
 
+### Tenancy Modes
+
+Controlled by `MULTI_TENANT_ENABLED` env var (default: `false`). Accessible via `Rails.application.config.multi_tenant` and the `multi_tenant?` helper (controllers + views).
+
+- **Single-tenant** (default): no public registration, no marketing pages, root → `workspaces#index`. `FirstRunController` forces account creation on first visit when no accounts exist. After setup, only login is available.
+- **Multi-tenant** (`MULTI_TENANT_ENABLED=true`): public registration, marketing pages, root → `home#index`. Current behavior unchanged.
+
+Routes are conditionally compiled at boot time. The `first_run` resource is always routable but controller-guarded (`require_single_tenant_mode`, `require_no_accounts`). Test environment sets `config.multi_tenant = true` so all routes exist; individual tests stub to `false` for single-tenant behavior.
+
 ### Domain Model
 
 - **Account** → has many Users, Workspaces; serves as multi-tenant container. Includes SoftDeletable (30-day retention). User limit of 5. Invitation tokens via `Rails.application.message_verifier(:account_invitations)` with 7-day expiry.
@@ -105,6 +114,7 @@ Controllers under `account/` handle account administration:
 - `Account::UsersController` - admin-only user removal via email anonymization
 - `Account::InvitationsController` - admin-only invitation link generation
 - `InvitationsController` - public invitation acceptance (unauthenticated, security layout)
+- `FirstRunController` - single-tenant first run setup; creates initial account when no accounts exist (security layout, `allow_unauthenticated_access`)
 
 ### Controller Concerns
 
@@ -305,7 +315,7 @@ This applies to any code inside `do...end` blocks for gem-rendered partials (car
 
 ### Authentication
 
-Uses Rails 8 built-in authentication generator with `Current.user` and `Current.account` for accessing the logged-in user and their account. Sessions stored in database with signed permanent cookies (httponly, same_site: lax). Self-service registration creates Account + User atomically with auto-login (first user is admin). Login rate-limited to 10 attempts per 3 minutes. Registration rate-limited to 10 attempts per hour. Password reset via encrypted token in email. Deleted accounts are blocked at the authentication layer (session redirect + API 401).
+Uses Rails 8 built-in authentication generator with `Current.user` and `Current.account` for accessing the logged-in user and their account. Sessions stored in database with signed permanent cookies (httponly, same_site: lax). Self-service registration creates Account + User atomically with auto-login (first user is admin, multi-tenant only). In single-tenant mode, unauthenticated requests redirect to first run setup when no accounts exist. Login rate-limited to 10 attempts per 3 minutes. Registration rate-limited to 10 attempts per hour. Password reset via encrypted token in email. Deleted accounts are blocked at the authentication layer (session redirect + API 401).
 
 ### Database
 
@@ -317,7 +327,7 @@ SQLite for everything. All environments use 4 separate SQLite databases (primary
 
 ### Deployment
 
-Docker multi-stage build with jemalloc. Kamal deploys to single server with Let's Encrypt SSL. Thruster provides HTTP caching/compression. Solid Queue runs in-process via `SOLID_QUEUE_IN_PUMA=true`. Entrypoint auto-runs `db:prepare`.
+Docker multi-stage build with jemalloc. Kamal deploys to single server with Let's Encrypt SSL. Thruster provides HTTP caching/compression. Solid Queue runs in-process via `SOLID_QUEUE_IN_PUMA=true`. Set `MULTI_TENANT_ENABLED=true` for public registration and marketing pages (default: single-tenant). Entrypoint auto-runs `db:prepare`.
 
 ## Rails MCP Server
 
