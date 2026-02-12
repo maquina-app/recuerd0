@@ -24,6 +24,28 @@
 
     <%= yield :head %>
 
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "recuerd0",
+          "url": "https://recuerd0.ai",
+          "logo": "<%= image_url('recuerdo-og.png') %>",
+          "description": "The knowledge base your AI tools deserve",
+          "email": "info@recuerd0.ai"
+        },
+        {
+          "@type": "WebSite",
+          "name": "recuerd0",
+          "url": "https://recuerd0.ai"
+        }
+      ]
+    }
+    </script>
+    <%= yield :structured_data %>
+
     <link rel="icon" href="/favicon.ico" sizes="32x32">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">

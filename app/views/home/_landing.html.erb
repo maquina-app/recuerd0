@@ -2,6 +2,23 @@
 <% content_for :description, "Organize, version, and serve project context to any LLM — from Claude Code to Cursor to ChatGPT. Human-curated memory, instantly accessible via REST API." %>
 <% content_for :canonical_url, "https://recuerd0.ai/" %>
 
+<% content_for :structured_data do %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "recuerd0",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web, Docker",
+  "description": "The knowledge base your AI tools deserve. Organize, version, and serve project context to any LLM.",
+  "offers": [
+    { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Self-Hosted" },
+    { "@type": "Offer", "price": "15", "priceCurrency": "USD", "description": "Cloud", "billingIncrement": "P1M" }
+  ]
+}
+</script>
+<% end %>
+
 <div data-controller="marketing-nav marketing-reveal">
 
   <%# ========== NAVIGATION ========== %>
@@ -194,24 +211,29 @@
   <section class="code-section" id="api">
     <div class="m-container">
       <div class="reveal">
-        <div class="section-label">api &amp; cli</div>
+        <div class="section-label">api, cli &amp; agents</div>
         <h2 class="m-section-title">Built for developer workflows</h2>
         <p class="section-desc">
-          Full REST API with token authentication and rate limiting.
-          Use the CLI for quick access from your terminal.
+          Full REST API with token authentication. CLI for terminal access.
+          Agent workflows for persistent AI memory.
         </p>
         <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
           <%= link_to "Full API Reference →", api_docs_path, class: "btn-ghost" %>
           <%= link_to "CLI Reference →", cli_path, class: "btn-ghost" %>
+          <%= link_to "Agent Workflows →", agents_path, class: "btn-ghost" %>
         </div>
       </div>
 
-      <div class="code-layout">
-        <div class="code-block reveal reveal-delay-1">
+      <div class="code-tabs reveal reveal-delay-1" data-controller="code-tabs">
+        <div class="code-tab-bar" role="tablist">
+          <button class="code-tab" role="tab" data-code-tabs-target="tab" data-action="code-tabs#select" data-index="0" data-state="active" aria-selected="true">rest api</button>
+          <button class="code-tab" role="tab" data-code-tabs-target="tab" data-action="code-tabs#select" data-index="1" data-state="inactive" aria-selected="false">cli</button>
+          <button class="code-tab" role="tab" data-code-tabs-target="tab" data-action="code-tabs#select" data-index="2" data-state="inactive" aria-selected="false">agents</button>
+        </div>
+
+        <div class="code-block" role="tabpanel" data-code-tabs-target="panel">
           <div class="code-header">
-            <div class="code-dots">
-              <span></span><span></span><span></span>
-            </div>
+            <div class="code-dots"><span></span><span></span><span></span></div>
             <span class="code-lang">rest api</span>
           </div>
           <div class="code-body">
@@ -236,11 +258,9 @@
           </div>
         </div>
 
-        <div class="code-block reveal reveal-delay-2">
+        <div class="code-block hidden" role="tabpanel" data-code-tabs-target="panel">
           <div class="code-header">
-            <div class="code-dots">
-              <span></span><span></span><span></span>
-            </div>
+            <div class="code-dots"><span></span><span></span><span></span></div>
             <span class="code-lang">cli tool</span>
           </div>
           <div class="code-body">
@@ -258,6 +278,27 @@ $ <span class="fn">recuerd0</span> <span class="flag">memory show</span> <span c
 
 <span class="comment"># Pipe content from stdin</span>
 $ <span class="fn">cat</span> notes.md | <span class="fn">recuerd0</span> <span class="flag">memory create</span> <span class="flag">--workspace</span> <span class="num">1</span> <span class="flag">--title</span> <span class="string">"Notes"</span> <span class="flag">--content</span> -</code>
+          </div>
+        </div>
+
+        <div class="code-block hidden" role="tabpanel" data-code-tabs-target="panel">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-lang">agent config</span>
+          </div>
+          <div class="code-body">
+<code><span class="comment"># CLAUDE.md agent config</span>
+<span class="comment">## Memory Server</span>
+<span class="fn">recuerd0 API</span>: <span class="string">https://recuerd0.ai/api</span>
+<span class="fn">token</span>: <span class="var">$RECUERDO_TOKEN</span>
+
+<span class="comment">## Pre-session</span>
+Search workspace <span class="string">"rails-app"</span> for
+relevant context before starting.
+
+<span class="comment">## Post-session</span>
+Save key decisions and patterns
+as new versioned memories.</code>
           </div>
         </div>
       </div>

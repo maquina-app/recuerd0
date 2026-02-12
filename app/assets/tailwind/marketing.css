@@ -661,12 +661,51 @@
   background: var(--m-bg-warm);
 }
 
-.marketing .code-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin-top: 4rem;
-  align-items: start;
+.marketing .code-tabs {
+  max-width: 680px;
+  margin: 4rem auto 0;
+}
+
+.marketing .code-tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--m-border);
+}
+
+.marketing .code-tab {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--m-text-dim);
+  padding: 0.65rem 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.25s;
+}
+
+.marketing .code-tab:hover {
+  color: var(--m-text-secondary);
+}
+
+.marketing .code-tab[data-state="active"] {
+  color: var(--m-primary);
+}
+
+.marketing .code-tab[data-state="active"]::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--m-primary);
+}
+
+.marketing .code-tabs > .code-block {
+  margin-top: 1.25rem;
 }
 
 .marketing .code-block {
@@ -1389,7 +1428,7 @@
   .marketing .hero-content { grid-template-columns: 1fr; }
   .marketing .hero-visual { display: none; }
   .marketing .problem-grid { grid-template-columns: 1fr; }
-  .marketing .code-layout { grid-template-columns: 1fr; }
+  .marketing .code-tab { padding: 0.55rem 1rem; font-size: 0.62rem; }
   .marketing .features-grid { grid-template-columns: 1fr; }
   .marketing .pricing-grid { grid-template-columns: 1fr; }
   .marketing .flow-diagram { flex-direction: column; gap: 1.5rem; }

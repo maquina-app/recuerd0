@@ -2,6 +2,23 @@
 <% content_for :description, "One product, two ways to run it. Self-host for free or let us manage it for $15/month." %>
 <% content_for :canonical_url, "https://recuerd0.ai/pricing" %>
 
+<% content_for :structured_data do %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [{
+    "@type": "Question",
+    "name": "Need more than 5 users?",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "If your team needs higher limits or custom deployment options, reach out at info@recuerd0.ai and we'll figure it out together."
+    }
+  }]
+}
+</script>
+<% end %>
+
 <div data-controller="marketing-nav marketing-reveal">
 
   <%# ========== NAVIGATION ========== %>
@@ -35,7 +52,7 @@
         <ul class="pricing-features">
           <li>No user limits</li>
           <li>Unlimited workspaces &amp; memories</li>
-          <li>Full REST API &amp; CLI access</li>
+          <li>Full REST API, CLI &amp; agent workflows</li>
           <li>Full-text search (FTS5)</li>
           <li>Version history</li>
           <li>Docker image ready to deploy</li>
@@ -58,7 +75,7 @@
         <ul class="pricing-features">
           <li>Up to 5 users per account</li>
           <li>Unlimited workspaces &amp; memories</li>
-          <li>Full REST API &amp; CLI access</li>
+          <li>Full REST API, CLI &amp; agent workflows</li>
           <li>Full-text search (FTS5)</li>
           <li>Version history</li>
           <li>Managed hosting &amp; backups</li>
