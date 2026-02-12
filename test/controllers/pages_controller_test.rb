@@ -17,4 +17,10 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     get pricing_url
     assert_response :success
   end
+
+  test "GET license renders license page without authentication" do
+    get license_url
+    assert_response :success
+    assert_select "h1", "License"
+  end
 end

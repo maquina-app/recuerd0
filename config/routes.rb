@@ -12,6 +12,7 @@ Rails.application.routes.draw do
     get "pricing", to: "pages#pricing", as: :pricing
     get "terms", to: "pages#terms", as: :terms
     get "privacy", to: "pages#privacy", as: :privacy
+    get "license", to: "pages#license", as: :license
   end
 
   # First run setup — always routable, controller guards access
