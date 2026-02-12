@@ -838,6 +838,23 @@
 }
 .marketing .footer-links a:hover { color: var(--m-text-secondary); }
 
+.marketing .footer-maquina {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--m-border-subtle);
+}
+.marketing .footer-maquina span {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.5px;
+  color: var(--m-text-dim);
+}
+.marketing .footer-maquina-img { height: 1.5rem; width: auto; }
+
 /* ========================================
    API DOCS — HEADER
    ======================================== */
@@ -1008,6 +1025,23 @@
 .marketing .doc-footer-links a { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim); }
 .marketing .doc-footer-links a:hover { color: var(--m-text-secondary); }
 
+.marketing .doc-footer-maquina {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--m-border-subtle);
+}
+.marketing .doc-footer-maquina span {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.5px;
+  color: var(--m-text-dim);
+}
+.marketing .doc-footer-maquina-img { height: 1.5rem; width: auto; }
+
 /* ========================================
    LEGAL PAGES (terms/privacy)
    ======================================== */
@@ -1100,6 +1134,185 @@
 .marketing .reveal-delay-3 { transition-delay: 0.3s; }
 
 /* ========================================
+   PRICING
+   ======================================== */
+.marketing .pricing-hero {
+  padding-top: 10rem;
+  padding-bottom: 4rem;
+  text-align: center;
+}
+
+.marketing .pricing-hero .m-section-title {
+  max-width: 600px;
+  margin: 0 auto 1rem;
+}
+
+.marketing .pricing-hero .section-desc {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.marketing .pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.marketing .pricing-card {
+  padding: 2.5rem;
+  background: var(--m-bg-card);
+  border: 1px solid var(--m-border);
+  border-radius: 12px;
+  box-shadow: var(--m-shadow-sm);
+  transition: all 0.4s var(--m-ease-out);
+  display: flex;
+  flex-direction: column;
+}
+
+.marketing .pricing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--m-shadow-md);
+}
+
+.marketing .pricing-card-featured {
+  border-color: var(--m-primary);
+  box-shadow: var(--m-shadow-md), var(--m-shadow-glow);
+}
+
+.marketing .pricing-card-featured:hover {
+  box-shadow: var(--m-shadow-lg), var(--m-shadow-glow);
+}
+
+.marketing .pricing-badge {
+  display: inline-block;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--m-primary);
+  background: var(--m-primary-ghost);
+  border: 1px solid oklch(0.480 0.190 150 / 0.15);
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+  margin-bottom: 1rem;
+}
+
+.marketing .pricing-card h3 {
+  font-family: 'Jura', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  color: var(--m-text);
+}
+
+.marketing .pricing-card .pricing-desc {
+  font-size: 0.88rem;
+  color: var(--m-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.marketing .pricing-price {
+  margin-bottom: 2rem;
+}
+
+.marketing .pricing-amount {
+  font-family: 'Jura', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 2.8rem;
+  letter-spacing: -1px;
+  color: var(--m-text);
+}
+
+.marketing .pricing-period {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 0.78rem;
+  color: var(--m-text-dim);
+  margin-left: 0.25rem;
+}
+
+.marketing .pricing-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  flex: 1;
+}
+
+.marketing .pricing-features li {
+  font-size: 0.88rem;
+  color: var(--m-text-secondary);
+  line-height: 1.6;
+  padding: 0.35rem 0;
+  padding-left: 1.25rem;
+  position: relative;
+}
+
+.marketing .pricing-features li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.75rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--m-primary);
+}
+
+.marketing .pricing-cta {
+  margin-top: auto;
+}
+
+.marketing .pricing-cmd {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: var(--m-text-secondary);
+  padding: 0.65rem 1rem;
+  background: var(--m-code-bg);
+  border: 1px solid var(--m-code-border);
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+
+.marketing .pricing-cmd .prompt { color: var(--m-primary); flex-shrink: 0; }
+
+.marketing .pricing-link {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--m-text-dim);
+}
+
+.marketing .pricing-faq {
+  border-top: 1px solid var(--m-border-subtle);
+  background: var(--m-bg-warm);
+  text-align: center;
+}
+
+.marketing .pricing-faq .m-section-title {
+  max-width: 500px;
+  margin: 0 auto 1rem;
+}
+
+.marketing .pricing-faq .section-desc {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.marketing .pricing-faq .section-desc a {
+  color: var(--m-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ========================================
    RESPONSIVE
    ======================================== */
 @media (max-width: 900px) {
@@ -1108,6 +1321,7 @@
   .marketing .problem-grid { grid-template-columns: 1fr; }
   .marketing .code-layout { grid-template-columns: 1fr; }
   .marketing .features-grid { grid-template-columns: 1fr; }
+  .marketing .pricing-grid { grid-template-columns: 1fr; }
   .marketing .flow-diagram { flex-direction: column; gap: 1.5rem; }
   .marketing .flow-arrow { transform: rotate(90deg); margin: 0; }
   .marketing .nav-links { display: none; }

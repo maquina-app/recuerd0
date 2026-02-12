@@ -12,4 +12,9 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "Privacy Policy"
   end
+
+  test "GET pricing renders pricing page without authentication" do
+    get pricing_url
+    assert_response :success
+  end
 end

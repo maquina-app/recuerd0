@@ -1,0 +1,94 @@
+<% content_for :title, "recuerd0 — Pricing" %>
+<% content_for :description, "One product, two ways to run it. Self-host for free or let us manage it for $15/month." %>
+<% content_for :canonical_url, "https://recuerd0.ai/pricing" %>
+
+<div data-controller="marketing-nav marketing-reveal">
+
+  <%# ========== NAVIGATION ========== %>
+  <%= render "pages/marketing_nav" %>
+
+  <%# ========== PRICING HERO ========== %>
+  <section class="pricing-hero">
+    <div class="m-container">
+      <div class="reveal">
+        <div class="section-label" style="justify-content:center;">
+          <span style="display:none;">&mdash;</span>pricing
+        </div>
+        <h2 class="m-section-title">One product. Two ways to run it.</h2>
+        <p class="section-desc">
+          Same features, same limits, same codebase. Choose self-hosted for full control or cloud for zero maintenance.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <%# ========== PRICING CARDS ========== %>
+  <section style="padding-top: 0;">
+    <div class="pricing-grid">
+      <%# Self-Hosted card %>
+      <div class="pricing-card reveal reveal-delay-1">
+        <h3>Self-Hosted</h3>
+        <p class="pricing-desc">Your server, your data. Full control over your infrastructure.</p>
+        <div class="pricing-price">
+          <span class="pricing-amount">Free</span>
+        </div>
+        <ul class="pricing-features">
+          <li>No user limits</li>
+          <li>Unlimited workspaces &amp; memories</li>
+          <li>Full REST API &amp; CLI access</li>
+          <li>Full-text search (FTS5)</li>
+          <li>Version history</li>
+          <li>Docker image ready to deploy</li>
+          <li>Source code access</li>
+        </ul>
+        <div class="pricing-cta">
+          <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim);">Coming soon</span>
+        </div>
+      </div>
+
+      <%# Cloud card (featured) %>
+      <div class="pricing-card pricing-card-featured reveal reveal-delay-2">
+        <div class="pricing-badge">managed</div>
+        <h3>Cloud</h3>
+        <p class="pricing-desc">We handle the infrastructure so you can focus on your knowledge.</p>
+        <div class="pricing-price">
+          <span class="pricing-amount">$15</span>
+          <span class="pricing-period">/ month</span>
+        </div>
+        <ul class="pricing-features">
+          <li>Up to 5 users per account</li>
+          <li>Unlimited workspaces &amp; memories</li>
+          <li>Full REST API &amp; CLI access</li>
+          <li>Full-text search (FTS5)</li>
+          <li>Version history</li>
+          <li>Managed hosting &amp; backups</li>
+          <li>Automatic updates</li>
+          <li>Email support</li>
+        </ul>
+        <div class="pricing-cta">
+          <%= link_to "Get Started &rarr;".html_safe, new_registration_path, class: "btn-primary", style: "width: 100%; justify-content: center;" %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# ========== NEED MORE? ========== %>
+  <section class="pricing-faq">
+    <div class="m-container">
+      <div class="reveal">
+        <div class="section-label" style="justify-content:center;">
+          <span style="display:none;">&mdash;</span>enterprise
+        </div>
+        <h2 class="m-section-title">Need more than 5 users?</h2>
+        <p class="section-desc">
+          If your team needs higher limits or custom deployment options,
+          reach out at <a href="mailto:info@recuerd0.ai">info@recuerd0.ai</a> and we'll figure it out together.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <%# ========== FOOTER ========== %>
+  <%= render "pages/marketing_footer" %>
+
+</div>

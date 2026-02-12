@@ -17,4 +17,7 @@ class PagesController < ApplicationController
 
   def agents
   end
+
+  def pricing
+  end
 end

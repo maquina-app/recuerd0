@@ -9,6 +9,7 @@ Rails.application.routes.draw do
     get "api-docs", to: "pages#api_docs", as: :api_docs
     get "cli", to: "pages#cli", as: :cli
     get "agents", to: "pages#agents", as: :agents
+    get "pricing", to: "pages#pricing", as: :pricing
     get "terms", to: "pages#terms", as: :terms
     get "privacy", to: "pages#privacy", as: :privacy
   end

@@ -9,8 +9,16 @@
       <li><%= link_to "api docs", api_docs_path %></li>
       <li><%= link_to "cli", cli_path %></li>
       <li><%= link_to "agents", agents_path %></li>
+      <li><%= link_to "pricing", pricing_path %></li>
       <li><%= link_to "terms", terms_path %></li>
       <li><%= link_to "privacy", privacy_path %></li>
+      <li><%= mail_to "info@recuerd0.ai", "contact" %></li>
     </ul>
+  </div>
+  <div class="doc-footer-maquina">
+    <span>Designed &amp; built by</span>
+    <%= link_to "https://maquina.app", target: "_blank", rel: "noopener" do %>
+      <%= image_tag "maquina_logo_horizontal.svg", alt: "Maquina", class: "doc-footer-maquina-img" %>
+    <% end %>
   </div>
 </div>

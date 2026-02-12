@@ -11,11 +11,13 @@
         <li><a href="#how" data-action="click->marketing-nav#smoothScroll">how it works</a></li>
         <li><a href="#api" data-action="click->marketing-nav#smoothScroll">api</a></li>
         <li><a href="#features" data-action="click->marketing-nav#smoothScroll">features</a></li>
+        <li><%= link_to "pricing", pricing_path %></li>
       <% else %>
         <li><%= link_to "Home", root_path %></li>
         <li><%= link_to "API Docs", api_docs_path %></li>
         <li><%= link_to "CLI", cli_path %></li>
         <li><%= link_to "Agents", agents_path %></li>
+        <li><%= link_to "Pricing", pricing_path %></li>
       <% end %>
       <li><%= link_to "Get Started", new_registration_path, class: "nav-cta" %></li>
     </ul>

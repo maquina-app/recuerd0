@@ -12,17 +12,15 @@
     <div class="m-container">
       <div class="hero-content">
         <div class="hero-text">
-          <div class="hero-badge">self-hosted · open source</div>
+          <div class="hero-badge">source available · self-hosted · cloud</div>
           <h1>The knowledge base your <em>AI tools</em> deserve</h1>
           <p class="hero-sub">
             Organize, version, and serve project context to any LLM — from Claude Code to Cursor to ChatGPT.
             Human-curated memory, instantly accessible via REST API.
           </p>
           <div class="hero-actions">
-            <%= link_to "Start preserving →", new_registration_path, class: "btn-primary" %>
-            <a href="#api" class="btn-ghost" data-action="click->marketing-nav#smoothScroll">
-              View API
-            </a>
+            <%= link_to "Start free \u2192", new_registration_path, class: "btn-primary" %>
+            <%= link_to "Self-host \u2192", pricing_path, class: "btn-ghost" %>
           </div>
         </div>
 
@@ -318,11 +316,12 @@ $ <span class="fn">cat</span> notes.md | <span class="fn">recuerd0</span> <span 
         <div class="feature-card reveal reveal-delay-2">
           <div class="feature-marker"></div>
           <div>
-            <h3>Self-Hosted</h3>
-            <p>Runs on your own infrastructure with SQLite. Zero external dependencies. Your proprietary knowledge never leaves your network.</p>
+            <h3>Deploy Your Way</h3>
+            <p>Self-host with Docker on your own infrastructure, or use the managed cloud. Same features, same limits — you choose where your data lives.</p>
             <div class="feature-meta">
+              <span class="feature-chip">docker</span>
+              <span class="feature-chip">cloud</span>
               <span class="feature-chip">sqlite</span>
-              <span class="feature-chip">rails 8</span>
             </div>
           </div>
         </div>
@@ -360,18 +359,20 @@ $ <span class="fn">cat</span> notes.md | <span class="fn">recuerd0</span> <span 
     <div class="m-container">
       <div class="reveal">
         <div class="section-label" style="justify-content:center;">
-          <span style="display:none;">—</span>get started
+          <span style="display:none;">&mdash;</span>get started
         </div>
         <h2 class="m-section-title">Stop re-explaining your project.<br>Start <em style="color:var(--m-primary);font-style:normal;font-family:'Jura',system-ui,sans-serif;font-weight:500;">preserving</em>.</h2>
         <p class="section-desc">
-          One command. Your server, your data, your context — accessible from any AI tool.
+          One command. Your server, your data, your context &mdash; accessible from any AI tool.
         </p>
       </div>
 
-      <div class="cta-actions reveal reveal-delay-1">
-        <div class="install-cmd">
-          <span class="prompt">$</span>
-          <span>git clone https://github.com/maquina/recuerd0 && cd recuerd0 && bin/setup</span>
+      <div class="cta-actions reveal reveal-delay-1" style="flex-direction: column; align-items: center; gap: 1.5rem;">
+        <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim);">Self-hosted &mdash; Coming soon</span>
+        <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim);">or</span>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <%= link_to "Start with Cloud \u2192", new_registration_path, class: "btn-primary" %>
+          <%= link_to "See pricing", pricing_path, class: "btn-ghost" %>
         </div>
       </div>
     </div>
