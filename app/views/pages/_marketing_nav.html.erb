@@ -21,5 +21,28 @@
       <% end %>
       <li><%= link_to "Get Started", new_registration_path, class: "nav-cta" %></li>
     </ul>
+    <button class="nav-mobile-toggle" data-marketing-nav-target="toggle" data-action="click->marketing-nav#toggleMenu" aria-label="Open menu">
+      <svg class="nav-toggle-open" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <svg class="nav-toggle-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
 </nav>
+
+<div class="nav-overlay" data-marketing-nav-target="overlay">
+  <ul class="nav-overlay-links">
+    <% if local_assigns[:show_anchors] %>
+      <li><a href="#problem" data-action="click->marketing-nav#overlayScroll">why</a></li>
+      <li><a href="#how" data-action="click->marketing-nav#overlayScroll">how it works</a></li>
+      <li><a href="#api" data-action="click->marketing-nav#overlayScroll">api</a></li>
+      <li><a href="#features" data-action="click->marketing-nav#overlayScroll">features</a></li>
+      <li><%= link_to "pricing", pricing_path %></li>
+    <% else %>
+      <li><%= link_to "Home", root_path %></li>
+      <li><%= link_to "API Docs", api_docs_path %></li>
+      <li><%= link_to "CLI", cli_path %></li>
+      <li><%= link_to "Agents", agents_path %></li>
+      <li><%= link_to "Pricing", pricing_path %></li>
+    <% end %>
+    <li><%= link_to "Get Started", new_registration_path, class: "nav-overlay-cta" %></li>
+  </ul>
+</div>

@@ -1,11 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["nav"]
+  static targets = ["nav", "overlay", "toggle"]
 
   connect() {
     this.ticking = false
     this.scrollHandler = this.onScroll.bind(this)
+    this.escapeHandler = (e) => { if (e.key === "Escape") this.closeMenu() }
     window.addEventListener("scroll", this.scrollHandler)
     this.onScroll()
   }
@@ -15,6 +16,7 @@ export default class extends Controller {
   }
 
   teardown() {
+    this.closeMenu()
     this.disconnect()
     this.navTarget.classList.remove("scrolled")
   }
@@ -27,6 +29,31 @@ export default class extends Controller {
       })
       this.ticking = true
     }
+  }
+
+  toggleMenu() {
+    const isOpen = this.overlayTarget.classList.toggle("open")
+    this.toggleTarget.classList.toggle("active", isOpen)
+
+    if (isOpen) {
+      document.body.style.overflow = "hidden"
+      document.addEventListener("keydown", this.escapeHandler)
+    } else {
+      document.body.style.overflow = ""
+      document.removeEventListener("keydown", this.escapeHandler)
+    }
+  }
+
+  closeMenu() {
+    if (this.hasOverlayTarget) this.overlayTarget.classList.remove("open")
+    if (this.hasToggleTarget) this.toggleTarget.classList.remove("active")
+    document.body.style.overflow = ""
+    document.removeEventListener("keydown", this.escapeHandler)
+  }
+
+  overlayScroll(event) {
+    this.closeMenu()
+    this.smoothScroll(event)
   }
 
   smoothScroll(event) {
