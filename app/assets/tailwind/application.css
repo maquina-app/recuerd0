@@ -7,25 +7,6 @@
 
 @plugin "@tailwindcss/typography";
 
-/* Base styles */
-/* @import "./base/theme.css"; */
-/* @import "./base/colors.css"; */
-/* @import "./base/reset.css"; */
-
-/* Component styles */
-/* @import "./components/buttons.css"; */
-/* @import "./components/forms.css"; */
-/* @import "./components/pagination.css"; */
-/* @import "./components/sidebar.css"; */
-/* @import "./components/toast.css"; */
-
-/* Utility styles */
-/* @import "./utilities/animations.css"; */
-/* @import "./utilities/custom.css"; */
-
-/* Vendor overrides */
-/* @import "./vendor/dropdown.css"; */
-
 @custom-variant dark (&:is(.dark *));
 
 :root {

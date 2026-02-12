@@ -164,6 +164,22 @@ JSON API for programmatic access. See `docs/API.md` for full documentation.
 - **Custom confirm dialog** — overrides `Turbo.config.forms.confirm` with a styled `<dialog>` returning a Promise
 - UI state (sidebar open/closed) persisted in cookies (`recuerd0_sidebar_state`)
 
+### Marketing Pages
+
+All marketing CSS lives in `app/assets/tailwind/marketing.css`, scoped under `.marketing`. Design tokens use `--m-*` CSS variables (primary hue 150 green).
+
+**Two footer partials** exist because they live in different structural contexts:
+- `_marketing_footer.html.erb` — standalone `<footer>` with `m-container` (1120px). Used by: landing, pricing, terms, privacy, license.
+- `_doc_footer.html.erb` — `<div>` inside `doc-main` (but outside `doc-content`). Used by: API docs, CLI, agents. Uses `max-width: 1120px` to match marketing width.
+
+Both footers share the same visual pattern (4-column grid: brand/tagline + Product + Resources + Legal columns, bottom bar with copyright + Maquina attribution) but use different CSS class prefixes (`footer-*` vs `doc-footer-*`). The doc footer renders **outside** `doc-content` to escape its 820px constraint.
+
+**Typography conventions**: Navigation links and footer links use Jura 400 (`font-family: 'Jura'`). Column headings use Geist Mono uppercase (matching `section-label` style). Hover color for all nav/footer links is `var(--m-primary)` (green).
+
+**Page layouts**:
+- Landing, pricing, legal pages: `m-nav` (fixed nav) + sections + `_marketing_footer`
+- API docs, CLI, agents: `doc-header` (fixed) + `doc-sidebar` + `doc-main` > `doc-content` + `_doc_footer`
+
 ### maquina-components Gem
 
 Component partials live in the gem, not in the app. The app's `MaquinaComponentsHelper` (`app/helpers/maquina_components_helper.rb`) includes:
