@@ -1,25 +1,46 @@
 <div class="doc-footer">
-  <div class="doc-footer-inner">
-    <div class="doc-footer-brand">
+  <div class="doc-footer-columns">
+    <div class="doc-footer-brand-col">
       <%= image_tag "recuerdo-light.svg", alt: "recuerd0", class: "doc-footer-logo-img" %>
-      <span class="doc-footer-year">· 2026</span>
+      <span class="doc-footer-tagline">The knowledge base your AI tools deserve</span>
     </div>
-    <ul class="doc-footer-links">
-      <li><%= link_to "home", root_path %></li>
-      <li><%= link_to "api docs", api_docs_path %></li>
-      <li><%= link_to "cli", cli_path %></li>
-      <li><%= link_to "agents", agents_path %></li>
-      <li><%= link_to "pricing", pricing_path %></li>
-      <li><%= link_to "terms", terms_path %></li>
-      <li><%= link_to "privacy", privacy_path %></li>
-      <li><%= link_to "license", license_path %></li>
-      <li><%= mail_to "info@recuerd0.ai", "contact" %></li>
-    </ul>
+
+    <div class="doc-footer-col">
+      <h4 class="doc-footer-col-heading">Product</h4>
+      <ul class="doc-footer-col-links">
+        <li><%= link_to "Home", root_path %></li>
+        <li><%= link_to "API Docs", api_docs_path %></li>
+        <li><%= link_to "CLI", cli_path %></li>
+        <li><%= link_to "Agents", agents_path %></li>
+      </ul>
+    </div>
+
+    <div class="doc-footer-col">
+      <h4 class="doc-footer-col-heading">Resources</h4>
+      <ul class="doc-footer-col-links">
+        <li><%= link_to "Pricing", pricing_path %></li>
+        <li><%= link_to "Sign In", new_session_path %></li>
+        <li><%= mail_to "info@recuerd0.ai", "Contact" %></li>
+      </ul>
+    </div>
+
+    <div class="doc-footer-col">
+      <h4 class="doc-footer-col-heading">Legal</h4>
+      <ul class="doc-footer-col-links">
+        <li><%= link_to "Terms", terms_path %></li>
+        <li><%= link_to "Privacy", privacy_path %></li>
+        <li><%= link_to "License", license_path %></li>
+      </ul>
+    </div>
   </div>
-  <div class="doc-footer-maquina">
-    <span>Designed &amp; built by</span>
-    <%= link_to "https://maquina.app", target: "_blank", rel: "noopener" do %>
-      <%= image_tag "maquina_logo_horizontal.svg", alt: "Maquina", class: "doc-footer-maquina-img" %>
-    <% end %>
+
+  <div class="doc-footer-bottom">
+    <span class="doc-footer-year">&copy; 2026 recuerd0 - Mario Alberto Chávez</span>
+    <div class="doc-footer-maquina">
+      <span>Designed &amp; built by</span>
+      <%= link_to "https://maquina.app", target: "_blank", rel: "noopener" do %>
+        <%= image_tag "maquina_logo_horizontal.svg", alt: "Maquina", class: "doc-footer-maquina-img" %>
+      <% end %>
+    </div>
   </div>
 </div>
