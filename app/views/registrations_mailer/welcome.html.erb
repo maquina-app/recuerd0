@@ -1,18 +1,33 @@
 <p>Welcome to recuerd0!</p>
 
-<p>Your account is ready. recuerd0 helps you preserve, version, and organize your conversations with AI — so nothing gets lost.</p>
+<p>Your account is ready. recuerd0 is a knowledge base for your AI workflows — organize, version, and serve project context to any LLM.</p>
 
-<p>Here's what you can do:</p>
+<p><strong>What you can do:</strong></p>
 
 <ul>
-  <li><strong>Create workspaces</strong> to organize your memories by topic or project</li>
-  <li><strong>Save memories</strong> with full markdown support and tagging</li>
-  <li><strong>Version your work</strong> to track how your ideas evolve over time</li>
-  <li><strong>Search everything</strong> with full-text search across all your content</li>
+  <li><strong>Workspaces</strong> — organize memories by project or topic</li>
+  <li><strong>Memories</strong> — save context with full markdown, tagging, and versioning</li>
+  <li><strong>Search</strong> — find anything with full-text search across all your content</li>
+</ul>
+
+<p><strong>Where to start:</strong></p>
+
+<p>We created a <strong>"Start Here"</strong> workspace for you with five onboarding memories covering the product overview, account management, the REST API, the CLI tool, and AI agent integrations. It's the fastest way to get up to speed.</p>
+
+<p><strong>Developer tools:</strong></p>
+
+<ul>
+  <li><strong>REST API</strong> — programmatic access with personal access tokens</li>
+  <li><strong>CLI</strong> — manage workspaces and memories from the terminal</li>
+  <li><strong>AI Agents</strong> — integrate recuerd0 as a context source for your AI tools</li>
 </ul>
 
 <p style="margin: 24px 0;">
-  <a href="<%= workspaces_url %>" class="btn">Get started</a>
+  <% if @start_here_workspace %>
+    <a href="<%= workspace_url(@start_here_workspace) %>" class="btn">Open Start Here</a>
+  <% else %>
+    <a href="<%= workspaces_url %>" class="btn">Go to Workspaces</a>
+  <% end %>
 </p>
 
 <p class="muted">Your data belongs to you. We will never share it, sell it, or use it to train AI models.</p>

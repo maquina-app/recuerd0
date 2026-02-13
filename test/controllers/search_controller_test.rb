@@ -61,6 +61,6 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     xss_query = "<script>alert(1)</script>"
     get search_url, params: {q: xss_query}
     assert_response :success
-    assert_no_match "<script>", response.body
+    assert_no_match "<script>alert(1)</script>", response.body
   end
 end

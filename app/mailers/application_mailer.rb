@@ -8,5 +8,6 @@ class ApplicationMailer < ActionMailer::Base
 
   def attach_logo
     attachments.inline["recuerdo-email.png"] = Rails.root.join("app/assets/images/recuerdo-email.png").read
+    attachments.inline["maquina-email.png"] = Rails.root.join("app/assets/images/maquina-email.png").read
   end
 end

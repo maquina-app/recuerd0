@@ -1,0 +1,7 @@
+Hi,
+
+Your data export is ready to download!
+
+Download Export: <%= account_export_url(@export) %>
+
+This download link will expire on <%= l(@export.expires_at, format: :long) %>. After that, you'll need to request a new export.
