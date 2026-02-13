@@ -1,4 +1,4 @@
-<%= render "components/sidebar/provider", default_open: recuerd0_sidebar_open?, variant: :inset do %>
+<%= render "components/sidebar/provider", default_open: recuerd0_sidebar_open?, variant: :inset, cookie_name: "recuerd0_sidebar_state" do %>
   <%= render "components/sidebar", state: recuerd0_sidebar_state, variant: :inset do %>
     <%= render "application/sidebar/header" %>
 

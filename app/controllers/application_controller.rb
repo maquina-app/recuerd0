@@ -1,7 +1,6 @@
 class ApplicationController < ActionController::Base
   include Authentication
   include Pagy::Backend
-  include HttpCacheable
   include ApiHelpers
   include Analytics::Trackable
 

@@ -372,18 +372,25 @@ Workspace breadcrumbs adapt to state via `workspace_breadcrumb_links` helper -- 
 ## Toasts
 
 ```erb
-<%# Layout (automatic from flash) %>
-<%= render "components/toaster", position: :bottom_right do %>
-  <%= toast_flash_messages %>
-<% end %>
+<%# Layout (automatic from flash — pass content: not a block) %>
+<%= render "components/toaster", position: :bottom_right, content: toast_flash_messages %>
 
 <%# Manual toast %>
 <%= render "components/toast", variant: :success, title: "Saved!", description: "Details." %>
+
+<%# Toast with action button %>
+<%= render "components/toast", title: "Event Created", content: capture { %>
+  <%= render "components/toast/action", label: "Undo", href: "#" %>
+<% } %>
 ```
 
 Flash mapping: `notice`/`success` → `:success`, `alert`/`error` → `:error`, others → `:default`.
 
 Variants: `:default`, `:success`, `:info`, `:warning`, `:error`. Note that `:info` exists for toasts but NOT for alerts.
+
+Toasts auto-dismiss after 5s (configurable via `duration:` param). Set `dismissible: false` to hide the close button.
+
+**JavaScript API** — the toaster exposes `window.Toast` for programmatic toasts: `Toast.success("Saved!")`, `Toast.error("Failed", { description: "..." })`, `Toast.dismiss(id)`, `Toast.dismissAll()`.
 
 ## Confirm Dialog
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title><%= content_for(:title) || "recuerd0 — LLM context management" %></title>
     <meta name="description" content="Preserve, version, and organize your AI conversations.">
@@ -28,9 +28,7 @@
   </head>
 
   <body>
-    <%= render "components/toaster", position: :bottom_right do %>
-      <%= toast_flash_messages %>
-    <% end %>
+    <%= render "components/toaster", position: :bottom_right, content: toast_flash_messages %>
 
     <div class="flex h-screen overflow-hidden">
       <%= render "application/sidebar" %>

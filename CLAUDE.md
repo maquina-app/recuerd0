@@ -13,6 +13,8 @@ See `docs/technical-guide.md` for a comprehensive technical reference, `docs/ui-
 - When implementing a feature from a plan, ALWAYS re-read the full plan before starting and check off each requirement as you complete it. Before declaring done, verify every planned item was addressed.
 - After implementing UI components or interactive elements, verify they work end-to-end (open, close, state changes) by running relevant tests before considering the task complete.
 - After making changes, always run `bin/ci` to verify nothing is broken — it runs setup, linting, security audits, tests, and seed validation in one step. For quick iteration on a single file, `bin/rails test path/to/test.rb` is fine, but always finish with `bin/ci` before declaring done. Run `bin/rubocop` to check for lint violations in changed files.
+- After bulk find/replace operations (`replace_all`), always grep the codebase for partial-word matches or typos introduced by the replacement.
+- When the user says "continue" or references a Fizzy card, confirm which specific card/task before starting implementation — do NOT assume based on recently viewed cards.
 
 ## Commands
 
@@ -377,9 +379,17 @@ Uses Rails 8 built-in authentication generator with `Current.user` and `Current.
 
 SQLite for everything. All environments use 4 separate SQLite databases (primary, cache, queue, cable) — except test, which omits cache (uses `:null_store`). Schema files: `db/queue_schema.rb`, `db/cable_schema.rb`, `db/cache_schema.rb`. Production databases live in a persistent Docker volume. 8 primary tables: `accounts`, `users`, `sessions`, `access_tokens`, `workspaces`, `memories`, `contents`, `pins`. Counter cache on `workspaces.memories_count`. FTS5 virtual table `memories_search` with trigram tokenizer for full-text search. Key indexes: `users.account_id`, `users.role`, `accounts.deleted_at`, `workspaces.account_id`, `access_tokens.token_digest` (unique), `memories(parent_memory_id, version)`, and `pins(user_id, pinnable_type, pinnable_id)` (unique).
 
+When refactoring models, adding associations, or changing multi-tenancy structure, always check and update `db/seeds.rb` to stay consistent.
+
 ### Mailers
 
 `ApplicationMailer` uses `letter_opener` in development (emails open in browser). All mailers inherit an inline PNG logo attachment via `before_action :attach_logo` — the logo (`app/assets/images/recuerdo-email.png`) is a 2x retina PNG rendered at 32px height in the mailer layout. The layout (`app/views/layouts/mailer.html.erb`) uses inline CSS for email client compatibility.
+
+### Asset Paths
+
+- Static assets (favicons, icons, touch icons, `manifest.json`) go in `public/`, NOT `app/assets/images/`
+- Propshaft serves files from `app/assets/fonts/` at the root URL (e.g., `/jura-v34-latin-regular.woff2`). CSS `url()` must use `url('/filename.woff2')` — not relative paths like `../fonts/` and not `/assets/filename.woff2`
+- After placing or moving assets, verify the path resolves correctly before declaring done
 
 ### Deployment
 

@@ -62,7 +62,7 @@
         <%= render "shared/pin_button", pinnable: @memory %>
       <% end %>
 
-      <%= render "components/dropdown_menu" do %>
+      <%= render "components/dropdown_menu", auto_close: true do %>
         <%= render "components/dropdown_menu/trigger", as_child: true do %>
           <button
             type="button"

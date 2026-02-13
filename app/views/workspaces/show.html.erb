@@ -1,4 +1,7 @@
 <%# locals: () %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
 <% content_for :page_title, @workspace.name %>
 
 <% content_for :breadcrumb do %>
@@ -25,7 +28,7 @@
         <% end %>
       <% end %>
 
-      <%= render "components/dropdown_menu" do %>
+      <%= render "components/dropdown_menu", auto_close: true do %>
         <%= render "components/dropdown_menu/trigger", as_child: true do %>
           <button
             type="button"
@@ -54,20 +57,18 @@
   <%# State alerts %>
   <% if @workspace.archived? %>
     <%= render "components/alert", variant: :default, icon: :archive, css_classes: "mb-6" do %>
-      <strong>This workspace is archived</strong>
-      <p class="mt-1">This workspace is in read-only mode. You can view its contents but cannot make changes. Restore it to continue adding memories.</p>
+      <%= render "components/alert/title", text: t("workspaces.show.archived_title") %>
+      <%= render "components/alert/description", text: t("workspaces.show.archived_description") %>
     <% end %>
   <% elsif @workspace.deleted? %>
+    <% deletion_text = if @workspace.days_until_permanent_deletion > 0
+      t("workspaces.show.deleted_description_with_days", days: pluralize(@workspace.days_until_permanent_deletion, "day"))
+    else
+      t("workspaces.show.deleted_description_scheduled")
+    end %>
     <%= render "components/alert", variant: :warning, icon: :trash_2, css_classes: "mb-6" do %>
-      <strong>This workspace is deleted</strong>
-      <p class="mt-1">
-        This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories.
-        <% if @workspace.days_until_permanent_deletion > 0 %>
-          This workspace will be permanently deleted in <%= pluralize(@workspace.days_until_permanent_deletion, "day") %>.
-        <% else %>
-          This workspace is scheduled for permanent deletion.
-        <% end %>
-      </p>
+      <%= render "components/alert/title", text: t("workspaces.show.deleted_title") %>
+      <%= render "components/alert/description", text: deletion_text %>
     <% end %>
   <% end %>
 

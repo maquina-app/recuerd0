@@ -9,21 +9,11 @@ class Memories::VersionsController < ApplicationController
   def index
     @all_versions = @memory.all_versions.includes(:content)
     @root_memory = @memory.root_memory
-
-    fresh_when_private(
-      etag: [@root_memory, @memory.all_versions.maximum(:updated_at)],
-      last_modified: @root_memory.updated_at
-    )
   end
 
   def show
     @version = @memory.all_versions.find(params[:id])
     @all_versions = @memory.all_versions.includes(:content)
-
-    fresh_when_private(
-      etag: [@version, @version.content],
-      last_modified: @version.updated_at
-    )
   end
 
   def create

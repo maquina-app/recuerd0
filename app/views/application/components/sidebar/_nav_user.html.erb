@@ -1,7 +1,7 @@
 <%# locals: (user:) -%>
 <%= render "components/sidebar/menu", css_classes: "p-0" do %>
   <%= render "components/sidebar/menu_item" do %>
-    <%= render "components/dropdown_menu", css_classes: "w-full", data: { "turbo-temporary": "" } do %>
+    <%= render "components/dropdown_menu", css_classes: "w-full", auto_close: true do %>
       <%= render "components/dropdown_menu/trigger", as_child: true, css_classes: "w-full" do %>
         <button
           type="button"

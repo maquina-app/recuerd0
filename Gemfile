@@ -44,7 +44,7 @@ gem "thruster", require: false
 
 gem "commonmarker"
 gem "pagy", "~> 9.3"
-gem "maquina-components"
+gem "maquina-components", path: "../maquina_components/"
 gem "rubyzip", "~> 3.0", require: "zip"
 
 group :development, :test do

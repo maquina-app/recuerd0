@@ -1,4 +1,7 @@
 <%# locals: () %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
 <% content_for :page_title, "Workspaces" %>
 <% content_for :breadcrumb do %>
   <%= breadcrumbs({}, "Workspaces") %>
@@ -8,9 +11,9 @@
   <div class="mb-6 flex items-center justify-between">
     <h1 class="font-display text-2xl font-medium tracking-tight">Workspaces</h1>
 
-    <%= link_to new_workspace_path, data: { component: "button" } do %>
+    <%= link_to new_workspace_path, data: { component: "button", variant: "default" } do %>
       <%= icon_for(:plus, class: "w-4 h-4") %>
-      New Workspace
+      <%= t("workspaces.index.new_workspace") %>
     <% end %>
   </div>
 

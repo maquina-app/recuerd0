@@ -25,12 +25,7 @@ class MemoriesController < ApplicationController
     track_event("memory.view", resource: @memory)
 
     respond_to do |format|
-      format.html do
-        fresh_when_private(
-          etag: [@memory, @all_versions.maximum(:updated_at)],
-          last_modified: @memory.updated_at
-        )
-      end
+      format.html
       format.json
     end
   end

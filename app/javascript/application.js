@@ -2,36 +2,6 @@
 import "@hotwired/turbo-rails"
 import "controllers"
 
-// Close any open dropdown menus in the given root element.
-// TODO: Remove once maquina-components gem adds teardown() to dropdown_menu_controller.
-function closeOpenDropdowns(root) {
-  root.querySelectorAll('[data-controller="dropdown-menu"][data-state="open"]').forEach((dropdown) => {
-    dropdown.setAttribute("data-state", "closed")
-
-    const content = dropdown.querySelector('[data-dropdown-menu-target="content"]')
-    if (content) {
-      content.setAttribute("data-state", "closed")
-      content.hidden = true
-    }
-
-    const trigger = dropdown.querySelector('[data-dropdown-menu-target="trigger"]')
-    if (trigger) {
-      trigger.setAttribute("aria-expanded", "false")
-    }
-  })
-}
-
-// Clean the snapshot before Turbo caches it on navigation away.
-document.addEventListener("turbo:before-cache", () => {
-  closeOpenDropdowns(document)
-})
-
-// Clean the cached body before Turbo renders it on Back/Forward navigation.
-// This prevents the brief flash of an open dropdown while the snapshot is painted.
-document.addEventListener("turbo:before-render", (event) => {
-  closeOpenDropdowns(event.detail.newBody)
-})
-
 // Custom Turbo Confirmation Dialog
 document.addEventListener('DOMContentLoaded', () => {
   // Override Turbo's default confirmation method
