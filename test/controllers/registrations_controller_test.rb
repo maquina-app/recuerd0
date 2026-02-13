@@ -10,6 +10,12 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name='user[password_confirmation]']"
   end
 
+  test "GET new redirects authenticated user to workspaces" do
+    sign_in_as(users(:one))
+    get new_registration_url
+    assert_redirected_to workspaces_path
+  end
+
   test "POST create with valid params creates account and user" do
     assert_difference ["Account.count", "User.count"], 1 do
       post registration_url, params: {
@@ -25,6 +31,22 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert user.present?
     assert user.account.present?
     assert_equal "newuser", user.account.name
+    assert_redirected_to workspaces_path
+  end
+
+  test "POST create redirects authenticated user to workspaces without creating account" do
+    sign_in_as(users(:one))
+
+    assert_no_difference ["Account.count", "User.count"] do
+      post registration_url, params: {
+        user: {
+          email_address: "newuser@example.com",
+          password: "password123",
+          password_confirmation: "password123"
+        }
+      }
+    end
+
     assert_redirected_to workspaces_path
   end
 

@@ -55,7 +55,7 @@ bin/kamal console                # Remote Rails console
 Controlled by `MULTI_TENANT_ENABLED` env var (default: `false`). Accessible via `Rails.application.config.multi_tenant` and the `multi_tenant?` helper (controllers + views).
 
 - **Single-tenant** (default): no public registration, no marketing pages, root → `workspaces#index`. `FirstRunController` forces account creation on first visit when no accounts exist. After setup, only login is available.
-- **Multi-tenant** (`MULTI_TENANT_ENABLED=true`): public registration, marketing pages, root → `home#index`. Current behavior unchanged.
+- **Multi-tenant** (`MULTI_TENANT_ENABLED=true`): public registration, marketing pages, root → `home#index` (redirects to `workspaces#index` for authenticated users).
 
 Routes are conditionally compiled at boot time. The `first_run` resource is always routable but controller-guarded (`require_single_tenant_mode`, `require_no_accounts`). Test environment sets `config.multi_tenant = true` so all routes exist; individual tests stub to `false` for single-tenant behavior.
 
@@ -118,7 +118,7 @@ Controllers under `account/` handle account administration:
 
 ### Controller Concerns
 
-- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Uses `Current.user` / `Current.session` / `Current.account`. Supports both session cookies and Bearer token authentication for API requests. Blocks deleted accounts (redirects sessions, returns 401 for API).
+- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Opt-in to `before_action :redirect_authenticated_user` to bounce logged-in users to `workspaces_path` (used by SessionsController, RegistrationsController, HomeController). Uses `Current.user` / `Current.session` / `Current.account`. Supports both session cookies and Bearer token authentication for API requests. Blocks deleted accounts (redirects sessions, returns 401 for API).
 - **AdminAuthorizable** (`app/controllers/concerns/admin_authorizable.rb`) - `require_admin` method redirects non-admin users to `account_path`. Used by `AccountsController`, `Account::UsersController`, `Account::InvitationsController`.
 - **WorkspaceScoped** (`app/controllers/concerns/workspace_scoped.rb`) - Loads workspace scoped to `Current.account.workspaces`. Includes `require_active_workspace` for both HTML and JSON formats.
 - **ApiHelpers** (`app/controllers/concerns/api_helpers.rb`) - Pagination headers (`X-Page`, `X-Total`, `X-Total-Pages`, `Link`), error response helpers (`render_validation_errors`, `render_not_found`, `render_unauthorized`, `render_forbidden`, `render_rate_limited`).
@@ -189,6 +189,27 @@ Component partials live in the gem, not in the app. The app's `MaquinaComponents
 - `MaquinaComponents::ToastHelper` — `toast_flash_messages`, `toast(variant, title, description:)`, `toast_success`, `toast_error`, `toast_warning`, `toast_info`
 
 Component partials accept `css_classes:` for styling and `**html_options` (including `data:`) for extra attributes. Data attributes are merged with the component's own data attributes (e.g., `data-component`, `data-controller`).
+
+#### Sub-component content pattern (`content` not `yield`)
+
+**CRITICAL**: Gem sub-components (card/title, card/description, alert/title, alert/description, toast/title, toast/description, combobox/label) use `text || content` — NOT `yield`. Passing content via `do...end` block will silently drop it. Use the `text:` parameter for simple strings or `content: capture { ... }` for HTML:
+
+```erb
+<%# GOOD — text parameter %>
+<%= render "components/toast/title", text: "Saved!" %>
+
+<%# GOOD — content parameter for HTML %>
+<%= render "components/card/title", content: capture { %>
+  <span class="font-bold">Custom</span> title
+<% } %>
+
+<%# BAD — block content is silently dropped %>
+<%= render "components/toast/title" do %>
+  This will NOT render!
+<% end %>
+```
+
+The same applies to container components like toaster — use `content:` parameter, not a block.
 
 #### Component variant reference
 
@@ -283,18 +304,35 @@ When creating compound input components (like tag input), match the gem's focus 
 
 #### Toast / Toaster usage
 
-The layout uses the gem's toaster container with `toast_flash_messages` to render flash-based toasts:
+The layout uses the gem's toaster container with `toast_flash_messages` to render flash-based toasts. Pass `content:` as a parameter — do NOT use a block:
 
 ```erb
-<%= render "components/toaster", position: :bottom_right do %>
-  <%= toast_flash_messages %>
-<% end %>
+<%= render "components/toaster", position: :bottom_right, content: toast_flash_messages %>
 ```
 
 Individual toasts are rendered with `render "components/toast"`:
 
 ```erb
 <%= render "components/toast", variant: :success, title: "Saved!", description: "Your changes were saved." %>
+```
+
+Toasts with action buttons use `content:` with `capture`:
+
+```erb
+<%= render "components/toast", title: "Event Created", content: capture { %>
+  <%= render "components/toast/action", label: "Undo", href: "#" %>
+<% } %>
+```
+
+The toaster also exposes a global JavaScript API for programmatic toasts:
+
+```javascript
+Toast.success("Profile updated!")
+Toast.error("Something went wrong", { description: "Please try again" })
+Toast.info("New update available", { duration: 10000 })
+Toast.warning("Session expiring soon")
+Toast.dismiss(toastId)
+Toast.dismissAll()
 ```
 
 Always use the gem's `render "components/..."` partials — never hand-write inline HTML to replicate a gem component's output. The gem manages data attributes, Stimulus controllers, and CSS selectors internally.
@@ -321,12 +359,14 @@ This applies to any code inside `do...end` blocks for gem-rendered partials (car
 
 - Layout uses `turbo_refresh_method_tag :morph` + `turbo_refresh_scroll_tag :preserve` — enables smooth page morphing with scroll preservation
 - **Form submissions with morph**: After a successful form submission, use `redirect_to` (sends 303 See Other automatically). Turbo follows the redirect and morphs only changed DOM elements. This is the canonical Turbo 8 pattern. **Do NOT use `turbo_stream.refresh` for form responses** — it is designed for broadcasting (WebSockets) and gets silently ignored due to request_id deduplication when returned as a direct form response.
-- `data-turbo-temporary` does **not** work with morph mode for cleaning up stateful elements
+- **Back-button freshness**: Pages with mutable state (workspaces index, workspace show) use `<meta name="turbo-cache-control" content="no-cache">` via `content_for :head` to prevent Turbo from restoring stale snapshots on Back/Forward navigation. No HTTP conditional caching (`ETag`/`304`) is used — unnecessary for a One Person Framework SQLite app.
 - Stateful Stimulus components (dropdowns, modals) need cleanup via Turbo cache events:
   - `turbo:before-cache` — clean the live DOM before Turbo snapshots it
   - `turbo:before-render` — clean `event.detail.newBody` before Turbo paints it on Back/Forward (prevents flash of stale state)
 - `app/javascript/controllers/application.js` implements the [Better Stimulus global teardown pattern](https://www.betterstimulus.com/turbo/teardown.html): any Stimulus controller with a `teardown()` method gets called on `turbo:before-cache`
-- `app/javascript/application.js` has manual DOM cleanup for gem-provided dropdown menus (until the gem adds its own `teardown()`)
+- Gem-provided controllers (dropdown_menu, sidebar, date_picker) ship their own `teardown()` methods and `turbo:before-cache` listeners — no manual cleanup needed in `application.js`
+- **Dropdown `auto_close: true`**: All dropdown menus with navigation items use `auto_close: true` to close the dropdown immediately on item click, before Turbo navigation begins
+- **Sidebar `cookie_name:`**: The sidebar provider must receive `cookie_name: "recuerd0_sidebar_state"` to match the server-side `recuerd0_sidebar_open?` helper
 - Forms using `local: true` bypass Turbo Drive — used when Stimulus controllers need standard page navigation lifecycle (e.g., markdown editor)
 
 ### Authentication

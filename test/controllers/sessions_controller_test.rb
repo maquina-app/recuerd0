@@ -7,6 +7,12 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{new_registration_path}']", "Sign up"
   end
 
+  test "GET new redirects authenticated user to workspaces" do
+    sign_in_as(users(:one))
+    get new_session_url
+    assert_redirected_to workspaces_path
+  end
+
   test "POST create with valid credentials logs in user" do
     user = users(:one)
 
@@ -14,6 +20,12 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to workspaces_path
     assert cookies[:session_id].present?
+  end
+
+  test "POST create redirects authenticated user to workspaces" do
+    sign_in_as(users(:one))
+    post session_url, params: {email_address: "other@example.com", password: "password"}
+    assert_redirected_to workspaces_path
   end
 
   test "POST create with invalid credentials shows error" do

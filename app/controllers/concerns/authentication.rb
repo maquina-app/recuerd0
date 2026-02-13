@@ -20,6 +20,11 @@ module Authentication
     Current.user.present?
   end
 
+  def redirect_authenticated_user
+    resume_session
+    redirect_to workspaces_path if authenticated?
+  end
+
   def require_authentication
     authenticate_via_token || resume_session || request_authentication
     check_account_not_deleted if Current.user

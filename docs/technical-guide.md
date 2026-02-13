@@ -92,7 +92,7 @@ The application supports two tenancy modes controlled by the `MULTI_TENANT_ENABL
 
 **Multi-tenant mode** (`MULTI_TENANT_ENABLED=true`):
 - Public registration, marketing pages, and full landing page enabled
-- Root route points to `home#index` (landing page for visitors, dashboard for authenticated users)
+- Root route points to `home#index` (landing page for visitors, redirects authenticated users to workspaces)
 
 Configuration: `Rails.application.config.multi_tenant` (boolean). Helper: `multi_tenant?` available in all controllers and views.
 
@@ -195,9 +195,9 @@ Multi-model operations are handled by model methods wrapped in transactions:
 | `WorkspacesController` | CRUD for workspaces. `show` auto-redirects to archived/deleted namespaced routes based on state. Paginated index with pins-first ordering. |
 | `MemoriesController` | CRUD for memories (via use cases). Includes `preview` action for markdown rendering in a Turbo Frame. |
 | `PinsController` | Create/destroy pins. Validates pinnable type against whitelist. Enforces 10-pin limit. |
-| `HomeController` | Public landing page (multi-tenant only). |
-| `SessionsController` | Login/logout. Rate-limited to 10 attempts per 3 minutes. |
-| `RegistrationsController` | Self-service user signup (multi-tenant only). Creates Account + User atomically. Rate-limited to 10 attempts per hour. |
+| `HomeController` | Public landing page (multi-tenant only). Redirects authenticated users to workspaces. |
+| `SessionsController` | Login/logout. Redirects authenticated users away from login form. Rate-limited to 10 attempts per 3 minutes. |
+| `RegistrationsController` | Self-service user signup (multi-tenant only). Redirects authenticated users away from signup form. Creates Account + User atomically. Rate-limited to 10 attempts per hour. |
 | `FirstRunController` | Single-tenant first run setup. Creates initial account when no accounts exist. Guards: `require_single_tenant_mode`, `require_no_accounts`. |
 | `PasswordsController` | Token-based password reset via email. Anti-enumeration (always shows success). |
 | `SearchController` | Cross-workspace memory search. HTML uses `full_search` (phrase-quoted). JSON API uses `api_search` (raw FTS5 operators). Validates query presence/length for API, rescues FTS5 syntax errors. Optional `workspace_id` filter. |
@@ -216,12 +216,10 @@ Multi-model operations are handled by model methods wrapped in transactions:
 
 ### Controller Concerns
 
-- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Session stored in signed permanent cookie (httponly, same_site: lax). Also handles Bearer token authentication for API requests. Blocks deleted accounts (session redirect + API 401).
+- **Authentication** (`app/controllers/concerns/authentication.rb`) - `before_action :require_authentication` by default. Opt-out with `allow_unauthenticated_access`. Opt-in to `before_action :redirect_authenticated_user` to bounce logged-in users to `workspaces_path` (used by SessionsController, RegistrationsController, HomeController). Note: `redirect_authenticated_user` calls `resume_session` internally because `allow_unauthenticated_access` skips `require_authentication`, which is what normally resolves the session. Session stored in signed permanent cookie (httponly, same_site: lax). Also handles Bearer token authentication for API requests. Blocks deleted accounts (session redirect + API 401).
 - **AdminAuthorizable** (`app/controllers/concerns/admin_authorizable.rb`) - `require_admin` method redirects non-admin users to `account_path`. Shared by account management controllers.
 - **WorkspaceScoped** (`app/controllers/concerns/workspace_scoped.rb`) - Loads workspace with `with_deleted` scope for namespaced controllers. Includes `require_active_workspace` with HTML/JSON format support.
 - **ApiHelpers** (`app/controllers/concerns/api_helpers.rb`) - JSON API utilities: pagination headers (`X-Page`, `X-Per-Page`, `X-Total`, `X-Total-Pages`, `Link`), error response helpers (`render_validation_errors`, `render_not_found`, `render_unauthorized`, `render_forbidden`, `render_rate_limited`).
-- **HttpCacheable** (`app/controllers/concerns/http_cacheable.rb`) - HTTP caching helpers: `fresh_when_private` (ETags with `Cache-Control: private`), `collection_cache_key` (composite cache keys for paginated collections).
-
 ## Routing Structure
 
 ```
@@ -338,6 +336,7 @@ Rails 8 built-in authentication with `has_secure_password` (bcrypt).
 - **Registration**: self-service signup creates Account + User atomically, auto-login after success (multi-tenant only)
 - **First run**: in single-tenant mode, unauthenticated requests redirect to `/first_run/new` when no accounts exist; once an account is created, redirects to login
 - **Password reset**: encrypted token via Rails message verifier, delivered by `PasswordsMailer`
+- **Authenticated user redirect**: `redirect_authenticated_user` before_action bounces logged-in users from auth pages (login, signup, landing) to `workspaces_path`
 - **Rate limiting**: 10 login attempts per 3 minutes, 10 registration attempts per hour
 
 ## Frontend Architecture

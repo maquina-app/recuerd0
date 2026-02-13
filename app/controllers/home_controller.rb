@@ -1,14 +1,9 @@
 class HomeController < ApplicationController
   allow_unauthenticated_access
+  before_action :redirect_authenticated_user
 
-  layout :resolve_layout
+  layout "marketing"
 
   def index
-  end
-
-  private
-
-  def resolve_layout
-    authenticated? ? "application" : "marketing"
   end
 end
