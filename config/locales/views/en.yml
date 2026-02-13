@@ -7,6 +7,25 @@ en:
     index:
       new_workspace: "New Workspace"
     show:
+      page_title: "Workspaces"
+    archives:
+      index:
+        page_title: "Archived Workspaces"
+        heading: "Archived Workspaces"
+        breadcrumb: "Archived Workspaces"
+        alert_title: "About Archived Workspaces"
+        alert_description: "Archived workspaces are read-only and cannot be modified. You can restore them at any time to continue working with them."
+        empty_title: "No archived workspaces"
+        empty_description: "You haven't archived any workspaces yet."
+    deleted:
+      index:
+        page_title: "Deleted Workspaces"
+        heading: "Deleted Workspaces"
+        breadcrumb: "Deleted Workspaces"
+        alert_title: "About Deleted Workspaces"
+        alert_description: "Deleted workspaces can be restored or permanently removed. Permanently deleting a workspace will also delete all associated memories and cannot be undone."
+        empty_title: "No deleted workspaces"
+        empty_description: "You haven't deleted any workspaces yet."
       archived_title: "This workspace is archived"
       archived_description: "This workspace is in read-only mode. You can view its contents but cannot make changes. Restore it to continue adding memories."
       deleted_title: "This workspace is deleted"

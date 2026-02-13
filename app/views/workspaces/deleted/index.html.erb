@@ -1,26 +1,26 @@
 <%# locals: () %>
-<% content_for :page_title, "Deleted Workspaces" %>
+<% content_for :page_title, t(".page_title") %>
 
 <% content_for :breadcrumb do %>
   <%= breadcrumbs(
     { "Workspaces" => workspaces_path },
-    "Deleted Workspaces",
+    t("workspaces.deleted.index.breadcrumb"),
   ) %>
 <% end %>
 
 <div class="mx-auto max-w-4xl">
   <div class="mb-6 flex items-center justify-between">
-    <h1 class="font-display text-2xl font-medium tracking-tight">Deleted Workspaces</h1>
+    <h1 class="font-display text-2xl font-medium tracking-tight"><%= t(".heading") %></h1>
   </div>
 
   <%= render "components/alert", variant: :warning, icon: :trash_2, css_classes: "mb-6" do %>
-    <strong>About Deleted Workspaces</strong>
-    <p class="mt-1">Deleted workspaces can be restored or permanently removed. Permanently deleting a workspace will also delete all associated memories and cannot be undone.</p>
+    <strong><%= t("workspaces.deleted.index.alert_title") %></strong>
+    <p class="mt-1"><%= t("workspaces.deleted.index.alert_description") %></p>
   <% end %>
 
   <% if @workspaces.any? %>
     <%= render "workspaces/workspaces_list", workspaces: @workspaces, pagy: @pagy, path_helper: :deleted_workspaces_path, show_status: true %>
   <% else %>
-    <%= render "workspaces/empty_state_generic", icon: :trash_2, title: "No deleted workspaces", description: "You haven't deleted any workspaces yet." %>
+    <%= render "workspaces/empty_state_generic", icon: :trash_2, title: t(".empty_title"), description: t(".empty_description") %>
   <% end %>
 </div>
