@@ -44,13 +44,7 @@
       <%= render "components/empty/header" do %>
         <%= render "components/empty/media", icon: :sticky_note %>
         <%= render "components/empty/title", text: "No memories yet" %>
-        <%= render "components/empty/description" do %>
-          <% if workspace.active? %>
-            Start adding memories to this workspace.
-          <% else %>
-            This workspace doesn't have any memories.
-          <% end %>
-        <% end %>
+        <%= render "components/empty/description", text: workspace.active? ? "Start adding memories to this workspace." : "This workspace doesn't have any memories." %>
       <% end %>
       <% if workspace.active? %>
         <%= render "components/empty/content" do %>

@@ -14,8 +14,8 @@
   </div>
 
   <%= render "components/alert", variant: :default, icon: :pin, css_classes: "mb-6" do %>
-    <strong><%= t(".about_title") %></strong>
-    <p class="mt-1"><%= t(".about_description") %></p>
+    <strong><%= t("memories.pinned.index.about_title") %></strong>
+    <p class="mt-1"><%= t("memories.pinned.index.about_description") %></p>
   <% end %>
 
   <% if @memories.any? %>

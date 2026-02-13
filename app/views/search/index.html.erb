@@ -15,8 +15,8 @@
 
   <% if @query.present? && @query.length < Searchable::MIN_QUERY_LENGTH %>
     <%= render "components/alert", variant: :warning, icon: :alert_triangle, css_classes: "mb-6" do %>
-      <strong><%= t(".min_length_title") %></strong>
-      <p class="mt-1"><%= t(".min_length_description") %></p>
+      <strong><%= t("search.index.min_length_title") %></strong>
+      <p class="mt-1"><%= t("search.index.min_length_description") %></p>
     <% end %>
   <% elsif @memories.any? %>
     <p class="text-sm text-muted-foreground mb-4">

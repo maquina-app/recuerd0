@@ -144,9 +144,7 @@
       <%= render "components/empty/header" do %>
         <%= render "components/empty/media", icon: :file_text %>
         <%= render "components/empty/title", text: "No content yet" %>
-        <%= render "components/empty/description" do %>
-          This memory doesn't have any content. Add some markdown content to get started.
-        <% end %>
+        <%= render "components/empty/description", text: "This memory doesn't have any content. Add some markdown content to get started." %>
       <% end %>
       <% if @workspace.active? %>
         <%= render "components/empty/content" do %>

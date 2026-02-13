@@ -8,6 +8,11 @@ en:
       new_workspace: "New Workspace"
     show:
       page_title: "Workspaces"
+      archived_title: "This workspace is archived"
+      archived_description: "This workspace is in read-only mode. You can view its contents but cannot make changes. Restore it to continue adding memories."
+      deleted_title: "This workspace is deleted"
+      deleted_description_with_days: "This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories. This workspace will be permanently deleted in %{days}."
+      deleted_description_scheduled: "This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories. This workspace is scheduled for permanent deletion."
     archives:
       index:
         page_title: "Archived Workspaces"
@@ -26,11 +31,6 @@ en:
         alert_description: "Deleted workspaces can be restored or permanently removed. Permanently deleting a workspace will also delete all associated memories and cannot be undone."
         empty_title: "No deleted workspaces"
         empty_description: "You haven't deleted any workspaces yet."
-      archived_title: "This workspace is archived"
-      archived_description: "This workspace is in read-only mode. You can view its contents but cannot make changes. Restore it to continue adding memories."
-      deleted_title: "This workspace is deleted"
-      deleted_description_with_days: "This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories. This workspace will be permanently deleted in %{days}."
-      deleted_description_scheduled: "This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories. This workspace is scheduled for permanent deletion."
   memories:
     memory:
       view_details: "View Details"
