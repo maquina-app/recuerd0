@@ -26,6 +26,8 @@ module Recuerd0
 
     config.i18n.load_path += Dir[Rails.root.join("config", "locales", "**", "*.yml")]
 
+    config.active_storage.variant_processor = :disabled
+
     config.multi_tenant = ENV.fetch("MULTI_TENANT_ENABLED", "false") == "true"
   end
 end
