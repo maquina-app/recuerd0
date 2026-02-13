@@ -1,10 +1,3 @@
-PATH
-  remote: ../maquina_components
-  specs:
-    maquina-components (0.4.0)
-      rails (>= 7.2.0)
-      tailwindcss-rails (~> 4.2)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -148,8 +141,9 @@ GEM
       activesupport (>= 6.0.0)
       railties (>= 6.0.0)
     io-console (0.8.2)
-    irb (1.16.0)
+    irb (1.17.0)
       pp (>= 0.6.0)
+      prism (>= 1.3.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jbuilder (2.14.1)
@@ -195,6 +189,9 @@ GEM
       net-imap
       net-pop
       net-smtp
+    maquina-components (0.4.0)
+      rails (>= 7.2.0)
+      tailwindcss-rails (~> 4.2)
     marcel (1.1.0)
     matrix (0.4.3)
     mini_mime (1.1.5)
@@ -293,7 +290,7 @@ GEM
       zeitwerk (~> 2.6)
     rainbow (3.1.1)
     rake (13.3.1)
-    rdoc (7.1.0)
+    rdoc (7.2.0)
       erb
       psych (>= 4.0.0)
       tsort
@@ -443,7 +440,7 @@ DEPENDENCIES
   kamal
   letter_opener
   log_bench (~> 0.3.1)
-  maquina-components!
+  maquina-components
   minitest (~> 5.25)
   pagy (~> 9.3)
   propshaft
