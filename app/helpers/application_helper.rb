@@ -7,7 +7,7 @@ module ApplicationHelper
     return "".html_safe if text.blank?
 
     html = Commonmarker.to_html(text, options: {parse: {smart: true}})
-    sanitize(html)
+    sanitize(html, tags: Loofah::HTML5::SafeList::ACCEPTABLE_ELEMENTS)
   end
 
   # Avatar helper methods
