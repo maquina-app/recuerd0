@@ -416,6 +416,31 @@ Load guides with `execute_tool("load_guide", { library: "<library>", guide: "<gu
 - `get_schema` — database schema for all or specific tables
 - `project_info` — Rails version, directory structure, project overview
 
+## Recuerd0 Knowledge Base
+
+The `/recuerd0` skill provides access to project knowledge stored as memories in workspaces. Use it to look up documentation, architectural decisions, and patterns before starting work.
+
+### Usage
+
+- **List workspaces** to find available knowledge: `recuerd0 workspace list --pretty`. Look for the **"recuerd0 Rails Application"** workspace — it contains technical guides, patterns, and architecture docs.
+- **List memories** in a workspace to browse available docs: `recuerd0 memory list --workspace <id> --pretty`
+- **Search** across all workspaces with FTS5 operators: `recuerd0 search "authentication AND tokens" --pretty`
+- **Read a specific memory**: `recuerd0 memory show --workspace <id> <memory_id> --pretty`
+
+### FTS5 search operators
+
+| Operator | Example |
+|----------|---------|
+| Term | `architecture` |
+| AND | `architecture AND design` |
+| OR | `meeting OR standup` |
+| NOT | `design NOT draft` |
+| Phrase | `"project timeline"` |
+| Column filter | `title:architecture` or `body:implementation` |
+| Grouping | `(meeting OR standup) AND notes` |
+
+Search recuerd0 before starting complex tasks to load relevant project context.
+
 ## Project Tracking
 
 Engineering tasks are tracked on the Fizzy board: **Recuerd0 Engineering**
