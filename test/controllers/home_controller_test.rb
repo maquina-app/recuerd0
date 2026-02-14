@@ -6,9 +6,9 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "redirects authenticated user to workspaces" do
+  test "renders landing page for authenticated user" do
     sign_in_as(users(:one))
     get root_url
-    assert_redirected_to workspaces_path
+    assert_response :success
   end
 end

@@ -36,7 +36,11 @@
             Human-curated memory, instantly accessible via REST API.
           </p>
           <div class="hero-actions">
-            <%= link_to "Start free \u2192", new_registration_path, class: "btn-primary" %>
+            <% if authenticated? %>
+              <%= link_to "Go to App \u2192", workspaces_path, class: "btn-primary" %>
+            <% else %>
+              <%= link_to "Start free \u2192", new_registration_path, class: "btn-primary" %>
+            <% end %>
             <%= link_to "Self-host \u2192", pricing_path, class: "btn-ghost" %>
           </div>
         </div>
@@ -412,7 +416,11 @@ as new versioned memories.</code>
         <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim);">Self-hosted &mdash; Coming soon</span>
         <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim);">or</span>
         <div style="display: flex; gap: 1rem; align-items: center;">
-          <%= link_to "Start with Cloud \u2192", new_registration_path, class: "btn-primary" %>
+          <% if authenticated? %>
+            <%= link_to "Go to App \u2192", workspaces_path, class: "btn-primary" %>
+          <% else %>
+            <%= link_to "Start with Cloud \u2192", new_registration_path, class: "btn-primary" %>
+          <% end %>
           <%= link_to "See pricing", pricing_path, class: "btn-ghost" %>
         </div>
       </div>

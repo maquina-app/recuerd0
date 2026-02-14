@@ -16,7 +16,11 @@
       <%= link_to "CLI", cli_path, class: "header-link" %>
       <%= link_to "Agents", agents_path, class: "header-link" %>
       <%= link_to "Pricing", pricing_path, class: "header-link" %>
-      <%= link_to "Get Started", new_registration_path, class: "header-cta" %>
+      <% if authenticated? %>
+        <%= link_to "Go to App \u2192", workspaces_path, class: "header-cta" %>
+      <% else %>
+        <%= link_to "Get Started", new_registration_path, class: "header-cta" %>
+      <% end %>
     </div>
   </div>
 </header>
