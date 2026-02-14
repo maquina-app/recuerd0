@@ -1,6 +1,8 @@
 class Memories::VersionsController < ApplicationController
   include WorkspaceScoped
 
+  wrap_parameters :memory
+
   before_action :set_workspace
   before_action :set_memory
   before_action :require_active_workspace, only: %i[create]

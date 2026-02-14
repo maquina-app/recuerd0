@@ -57,6 +57,20 @@ class ApiVersionsTest < ActionDispatch::IntegrationTest
     assert_includes json["tags"], "new"
   end
 
+  test "create version with flat json params" do
+    assert_difference "Memory.count", 1 do
+      post workspace_memory_versions_url(@workspace, @memory, format: :json),
+        params: {content: "Flat param content", title: "Flat title"},
+        headers: auth_headers(@full_access_token),
+        as: :json
+    end
+
+    assert_response :created
+    json = JSON.parse(response.body)
+    assert_equal "Flat title", json["title"]
+    assert_equal "Flat param content", json["content"]["body"]
+  end
+
   private
 
   def auth_headers(token)
