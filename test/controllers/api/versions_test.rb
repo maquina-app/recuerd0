@@ -11,7 +11,7 @@ class ApiVersionsTest < ActionDispatch::IntegrationTest
   test "create version via api" do
     assert_difference "Memory.count", 1 do
       post workspace_memory_versions_url(@workspace, @memory, format: :json),
-        params: {memory: {content: "New version content"}},
+        params: {version: {content: "New version content"}},
         headers: auth_headers(@full_access_token)
     end
 
@@ -24,7 +24,7 @@ class ApiVersionsTest < ActionDispatch::IntegrationTest
   test "create version requires full_access token" do
     assert_no_difference "Memory.count" do
       post workspace_memory_versions_url(@workspace, @memory, format: :json),
-        params: {memory: {content: "Should fail"}},
+        params: {version: {content: "Should fail"}},
         headers: auth_headers(@read_only_token)
     end
 
@@ -33,7 +33,7 @@ class ApiVersionsTest < ActionDispatch::IntegrationTest
 
   test "version copies source attributes" do
     post workspace_memory_versions_url(@workspace, @memory, format: :json),
-      params: {memory: {}},
+      params: {version: {}},
       headers: auth_headers(@full_access_token)
 
     assert_response :created
@@ -47,7 +47,7 @@ class ApiVersionsTest < ActionDispatch::IntegrationTest
     custom_content = "Custom version body"
 
     post workspace_memory_versions_url(@workspace, @memory, format: :json),
-      params: {memory: {title: custom_title, content: custom_content, tags: ["new"]}},
+      params: {version: {title: custom_title, content: custom_content, tags: ["new"]}},
       headers: auth_headers(@full_access_token)
 
     assert_response :created

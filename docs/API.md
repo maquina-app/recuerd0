@@ -389,16 +389,16 @@ POST /workspaces/:workspace_id/memories/:memory_id/versions.json
 
 | Name | Type | Description |
 |------|------|-------------|
-| memory[title] | string | Version title (defaults to parent) |
-| memory[content] | string | Version body (defaults to parent) |
-| memory[source] | string | Source identifier (defaults to parent) |
-| memory[tags] | array | Tags (defaults to parent) |
+| version[title] | string | Version title (defaults to parent) |
+| version[content] | string | Version body (defaults to parent) |
+| version[source] | string | Source identifier (defaults to parent) |
+| version[tags] | array | Tags (defaults to parent) |
 
 **Request**
 
 ```json
 {
-  "memory": {
+  "version": {
     "content": "# Updated Content\n\nRevised version..."
   }
 }

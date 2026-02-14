@@ -1,7 +1,7 @@
 class Memories::VersionsController < ApplicationController
   include WorkspaceScoped
 
-  wrap_parameters :memory
+  wrap_parameters :version
 
   before_action :set_workspace
   before_action :set_memory
@@ -54,6 +54,6 @@ class Memories::VersionsController < ApplicationController
   end
 
   def version_params
-    params.fetch(:memory, {}).permit(:title, :content, :source, tags: [])
+    params.fetch(:version, {}).permit(:title, :content, :source, tags: [])
   end
 end
