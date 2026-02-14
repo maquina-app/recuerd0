@@ -75,6 +75,24 @@
           <%= icon_for :log_out, class: "size-4" %>
           <%= t("components.sidebar.nav_user.log_out") %>
         <% end %>
+
+        <% unless multi_tenant? %>
+          <%= render "components/dropdown_menu/separator" %>
+
+          <%= render "components/dropdown_menu/group" do %>
+            <%= render "components/dropdown_menu/item",
+                href: "https://recuerd0.ai",
+                target: "_blank" do %>
+              recuerd0.ai
+            <% end %>
+
+            <%= render "components/dropdown_menu/item",
+                href: "https://maquina.app",
+                target: "_blank" do %>
+              maquina.app
+            <% end %>
+          <% end %>
+        <% end %>
       <% end %>
     <% end %>
   <% end %>

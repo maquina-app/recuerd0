@@ -38,3 +38,31 @@
     <% end %>
   <% end %>
 <% end %>
+
+<%= render "components/sidebar/group", title: "References" do %>
+  <%= render "components/sidebar/menu" do %>
+    <%= render "components/sidebar/menu_item" do %>
+      <%= render "components/sidebar/menu_button",
+          title: "API Docs",
+          url: "https://recuerd0.ai/api-docs",
+          icon_name: :file_text,
+          target: "_blank" %>
+    <% end %>
+
+    <%= render "components/sidebar/menu_item" do %>
+      <%= render "components/sidebar/menu_button",
+          title: "CLI",
+          url: "https://recuerd0.ai/cli",
+          icon_name: :gallery_vertical_end,
+          target: "_blank" %>
+    <% end %>
+
+    <%= render "components/sidebar/menu_item" do %>
+      <%= render "components/sidebar/menu_button",
+          title: "Agents",
+          url: "https://recuerd0.ai/agents",
+          icon_name: :brain,
+          target: "_blank" %>
+    <% end %>
+  <% end %>
+<% end %>
