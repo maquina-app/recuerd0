@@ -441,6 +441,11 @@ The `/recuerd0` skill provides access to project knowledge stored as memories in
 
 Search recuerd0 before starting complex tasks to load relevant project context.
 
+### Content formats
+
+- **recuerd0** — content is **Markdown**
+- **fizzy** — content (card descriptions, comments) is **HTML**
+
 ## Project Tracking
 
 Engineering tasks are tracked on the Fizzy board: **Recuerd0 Engineering**
