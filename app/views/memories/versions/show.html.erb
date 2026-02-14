@@ -19,7 +19,7 @@
   <div class="flex justify-between items-center gap-4">
     <div class="flex items-center gap-2 flex-wrap">
       <%= link_to workspace_memory_versions_path(@workspace, @memory),
-          class: "btn-ghost btn-sm" do %>
+          data: { component: "button", variant: "ghost", size: "sm" } do %>
         <%= icon_for(:arrow_left, class: "w-4 h-4") %>
         All Versions
       <% end %>
@@ -31,7 +31,7 @@
       <% if current_index && current_index > 0 %>
         <% prev_version = all_versions[current_index - 1] %>
         <%= link_to workspace_memory_version_path(@workspace, @memory, prev_version),
-            class: "btn-ghost btn-sm",
+            data: { component: "button", variant: "ghost", size: "sm" },
             title: "Previous version (#{prev_version.version_label})" do %>
           <%= icon_for(:chevron_left, class: "w-4 h-4") %>
           Prev
@@ -43,7 +43,7 @@
       <% if current_index && current_index < all_versions.count - 1 %>
         <% next_version = all_versions[current_index + 1] %>
         <%= link_to workspace_memory_version_path(@workspace, @memory, next_version),
-            class: "btn-ghost btn-sm",
+            data: { component: "button", variant: "ghost", size: "sm" },
             title: "Next version (#{next_version.version_label})" do %>
           Next
           <%= icon_for(:chevron_right, class: "w-4 h-4") %>
@@ -54,8 +54,7 @@
     <% if @workspace.active? %>
       <%= button_to workspace_memory_versions_path(@workspace, @version),
           method: :post,
-          class: "btn-secondary btn-sm",
-          data: { turbo_confirm: "Create a new version from #{@version.version_label}?" } do %>
+          data: { component: "button", variant: "secondary", size: "sm", turbo_confirm: "Create a new version from #{@version.version_label}?" } do %>
         <%= icon_for(:copy_plus, class: "w-4 h-4") %>
         Branch from This
       <% end %>
@@ -143,7 +142,7 @@
               </div>
               <%= link_to "View",
                   workspace_memory_path(@workspace, child_version),
-                  class: "btn-ghost btn-sm" %>
+                  data: { component: "button", variant: "ghost", size: "sm" } %>
             </div>
           <% end %>
         </div>
@@ -154,7 +153,7 @@
   <%# Back to root memory %>
   <div class="flex justify-center pt-4">
     <%= link_to workspace_memory_path(@workspace, @memory.root_memory),
-        class: "btn-ghost" do %>
+        data: { component: "button", variant: "ghost" } do %>
       <%= icon_for(:arrow_left, class: "w-4 h-4") %>
       Back to
       <%= @memory.root_memory.display_title %>
