@@ -62,7 +62,7 @@ module Authentication
   end
 
   def request_authentication
-    if request.format.json?
+    if api_request?
       render_unauthorized
     elsif !Rails.application.config.multi_tenant && !Account.exists?
       redirect_to new_first_run_path
@@ -98,7 +98,7 @@ module Authentication
   def check_account_not_deleted
     return unless Current.account&.deleted?
 
-    if request.format.json?
+    if api_request?
       render_unauthorized
     else
       terminate_session if Current.session

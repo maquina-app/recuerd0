@@ -7,11 +7,14 @@ class ApplicationController < ActionController::Base
   helper_method :multi_tenant?
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-  allow_browser versions: :modern, if: -> { !request.format.json? }
+  allow_browser versions: :modern, if: -> { !api_request? }
+
+  # Skip CSRF verification for API requests (authenticated via Bearer token)
+  skip_forgery_protection if: -> { api_request? }
 
   # Rate limit API requests: 100 requests per minute per token/user/IP
   rate_limit to: 100, within: 1.minute,
-    if: -> { request.format.json? },
+    if: -> { api_request? },
     by: -> { current_access_token&.id || Current.user&.id || request.remote_ip },
     with: -> { render_rate_limited }
 
@@ -40,6 +43,6 @@ class ApplicationController < ActionController::Base
   end
 
   def api_request?
-    request.format.json?
+    request.format.json? || request.accepts.any? { |type| type.json? }
   end
 end
