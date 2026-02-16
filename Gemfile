@@ -65,9 +65,9 @@ end
 
 group :development do
   gem "letter_opener"
-  gem "log_bench", "~> 0.3.1"
-  gem "reactionview", "~> 0.1.2"
-  gem "standard", "~> 1.51.0"
+  gem "log_bench"
+  gem "reactionview"
+  gem "standard", "~> 1.54.0"
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 end

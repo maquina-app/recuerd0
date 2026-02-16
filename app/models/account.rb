@@ -1,7 +1,7 @@
 class Account < ApplicationRecord
   include SoftDeletable
 
-  USER_LIMIT = 5
+  USER_LIMIT = 10
 
   has_many :users, dependent: :destroy
   has_many :workspaces, dependent: :destroy
@@ -43,7 +43,13 @@ class Account < ApplicationRecord
   end
 
   def at_user_limit?
+    return false unless Rails.application.config.multi_tenant
+
     active_users_count >= USER_LIMIT
+  end
+
+  def user_limit
+    Rails.application.config.multi_tenant ? USER_LIMIT : nil
   end
 
   def generate_invitation_token

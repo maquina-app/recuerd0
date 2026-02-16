@@ -12,8 +12,9 @@ product_planning:
   tech_stack: true
 
 current_spec:
-  name: 2026-02-13-transactional-emails
-  path: sdd/specs/2026-02-13-transactional-emails
+  name: 2026-02-16-account-user-limit
+  path: sdd/specs/2026-02-16-account-user-limit
+  fizzy_card: 174
   phases:
     shape_spec:
       status: complete
@@ -35,8 +36,8 @@ current_spec:
       tasks_completed: 3
       tasks_total: 3
     verify_final:
-      status: complete
-      tests_passed: true
+      status: not_started
+      tests_passed: false
       roadmap_updated: false
 
 # Pending specs (paused)
@@ -48,6 +49,8 @@ pending_specs:
     tasks_total: 35
 
 completed_specs:
+  - name: 2026-02-13-transactional-emails
+    completed_date: 2026-02-13T00:00:00Z
   - name: 2026-02-05-account-multi-tenancy
     completed_date: 2026-02-05T01:30:00Z
     fizzy_card: 146

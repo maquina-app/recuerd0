@@ -8,7 +8,7 @@
   <%= render "components/card/content" do %>
     <% if account.at_user_limit? %>
       <p class="text-sm text-muted-foreground">
-        <%= t("accounts.invitations.limit_reached", limit: Account::USER_LIMIT) %>
+        <%= t("accounts.invitations.limit_reached", limit: account.user_limit) %>
       </p>
     <% else %>
       <div class="space-y-4">

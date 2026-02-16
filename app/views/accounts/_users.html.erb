@@ -2,8 +2,13 @@
 <%= render "components/card" do %>
   <%= render "components/card/header" do %>
     <%= render "components/card/title", text: t("accounts.users.title") %>
-    <%= render "components/card/description",
-        text: t("accounts.users.description", count: account.active_users_count, limit: Account::USER_LIMIT) %>
+    <% if multi_tenant? %>
+      <%= render "components/card/description",
+          text: t("accounts.users.description", count: account.active_users_count, limit: account.user_limit) %>
+    <% else %>
+      <%= render "components/card/description",
+          text: t("accounts.users.description_unlimited", count: account.active_users_count) %>
+    <% end %>
   <% end %>
 
   <%= render "components/card/content" do %>

@@ -112,6 +112,7 @@ en:
     users:
       title: "Users"
       description: "%{count} of %{limit} users in this account."
+      description_unlimited: "%{count} active users in this account."
       joined_ago: "Joined %{time} ago"
       role_admin: "Admin"
       role_member: "Member"

@@ -36,7 +36,7 @@ class AccountIntegrationTest < ActionDispatch::IntegrationTest
     token = @account.generate_invitation_token
 
     # Fill up the account to the limit after token was generated
-    3.times do |i|
+    8.times do |i|
       @account.users.create!(
         email_address: "latecomer#{i}@example.com",
         password: "password",

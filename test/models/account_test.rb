@@ -59,10 +59,10 @@ class AccountTest < ActiveSupport::TestCase
     assert_not account.at_user_limit?
   end
 
-  test "at_user_limit? returns true at limit" do
+  test "at_user_limit? returns true at limit in multi-tenant mode" do
     account = accounts(:one)
-    # Account one already has 2 users (one + member), add 3 more
-    3.times do |i|
+    # Account one already has 2 users (one + member), add 8 more to reach 10
+    8.times do |i|
       account.users.create!(
         email_address: "extra#{i}@example.com",
         password: "password",
@@ -70,6 +70,37 @@ class AccountTest < ActiveSupport::TestCase
       )
     end
     assert account.at_user_limit?
+  end
+
+  test "at_user_limit? returns false in single-tenant mode regardless of user count" do
+    account = accounts(:one)
+    8.times do |i|
+      account.users.create!(
+        email_address: "extra#{i}@example.com",
+        password: "password",
+        role: "member"
+      )
+    end
+
+    original = Rails.application.config.multi_tenant
+    Rails.application.config.multi_tenant = false
+    assert_not account.at_user_limit?
+  ensure
+    Rails.application.config.multi_tenant = original
+  end
+
+  test "user_limit returns USER_LIMIT in multi-tenant mode" do
+    account = accounts(:one)
+    assert_equal Account::USER_LIMIT, account.user_limit
+  end
+
+  test "user_limit returns nil in single-tenant mode" do
+    account = accounts(:one)
+    original = Rails.application.config.multi_tenant
+    Rails.application.config.multi_tenant = false
+    assert_nil account.user_limit
+  ensure
+    Rails.application.config.multi_tenant = original
   end
 
   test "active_users_count excludes anonymized users" do

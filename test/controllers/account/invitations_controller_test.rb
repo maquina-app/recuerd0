@@ -20,8 +20,8 @@ class Account::InvitationsControllerTest < ActionDispatch::IntegrationTest
   test "create fails when at user limit" do
     sign_in_as(@admin)
 
-    # Fill up the account to the limit
-    3.times do |i|
+    # Fill up the account to the limit (10 total: 2 existing + 8 new)
+    8.times do |i|
       @account.users.create!(
         email_address: "fill#{i}@example.com",
         password: "password",
@@ -34,6 +34,29 @@ class Account::InvitationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to account_path
     assert_equal I18n.t("account.invitations.create.limit_reached"), flash[:alert]
+  end
+
+  test "create succeeds at any user count in single-tenant mode" do
+    sign_in_as(@admin)
+
+    8.times do |i|
+      @account.users.create!(
+        email_address: "single#{i}@example.com",
+        password: "password",
+        role: "member"
+      )
+    end
+
+    original = Rails.application.config.multi_tenant
+    Rails.application.config.multi_tenant = false
+    assert_not @account.at_user_limit?
+
+    post account_invitation_url
+
+    assert_redirected_to account_path
+    assert flash[:invitation_url].present?
+  ensure
+    Rails.application.config.multi_tenant = original
   end
 
   test "create rejects member request" do
