@@ -111,6 +111,46 @@ class ApiMemoriesTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  # Version resolution tests
+  test "show returns current version content for root memory with versions" do
+    parent = memories(:versioned_parent)
+    parent.create_version!(title: "Latest Title", content: "Latest body")
+
+    get workspace_memory_url(parent.workspace, parent, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal "Latest Title", json["title"]
+    assert_equal "Latest body", json["content"]["body"]
+  end
+
+  test "show returns specific version when requesting child version ID" do
+    parent = memories(:versioned_parent)
+    v2 = parent.create_version!(title: "V2 Title", content: "V2 body")
+    parent.create_version!(title: "V3 Title", content: "V3 body")
+
+    get workspace_memory_url(parent.workspace, v2, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal "V2 Title", json["title"]
+  end
+
+  test "index returns current version data for versioned memories" do
+    parent = memories(:versioned_parent)
+    parent.create_version!(title: "Current Title", content: "Current body")
+
+    get workspace_memories_url(parent.workspace, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    versioned = json.find { |m| m["title"] == "Current Title" }
+    assert_not_nil versioned, "Expected current version title in index response"
+  end
+
   # Scoping tests
   test "memories scoped to workspace" do
     workspaces(:two)

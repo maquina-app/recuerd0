@@ -67,7 +67,7 @@
       <%= icon_for(:info, class: "w-4 h-4 flex-shrink-0 text-blue-600 dark:text-blue-400") %>
       <div>
         <strong>Version <%= @version.version %></strong>
-        <p class="mt-1">Created <%= time_ago_in_words(@version.created_at) %> ago<%= @version.latest_version? ? " (Root version)" : "" %></p>
+        <p class="mt-1">Created <%= time_ago_in_words(@version.created_at) %> ago<%= @version.root_version? ? " (Root version)" : "" %></p>
       </div>
     </div>
   <% end %>
@@ -81,7 +81,7 @@
         <%= @version.version_label %>
       <% end %>
 
-      <% if @version.latest_version? %>
+      <% if @version.root_version? %>
         <%= render "components/badge", variant: :secondary do %>
           Root
         <% end %>

@@ -27,7 +27,7 @@
                   <% end %>
                 <% end %>
 
-                <% if version.latest_version? %>
+                <% if version.root_version? %>
                   <%= render "components/badge", variant: :secondary, css_classes: "text-xs" do %>
                     Root
                   <% end %>

@@ -44,6 +44,57 @@ class MemoryTest < ActiveSupport::TestCase
     assert_equal 1, memory.version
   end
 
+  # root_version? tests
+
+  test "root_version? returns true when parent_memory_id is nil" do
+    assert memories(:versioned_parent).root_version?
+  end
+
+  test "root_version? returns false for child versions" do
+    parent = memories(:versioned_parent)
+    child = parent.create_version!(content: "child content")
+    assert_not child.root_version?
+  end
+
+  # current_version tests
+
+  test "current_version returns self for root with no children" do
+    memory = memories(:one)
+    assert_equal memory, memory.current_version
+  end
+
+  test "current_version returns highest-version child for root with children" do
+    parent = memories(:versioned_parent)
+    parent.create_version!(content: "v2")
+    v3 = parent.create_version!(content: "v3")
+    assert_equal v3, parent.current_version
+  end
+
+  test "current_version called on child delegates through root" do
+    parent = memories(:versioned_parent)
+    v2 = parent.create_version!(content: "v2")
+    v3 = parent.create_version!(content: "v3")
+    assert_equal v3, v2.current_version
+  end
+
+  test "current_version? returns true for the latest child version" do
+    parent = memories(:versioned_parent)
+    parent.create_version!(content: "v2")
+    v3 = parent.create_version!(content: "v3")
+    assert v3.current_version?
+  end
+
+  test "current_version? returns false for root when children exist" do
+    parent = memories(:versioned_parent)
+    parent.create_version!(content: "v2")
+    assert_not parent.current_version?
+  end
+
+  test "current_version? returns true for root with no children" do
+    memory = memories(:one)
+    assert memory.current_version?
+  end
+
   # Full-text search tests
 
   test "full_search finds memory by title" do

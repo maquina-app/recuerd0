@@ -39,6 +39,25 @@ class MemoriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Updated Title", @memory.reload.title
   end
 
+  test "show resolves to current version for root memory with versions" do
+    parent = memories(:versioned_parent)
+    parent.create_version!(title: "Latest Version", content: "Latest content")
+
+    get workspace_memory_url(parent.workspace, parent)
+    assert_response :success
+    assert_match "Latest Version", response.body
+  end
+
+  test "show renders specific version when navigating to child version" do
+    parent = memories(:versioned_parent)
+    v2 = parent.create_version!(title: "V2 Specific", content: "V2 content")
+    parent.create_version!(title: "V3 Latest", content: "V3 content")
+
+    get workspace_memory_url(parent.workspace, v2)
+    assert_response :success
+    assert_match "V2 Specific", response.body
+  end
+
   test "destroy removes memory" do
     assert_difference("Memory.count", -1) do
       delete workspace_memory_url(@workspace, @memory)

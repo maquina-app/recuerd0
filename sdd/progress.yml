@@ -12,9 +12,9 @@ product_planning:
   tech_stack: true
 
 current_spec:
-  name: 2026-02-16-account-user-limit
-  path: sdd/specs/2026-02-16-account-user-limit
-  fizzy_card: 174
+  name: 2026-02-16-latest-version-default
+  path: sdd/specs/2026-02-16-latest-version-default
+  fizzy_card: 175
   phases:
     shape_spec:
       status: complete
@@ -29,12 +29,12 @@ current_spec:
     create_tasks:
       status: complete
       tasks_created: true
-      task_count: 3
+      task_count: 4
     implement:
-      status: complete
-      mode: simple
-      tasks_completed: 3
-      tasks_total: 3
+      status: not_started
+      mode: null
+      tasks_completed: 0
+      tasks_total: 0
     verify_final:
       status: not_started
       tests_passed: false
@@ -49,6 +49,9 @@ pending_specs:
     tasks_total: 35
 
 completed_specs:
+  - name: 2026-02-16-account-user-limit
+    completed_date: 2026-02-16T00:00:00Z
+    fizzy_card: 174
   - name: 2026-02-13-transactional-emails
     completed_date: 2026-02-13T00:00:00Z
   - name: 2026-02-05-account-multi-tenancy

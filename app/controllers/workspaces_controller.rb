@@ -34,7 +34,7 @@ class WorkspacesController < ApplicationController
 
         scope = @workspace.memories
           .latest_versions
-          .includes(:content, :child_versions, :pins)
+          .includes(:content, :pins, child_versions: :content)
           .order(updated_at: :desc)
 
         load_workspace_memories(scope)

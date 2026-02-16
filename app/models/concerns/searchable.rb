@@ -52,7 +52,7 @@ module Searchable
   end
 
   def delete_search_index
-    root_id = latest_version? ? id : parent_memory_id
+    root_id = root_version? ? id : parent_memory_id
     self.class.connection.exec_delete(
       "DELETE FROM memories_search WHERE memory_id = ?",
       "FTS Delete", [root_id]

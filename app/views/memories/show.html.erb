@@ -52,7 +52,7 @@
               value="<%= workspace_memory_path(@workspace, version) %>"
               <%= "selected" if version == @memory %>
             >
-              <%= version.version_label %><%= " (current)" if version == @memory %>
+              <%= version.version_label %><%= " (current)" if version.current_version? %>
             </option>
           <% end %>
         </select>
