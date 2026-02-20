@@ -46,3 +46,17 @@ TODO*
 
 # Ignore session transcripts
 /transcripts/
+
+# Ignore production/staging deploy configs (contain infrastructure details)
+/config/deploy.production.yml
+/config/deploy.staging.yml
+
+# Ignore local recuerd0 CLI config
+/.recuerd0.yaml
+
+# Ignore spec-driven development specs (local working docs)
+/sdd/
+
+# Ignore internal planning docs
+/docs/mvp-plan.md
+/docs/research-report.md

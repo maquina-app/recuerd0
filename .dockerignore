@@ -52,3 +52,12 @@
 
 # Documentation
 /docs/*
+
+# Ignore local recuerd0 CLI config
+/.recuerd0.yaml
+
+# Ignore spec-driven development specs
+/sdd/
+
+# Ignore Claude/AI config
+/.claude/
