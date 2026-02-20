@@ -54,9 +54,18 @@ TODO*
 # Ignore local recuerd0 CLI config
 /.recuerd0.yaml
 
+# Ignore CLAUDE.md (AI agent instructions)
+/CLAUDE.md
+
 # Ignore spec-driven development specs (local working docs)
 /sdd/
 
-# Ignore internal planning docs
+# Ignore internal docs (keep docker-deployment.md tracked)
 /docs/mvp-plan.md
 /docs/research-report.md
+/docs/API.md
+/docs/brand-guide.md
+/docs/brand-voice.md
+/docs/hotwire-patterns.md
+/docs/technical-guide.md
+/docs/ui-patterns.md

@@ -77,12 +77,7 @@ bin/rails test test/models/memory_test.rb    # Single file
 
 ## Documentation
 
-- [Technical Guide](docs/technical-guide.md) -- architecture, domain model, conventions
-- [API Reference](docs/API.md) -- REST API endpoints, authentication, examples
 - [Docker Deployment](docs/docker-deployment.md) -- self-hosting configuration and Docker Compose
-- [UI Patterns](docs/ui-patterns.md) -- component catalog and design patterns
-- [Hotwire Patterns](docs/hotwire-patterns.md) -- Turbo Drive, Turbo Frames, and Stimulus usage
-- [Brand Guide](docs/brand-guide.md) -- logo, colors, typography, and voice
 
 ## License
 
