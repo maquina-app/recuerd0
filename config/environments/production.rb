@@ -64,8 +64,8 @@ Rails.application.configure do
     user_name: ENV["SMTP_USER_NAME"],
     password: ENV["SMTP_PASSWORD"],
     address: ENV.fetch("SMTP_ADDRESS", "smtp.example.com"),
-    port: 587,
-    authentication: :plain
+    port: ENV.fetch("SMTP_PORT", 587).to_i,
+    authentication: ENV.fetch("SMTP_AUTHENTICATION", "plain").to_sym
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
