@@ -75,6 +75,11 @@ bin/rails test                          # All tests
 bin/rails test test/models/memory_test.rb    # Single file
 ```
 
+## Related Projects
+
+- [recuerd0-cli](https://github.com/maquina-app/recuerd0-cli) -- command-line client for managing workspaces and memories
+- [rails-claude-code](https://github.com/maquina-app/rails-claude-code) -- Claude Code agent skill for recuerd0 integration
+
 ## Documentation
 
 - [Docker Deployment](docs/docker-deployment.md) -- self-hosting configuration and Docker Compose
