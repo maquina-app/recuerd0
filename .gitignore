@@ -54,8 +54,9 @@ TODO*
 # Ignore local recuerd0 CLI config
 /.recuerd0.yaml
 
-# Ignore CLAUDE.md (AI agent instructions)
+# Ignore AI agent config files
 /CLAUDE.md
+/.mcp.json
 
 # Ignore spec-driven development specs (local working docs)
 /sdd/
