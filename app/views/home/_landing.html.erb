@@ -41,7 +41,7 @@
             <% else %>
               <%= link_to "Start free \u2192", new_registration_path, class: "btn-primary" %>
             <% end %>
-            <%= link_to "Self-host \u2192", pricing_path, class: "btn-ghost" %>
+            <%= link_to "Self-host \u2192", "https://github.com/maquina-app/recuerd0", target: "_blank", rel: "noopener", class: "btn-ghost" %>
           </div>
         </div>
 
@@ -413,7 +413,7 @@ as new versioned memories.</code>
       </div>
 
       <div class="cta-actions reveal reveal-delay-1" style="flex-direction: column; align-items: center; gap: 1.5rem;">
-        <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim);">Self-hosted &mdash; Coming soon</span>
+        <%= link_to "Self-hosted \u2192", "https://github.com/maquina-app/recuerd0", target: "_blank", rel: "noopener", class: "btn-ghost" %>
         <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim);">or</span>
         <div style="display: flex; gap: 1rem; align-items: center;">
           <% if authenticated? %>
