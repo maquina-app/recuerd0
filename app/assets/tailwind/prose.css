@@ -1,0 +1,233 @@
+/* Notion-like prose styling overrides for Tailwind Typography */
+
+.prose {
+  line-height: 1.6;
+}
+
+/* --- Headings --- */
+
+.prose h1 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.prose h2 {
+  margin-top: 1.8rem;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.prose h3 {
+  margin-top: 1.6rem;
+  margin-bottom: 0.6rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.prose h4,
+.prose h5,
+.prose h6 {
+  margin-top: 1.4rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* First heading: no extra top margin */
+.prose > :first-child {
+  margin-top: 0;
+}
+
+/* --- Body elements: tighter vertical rhythm --- */
+
+.prose p,
+.prose blockquote,
+.prose ul,
+.prose ol,
+.prose dl,
+.prose table {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+
+/* --- Lists --- */
+
+.prose ul,
+.prose ol {
+  padding-left: 1.875rem;
+}
+
+.prose li {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1.6;
+}
+
+/* Collapse paragraph margins inside list items (task lists, loose lists) */
+.prose li > p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.prose li > ul,
+.prose li > ol {
+  margin-top: 0.2em;
+  margin-bottom: 0;
+}
+
+/* Task list checkboxes (from - [ ] markdown syntax) */
+.prose li > input[type="checkbox"] {
+  appearance: none;
+  width: 1em;
+  height: 1em;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  margin-right: 0.4em;
+  vertical-align: middle;
+  position: relative;
+  top: -0.05em;
+  cursor: default;
+}
+
+.prose li > input[type="checkbox"]:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.prose li > input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 0.5px;
+  width: 5px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+/* Task lists: remove bullets and collapse left padding */
+.prose ul:has(> li > input[type="checkbox"]) {
+  list-style: none;
+  padding-left: 0;
+}
+
+.prose li:has(> input[type="checkbox"]) {
+  list-style: none;
+}
+
+/* --- Blockquotes --- */
+
+.prose blockquote {
+  border-left: 4px solid var(--primary);
+  background-color: var(--muted);
+  font-style: normal;
+  padding: 0.75rem 1rem;
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.prose blockquote p:first-child {
+  margin-top: 0;
+}
+
+.prose blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* --- Inline code --- */
+
+.prose :where(code):not(:where(pre *)) {
+  background-color: oklch(0.970 0.006 150);
+  color: oklch(0.250 0.020 150);
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  border: 1px solid oklch(0.910 0.012 150);
+  font-size: 0.875em;
+  font-weight: 500;
+}
+
+.prose code::before,
+.prose code::after {
+  content: none;
+}
+
+/* --- Code fences --- */
+
+.prose pre {
+  background-color: oklch(0.970 0.006 150);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  background-color: transparent;
+  color: oklch(0.250 0.020 150);
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875em;
+  font-weight: 400;
+}
+
+/* --- Links --- */
+
+.prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklch, var(--primary) 40%, transparent);
+  text-underline-offset: 2px;
+}
+
+.prose a:hover {
+  text-decoration-color: var(--primary);
+}
+
+/* --- Horizontal rules --- */
+
+.prose hr {
+  border-top-width: 1.5px;
+  border-color: var(--border);
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* --- Tables --- */
+
+.prose table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.prose thead th {
+  border-bottom: 2px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.prose tbody td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+}
+
+.prose tbody tr:nth-child(even) {
+  background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+}
+
+/* --- Dark mode overrides --- */
+
+.dark .prose :where(code):not(:where(pre *)) {
+  background-color: oklch(0.260 0.015 150);
+  border-color: oklch(0.340 0.020 150);
+}
+
+.dark .prose pre {
+  background-color: oklch(0.220 0.012 150);
+  border-color: oklch(0.340 0.020 150);
+}
