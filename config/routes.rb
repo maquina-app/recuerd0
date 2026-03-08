@@ -74,6 +74,12 @@ Rails.application.routes.draw do
   post "pins/:pinnable_type/:pinnable_id", to: "pins#create", as: :create_pin
   delete "pins/:pinnable_type/:pinnable_id", to: "pins#destroy", as: :destroy_pin
 
+  # Error pages (used by config.exceptions_app = routes)
+  match "/400", to: "errors#bad_request", via: :all
+  match "/404", to: "errors#not_found", via: :all
+  match "/422", to: "errors#unprocessable_entity", via: :all
+  match "/500", to: "errors#internal_server_error", via: :all
+
   get "up", to: "rails/health#show", as: :rails_health_check
   get "manifest", to: "rails/pwa#manifest", as: :pwa_manifest
 

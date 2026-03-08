@@ -1,4 +1,9 @@
 en:
+  errors:
+    bad_request: "Bad request. If sending search queries, ensure special characters and spaces are URL-encoded."
+    not_found: "Resource not found"
+    unprocessable_entity: "The request could not be processed"
+    internal_server_error: "An unexpected error occurred"
   breadcrumbs:
     home: "Home"
   shared:

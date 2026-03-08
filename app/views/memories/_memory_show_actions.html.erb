@@ -9,7 +9,7 @@
   <%= render "components/dropdown_menu/separator" %>
 <% end %>
 
-<% if memory.has_versions? %>
+<% if memory.versioned? %>
   <%= render "components/dropdown_menu/item",
       href: workspace_memory_versions_path(workspace, memory) do %>
     <%= icon_for(:git_branch, class: "size-4") %>
@@ -34,7 +34,7 @@
     <%= t("memories.memory_show_actions.edit") %>
   <% end %>
 
-  <% if memory.has_versions? %>
+  <% if memory.versioned? %>
     <%= render "components/dropdown_menu/item",
         href: workspace_memory_version_consolidation_path(workspace, memory, memory),
         method: :post,

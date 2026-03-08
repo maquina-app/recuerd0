@@ -19,7 +19,7 @@
       <div class="flex items-center gap-2 flex-wrap">
         <h1 class="font-display text-2xl font-medium tracking-tight"><%= @memory.display_title %></h1>
 
-        <% if @memory.has_versions? %>
+        <% if @memory.versioned? %>
           <%= render "components/badge", variant: :outline do %>
             <%= @memory.version_label %>
           <% end %>
@@ -39,7 +39,7 @@
     </div>
 
     <div class="flex items-center gap-1 flex-shrink-0">
-      <% if @memory.has_versions? %>
+      <% if @memory.versioned? %>
         <select
           data-controller="navigate"
           data-action="change->navigate#visit"
@@ -124,7 +124,7 @@
       <%= icon_for(:refresh_cw, class: "size-4") %>
       Updated <%= time_ago_in_words(@memory.updated_at) %> ago
     </span>
-    <% if @memory.has_versions? %>
+    <% if @memory.versioned? %>
       <span class="inline-flex items-center gap-1">
         <%= icon_for(:git_branch, class: "size-4") %>
         <%= @memory.version_label %> of <%= pluralize(@all_versions.size, "version") %>
@@ -171,7 +171,7 @@
   <% end %>
 
   <%# Version info %>
-  <% if @memory.has_versions? %>
+  <% if @memory.versioned? %>
     <div class="mt-6">
       <%= render "components/separator" %>
     </div>

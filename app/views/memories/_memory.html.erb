@@ -1,5 +1,5 @@
 <%# locals: (memory:, workspace:, show_pinned: false) %>
-<% display_version = memory.has_versions? ? memory.current_version : memory %>
+<% display_version = memory.versioned? ? memory.current_version : memory %>
 
 <%= render "components/card", css_classes: "group hover:shadow-md transition-shadow" do %>
   <%= render "components/card/header", layout: :row do %>
@@ -7,7 +7,7 @@
       <div class="flex items-center gap-2">
         <%= render "components/card/title", text: display_version.display_title %>
 
-        <% if memory.has_versions? %>
+        <% if memory.versioned? %>
           <%= render "components/badge", variant: :outline, css_classes: "text-xs" do %>
             <%= display_version.version_label %>
           <% end %>
@@ -56,7 +56,7 @@
 
   <%= render "components/card/content" do %>
     <div class="prose prose-sm max-w-none text-muted-foreground">
-      <% plain = strip_markdown(display_version.content&.body.to_s).gsub(/\n{3,}/, "\n\n").strip %>
+      <% plain = Content.strip_markdown(display_version.content&.body.to_s).gsub(/\n{3,}/, "\n\n").strip %>
       <span class="whitespace-pre-line"><%= truncate(plain, length: 200, omission: "...") %></span>
     </div>
 

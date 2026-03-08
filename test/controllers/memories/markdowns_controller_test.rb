@@ -13,6 +13,8 @@ class Memories::MarkdownsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.content_type, "text/markdown"
     assert_equal @memory.content.body, response.body
+    assert_includes response.headers["Content-Disposition"], "inline"
+    assert_includes response.headers["Content-Disposition"], ".md"
   end
 
   test "show resolves to current version for root memory with versions" do
