@@ -2,6 +2,19 @@
 <% content_for :description, "Command-line interface for recuerd0. Manage workspaces, memories, and search from your terminal." %>
 <% content_for :canonical_url, "https://recuerd0.ai/cli" %>
 
+<% content_for :structured_data do %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://recuerd0.ai/" },
+    { "@type": "ListItem", "position": 2, "name": "CLI Reference", "item": "https://recuerd0.ai/cli" }
+  ]
+}
+</script>
+<% end %>
+
 <div data-controller="marketing-sidebar">
 
   <%= render "pages/doc_header", section: "CLI Reference" %>

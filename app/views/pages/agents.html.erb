@@ -2,6 +2,19 @@
 <% content_for :description, "Persistent, searchable memory for AI coding agents. Query context on demand instead of cramming everything into project files." %>
 <% content_for :canonical_url, "https://recuerd0.ai/agents" %>
 
+<% content_for :structured_data do %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://recuerd0.ai/" },
+    { "@type": "ListItem", "position": 2, "name": "AI Agents", "item": "https://recuerd0.ai/agents" }
+  ]
+}
+</script>
+<% end %>
+
 <div data-controller="marketing-sidebar">
 
   <%= render "pages/doc_header", section: "AI Agents" %>
