@@ -2,7 +2,7 @@
 <% content_for :page_title, t(".title") %>
 
 <% content_for :breadcrumb do %>
-  <%= breadcrumbs(
+  <%= responsive_breadcrumbs(
     {},
     t(".title"),
   ) %>
@@ -12,6 +12,19 @@
   <div class="mb-6 flex items-center justify-between">
     <h1 class="font-display text-2xl font-medium tracking-tight"><%= t(".title") %></h1>
   </div>
+
+  <%= form_with url: search_path, method: :get,
+      data: { turbo_action: "advance", controller: "search-form" }, class: "mb-6 md:hidden" do |f| %>
+    <div class="relative" data-form-part="group">
+      <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
+        <%= icon_for(:search, class: "w-3.5 h-3.5 text-muted-foreground") %>
+      </div>
+      <%= f.search_field :q, value: @query, placeholder: t("search.placeholder"),
+          maxlength: 30, autocomplete: "off",
+          data: { component: "input", action: "input->search-form#clear" },
+          class: "search-input h-10 w-full text-sm", autofocus: @query.blank? %>
+    </div>
+  <% end %>
 
   <% if @query.present? && @query.length < Searchable::MIN_QUERY_LENGTH %>
     <%= render "components/alert", variant: :warning, icon: :alert_triangle, css_classes: "mb-6" do %>

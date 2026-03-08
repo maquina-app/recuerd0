@@ -3,7 +3,7 @@
 <% content_for :page_title, @memory.display_title %>
 
 <% content_for :breadcrumb do %>
-  <%= breadcrumbs(
+  <%= responsive_breadcrumbs(
     {
       "Workspaces" => workspaces_path,
       @workspace.name => workspace_path(@workspace)

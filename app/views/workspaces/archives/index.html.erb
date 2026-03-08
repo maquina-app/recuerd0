@@ -2,7 +2,7 @@
 <% content_for :page_title, t(".page_title") %>
 
 <% content_for :breadcrumb do %>
-  <%= breadcrumbs(
+  <%= responsive_breadcrumbs(
     { "Workspaces" => workspaces_path },
     t("workspaces.archives.index.breadcrumb"),
   ) %>

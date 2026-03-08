@@ -1,7 +1,7 @@
 <% content_for :page_title, t("accounts.show.page_title") %>
 
 <% content_for :breadcrumb do %>
-  <%= breadcrumbs({}, t("accounts.show.page_title")) %>
+  <%= responsive_breadcrumbs({}, t("accounts.show.page_title")) %>
 <% end %>
 
 <% if Current.user.admin? %>

@@ -5,7 +5,7 @@
 <% content_for :page_title, @workspace.name %>
 
 <% content_for :breadcrumb do %>
-  <%= breadcrumbs(workspace_breadcrumb_links(@workspace), @workspace.name) %>
+  <%= responsive_breadcrumbs(workspace_breadcrumb_links(@workspace), @workspace.name) %>
 <% end %>
 
 <div class="mx-auto max-w-4xl">
