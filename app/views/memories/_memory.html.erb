@@ -56,7 +56,8 @@
 
   <%= render "components/card/content" do %>
     <div class="prose prose-sm max-w-none text-muted-foreground">
-      <%= truncate(display_version.content&.body || "", length: 200) %>
+      <% plain = strip_markdown(display_version.content&.body.to_s).gsub(/\n{3,}/, "\n\n").strip %>
+      <span class="whitespace-pre-line"><%= truncate(plain, length: 200, omission: "...") %></span>
     </div>
 
     <% if display_version.tags.any? %>
