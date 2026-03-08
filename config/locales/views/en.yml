@@ -44,6 +44,13 @@ en:
       title_placeholder: "Untitled Memory"
       source_placeholder: "e.g., Claude, Book Title, URL..."
       content_placeholder: "Enter your memory content using Markdown..."
+      cancel: "Cancel"
+      save: "Save"
+      create: "Create"
+      write_tab: "Write"
+      preview_tab: "Preview"
+      markdown_hint: "Markdown"
+      preview_placeholder: "Click Preview to render your markdown"
     show:
       copy_markdown: "Copy markdown"
       view_markdown: "View Markdown"

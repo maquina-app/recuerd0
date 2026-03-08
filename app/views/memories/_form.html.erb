@@ -10,8 +10,8 @@
       page navigation lifecycle for reliable teardown/reinit. %>
   <%= form_with model: [workspace, memory], local: true, class: "flex flex-col h-full gap-3" do |form| %>
     <%# Toolbar: title + actions %>
-    <div class="shrink-0 flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div class="flex-1 min-w-0">
+    <div class="shrink-0 flex items-center">
+      <div class="flex-1 min-w-0" data-form-part="group">
         <%= form.text_field :title,
             placeholder: t("memories.form.title_placeholder"),
             maxlength: 255,
@@ -21,11 +21,11 @@
           <p data-form-part="error" class="text-destructive"><%= memory.errors[:title].first %></p>
         <% end %>
       </div>
-      <div class="shrink-0 flex items-center gap-2">
-        <%= link_to "Cancel",
+      <div class="hidden sm:flex shrink-0 items-center gap-2">
+        <%= link_to t("memories.form.cancel"),
             memory.persisted? ? workspace_memory_path(workspace, memory) : workspace_path(workspace),
             data: { component: "button", variant: "outline", size: "sm" } %>
-        <%= form.submit memory.persisted? ? "Save" : "Create",
+        <%= form.submit memory.persisted? ? t("memories.form.save") : t("memories.form.create"),
             data: { component: "button", variant: "primary", size: "sm" } %>
       </div>
     </div>
@@ -48,6 +48,15 @@
       </div>
     </div>
 
+    <%# Mobile action buttons — after metadata, before editor %>
+    <div class="flex items-center gap-2 sm:hidden">
+      <%= link_to t("memories.form.cancel"),
+          memory.persisted? ? workspace_memory_path(workspace, memory) : workspace_path(workspace),
+          data: { component: "button", variant: "outline", size: "sm" } %>
+      <%= form.submit memory.persisted? ? t("memories.form.save") : t("memories.form.create"),
+          data: { component: "button", variant: "primary", size: "sm" } %>
+    </div>
+
     <%# Editor area %>
     <div class="flex-1 min-h-0 flex flex-col rounded-md border border-border overflow-hidden">
       <%# Tab bar %>
@@ -63,7 +72,7 @@
                  data-[state=active]:border-primary data-[state=active]:text-foreground
                  data-[state=inactive]:border-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground"
         >
-          Write
+          <%= t("memories.form.write_tab") %>
         </button>
         <button
           type="button"
@@ -76,9 +85,9 @@
                  data-[state=active]:border-primary data-[state=active]:text-foreground
                  data-[state=inactive]:border-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground"
         >
-          Preview
+          <%= t("memories.form.preview_tab") %>
         </button>
-        <span class="ml-auto text-xs text-muted-foreground">Markdown</span>
+        <span class="ml-auto text-xs text-muted-foreground"><%= t("memories.form.markdown_hint") %></span>
       </div>
 
       <%# Write pane %>
@@ -93,7 +102,7 @@
       <%# Preview pane %>
       <div data-markdown-editor-target="previewPane" class="hidden flex-1 overflow-y-auto p-4">
         <%= turbo_frame_tag "markdown_preview" do %>
-          <p class="text-sm text-muted-foreground italic">Click Preview to render your markdown</p>
+          <p class="text-sm text-muted-foreground italic"><%= t("memories.form.preview_placeholder") %></p>
         <% end %>
       </div>
     </div>
