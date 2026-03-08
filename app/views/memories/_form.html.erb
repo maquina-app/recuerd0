@@ -10,10 +10,10 @@
       page navigation lifecycle for reliable teardown/reinit. %>
   <%= form_with model: [workspace, memory], local: true, class: "flex flex-col h-full gap-3" do |form| %>
     <%# Toolbar: title + actions %>
-    <div class="shrink-0 flex items-center gap-3">
+    <div class="shrink-0 flex flex-col gap-3 sm:flex-row sm:items-center">
       <div class="flex-1 min-w-0">
         <%= form.text_field :title,
-            placeholder: "Untitled Memory",
+            placeholder: t("memories.form.title_placeholder"),
             maxlength: 255,
             autocomplete: "off",
             data: { component: "input" } %>
@@ -31,11 +31,11 @@
     </div>
 
     <%# Metadata row: source + tags %>
-    <div class="shrink-0 flex items-start gap-4">
-      <div class="w-1/3 min-w-0" data-form-part="group">
+    <div class="shrink-0 flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+      <div class="sm:w-1/3 min-w-0" data-form-part="group">
         <%= form.label :source, data: { component: "label" } %>
         <%= form.text_field :source,
-            placeholder: "e.g., Claude, Book Title, URL...",
+            placeholder: t("memories.form.source_placeholder"),
             autocomplete: "off",
             data: { component: "input" } %>
         <% if memory.errors[:source].any? %>
@@ -86,7 +86,7 @@
         <%= text_area_tag "memory[content]",
             memory.content&.body,
             class: "editor-textarea flex-1 overflow-y-auto font-mono text-sm p-3",
-            placeholder: "Enter your memory content using Markdown...",
+            placeholder: t("memories.form.content_placeholder"),
             data: { component: "textarea", markdown_editor_target: "textarea" } %>
       </div>
 

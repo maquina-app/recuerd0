@@ -4,13 +4,13 @@
     <%= form.label :name, data: { component: "label" } %>
     <%= form.text_field :name,
         autofocus: true,
-        placeholder: "My Workspace",
+        placeholder: t("workspaces.form.name_placeholder"),
         required: true,
         maxlength: 100,
         autocomplete: "off",
         data: { component: "input" } %>
     <% if workspace.errors[:name].any? %>
-      <p data-form-part="error"><%= workspace.errors[:name].first %></p>
+      <p data-form-part="error" class="text-destructive"><%= workspace.errors[:name].first %></p>
     <% end %>
   </div>
 
@@ -18,12 +18,12 @@
     <%= form.label :description, data: { component: "label" } %>
     <%= form.text_area :description,
         rows: 4,
-        placeholder: "Describe what this workspace is for...",
+        placeholder: t("workspaces.form.description_placeholder"),
         maxlength: 500,
         autocomplete: "off",
         data: { component: "textarea" } %>
     <% if workspace.errors[:description].any? %>
-      <p data-form-part="error"><%= workspace.errors[:description].first %></p>
+      <p data-form-part="error" class="text-destructive"><%= workspace.errors[:description].first %></p>
     <% end %>
   </div>
 

@@ -18,7 +18,7 @@
             autocomplete: "email",
             autocapitalize: "none",
             maxlength: 80,
-            placeholder: "m@example.com",
+            placeholder: t("first_run.new.email_placeholder"),
             data: { component: "input" } %>
         <% if @user.errors[:email_address].any? %>
           <p data-form-part="error" class="text-destructive"><%= @user.errors[:email_address].first %></p>
