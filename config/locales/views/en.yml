@@ -1,4 +1,9 @@
 en:
+  errors:
+    bad_request: "Bad request. If sending search queries, ensure special characters and spaces are URL-encoded."
+    not_found: "Resource not found"
+    unprocessable_entity: "The request could not be processed"
+    internal_server_error: "An unexpected error occurred"
   breadcrumbs:
     home: "Home"
   shared:
@@ -32,6 +37,18 @@ en:
         empty_title: "No deleted workspaces"
         empty_description: "You haven't deleted any workspaces yet."
   memories:
+    show:
+      copy_markdown: "Copy markdown"
+      view_markdown: "View Markdown"
+    memory_show_actions:
+      versions: "Versions"
+      new_version: "New Version"
+      new_version_confirm: "Create a new version from %{version}?"
+      edit: "Edit"
+      delete_other_versions: "Delete Other Versions"
+      delete_other_versions_confirm: "Delete all other versions? Only %{version} will be kept."
+      delete: "Delete"
+      delete_confirm: "Are you sure you want to delete this memory?"
     memory:
       view_details: "View Details"
     pinned:

@@ -17,7 +17,7 @@ class MemoriesController < ApplicationController
     respond_to do |format|
       format.html { redirect_to workspace_path(@workspace) }
       format.json do
-        @memories = @memories.map { |m| m.has_versions? ? m.current_version : m }
+        @memories = @memories.map { |m| m.versioned? ? m.current_version : m }
         set_pagination_headers(@pagy)
       end
     end
@@ -25,8 +25,7 @@ class MemoriesController < ApplicationController
 
   def show
     @all_versions = @memory.all_versions
-    # Resolve to current version for root memories with children
-    @memory = @memory.current_version if @memory.root_version? && @memory.has_versions?
+    @memory = @memory.resolve_current_version
     track_event("memory.view", resource: @memory)
 
     respond_to do |format|
@@ -60,8 +59,7 @@ class MemoriesController < ApplicationController
   end
 
   def edit
-    # Ensure content exists before editing
-    @memory.content || @memory.create_content(body: "")
+    @memory.content || @memory.build_content(body: "")
   end
 
   def update

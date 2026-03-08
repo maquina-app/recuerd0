@@ -29,5 +29,7 @@ module Recuerd0
     config.active_storage.variant_processor = :disabled
 
     config.multi_tenant = ENV.fetch("MULTI_TENANT_ENABLED", "false") == "true"
+
+    config.exceptions_app = routes
   end
 end

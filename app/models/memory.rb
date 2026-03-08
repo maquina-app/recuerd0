@@ -72,7 +72,7 @@ class Memory < ApplicationRecord
   # Get all versions of this memory (including self if root)
   def all_versions
     if root_version?
-      Memory.where(
+      workspace.memories.where(
         "(id = ? OR parent_memory_id = ?)",
         id, id
       ).order(:version)
@@ -93,6 +93,11 @@ class Memory < ApplicationRecord
   # Check if this is the current (latest) version
   def current_version?
     self == root_memory.current_version
+  end
+
+  # Resolve to the current version if this is a root with children, otherwise return self
+  def resolve_current_version
+    (root_version? && versioned?) ? current_version : self
   end
 
   def create_version!(attributes = {})
@@ -121,7 +126,7 @@ class Memory < ApplicationRecord
   end
 
   # Check if this memory has any versions (either parent or children)
-  def has_versions?
+  def versioned?
     child_versions.any? || parent_memory.present?
   end
 
