@@ -19,13 +19,16 @@
         <li><%= link_to "Agents", agents_path %></li>
         <li><%= link_to "Pricing", pricing_path %></li>
       <% end %>
-      <li>
-        <% if authenticated? %>
+      <% if authenticated? %>
+        <li>
           <%= link_to "Go to App \u2192", workspaces_path, class: "nav-cta" %>
-        <% else %>
+        </li>
+      <% else %>
+        <li><%= link_to "Sign in", new_session_path %></li>
+        <li>
           <%= link_to "Get Started", new_registration_path, class: "nav-cta" %>
-        <% end %>
-      </li>
+        </li>
+      <% end %>
     </ul>
     <button class="nav-mobile-toggle" data-marketing-nav-target="toggle" data-action="click->marketing-nav#toggleMenu" aria-label="Open menu">
       <svg class="nav-toggle-open" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -49,12 +52,15 @@
       <li><%= link_to "Agents", agents_path %></li>
       <li><%= link_to "Pricing", pricing_path %></li>
     <% end %>
-    <li>
-      <% if authenticated? %>
+    <% if authenticated? %>
+      <li>
         <%= link_to "Go to App \u2192", workspaces_path, class: "nav-overlay-cta" %>
-      <% else %>
+      </li>
+    <% else %>
+      <li><%= link_to "Sign in", new_session_path %></li>
+      <li>
         <%= link_to "Get Started", new_registration_path, class: "nav-overlay-cta" %>
-      <% end %>
-    </li>
+      </li>
+    <% end %>
   </ul>
 </div>
