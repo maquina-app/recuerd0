@@ -21,6 +21,9 @@ en:
       deleted_title: "This workspace is deleted"
       deleted_description_with_days: "This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories. This workspace will be permanently deleted in %{days}."
       deleted_description_scheduled: "This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories. This workspace is scheduled for permanent deletion."
+      archived_badge: "Archived"
+      deleted_badge: "Deleted"
+      pinned_badge: "Pinned"
     archives:
       index:
         page_title: "Archived Workspaces"
@@ -54,6 +57,11 @@ en:
     show:
       copy_markdown: "Copy markdown"
       view_markdown: "View Markdown"
+      pinned_badge: "Pinned"
+      switch_version: "Switch version"
+      of_versions:
+        one: "of %{count} version"
+        other: "of %{count} versions"
     memory_show_actions:
       versions: "Versions"
       new_version: "New Version"
