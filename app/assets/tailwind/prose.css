@@ -2,6 +2,13 @@
 
 .prose {
   line-height: 1.6;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
 }
 
 /* --- Headings --- */
@@ -200,6 +207,8 @@
 /* --- Tables --- */
 
 .prose table {
+  display: block;
+  overflow-x: auto;
   border-collapse: collapse;
   width: 100%;
 }
