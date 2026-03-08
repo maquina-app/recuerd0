@@ -25,8 +25,7 @@ class MemoriesController < ApplicationController
 
   def show
     @all_versions = @memory.all_versions
-    # Resolve to current version for root memories with children
-    @memory = @memory.current_version if @memory.root_version? && @memory.has_versions?
+    @memory = @memory.resolve_current_version
     track_event("memory.view", resource: @memory)
 
     respond_to do |format|

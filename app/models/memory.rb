@@ -95,6 +95,11 @@ class Memory < ApplicationRecord
     self == root_memory.current_version
   end
 
+  # Resolve to the current version if this is a root with children, otherwise return self
+  def resolve_current_version
+    (root_version? && has_versions?) ? current_version : self
+  end
+
   def create_version!(attributes = {})
     root = root_memory
 

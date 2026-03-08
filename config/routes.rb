@@ -36,6 +36,7 @@ Rails.application.routes.draw do
 
   resources :workspaces do
     resources :memories do
+      resource :markdown, only: %i[show], controller: "memories/markdowns"
       collection do
         post :preview, to: "memories/previews#create"
       end

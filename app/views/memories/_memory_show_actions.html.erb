@@ -1,9 +1,19 @@
 <%# locals: (memory:, workspace:) -%>
+<% if memory.content&.body.present? %>
+  <%= render "components/dropdown_menu/item",
+      href: workspace_memory_markdown_path(workspace, memory),
+      target: "_blank" do %>
+    <%= icon_for(:file_text, class: "size-4") %>
+    <%= t("memories.show.view_markdown") %>
+  <% end %>
+  <%= render "components/dropdown_menu/separator" %>
+<% end %>
+
 <% if memory.has_versions? %>
   <%= render "components/dropdown_menu/item",
       href: workspace_memory_versions_path(workspace, memory) do %>
     <%= icon_for(:git_branch, class: "size-4") %>
-    Versions
+    <%= t("memories.memory_show_actions.versions") %>
   <% end %>
 <% end %>
 
@@ -11,9 +21,9 @@
   <%= render "components/dropdown_menu/item",
       href: workspace_memory_versions_path(workspace, memory),
       method: :post,
-      data: { turbo_confirm: "Create a new version from #{memory.version_label}?" } do %>
+      data: { turbo_confirm: t("memories.memory_show_actions.new_version_confirm", version: memory.version_label) } do %>
     <%= icon_for(:copy_plus, class: "size-4") %>
-    New Version
+    <%= t("memories.memory_show_actions.new_version") %>
   <% end %>
 
   <%= render "components/dropdown_menu/separator" %>
@@ -21,7 +31,7 @@
   <%= render "components/dropdown_menu/item",
       href: edit_workspace_memory_path(workspace, memory) do %>
     <%= icon_for(:edit, class: "size-4") %>
-    Edit
+    <%= t("memories.memory_show_actions.edit") %>
   <% end %>
 
   <% if memory.has_versions? %>
@@ -29,9 +39,9 @@
         href: workspace_memory_version_consolidation_path(workspace, memory, memory),
         method: :post,
         variant: :destructive,
-        data: { turbo_confirm: "Delete all other versions? Only #{memory.version_label} will be kept." } do %>
+        data: { turbo_confirm: t("memories.memory_show_actions.delete_other_versions_confirm", version: memory.version_label) } do %>
       <%= icon_for(:trash_2, class: "size-4") %>
-      Delete Other Versions
+      <%= t("memories.memory_show_actions.delete_other_versions") %>
     <% end %>
   <% end %>
 
@@ -41,8 +51,8 @@
       href: workspace_memory_path(workspace, memory),
       method: :delete,
       variant: :destructive,
-      data: { turbo_confirm: "Are you sure you want to delete this memory?" } do %>
+      data: { turbo_confirm: t("memories.memory_show_actions.delete_confirm") } do %>
     <%= icon_for(:trash_2, class: "size-4") %>
-    Delete
+    <%= t("memories.memory_show_actions.delete") %>
   <% end %>
 <% end %>

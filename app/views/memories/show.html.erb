@@ -62,6 +62,19 @@
         <%= render "shared/pin_button", pinnable: @memory %>
       <% end %>
 
+      <% if @memory.content&.body.present? %>
+        <div data-controller="clipboard">
+          <textarea data-clipboard-target="source" class="hidden"><%= @memory.content.body %></textarea>
+          <button type="button"
+                  data-component="button" data-variant="ghost" data-size="icon-sm"
+                  data-action="clipboard#copy"
+                  aria-label="<%= t("memories.show.copy_markdown") %>">
+            <span data-clipboard-target="copyIcon"><%= icon_for(:copy, class: "size-4") %></span>
+            <span data-clipboard-target="checkIcon" class="hidden"><%= icon_for(:check, class: "size-4") %></span>
+          </button>
+        </div>
+      <% end %>
+
       <%= render "components/dropdown_menu", auto_close: true do %>
         <%= render "components/dropdown_menu/trigger", as_child: true do %>
           <button
