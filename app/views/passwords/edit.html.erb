@@ -16,7 +16,7 @@
             required: true,
             autofocus: true,
             autocomplete: "new-password",
-            placeholder: "Enter new password",
+            placeholder: t("passwords.edit.password_placeholder"),
             maxlength: 72,
             spellcheck: "false",
             data: { component: "input" } %>
@@ -27,7 +27,7 @@
         <%= form.password_field :password_confirmation,
             required: true,
             autocomplete: "new-password",
-            placeholder: "Repeat new password",
+            placeholder: t("passwords.edit.password_confirmation_placeholder"),
             maxlength: 72,
             spellcheck: "false",
             data: { component: "input" } %>

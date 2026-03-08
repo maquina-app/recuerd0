@@ -9,6 +9,9 @@ en:
   shared:
     back_to_workspaces: "Back to Workspaces"
   workspaces:
+    form:
+      name_placeholder: "My Workspace"
+      description_placeholder: "Describe what this workspace is for..."
     index:
       new_workspace: "New Workspace"
     show:
@@ -18,6 +21,9 @@ en:
       deleted_title: "This workspace is deleted"
       deleted_description_with_days: "This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories. This workspace will be permanently deleted in %{days}."
       deleted_description_scheduled: "This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories. This workspace is scheduled for permanent deletion."
+      archived_badge: "Archived"
+      deleted_badge: "Deleted"
+      pinned_badge: "Pinned"
     archives:
       index:
         page_title: "Archived Workspaces"
@@ -37,9 +43,25 @@ en:
         empty_title: "No deleted workspaces"
         empty_description: "You haven't deleted any workspaces yet."
   memories:
+    form:
+      title_placeholder: "Untitled Memory"
+      source_placeholder: "e.g., Claude, Book Title, URL..."
+      content_placeholder: "Enter your memory content using Markdown..."
+      cancel: "Cancel"
+      save: "Save"
+      create: "Create"
+      write_tab: "Write"
+      preview_tab: "Preview"
+      markdown_hint: "Markdown"
+      preview_placeholder: "Click Preview to render your markdown"
     show:
       copy_markdown: "Copy markdown"
       view_markdown: "View Markdown"
+      pinned_badge: "Pinned"
+      switch_version: "Switch version"
+      of_versions:
+        one: "of %{count} version"
+        other: "of %{count} versions"
     memory_show_actions:
       versions: "Versions"
       new_version: "New Version"
@@ -164,12 +186,31 @@ en:
       heading: "Set up your instance"
       description: "Create the admin account for your recuerd0 instance."
       email_label: "Email"
+      email_placeholder: "m@example.com"
       password_placeholder: "Choose a password"
       password_confirmation_label: "Confirm password"
       password_confirmation_placeholder: "Confirm your password"
       submit: "Create account"
     create:
       success: "Welcome to recuerd0! Your instance is ready."
+
+  sessions:
+    new:
+      email_placeholder: "m@example.com"
+      password_placeholder: "Enter your password"
+
+  registrations:
+    new:
+      email_placeholder: "m@example.com"
+      password_placeholder: "Choose a password"
+      password_confirmation_placeholder: "Confirm your password"
+
+  passwords:
+    new:
+      email_placeholder: "m@example.com"
+    edit:
+      password_placeholder: "Enter new password"
+      password_confirmation_placeholder: "Repeat new password"
 
   invitations:
     show:

@@ -5,25 +5,45 @@
 <% content_for :page_title, @workspace.name %>
 
 <% content_for :breadcrumb do %>
-  <%= breadcrumbs(workspace_breadcrumb_links(@workspace), @workspace.name) %>
+  <%= responsive_breadcrumbs(workspace_breadcrumb_links(@workspace), @workspace.name) %>
 <% end %>
 
 <div class="mx-auto max-w-4xl">
   <%# Header %>
-  <div class="mb-6 flex items-center justify-between">
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <div class="min-w-0">
-      <h1 class="font-display text-2xl font-medium tracking-tight"><%= @workspace.name %></h1>
+      <div class="flex items-center gap-2 flex-wrap">
+        <h1 class="font-display text-2xl font-medium tracking-tight"><%= @workspace.name %></h1>
+
+        <% if @workspace.archived? %>
+          <%= render "components/badge", variant: :warning, css_classes: "text-xs" do %>
+            <%= t("workspaces.show.archived_badge") %>
+          <% end %>
+        <% elsif @workspace.deleted? %>
+          <%= render "components/badge", variant: :destructive, css_classes: "text-xs" do %>
+            <%= t("workspaces.show.deleted_badge") %>
+          <% end %>
+        <% end %>
+
+        <% if @workspace.pinned_by?(Current.user) %>
+          <%= render "components/badge", variant: :secondary do %>
+            <%= icon_for(:pin, class: "size-3") %>
+            <%= t("workspaces.show.pinned_badge") %>
+          <% end %>
+        <% end %>
+      </div>
+
       <% if @workspace.description.present? %>
         <p class="text-muted-foreground mt-1"><%= @workspace.description %></p>
       <% end %>
     </div>
 
-    <div class="flex items-center gap-1 flex-shrink-0">
+    <div class="flex items-center gap-1 flex-shrink-0 sm:ml-auto">
       <% if @workspace.active? %>
         <%= render "shared/pin_button", pinnable: @workspace %>
 
         <%= link_to new_workspace_memory_path(@workspace), data: { component: "button", variant: "secondary", size: "sm" } do %>
-          <%= icon_for(:bookmark_plus, class: "w-4 h-4") %>
+          <%= icon_for(:bookmark_plus, class: "size-4") %>
           New Memory
         <% end %>
       <% end %>
@@ -41,7 +61,7 @@
             aria-expanded="false"
             aria-label="Workspace actions"
           >
-            <%= icon_for(:more_vertical, class: "w-4 h-4") %>
+            <%= icon_for(:more_vertical, class: "size-4") %>
           </button>
         <% end %>
 
@@ -75,11 +95,11 @@
   <%# Metadata %>
   <div class="flex items-center gap-4 text-sm text-muted-foreground mb-4">
     <span class="inline-flex items-center gap-1">
-      <%= icon_for(:clock, class: "w-4 h-4") %>
+      <%= icon_for(:clock, class: "size-4") %>
       Created <%= time_ago_in_words(@workspace.created_at) %> ago
     </span>
     <span class="inline-flex items-center gap-1">
-      <%= icon_for(:file_text, class: "w-4 h-4") %>
+      <%= icon_for(:file_text, class: "size-4") %>
       <%= pluralize(@workspace.memories_count, "memory") %>
     </span>
     <% if @workspace.deleted? && @workspace.days_until_permanent_deletion > 0 %>

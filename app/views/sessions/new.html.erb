@@ -18,7 +18,7 @@
             autocomplete: "username",
             autocapitalize: "none",
             maxlength: 80,
-            placeholder: "m@example.com",
+            placeholder: t("sessions.new.email_placeholder"),
             value: params[:email_address],
             data: { component: "input" } %>
       </div>
@@ -33,7 +33,7 @@
         <%= form.password_field :password,
             required: true,
             autocomplete: "current-password",
-            placeholder: "Enter your password",
+            placeholder: t("sessions.new.password_placeholder"),
             maxlength: 72,
             spellcheck: "false",
             data: { component: "input" } %>

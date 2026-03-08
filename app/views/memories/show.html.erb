@@ -3,7 +3,7 @@
 <% content_for :page_title, @memory.display_title %>
 
 <% content_for :breadcrumb do %>
-  <%= breadcrumbs(
+  <%= responsive_breadcrumbs(
     {
       "Workspaces" => workspaces_path,
       @workspace.name => workspace_path(@workspace)
@@ -12,9 +12,9 @@
   ) %>
 <% end %>
 
-<div class="mx-auto max-w-4xl">
+<div class="mx-auto max-w-4xl overflow-x-hidden">
   <%# Header %>
-  <div class="mb-6 flex items-center justify-between">
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <div class="min-w-0">
       <div class="flex items-center gap-2 flex-wrap">
         <h1 class="font-display text-2xl font-medium tracking-tight"><%= @memory.display_title %></h1>
@@ -28,7 +28,7 @@
         <% if @memory.pinned_by?(Current.user) %>
           <%= render "components/badge", variant: :secondary do %>
             <%= icon_for(:pin, class: "size-3") %>
-            Pinned
+            <%= t("memories.show.pinned_badge") %>
           <% end %>
         <% end %>
       </div>
@@ -38,26 +38,7 @@
       <% end %>
     </div>
 
-    <div class="flex items-center gap-1 flex-shrink-0">
-      <% if @memory.versioned? %>
-        <select
-          data-controller="navigate"
-          data-action="change->navigate#visit"
-          data-component="input"
-          class="w-auto text-sm"
-          aria-label="Switch version"
-        >
-          <% @all_versions.each do |version| %>
-            <option
-              value="<%= workspace_memory_path(@workspace, version) %>"
-              <%= "selected" if version == @memory %>
-            >
-              <%= version.version_label %><%= " (current)" if version.current_version? %>
-            </option>
-          <% end %>
-        </select>
-      <% end %>
-
+    <div class="flex items-center gap-1 flex-shrink-0 sm:ml-auto">
       <% if @workspace.active? %>
         <%= render "shared/pin_button", pinnable: @memory %>
       <% end %>
@@ -127,7 +108,23 @@
     <% if @memory.versioned? %>
       <span class="inline-flex items-center gap-1">
         <%= icon_for(:git_branch, class: "size-4") %>
-        <%= @memory.version_label %> of <%= pluralize(@all_versions.size, "version") %>
+        <select
+          data-controller="navigate"
+          data-action="change->navigate#visit"
+          data-component="input"
+          class="w-auto text-sm"
+          aria-label="<%= t("memories.show.switch_version") %>"
+        >
+          <% @all_versions.each do |version| %>
+            <option
+              value="<%= workspace_memory_path(@workspace, version) %>"
+              <%= "selected" if version == @memory %>
+            >
+              <%= version.version_label %><%= " (current)" if version.current_version? %>
+            </option>
+          <% end %>
+        </select>
+        <%= t("memories.show.of_versions", count: @all_versions.size) %>
       </span>
     <% end %>
   </div>

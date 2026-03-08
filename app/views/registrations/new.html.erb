@@ -18,7 +18,7 @@
             autocomplete: "email",
             autocapitalize: "none",
             maxlength: 80,
-            placeholder: "m@example.com",
+            placeholder: t("registrations.new.email_placeholder"),
             data: { component: "input" } %>
         <% if @user.errors[:email_address].any? %>
           <p data-form-part="error" class="text-destructive"><%= @user.errors[:email_address].first %></p>
@@ -30,7 +30,7 @@
         <%= form.password_field :password,
             required: true,
             autocomplete: "new-password",
-            placeholder: "Choose a password",
+            placeholder: t("registrations.new.password_placeholder"),
             maxlength: 72,
             spellcheck: "false",
             data: { component: "input" } %>
@@ -44,7 +44,7 @@
         <%= form.password_field :password_confirmation,
             required: true,
             autocomplete: "new-password",
-            placeholder: "Confirm your password",
+            placeholder: t("registrations.new.password_confirmation_placeholder"),
             maxlength: 72,
             spellcheck: "false",
             data: { component: "input" } %>

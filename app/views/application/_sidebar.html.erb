@@ -24,21 +24,28 @@
 
         <%= render "components/separator", orientation: :vertical %>
 
-        <% if content_for?(:breadcrumb) %>
-          <%= yield :breadcrumb %>
-        <% else %>
-          <h1 class="text-base font-medium"><%= content_for(:page_title) || "Dashboard" %></h1>
-        <% end %>
+        <div class="min-w-0 flex-1 overflow-hidden [&_[data-breadcrumb-part=list]]:flex-nowrap">
+          <% if content_for?(:breadcrumb) %>
+            <%= yield :breadcrumb %>
+          <% else %>
+            <h1 class="text-base font-medium truncate"><%= content_for(:page_title) || "Dashboard" %></h1>
+          <% end %>
+        </div>
 
         <%# Compact inline search — omits data-component="form" and data-form-part="group"
             because the gem's grid layout is not appropriate for a single-field header bar form. %>
         <% if Current.user %>
-          <%= form_with url: search_path, method: :get, data: { turbo_action: "advance", controller: "search-form" }, class: "ml-auto" do |f| %>
+          <%= link_to search_path, data: { component: "button", variant: "ghost", size: "icon-sm" },
+              class: "ml-auto md:hidden shrink-0", aria: { label: t("search.placeholder") } do %>
+            <%= icon_for(:search, class: "w-4 h-4") %>
+          <% end %>
+
+          <%= form_with url: search_path, method: :get, data: { turbo_action: "advance", controller: "search-form" }, class: "ml-auto hidden md:block" do |f| %>
             <div class="relative">
               <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
                 <%= icon_for(:search, class: "w-3.5 h-3.5 text-muted-foreground") %>
               </div>
-              <%= f.search_field :q, value: (defined?(@query) ? @query : params[:q]), placeholder: t("search.placeholder"), maxlength: 30, data: { component: "input", action: "input->search-form#clear" }, class: "search-input h-9 w-48 lg:w-64 text-sm" %>
+              <%= f.search_field :q, value: (defined?(@query) ? @query : params[:q]), placeholder: t("search.placeholder"), maxlength: 30, autocomplete: "off", data: { component: "input", action: "input->search-form#clear" }, class: "search-input h-9 w-48 lg:w-64 text-sm" %>
             </div>
           <% end %>
         <% end %>
