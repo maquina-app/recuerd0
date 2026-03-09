@@ -1,0 +1,28 @@
+<p style="text-align: center; margin-bottom: 8px;">
+  <%= image_tag(attachments["onboarding-agent.png"].url, alt: "", style: "width:32px;height:32px;") %>
+</p>
+
+<p><strong>Give your AI assistant project memory</strong></p>
+
+<p>Your AI tools forget context between sessions. recuerd0 fixes that — it gives them persistent memory that you control.</p>
+
+<p><strong>Claude Code</strong></p>
+
+<p>Add the recuerd0 skill to your project's <code>CLAUDE.md</code>:</p>
+
+<pre style="background-color: #f5f5f5; padding: 12px 16px; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 14px; overflow-x: auto;">## Recuerd0 Knowledge Base
+
+Use the `/recuerd0` skill to search project knowledge.
+recuerd0 search "query terms" --pretty</pre>
+
+<p>Claude Code will automatically search your memories for relevant context before reading source code.</p>
+
+<p><strong>Other AI tools</strong></p>
+
+<p>Any tool that supports REST APIs or MCP servers can connect to recuerd0. The <a href="https://github.com/maquina-app/recuerd0-agents">recuerd0-agents</a> repository has ready-made configurations for Cursor, ChatGPT, and other tools.</p>
+
+<p style="margin: 24px 0;">
+  <a href="https://github.com/maquina-app/recuerd0-agents" class="btn">Integration Guide</a>
+</p>
+
+<p class="muted">Your memories are served read-only to AI tools by default. You stay in control.</p>

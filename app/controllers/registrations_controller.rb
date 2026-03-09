@@ -14,6 +14,7 @@ class RegistrationsController < ApplicationController
 
     if @user.persisted?
       RegistrationsMailer.welcome(@user).deliver_later
+      schedule_onboarding_emails(@user) if multi_tenant?
       start_new_session_for @user
       redirect_to workspaces_path, notice: t(".success")
     else
@@ -25,5 +26,13 @@ class RegistrationsController < ApplicationController
 
   def registration_params
     params.require(:user).permit(:email_address, :password, :password_confirmation).to_h.symbolize_keys
+  end
+
+  def schedule_onboarding_emails(user)
+    OnboardingMailer.api_token(user).deliver_later(wait: 1.day)
+    OnboardingMailer.cli_setup(user).deliver_later(wait: 3.days)
+    OnboardingMailer.ai_integration(user).deliver_later(wait: 5.days)
+    OnboardingMailer.check_in(user).deliver_later(wait: 7.days)
+    OnboardingMailer.advanced_tips(user).deliver_later(wait: 12.days)
   end
 end

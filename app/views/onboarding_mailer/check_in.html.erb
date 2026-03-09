@@ -1,0 +1,32 @@
+<p style="text-align: center; margin-bottom: 8px;">
+  <%= image_tag(attachments["onboarding-checkin.png"].url, alt: "", style: "width:32px;height:32px;") %>
+</p>
+
+<p><strong>Quick check-in — how's it going?</strong></p>
+
+<p>You've had recuerd0 for a week. Just checking in.</p>
+
+<% if @workspaces_count > 1 || @memories_count > 0 || @has_api_token %>
+  <p><strong>Your progress so far:</strong></p>
+  <ul>
+    <li><strong><%= @workspaces_count %></strong> active workspace<%= @workspaces_count == 1 ? "" : "s" %></li>
+    <li><strong><%= @memories_count %></strong> memor<%= @memories_count == 1 ? "y" : "ies" %> saved</li>
+    <li>API token: <strong><%= @has_api_token ? "set up" : "not yet" %></strong></li>
+  </ul>
+<% else %>
+  <p>It looks like you haven't had a chance to dive in yet — that's fine. When you're ready, the "Start Here" workspace walks you through everything in a few minutes.</p>
+<% end %>
+
+<p><strong>Need help?</strong></p>
+
+<ul>
+  <li><a href="https://github.com/maquina-app/recuerd0/issues">Report an issue</a> — bug reports and feature requests</li>
+  <li><a href="https://github.com/maquina-app/recuerd0/discussions">Discussions</a> — questions, ideas, and feedback</li>
+  <li>Reply to this email — it goes straight to the team</li>
+</ul>
+
+<p style="margin: 24px 0;">
+  <a href="<%= workspaces_url %>" class="btn">Open recuerd0</a>
+</p>
+
+<p class="muted">This is the last onboarding email (besides one more tip in a few days). No spam, ever.</p>

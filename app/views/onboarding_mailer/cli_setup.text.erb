@@ -1,0 +1,26 @@
+The recuerd0 CLI — your terminal, your memories
+
+Everything in the web UI, available from your terminal. Install with one command:
+
+  brew install recuerd0/tap/recuerd0
+
+Or download directly from the releases page:
+https://github.com/maquina-app/recuerd0-cli/releases
+
+Quick example:
+
+  # Set your API token
+  export RECUERD0_TOKEN="your-token-here"
+  export RECUERD0_HOST="<%= root_url.chomp("/") %>"
+
+  # List your workspaces
+  recuerd0 workspace list --pretty
+
+  # Search across everything
+  recuerd0 search "deployment config" --pretty
+
+The CLI supports everything — workspaces, memories, search, versioning — all from the command line.
+
+CLI Reference: https://github.com/maquina-app/recuerd0-cli
+
+Pair the CLI with shell scripts or CI pipelines to automate your knowledge workflows.

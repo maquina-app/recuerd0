@@ -1,0 +1,23 @@
+<p style="text-align: center; margin-bottom: 8px;">
+  <%= image_tag(attachments["onboarding-api.png"].url, alt: "", style: "width:32px;height:32px;") %>
+</p>
+
+<p><strong>Your first API token — 2 minutes to set up</strong></p>
+
+<p>recuerd0 works best when your AI tools can read from it. An API token makes that possible.</p>
+
+<p><strong>Three steps:</strong></p>
+
+<ol>
+  <li>Go to <strong>Settings → Access Tokens</strong></li>
+  <li>Click <strong>"New Token"</strong> — give it a name and choose a permission level</li>
+  <li>Copy the token and store it somewhere safe (you won't see it again)</li>
+</ol>
+
+<p>That's it. Once you have a token, the CLI and any AI integration can authenticate with your account.</p>
+
+<p style="margin: 24px 0;">
+  <a href="<%= profile_url %>" class="btn">Create an API Token</a>
+</p>
+
+<p class="muted">You can create multiple tokens with different permissions — read-only for AI tools, full access for the CLI.</p>

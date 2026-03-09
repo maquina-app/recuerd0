@@ -1,0 +1,22 @@
+Give your AI assistant project memory
+
+Your AI tools forget context between sessions. recuerd0 fixes that — it gives them persistent memory that you control.
+
+Claude Code
+
+Add the recuerd0 skill to your project's CLAUDE.md:
+
+  ## Recuerd0 Knowledge Base
+
+  Use the `/recuerd0` skill to search project knowledge.
+  recuerd0 search "query terms" --pretty
+
+Claude Code will automatically search your memories for relevant context before reading source code.
+
+Other AI tools
+
+Any tool that supports REST APIs or MCP servers can connect to recuerd0. The recuerd0-agents repository has ready-made configurations for Cursor, ChatGPT, and other tools.
+
+Integration Guide: https://github.com/maquina-app/recuerd0-agents
+
+Your memories are served read-only to AI tools by default. You stay in control.
