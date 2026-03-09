@@ -50,20 +50,12 @@
 
     <%= pagination_nav(@pagy, :search_path, params: { q: @query }) %>
   <% elsif @query.present? %>
-    <%= render "components/empty", variant: :outline do %>
-      <%= render "components/empty/header" do %>
-        <%= render "components/empty/media", icon: :search %>
-        <%= render "components/empty/title", text: t(".no_results_title") %>
-        <%= render "components/empty/description", text: t(".no_results_description", query: @query) %>
-      <% end %>
-    <% end %>
+    <%= empty_state title: t("search.index.no_results_title"),
+        description: t("search.index.no_results_description", query: @query),
+        icon: :search, variant: :outline %>
   <% else %>
-    <%= render "components/empty", variant: :outline do %>
-      <%= render "components/empty/header" do %>
-        <%= render "components/empty/media", icon: :search %>
-        <%= render "components/empty/title", text: t(".empty_title") %>
-        <%= render "components/empty/description", text: t(".empty_description") %>
-      <% end %>
-    <% end %>
+    <%= empty_state title: t("search.index.empty_title"),
+        description: t("search.index.empty_description"),
+        icon: :search, variant: :outline %>
   <% end %>
 </div>
