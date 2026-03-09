@@ -10,7 +10,8 @@
       @memory.root_memory.display_title => workspace_memory_path(@workspace, @memory.root_memory),
       "Versions" => workspace_memory_versions_path(@workspace, @memory)
     },
-    @version.version_label
+    @version.version_label,
+    collapse_after: 2
   ) %>
 <% end %>
 
