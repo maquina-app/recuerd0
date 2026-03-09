@@ -82,6 +82,8 @@ en:
         empty_description: "Pin memories from any workspace to see them here."
   search:
     placeholder: "Search memories…"
+    command:
+      hint: "Press Enter to search, Esc to close"
     index:
       title: "Search"
       results_count:

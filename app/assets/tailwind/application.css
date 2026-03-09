@@ -187,11 +187,6 @@
   box-shadow: none;
 }
 
-/* Search input: extra left padding for the search icon overlay */
-.search-input[data-component="input"] {
-  padding-left: 2rem;
-}
-
 /* ===== Toast Overrides: Frosted Glass with Colored Accent ===== */
 
 /* Base toast — light frosted glass surface */
