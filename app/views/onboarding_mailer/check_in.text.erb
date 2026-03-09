@@ -1,0 +1,23 @@
+Quick check-in — how's it going?
+
+You've had recuerd0 for a week. Just checking in.
+
+<% if @workspaces_count > 1 || @memories_count > 0 || @has_api_token %>
+Your progress so far:
+
+- <%= @workspaces_count %> active workspace<%= @workspaces_count == 1 ? "" : "s" %>
+- <%= @memories_count %> memor<%= @memories_count == 1 ? "y" : "ies" %> saved
+- API token: <%= @has_api_token ? "set up" : "not yet" %>
+<% else %>
+It looks like you haven't had a chance to dive in yet — that's fine. When you're ready, the "Start Here" workspace walks you through everything in a few minutes.
+<% end %>
+
+Need help?
+
+- Report an issue — https://github.com/maquina-app/recuerd0/issues
+- Discussions — https://github.com/maquina-app/recuerd0/discussions
+- Reply to this email — it goes straight to the team
+
+Open recuerd0: <%= workspaces_url %>
+
+This is the last onboarding email (besides one more tip in a few days). No spam, ever.

@@ -1,0 +1,28 @@
+Two features you might have missed
+
+recuerd0 does more than store text. Here are two capabilities worth knowing about.
+
+1. FTS5 search operators
+
+The API supports full SQLite FTS5 syntax. A few examples:
+
+  # Exact phrase
+  recuerd0 search '"deployment config"' --pretty
+
+  # Boolean operators
+  recuerd0 search 'rails AND deployment NOT staging' --pretty
+
+  # Column filters
+  recuerd0 search 'title:architecture' --pretty
+
+This is especially useful when your AI tools query recuerd0 — they can write precise queries to find exactly the context they need.
+
+2. Memory versioning
+
+Every time you update a memory, recuerd0 saves the previous version. You can view the full history and compare changes — nothing is ever lost.
+
+This means your AI tools can safely update shared project context. If something goes wrong, you can always roll back.
+
+Try a Search: <%= workspaces_url %>
+
+That's the end of the onboarding sequence. Build something great.

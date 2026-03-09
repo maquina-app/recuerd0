@@ -8,6 +8,17 @@ en:
   profile_mailer:
     password_changed:
       subject: "Your password was changed"
+  onboarding_mailer:
+    api_token:
+      subject: "Your first API token — 2 minutes to set up"
+    cli_setup:
+      subject: "The recuerd0 CLI — your terminal, your memories"
+    ai_integration:
+      subject: "Give your AI assistant project memory"
+    check_in:
+      subject: "Quick check-in — how's it going?"
+    advanced_tips:
+      subject: "Two features you might have missed"
   account_export_mailer:
     started:
       subject: "Your data export has started"

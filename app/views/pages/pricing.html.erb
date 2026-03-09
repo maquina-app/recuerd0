@@ -7,14 +7,40 @@
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  "mainEntity": [{
-    "@type": "Question",
-    "name": "Need more than 10 users?",
-    "acceptedAnswer": {
-      "@type": "Answer",
-      "text": "If your team needs higher limits or custom deployment options, reach out at info@recuerd0.ai and we'll figure it out together."
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What's the difference between self-hosted and cloud?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Both plans include the same features, same limits, and same codebase. Self-hosted gives you full control over your infrastructure and data. Cloud is a managed service where we handle hosting, backups, and updates for you."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I switch from self-hosted to cloud?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. You can migrate from self-hosted to cloud (or vice versa) at any time. Export your data via the API from one instance and import it into the other."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is there a free trial for the cloud plan?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The self-hosted version is free forever with no feature limits. You can try everything locally before deciding if you want the convenience of our managed cloud service."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Need more than 10 users?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "If your team needs higher limits or custom deployment options, reach out at info@recuerd0.ai and we'll figure it out together."
+      }
     }
-  }]
+  ]
 }
 </script>
 <% end %>
