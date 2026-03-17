@@ -25,12 +25,12 @@ class MemoriesController < ApplicationController
 
   def show
     @all_versions = @memory.all_versions
-    @memory = @memory.resolve_current_version
+    @viewing_old_version = @memory.versioned? && !@memory.current_version?
     track_event("memory.view", resource: @memory)
 
     respond_to do |format|
       format.html
-      format.json
+      format.json { @memory = @memory.resolve_current_version }
     end
   end
 

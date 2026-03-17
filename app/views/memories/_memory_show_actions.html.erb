@@ -1,4 +1,4 @@
-<%# locals: (memory:, workspace:) -%>
+<%# locals: (memory:, workspace:, viewing_old_version: false) -%>
 <% if memory.content&.body.present? %>
   <%= render "components/dropdown_menu/item",
       href: workspace_memory_markdown_path(workspace, memory),
@@ -17,7 +17,7 @@
   <% end %>
 <% end %>
 
-<% if workspace.active? %>
+<% if workspace.active? && !viewing_old_version %>
   <%= render "components/dropdown_menu/item",
       href: workspace_memory_versions_path(workspace, memory),
       method: :post,

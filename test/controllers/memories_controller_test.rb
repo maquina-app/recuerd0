@@ -39,13 +39,13 @@ class MemoriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Updated Title", @memory.reload.title
   end
 
-  test "show resolves to current version for root memory with versions" do
+  test "show renders root memory without resolving to latest version" do
     parent = memories(:versioned_parent)
     parent.create_version!(title: "Latest Version", content: "Latest content")
 
     get workspace_memory_url(parent.workspace, parent)
     assert_response :success
-    assert_match "Latest Version", response.body
+    assert_match parent.display_title, response.body
   end
 
   test "show renders specific version when navigating to child version" do
@@ -56,6 +56,35 @@ class MemoriesControllerTest < ActionDispatch::IntegrationTest
     get workspace_memory_url(parent.workspace, v2)
     assert_response :success
     assert_match "V2 Specific", response.body
+  end
+
+  test "show sets viewing_old_version flag for non-current versions" do
+    parent = memories(:versioned_parent)
+    v2 = parent.create_version!(title: "V2", content: "V2 content")
+    parent.create_version!(title: "V3 Latest", content: "V3 content")
+
+    get workspace_memory_url(parent.workspace, v2)
+    assert_response :success
+    assert_match I18n.t("memories.show.old_version_title", version: v2.version_label), response.body
+  end
+
+  test "show does not show old version alert for current version" do
+    parent = memories(:versioned_parent)
+    v2 = parent.create_version!(title: "V2 Latest", content: "V2 content")
+
+    get workspace_memory_url(parent.workspace, v2)
+    assert_response :success
+    assert_no_match(/#{Regexp.escape(I18n.t("memories.show.old_version_title", version: v2.version_label))}/, response.body)
+  end
+
+  test "show hides edit actions for old versions" do
+    parent = memories(:versioned_parent)
+    v2 = parent.create_version!(title: "V2", content: "V2 content")
+    parent.create_version!(title: "V3 Latest", content: "V3 content")
+
+    get workspace_memory_url(parent.workspace, v2)
+    assert_response :success
+    assert_no_match edit_workspace_memory_path(parent.workspace, v2), response.body
   end
 
   test "destroy removes memory" do

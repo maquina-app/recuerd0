@@ -71,22 +71,29 @@
         <%= render "components/dropdown_menu/content",
             align: :end,
             css_classes: "w-48" do %>
-          <%= render "memories/memory_show_actions", memory: @memory, workspace: @workspace %>
+          <%= render "memories/memory_show_actions", memory: @memory, workspace: @workspace, viewing_old_version: @viewing_old_version %>
         <% end %>
       <% end %>
     </div>
   </div>
 
   <%# State alerts %>
+  <% if @viewing_old_version %>
+    <%= render "components/alert", variant: :default, icon: :git_branch, css_classes: "mb-6" do %>
+      <%= render "components/alert/title", text: t("memories.show.old_version_title", version: @memory.version_label) %>
+      <%= render "components/alert/description", text: t("memories.show.old_version_description") %>
+    <% end %>
+  <% end %>
+
   <% if @workspace.archived? %>
     <%= render "components/alert", variant: :default, icon: :archive, css_classes: "mb-6" do %>
-      <%= render "components/alert/title", text: "This memory is in an archived workspace" %>
-      <%= render "components/alert/description", text: "This workspace is in read-only mode. You can view its contents but cannot make changes." %>
+      <%= render "components/alert/title", text: t("memories.show.archived_workspace_title") %>
+      <%= render "components/alert/description", text: t("memories.show.archived_workspace_description") %>
     <% end %>
   <% elsif @workspace.deleted? %>
     <%= render "components/alert", variant: :warning, icon: :trash_2, css_classes: "mb-6" do %>
-      <%= render "components/alert/title", text: "This memory is in a deleted workspace" %>
-      <%= render "components/alert/description", text: "This workspace has been deleted and is in read-only mode. Restore the workspace to continue editing." %>
+      <%= render "components/alert/title", text: t("memories.show.deleted_workspace_title") %>
+      <%= render "components/alert/description", text: t("memories.show.deleted_workspace_description") %>
     <% end %>
   <% end %>
 
@@ -94,11 +101,11 @@
   <div class="flex items-center gap-x-4 gap-y-2 text-sm text-muted-foreground mb-4 flex-wrap">
     <span class="inline-flex items-center gap-1">
       <%= icon_for(:clock, class: "size-3.5") %>
-      Created <%= time_ago_in_words(@memory.created_at) %> ago
+      <%= t("memories.show.created_ago", time: time_ago_in_words(@memory.created_at)) %>
     </span>
     <span class="inline-flex items-center gap-1">
       <%= icon_for(:refresh_cw, class: "size-3.5") %>
-      Updated <%= time_ago_in_words(@memory.updated_at) %> ago
+      <%= t("memories.show.updated_ago", time: time_ago_in_words(@memory.updated_at)) %>
     </span>
     <% if @memory.versioned? %>
       <span class="inline-flex items-center gap-1">
@@ -114,7 +121,7 @@
               value="<%= workspace_memory_path(@workspace, version) %>"
               <%= "selected" if version == @memory %>
             >
-              <%= version.version_label %><%= " (current)" if version.current_version? %>
+              <%= version.version_label %><%= " (#{t("memories.show.current_label")})" if version.current_version? %>
             </option>
           <% end %>
         </select>
@@ -147,14 +154,14 @@
     <%= render "components/empty", variant: :outline do %>
       <%= render "components/empty/header" do %>
         <%= render "components/empty/media", icon: :file_text %>
-        <%= render "components/empty/title", text: "No content yet" %>
-        <%= render "components/empty/description", text: "This memory doesn't have any content. Add some markdown content to get started." %>
+        <%= render "components/empty/title", text: t("memories.show.no_content_title") %>
+        <%= render "components/empty/description", text: t("memories.show.no_content_description") %>
       <% end %>
       <% if @workspace.active? %>
         <%= render "components/empty/content" do %>
           <%= link_to edit_workspace_memory_path(@workspace, @memory), data: { component: "button", variant: "secondary" } do %>
             <%= icon_for(:edit, class: "size-4") %>
-            Add Content
+            <%= t("memories.show.add_content") %>
           <% end %>
         <% end %>
       <% end %>
@@ -170,22 +177,22 @@
     <div class="mt-6">
       <%= render "components/card" do %>
         <%= render "components/card/header", layout: :row do %>
-          <%= render "components/card/title", text: "Version Information" %>
+          <%= render "components/card/title", text: t("memories.show.version_info_title") %>
           <%= render "components/card/action" do %>
             <%= link_to workspace_memory_versions_path(@workspace, @memory),
                 data: { component: "button", variant: "ghost", size: "sm" } do %>
               <%= icon_for(:git_branch, class: "size-4") %>
-              View All Versions
+              <%= t("memories.show.view_all_versions") %>
             <% end %>
           <% end %>
         <% end %>
 
         <%= render "components/card/content" do %>
           <div class="flex items-center gap-4 text-sm">
-            <span>Current: <strong><%= @memory.version_label %></strong></span>
+            <span><%= t("memories.show.current_version_html", version: @memory.version_label) %></span>
             <% if @memory.child_versions.any? %>
               <span class="text-muted-foreground">
-                <%= pluralize(@memory.child_versions.count, "version") %> created from this
+                <%= t("memories.show.child_versions_count", count: @memory.child_versions.count) %>
               </span>
             <% end %>
           </div>
