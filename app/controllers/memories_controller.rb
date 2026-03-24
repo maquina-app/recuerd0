@@ -1,5 +1,6 @@
 class MemoriesController < ApplicationController
   include WorkspaceScoped
+  include MemoryFilterable
 
   before_action :set_workspace
   before_action :set_memory, only: %i[show edit update destroy]
@@ -12,11 +13,14 @@ class MemoriesController < ApplicationController
       .includes(:content, child_versions: :content)
       .order(updated_at: :desc)
 
-    @pagy, @memories = pagy(scope, items: 25)
-
     respond_to do |format|
-      format.html { redirect_to workspace_path(@workspace) }
+      format.html do
+        @pagy, @memories = pagy(scope, items: 25)
+        redirect_to workspace_path(@workspace)
+      end
       format.json do
+        scope = apply_memory_filters(scope)
+        @pagy, @memories = pagy(scope, limit: permitted_per_page)
         @memories = @memories.map { |m| m.versioned? ? m.current_version : m }
         set_pagination_headers(@pagy)
       end
@@ -30,7 +34,18 @@ class MemoriesController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { @memory = @memory.resolve_current_version }
+      format.json do
+        @memory = @memory.resolve_current_version
+        if params[:line_start].present? || params[:line_end].present?
+          @line_start = params[:line_start]&.to_i
+          @line_end = params[:line_end]&.to_i
+          if @line_start && @line_end && @line_start > @line_end
+            return render json: {
+              error: {code: "VALIDATION_ERROR", message: "line_start must be less than or equal to line_end", status: 422}
+            }, status: :unprocessable_entity
+          end
+        end
+      end
     end
   end
 

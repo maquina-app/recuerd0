@@ -67,6 +67,9 @@ Rails.application.routes.draw do
   # Pinned memories
   get "memories/pinned", to: "memories/pinned#index", as: :pinned_memories
 
+  # Cross-workspace memory browsing (API only)
+  get "memories", to: "memories/browse#index", as: :browse_memories, defaults: {format: :json}
+
   # Search
   get "search", to: "search#index", as: :search
 

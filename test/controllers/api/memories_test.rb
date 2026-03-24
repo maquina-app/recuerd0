@@ -151,6 +151,106 @@ class ApiMemoriesTest < ActionDispatch::IntegrationTest
     assert_not_nil versioned, "Expected current version title in index response"
   end
 
+  # Filter tests
+  test "index filters by title glob pattern" do
+    get workspace_memories_url(@workspace, format: :json),
+      params: {title: "Meeting*"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert json.all? { |m| m["title"].start_with?("Meeting") }
+  end
+
+  test "index filters by tags" do
+    get workspace_memories_url(@workspace, format: :json),
+      params: {tags: "work,meetings"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    json.each do |m|
+      assert_includes m["tags"], "work"
+      assert_includes m["tags"], "meetings"
+    end
+  end
+
+  test "index filters by source" do
+    get workspace_memories_url(@workspace, format: :json),
+      params: {source: "manual"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert json.all? { |m| m["source"] == "manual" }
+  end
+
+  test "index supports sorting" do
+    get workspace_memories_url(@workspace, format: :json),
+      params: {sort: "title", direction: "asc"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    titles = json.map { |m| m["title"] }
+    assert_equal titles.sort, titles
+  end
+
+  test "index supports per_page" do
+    get workspace_memories_url(@workspace, format: :json),
+      params: {per_page: 1},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert json.length <= 1
+    assert_equal "1", response.headers["X-Per-Page"]
+  end
+
+  # Line range tests
+  test "show includes total_lines in content" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert json["content"].key?("total_lines")
+    assert json["content"].key?("line_start")
+    assert json["content"].key?("line_end")
+  end
+
+  test "show returns line range with line_start and line_end" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      params: {line_start: 1, line_end: 1},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal 1, json["content"]["line_start"]
+    assert_equal 1, json["content"]["line_end"]
+    refute_includes json["content"]["body"], "\n"
+  end
+
+  test "show returns 422 when line_start > line_end" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      params: {line_start: 5, line_end: 1},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :unprocessable_entity
+    json = JSON.parse(response.body)
+    assert_equal "VALIDATION_ERROR", json["error"]["code"]
+  end
+
+  test "show returns full content when no line params" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @memory.content.body, json["content"]["body"]
+    assert_equal 1, json["content"]["line_start"]
+  end
+
   # Scoping tests
   test "memories scoped to workspace" do
     workspaces(:two)

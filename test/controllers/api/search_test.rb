@@ -221,6 +221,68 @@ class ApiSearchTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Grep mode tests
+  test "grep mode returns matches instead of snippet" do
+    get search_url(format: :json),
+      params: {q: "Meeting", mode: "grep"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    result = json["results"].first
+    assert result.key?("matches")
+    assert result.key?("total_lines")
+    refute result.key?("snippet")
+  end
+
+  test "grep mode matches include line numbers" do
+    get search_url(format: :json),
+      params: {q: "Meeting", mode: "grep"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    result = json["results"].first
+    match = result["matches"].first
+    assert match.key?("line_number")
+    assert match.key?("line")
+    assert match.key?("context_before")
+    assert match.key?("context_after")
+  end
+
+  test "grep mode with context returns surrounding lines" do
+    get search_url(format: :json),
+      params: {q: "project", mode: "grep", context: 1},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    result = json["results"].first
+    assert result.present?
+  end
+
+  test "grep mode with before and after params" do
+    get search_url(format: :json),
+      params: {q: "Meeting", mode: "grep", before: 0, after: 2},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert json["results"].present?
+  end
+
+  test "snippet mode is default when mode not specified" do
+    get search_url(format: :json),
+      params: {q: "Meeting"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    result = json["results"].first
+    assert result.key?("snippet")
+    refute result.key?("matches")
+  end
+
   test "returns 422 for invalid FTS5 syntax" do
     get search_url(format: :json),
       params: {q: "AND OR NOT"},

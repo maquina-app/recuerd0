@@ -21,7 +21,15 @@ class SearchController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { set_pagination_headers(@pagy) }
+      format.json do
+        set_pagination_headers(@pagy)
+        if params[:mode] == "grep"
+          @grep_mode = true
+          context = params[:context].to_i.clamp(0, 10)
+          @before_lines = params[:before].present? ? params[:before].to_i.clamp(0, 10) : context
+          @after_lines = params[:after].present? ? params[:after].to_i.clamp(0, 10) : context
+        end
+      end
     end
   rescue ActiveRecord::StatementInvalid => e
     raise unless api_request? && e.message.include?("fts5")
