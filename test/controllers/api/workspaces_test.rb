@@ -145,6 +145,50 @@ class ApiWorkspacesTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # Caching tests
+  test "show sets ETag and Cache-Control headers" do
+    get workspace_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert response.headers["ETag"].present?
+    assert_includes response.headers["Cache-Control"], "private"
+  end
+
+  test "show returns 304 when ETag matches" do
+    get workspace_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    etag = response.headers["ETag"]
+
+    get workspace_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token).merge("If-None-Match" => etag)
+
+    assert_response :not_modified
+  end
+
+  test "show returns 200 after workspace is updated" do
+    get workspace_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    etag = response.headers["ETag"]
+
+    @workspace.touch
+
+    get workspace_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token).merge("If-None-Match" => etag)
+
+    assert_response :success
+  end
+
+  test "index sets Cache-Control header" do
+    get workspaces_url(format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_includes response.headers["Cache-Control"], "private"
+  end
+
   private
 
   def auth_headers(token)

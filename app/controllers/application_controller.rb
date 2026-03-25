@@ -18,9 +18,14 @@ class ApplicationController < ActionController::Base
     by: -> { current_access_token&.id || Current.user&.id || request.remote_ip },
     with: -> { render_rate_limited }
 
+  after_action :set_api_cache_control, if: :api_request?
   rescue_from ActiveRecord::RecordNotFound, with: :handle_record_not_found
 
   private
+
+  def set_api_cache_control
+    expires_in 0, public: false
+  end
 
   def handle_record_not_found
     if api_request?

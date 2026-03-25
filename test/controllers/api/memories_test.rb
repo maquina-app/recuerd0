@@ -318,6 +318,68 @@ class ApiMemoriesTest < ActionDispatch::IntegrationTest
     refute json["content"].key?("matches")
   end
 
+  # Caching tests
+  test "show sets ETag and Cache-Control headers" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert response.headers["ETag"].present?
+    assert_includes response.headers["Cache-Control"], "private"
+  end
+
+  test "show returns 304 when ETag matches" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    etag = response.headers["ETag"]
+
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token).merge("If-None-Match" => etag)
+
+    assert_response :not_modified
+  end
+
+  test "show returns 200 after memory content changes" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    etag = response.headers["ETag"]
+
+    @memory.touch
+
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token).merge("If-None-Match" => etag)
+
+    assert_response :success
+  end
+
+  test "show does not return 304 for grep mode even with matching ETag" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    etag = response.headers["ETag"]
+
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      params: {mode: "grep", q: "Meeting"},
+      headers: auth_headers(@read_only_token).merge("If-None-Match" => etag)
+
+    assert_response :success
+  end
+
+  test "show does not return 304 for line range mode even with matching ETag" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    etag = response.headers["ETag"]
+
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      params: {line_start: 1, line_end: 1},
+      headers: auth_headers(@read_only_token).merge("If-None-Match" => etag)
+
+    assert_response :success
+  end
+
   # Scoping tests
   test "memories scoped to workspace" do
     workspaces(:two)

@@ -39,7 +39,7 @@ class WorkspacesController < ApplicationController
 
         load_workspace_memories(scope)
       end
-      format.json
+      format.json { stale?(@workspace) }
     end
   end
 

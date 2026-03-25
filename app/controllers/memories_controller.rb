@@ -37,7 +37,8 @@ class MemoriesController < ApplicationController
       format.html
       format.json do
         @memory = @memory.resolve_current_version
-        prepare_content_mode
+        return validate_content_params if content_filtered?
+        return unless stale?(@memory)
       end
     end
   end
@@ -106,7 +107,11 @@ class MemoriesController < ApplicationController
     @memory = @workspace.memories.find(params[:id])
   end
 
-  def prepare_content_mode
+  def content_filtered?
+    grep_mode? || line_range_requested?
+  end
+
+  def validate_content_params
     if grep_mode?
       parse_grep_params
       render_validation_error(t("memories.show.grep_query_required")) if @grep_query.blank?
