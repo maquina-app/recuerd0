@@ -1,10 +1,12 @@
 class SearchController < ApplicationController
+  include ContentRenderable
+
   def index
     @query = params[:q].to_s.strip.first(query_max_length)
 
     if api_request?
-      return render_query_error("Query parameter is required") if @query.blank?
-      return render_query_error("Query must be at least #{Searchable::MIN_QUERY_LENGTH} characters") if @query.length < Searchable::MIN_QUERY_LENGTH
+      return render_validation_error("Query parameter is required") if @query.blank?
+      return render_validation_error("Query must be at least #{Searchable::MIN_QUERY_LENGTH} characters") if @query.length < Searchable::MIN_QUERY_LENGTH
     end
 
     memories = build_search_scope
@@ -23,17 +25,12 @@ class SearchController < ApplicationController
       format.html
       format.json do
         set_pagination_headers(@pagy)
-        if params[:mode] == "grep"
-          @grep_mode = true
-          context = params[:context].to_i.clamp(0, 10)
-          @before_lines = params[:before].present? ? params[:before].to_i.clamp(0, 10) : context
-          @after_lines = params[:after].present? ? params[:after].to_i.clamp(0, 10) : context
-        end
+        parse_grep_params if grep_mode?
       end
     end
   rescue ActiveRecord::StatementInvalid => e
     raise unless api_request? && e.message.include?("fts5")
-    render_query_error("Invalid search query syntax")
+    render_validation_error("Invalid search query syntax")
   end
 
   private
@@ -60,11 +57,5 @@ class SearchController < ApplicationController
 
   def query_max_length
     api_request? ? 100 : 30
-  end
-
-  def render_query_error(message)
-    render json: {
-      error: {code: "VALIDATION_ERROR", message: message, status: 422}
-    }, status: :unprocessable_entity
   end
 end

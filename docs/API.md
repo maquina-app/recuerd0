@@ -380,6 +380,50 @@ The `content` object always includes `total_lines`, `line_start`, and `line_end`
 
 Returns `422` if `line_start` is greater than `line_end`.
 
+**Grep Mode**
+
+When `mode=grep` is specified, the endpoint searches within the memory's content and returns matching lines with context instead of the full body.
+
+Additional parameters (only with `mode=grep`):
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| q | string | Yes | Search query |
+| context | integer | No | Lines before and after each match (0-10, default: 0) |
+| before | integer | No | Lines before match, overrides context (0-10) |
+| after | integer | No | Lines after match, overrides context (0-10) |
+
+**Examples**
+
+```
+GET /workspaces/1/memories/1.json?mode=grep&q=architecture
+GET /workspaces/1/memories/1.json?mode=grep&q=design&context=2
+GET /workspaces/1/memories/1.json?mode=grep&q=TODO&before=0&after=5
+```
+
+**Response**
+
+```json
+{
+  "id": 1,
+  "title": "Meeting Notes",
+  ...
+  "content": {
+    "total_lines": 142,
+    "matches": [
+      {
+        "line_number": 12,
+        "line": "Discussed architecture decisions.",
+        "context_before": ["## Design"],
+        "context_after": ["The team agreed on microservices."]
+      }
+    ]
+  }
+}
+```
+
+Returns `422` if `q` parameter is missing when `mode=grep`.
+
 ---
 
 ### Create Memory

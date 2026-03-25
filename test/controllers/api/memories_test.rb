@@ -251,6 +251,73 @@ class ApiMemoriesTest < ActionDispatch::IntegrationTest
     assert_equal 1, json["content"]["line_start"]
   end
 
+  # Grep mode tests
+  test "show grep mode returns matches instead of body" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      params: {mode: "grep", q: "Meeting"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert json["content"].key?("matches")
+    assert json["content"].key?("total_lines")
+    refute json["content"].key?("body")
+  end
+
+  test "show grep mode requires q param" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      params: {mode: "grep"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :unprocessable_entity
+    json = JSON.parse(response.body)
+    assert_equal "VALIDATION_ERROR", json["error"]["code"]
+  end
+
+  test "show grep mode with context returns surrounding lines" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      params: {mode: "grep", q: "project", context: 1},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert json["content"]["matches"].present?
+  end
+
+  test "show grep mode with before and after params" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      params: {mode: "grep", q: "Meeting", before: 0, after: 2},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    match = json["content"]["matches"].first
+    assert match.key?("line_number")
+    assert match.key?("line")
+    assert match.key?("context_before")
+    assert match.key?("context_after")
+  end
+
+  test "show grep mode returns empty matches for no hits" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      params: {mode: "grep", q: "xyznonexistent"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal [], json["content"]["matches"]
+  end
+
+  test "show without mode=grep returns full body" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert json["content"].key?("body")
+    refute json["content"].key?("matches")
+  end
+
   # Scoping tests
   test "memories scoped to workspace" do
     workspaces(:two)

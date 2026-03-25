@@ -14,6 +14,9 @@ en:
       destroyed: "Workspace was successfully deleted."
 
   memories:
+    show:
+      grep_query_required: "Query parameter q is required for grep mode"
+      invalid_line_range: "line_start must be less than or equal to line_end"
     create:
       created: "Memory was successfully created."
       errors: "Please review the errors below."

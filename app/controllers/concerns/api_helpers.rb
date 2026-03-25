@@ -36,6 +36,12 @@ module ApiHelpers
     }, status: :unprocessable_entity
   end
 
+  def render_validation_error(message)
+    render json: {
+      error: {code: "VALIDATION_ERROR", message: message, status: 422}
+    }, status: :unprocessable_entity
+  end
+
   def render_not_found(message = "Resource not found")
     render json: {
       error: {code: "NOT_FOUND", message: message, status: 404}

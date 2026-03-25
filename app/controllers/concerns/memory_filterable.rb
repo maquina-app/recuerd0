@@ -42,8 +42,8 @@ module MemoryFilterable
 
   def apply_sorting(scope)
     field = ALLOWED_SORT_FIELDS.include?(params[:sort]) ? params[:sort] : "updated_at"
-    direction = ALLOWED_DIRECTIONS.include?(params[:direction]) ? params[:direction] : "desc"
-    scope.reorder("memories.#{field} #{direction}")
+    direction = ALLOWED_DIRECTIONS.include?(params[:direction]) ? params[:direction].to_sym : :desc
+    scope.reorder(Arel.sql("memories.#{field}") => direction)
   end
 
   def permitted_per_page

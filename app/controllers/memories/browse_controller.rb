@@ -2,11 +2,7 @@ class Memories::BrowseController < ApplicationController
   include MemoryFilterable
 
   def index
-    scope = Memory.joins(:workspace)
-      .where(workspaces: {account_id: Current.account.id, deleted_at: nil, archived_at: nil})
-      .latest_versions
-      .includes(:content, :workspace, child_versions: :content)
-
+    scope = active_workspace_memories
     scope = apply_memory_filters(scope)
     scope = scope.where(workspace_id: params[:workspace_id]) if params[:workspace_id].present?
 
@@ -15,5 +11,14 @@ class Memories::BrowseController < ApplicationController
     set_pagination_headers(@pagy)
 
     render "memories/index"
+  end
+
+  private
+
+  def active_workspace_memories
+    Memory.joins(:workspace)
+      .where(workspaces: {account_id: Current.account.id, deleted_at: nil, archived_at: nil})
+      .latest_versions
+      .includes(:content, :workspace, child_versions: :content)
   end
 end

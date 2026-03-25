@@ -1,6 +1,7 @@
 class MemoriesController < ApplicationController
   include WorkspaceScoped
   include MemoryFilterable
+  include ContentRenderable
 
   before_action :set_workspace
   before_action :set_memory, only: %i[show edit update destroy]
@@ -36,15 +37,7 @@ class MemoriesController < ApplicationController
       format.html
       format.json do
         @memory = @memory.resolve_current_version
-        if params[:line_start].present? || params[:line_end].present?
-          @line_start = params[:line_start]&.to_i
-          @line_end = params[:line_end]&.to_i
-          if @line_start && @line_end && @line_start > @line_end
-            return render json: {
-              error: {code: "VALIDATION_ERROR", message: "line_start must be less than or equal to line_end", status: 422}
-            }, status: :unprocessable_entity
-          end
-        end
+        prepare_content_mode
       end
     end
   end
@@ -111,6 +104,16 @@ class MemoriesController < ApplicationController
 
   def set_memory
     @memory = @workspace.memories.find(params[:id])
+  end
+
+  def prepare_content_mode
+    if grep_mode?
+      parse_grep_params
+      render_validation_error(t("memories.show.grep_query_required")) if @grep_query.blank?
+    elsif line_range_requested?
+      parse_line_range_params
+      render_validation_error(t("memories.show.invalid_line_range")) if invalid_line_range?
+    end
   end
 
   def memory_params

@@ -398,6 +398,45 @@
           <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>The <code>content</code> object always includes <code>total_lines</code>, <code>line_start</code>, and <code>line_end</code>. When line range parameters are provided, <code>body</code> contains only the requested lines. Returns <code>422</code> if <code>line_start</code> > <code>line_end</code>.</span>
         </div>
+        <div class="param-table-label">Grep Mode Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">mode</span></td><td><span class="param-type">string</span></td><td>Set to <code>grep</code> to search within the memory</td></tr>
+            <tr><td><span class="param-name">q</span></td><td><span class="param-type">string</span></td><td>Search query <span class="param-required">required</span></td></tr>
+            <tr><td><span class="param-name">context</span></td><td><span class="param-type">integer</span></td><td>Lines before and after each match (0–10, default: 0)</td></tr>
+            <tr><td><span class="param-name">before</span></td><td><span class="param-type">integer</span></td><td>Lines before match, overrides <code>context</code> (0–10)</td></tr>
+            <tr><td><span class="param-name">after</span></td><td><span class="param-type">integer</span></td><td>Lines after match, overrides <code>context</code> (0–10)</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">examples</span></div>
+          <div class="code-body"><code><span class="cc">GET</span> /workspaces/1/memories/1.json?mode=grep&amp;q=architecture
+<span class="cc">GET</span> /workspaces/1/memories/1.json?mode=grep&amp;q=design&amp;context=2</code></div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"id"</span>: <span class="cn">1</span>,
+  <span class="ck">"title"</span>: <span class="cs">"Meeting Notes"</span>,
+  ...
+  <span class="ck">"content"</span>: {
+    <span class="ck">"total_lines"</span>: <span class="cn">142</span>,
+    <span class="ck">"matches"</span>: [
+      {
+        <span class="ck">"line_number"</span>: <span class="cn">12</span>,
+        <span class="ck">"line"</span>: <span class="cs">"Discussed architecture decisions."</span>,
+        <span class="ck">"context_before"</span>: [<span class="cs">"## Design"</span>],
+        <span class="ck">"context_after"</span>: [<span class="cs">"The team agreed on microservices."</span>]
+      }
+    ]
+  }
+}</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>In grep mode, the <code>content</code> object returns <code>matches</code> and <code>total_lines</code> instead of <code>body</code>. Returns <code>422</code> if <code>q</code> parameter is missing.</span>
+        </div>
       </div>
 
       <div class="endpoint" id="create-memory">
