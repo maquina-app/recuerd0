@@ -39,6 +39,7 @@
     <div class="sidebar-group">
       <div class="sidebar-heading">Memories</div>
       <a href="#list-memories" class="sidebar-link" data-section="list-memories" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> List</a>
+      <a href="#browse-memories" class="sidebar-link" data-section="browse-memories" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Browse</a>
       <a href="#get-memory" class="sidebar-link" data-section="get-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Get</a>
       <a href="#create-memory" class="sidebar-link" data-section="create-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create</a>
       <a href="#update-memory" class="sidebar-link" data-section="update-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method patch">PATCH</span> Update</a>
@@ -285,13 +286,27 @@
       </div>
 
       <div class="endpoint" id="list-memories">
-        <div class="endpoint-head"><h3>List Memories</h3><p>Returns all memories (latest versions only) for a workspace.</p></div>
+        <div class="endpoint-head"><h3>List Memories</h3><p>Returns all memories (latest versions only) for a workspace. Supports filtering by title pattern, tags, and source.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories.json</span></div>
         <div class="param-table-label">Parameters</div>
         <table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
-          <tbody><tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr></tbody>
+          <tbody>
+            <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr>
+            <tr><td><span class="param-name">per_page</span></td><td><span class="param-type">integer</span></td><td>Items per page (1–100, default: 25)</td></tr>
+            <tr><td><span class="param-name">title</span></td><td><span class="param-type">string</span></td><td>Glob pattern for title matching. <code>*</code> matches any characters, <code>?</code> matches one</td></tr>
+            <tr><td><span class="param-name">tags</span></td><td><span class="param-type">string</span></td><td>Comma-separated tag list. Returns memories with ALL specified tags</td></tr>
+            <tr><td><span class="param-name">source</span></td><td><span class="param-type">string</span></td><td>Exact match on source field</td></tr>
+            <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
+            <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
+          </tbody>
         </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">examples</span></div>
+          <div class="code-body"><code><span class="cc">GET</span> /workspaces/1/memories.json?title=Meeting*
+<span class="cc">GET</span> /workspaces/1/memories.json?tags=api,design&amp;sort=title&amp;direction=asc
+<span class="cc">GET</span> /workspaces/1/memories.json?source=claude-code-session&amp;per_page=50</code></div>
+        </div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><code>[
@@ -309,9 +324,52 @@
         </div>
       </div>
 
+      <div class="endpoint" id="browse-memories">
+        <div class="endpoint-head"><h3>Browse Memories</h3><p>Returns memories across all active workspaces for the current account. Supports the same filtering parameters as List Memories. JSON-only endpoint.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/memories.json</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr>
+            <tr><td><span class="param-name">per_page</span></td><td><span class="param-type">integer</span></td><td>Items per page (1–100, default: 25)</td></tr>
+            <tr><td><span class="param-name">workspace_id</span></td><td><span class="param-type">integer</span></td><td>Filter to a specific workspace</td></tr>
+            <tr><td><span class="param-name">title</span></td><td><span class="param-type">string</span></td><td>Glob pattern for title matching. <code>*</code> matches any characters, <code>?</code> matches one</td></tr>
+            <tr><td><span class="param-name">tags</span></td><td><span class="param-type">string</span></td><td>Comma-separated tag list. Returns memories with ALL specified tags</td></tr>
+            <tr><td><span class="param-name">source</span></td><td><span class="param-type">string</span></td><td>Exact match on source field</td></tr>
+            <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
+            <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">examples</span></div>
+          <div class="code-body"><code><span class="cc">GET</span> /memories.json?title=*architecture*
+<span class="cc">GET</span> /memories.json?tags=api,design&amp;sort=title&amp;direction=asc
+<span class="cc">GET</span> /memories.json?workspace_id=1&amp;source=manual</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Only returns memories from active (non-archived, non-deleted) workspaces. Each memory includes its workspace in the response. Same response format and pagination headers as List Memories.</span>
+        </div>
+      </div>
+
       <div class="endpoint" id="get-memory">
-        <div class="endpoint-head"><h3>Get Memory</h3><p>Returns a memory with its content.</p></div>
+        <div class="endpoint-head"><h3>Get Memory</h3><p>Returns a memory with its content. Supports line range parameters to read specific portions.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">line_start</span></td><td><span class="param-type">integer</span></td><td>First line to return (1-based, inclusive). Default: 1</td></tr>
+            <tr><td><span class="param-name">line_end</span></td><td><span class="param-type">integer</span></td><td>Last line to return (1-based, inclusive). Default: last line</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">examples</span></div>
+          <div class="code-body"><code><span class="cc">GET</span> /workspaces/1/memories/1.json
+<span class="cc">GET</span> /workspaces/1/memories/1.json?line_start=1&amp;line_end=20
+<span class="cc">GET</span> /workspaces/1/memories/1.json?line_start=50&amp;line_end=75</code></div>
+        </div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><code>{
@@ -324,7 +382,10 @@
   <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-03T16:45:00Z"</span>,
   <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1/memories/1"</span>,
   <span class="ck">"content"</span>: {
-    <span class="ck">"body"</span>: <span class="cs">"# Meeting Notes\n\nDiscussed Q1 goals..."</span>
+    <span class="ck">"body"</span>: <span class="cs">"# Meeting Notes\n\nDiscussed Q1 goals..."</span>,
+    <span class="ck">"total_lines"</span>: <span class="cn">142</span>,
+    <span class="ck">"line_start"</span>: <span class="cn">1</span>,
+    <span class="ck">"line_end"</span>: <span class="cn">142</span>
   },
   <span class="ck">"workspace"</span>: {
     <span class="ck">"id"</span>: <span class="cn">1</span>,
@@ -332,6 +393,10 @@
     <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>
   }
 }</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>The <code>content</code> object always includes <code>total_lines</code>, <code>line_start</code>, and <code>line_end</code>. When line range parameters are provided, <code>body</code> contains only the requested lines. Returns <code>422</code> if <code>line_start</code> > <code>line_end</code>.</span>
         </div>
       </div>
 
@@ -451,7 +516,7 @@
       </div>
 
       <div class="endpoint" id="search">
-        <div class="endpoint-head"><h3>Search Memories</h3><p>Full-text search across all memories in active workspaces. Supports FTS5 query operators.</p></div>
+        <div class="endpoint-head"><h3>Search Memories</h3><p>Full-text search across all memories in active workspaces. Supports FTS5 query operators and a grep mode for line-level matching.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/search.json?q=<span class="param">&lt;query&gt;</span></span></div>
         <div class="param-table-label">Parameters</div>
         <table class="param-table">
@@ -460,6 +525,10 @@
             <tr><td><span class="param-name">q</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>Search query (3–100 characters)</td></tr>
             <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td></td><td>Page number (default: 1)</td></tr>
             <tr><td><span class="param-name">workspace_id</span></td><td><span class="param-type">integer</span></td><td></td><td>Filter results to a specific workspace</td></tr>
+            <tr><td><span class="param-name">mode</span></td><td><span class="param-type">string</span></td><td></td><td>Response mode: <code>snippet</code> (default) or <code>grep</code></td></tr>
+            <tr><td><span class="param-name">context</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines before and after each match, like <code>grep -C</code> (0–10, default: 0). Only with <code>mode=grep</code></td></tr>
+            <tr><td><span class="param-name">before</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines before each match, like <code>grep -B</code> (0–10). Overrides <code>context</code>. Only with <code>mode=grep</code></td></tr>
+            <tr><td><span class="param-name">after</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines after each match, like <code>grep -A</code> (0–10). Overrides <code>context</code>. Only with <code>mode=grep</code></td></tr>
           </tbody>
         </table>
         <div class="param-table-label">Query Operators (FTS5)</div>
@@ -477,7 +546,7 @@
           </tbody>
         </table>
         <div class="code-block">
-          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-head"><span class="code-label">snippet mode response (default)</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><code>{
   <span class="ck">"query"</span>: <span class="cs">"architecture AND design"</span>,
   <span class="ck">"total_results"</span>: <span class="cn">3</span>,
@@ -491,14 +560,33 @@
       <span class="ck">"tags"</span>: [<span class="cs">"design"</span>],
       <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
       <span class="ck">"snippet"</span>: <span class="cs">"Initial architecture overview..."</span>,
-      <span class="ck">"created_at"</span>: <span class="cs">"2026-01-20T09:00:00Z"</span>,
-      <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-03T16:45:00Z"</span>,
-      <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1/memories/1"</span>,
-      <span class="ck">"workspace"</span>: {
-        <span class="ck">"id"</span>: <span class="cn">1</span>,
-        <span class="ck">"name"</span>: <span class="cs">"Project Notes"</span>,
-        <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>
-      }
+      <span class="ck">"workspace"</span>: { ... }
+    }
+  ]
+}</code></div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">grep mode response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code><span class="cc">GET /search.json?q=architecture&amp;mode=grep&amp;context=1</span>
+
+{
+  <span class="ck">"query"</span>: <span class="cs">"architecture"</span>,
+  <span class="ck">"total_results"</span>: <span class="cn">2</span>,
+  <span class="ck">"results"</span>: [
+    {
+      <span class="ck">"id"</span>: <span class="cn">1</span>,
+      <span class="ck">"title"</span>: <span class="cs">"Design Doc"</span>,
+      ...
+      <span class="ck">"total_lines"</span>: <span class="cn">45</span>,
+      <span class="ck">"matches"</span>: [
+        {
+          <span class="ck">"line_number"</span>: <span class="cn">12</span>,
+          <span class="ck">"line"</span>: <span class="cs">"The architecture uses a layered approach."</span>,
+          <span class="ck">"context_before"</span>: [<span class="cs">"## System Design"</span>],
+          <span class="ck">"context_after"</span>: [<span class="cs">"Each layer communicates through interfaces."</span>]
+        }
+      ],
+      <span class="ck">"workspace"</span>: { ... }
     }
   ]
 }</code></div>
@@ -506,6 +594,10 @@
         <div class="info-box warn">
           <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-patch)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
           <span>Query must be 3–100 characters. Invalid FTS5 syntax returns a <code>422</code> with <code>VALIDATION_ERROR</code>.</span>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>In grep mode, each result includes <code>matches</code> and <code>total_lines</code> instead of <code>snippet</code>. FTS5 finds candidate memories, then line-level matching extracts specific lines with context.</span>
         </div>
       </div>
 
