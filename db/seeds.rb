@@ -38,12 +38,14 @@ def create_or_update_memory(workspace, attributes, content_body)
   ) do |m|
     m.tags = attributes[:tags] || []
     m.source = attributes[:source]
+    m.category = attributes[:category] || Memory::DEFAULT_CATEGORY
   end
 
-  # Update tags and source in case they changed
+  # Update tags, source, category in case they changed
   memory.update!(
     tags: attributes[:tags] || [],
-    source: attributes[:source]
+    source: attributes[:source],
+    category: attributes[:category] || Memory::DEFAULT_CATEGORY
   )
 
   # Update or create content
@@ -62,7 +64,8 @@ create_or_update_memory(
   {
     title: "Understanding LLM Temperature Settings",
     tags: ["llm", "parameters", "temperature", "randomness"],
-    source: "ChatGPT conversation - 2024-01-15"
+    source: "ChatGPT conversation - 2024-01-15",
+    category: "discovery"
   },
   "Temperature in LLMs controls the randomness of outputs. Lower values (0.1-0.3) make responses more focused and deterministic, while higher values (0.7-1.0) increase creativity and variety. For coding tasks, use low temperature; for creative writing, use higher values."
 )
@@ -72,7 +75,8 @@ create_or_update_memory(
   {
     title: "Prompt Engineering Best Practices",
     tags: ["prompt-engineering", "best-practices", "ai"],
-    source: "Claude discussion - 2024-01-20"
+    source: "Claude discussion - 2024-01-20",
+    category: "preference"
   },
   "Key principles: 1) Be specific and clear, 2) Provide context and examples, 3) Break complex tasks into steps, 4) Use role-playing for better responses, 5) Iterate and refine based on outputs. Remember: clarity beats cleverness in prompts."
 )
@@ -82,7 +86,8 @@ create_or_update_memory(
   {
     title: "RAG vs Fine-tuning Comparison",
     tags: ["rag", "fine-tuning", "llm", "comparison"],
-    source: "Technical blog post summary"
+    source: "Technical blog post summary",
+    category: "decision"
   },
   "RAG (Retrieval Augmented Generation) is better for: dynamic knowledge, cost-effectiveness, and transparency. Fine-tuning excels at: task-specific performance, response speed, and behavior modification. Hybrid approaches often work best for production systems."
 )
@@ -93,7 +98,8 @@ create_or_update_memory(
   {
     title: "AI-Powered Code Review Tool",
     tags: ["project-idea", "ai", "developer-tools", "code-review"],
-    source: "Brainstorming session - 2024-01-10"
+    source: "Brainstorming session - 2024-01-10",
+    category: "general"
   },
   "Build a VS Code extension that uses AI to provide contextual code reviews. Features: 1) Detect code smells and anti-patterns, 2) Suggest refactoring opportunities, 3) Check for security vulnerabilities, 4) Ensure consistent coding style. Integration with GitHub PRs would be valuable."
 )
@@ -103,7 +109,8 @@ create_or_update_memory(
   {
     title: "Personal Knowledge Graph Builder",
     tags: ["project-idea", "knowledge-management", "graph", "visualization"],
-    source: nil
+    source: nil,
+    category: "general"
   },
   "Create a tool that automatically builds a knowledge graph from various sources (notes, bookmarks, conversations). Use NLP to extract entities and relationships. Visualize connections between ideas. Could integrate with Obsidian, Notion, or be standalone. Key challenge: entity resolution across sources."
 )
@@ -113,7 +120,8 @@ create_or_update_memory(
   {
     title: nil, # Testing optional title
     tags: ["quick-thought", "api-design"],
-    source: "Shower thought"
+    source: "Shower thought",
+    category: "discovery"
   },
   "What if APIs could self-document based on actual usage patterns? Track common request/response pairs, error scenarios, and performance characteristics. Generate documentation that shows real-world examples instead of just schemas."
 )
@@ -157,7 +165,8 @@ rails_workspace = created_workspaces[0]
     {
       title: "Rails Tip ##{i + 1}",
       tags: ["rails", "ruby", "tip", "best-practice"],
-      source: "Experience from Rails project"
+      source: "Experience from Rails project",
+      category: "preference"
     },
     "This is a valuable Rails tip about #{["controllers", "models", "views", "testing", "performance", "security", "deployment", "debugging"].sample}. It covers important aspects of Rails development and provides practical examples for better code organization and maintainability."
   )
@@ -171,7 +180,8 @@ system_design_workspace = created_workspaces[3]
     {
       title: "Design Pattern: #{["Microservices", "Event Sourcing", "CQRS", "Saga Pattern", "Circuit Breaker", "API Gateway", "Service Mesh", "Distributed Cache"].sample} - Part #{i + 1}",
       tags: ["system-design", "architecture", "patterns", "distributed-systems"],
-      source: "System Design Interview prep"
+      source: "System Design Interview prep",
+      category: "decision"
     },
     "Detailed explanation of system design concepts including scalability considerations, trade-offs, and real-world implementation examples. This pattern is particularly useful for #{["high-traffic applications", "distributed systems", "microservices architecture", "event-driven systems"].sample}."
   )
@@ -185,7 +195,8 @@ created_workspaces[1..5].each do |workspace|
       {
         title: "#{workspace.name} Note #{i + 1}",
         tags: [workspace.name.downcase.gsub(/\s+/, "-"), "note"],
-        source: "Personal experience"
+        source: "Personal experience",
+        category: "general"
       },
       "This is an important note about #{workspace.name.downcase}. It contains valuable insights and practical examples that can be applied in real-world scenarios."
     )

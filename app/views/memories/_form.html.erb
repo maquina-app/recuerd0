@@ -42,6 +42,16 @@
           <p data-form-part="error" class="text-destructive"><%= memory.errors[:source].first %></p>
         <% end %>
       </div>
+      <div class="sm:w-1/4 min-w-0" data-form-part="group">
+        <%= form.label :category, t("memories.form.category_label"), data: { component: "label" } %>
+        <%= form.select :category,
+            Memory::CATEGORIES.map { |c| [t("memories.categories.#{c}"), c] },
+            { selected: memory.category.presence || Memory::DEFAULT_CATEGORY },
+            data: { component: "input" } %>
+        <% if memory.errors[:category].any? %>
+          <p data-form-part="error" class="text-destructive"><%= memory.errors[:category].first %></p>
+        <% end %>
+      </div>
       <div class="flex-1 min-w-0" data-form-part="group">
         <%= form.label :tags, data: { component: "label" } %>
         <%= render "application/components/tag_input", form: form, field: :tags, value: memory.tags %>

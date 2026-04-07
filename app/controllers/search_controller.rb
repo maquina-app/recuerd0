@@ -51,6 +51,8 @@ class SearchController < ApplicationController
       scope = scope.where(workspace: workspace)
     end
 
+    scope = scope.by_category(params[:category])
+
     scope.order("memories.updated_at DESC")
       .includes(:content, :workspace, :child_versions)
   end

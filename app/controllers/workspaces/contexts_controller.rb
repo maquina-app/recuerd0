@@ -11,6 +11,7 @@ class Workspaces::ContextsController < ApplicationController
     pinned_scope = Current.user.pinned_memories
       .where(workspace: @workspace)
       .includes(:content, :pins, :workspace)
+      .by_category(params[:category])
 
     @total_pinned = pinned_scope.count
     @pinned_memories = pinned_scope.limit(@limit).to_a

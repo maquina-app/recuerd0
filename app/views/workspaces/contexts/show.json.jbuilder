@@ -6,7 +6,7 @@ json.workspace do
 end
 
 json.pinned_memories(@pinned_memories) do |memory|
-  json.call(memory, :id, :title, :source, :tags)
+  json.call(memory, :id, :title, :source, :tags, :category)
   json.pinned_at memory.pins.find { |p| p.user_id == Current.user.id }&.created_at&.utc
   json.updated_at memory.updated_at.utc
   json.url workspace_memory_url(@workspace, memory)

@@ -130,6 +130,30 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
     assert_equal true, pinned["body_truncated"]
   end
 
+  test "pinned memories include category" do
+    get workspace_context_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    json["pinned_memories"].each { |m| assert m.key?("category") }
+  end
+
+  test "filters pinned memories by category" do
+    @memory.update!(category: "decision")
+    other = Memory.create_with_content(@workspace, title: "Pinned2", content: "b", category: "discovery")
+    other.pin!(@user)
+
+    get workspace_context_url(@workspace, format: :json, category: "decision"),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    ids = json["pinned_memories"].map { |m| m["id"] }
+    assert_includes ids, @memory.id
+    assert_not_includes ids, other.id
+  end
+
   test "returns 304 when ETag matches" do
     get workspace_context_url(@workspace, format: :json),
       headers: auth_headers(@read_only_token)

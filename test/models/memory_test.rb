@@ -138,6 +138,56 @@ class MemoryTest < ActiveSupport::TestCase
     assert_includes Memory.full_search("changed"), memory
   end
 
+  # Category tests
+
+  test "defaults to general category when not specified" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Cat default", content: "body")
+    assert_equal "general", memory.category
+  end
+
+  test "accepts all allowed categories" do
+    Memory::CATEGORIES.each do |cat|
+      memory = Memory.create_with_content(workspaces(:one), title: "Cat #{cat}", content: "body", category: cat)
+      assert memory.persisted?, "Expected #{cat} to persist"
+      assert_equal cat, memory.category
+    end
+  end
+
+  test "rejects unknown category values" do
+    memory = workspaces(:one).memories.build(title: "Bad", category: "nonsense", version: 1)
+    assert_not memory.valid?
+    assert_includes memory.errors[:category].first.to_s, "included"
+  end
+
+  test "by_category filters memories by category" do
+    decision = Memory.create_with_content(workspaces(:one), title: "D", content: "b", category: "decision")
+    discovery = Memory.create_with_content(workspaces(:one), title: "X", content: "b", category: "discovery")
+    assert_includes Memory.by_category("decision"), decision
+    assert_not_includes Memory.by_category("decision"), discovery
+  end
+
+  test "by_category is a no-op for blank input" do
+    before = Memory.count
+    assert_equal before, Memory.by_category(nil).count
+    assert_equal before, Memory.by_category("").count
+  end
+
+  test "by_category is a no-op for invalid input" do
+    assert_equal Memory.count, Memory.by_category("bogus").count
+  end
+
+  test "new version inherits category from parent when not specified" do
+    parent = Memory.create_with_content(workspaces(:one), title: "Parent", content: "b", category: "decision")
+    child = parent.create_version!(content: "v2")
+    assert_equal "decision", child.category
+  end
+
+  test "new version can override category" do
+    parent = Memory.create_with_content(workspaces(:one), title: "Parent", content: "b", category: "decision")
+    child = parent.create_version!(content: "v2", category: "discovery")
+    assert_equal "discovery", child.category
+  end
+
   test "full_search removes entry on destroy" do
     memory = Memory.create_with_content(workspaces(:one), title: "Deletable", content: "body")
     assert_includes Memory.full_search("Deletable"), memory

@@ -1,5 +1,5 @@
 json.cache! memory do
-  json.call(memory, :id, :title, :tags, :source, :version)
+  json.call(memory, :id, :title, :tags, :source, :category, :version)
   json.version_label memory.version_label
   json.has_versions memory.versioned?
   json.created_at memory.created_at.utc

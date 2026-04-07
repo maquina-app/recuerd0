@@ -391,6 +391,58 @@ class ApiMemoriesTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # Category tests
+  test "create memory with category persists it" do
+    post workspace_memories_url(@workspace, format: :json),
+      params: {memory: {title: "Cat", content: "b", category: "decision"}},
+      headers: auth_headers(@full_access_token)
+
+    assert_response :created
+    json = JSON.parse(response.body)
+    assert_equal "decision", json["category"]
+  end
+
+  test "create memory without category defaults to general" do
+    post workspace_memories_url(@workspace, format: :json),
+      params: {memory: {title: "CatDefault", content: "b"}},
+      headers: auth_headers(@full_access_token)
+
+    assert_response :created
+    json = JSON.parse(response.body)
+    assert_equal "general", json["category"]
+  end
+
+  test "create memory with invalid category returns 422" do
+    post workspace_memories_url(@workspace, format: :json),
+      params: {memory: {title: "CatBad", content: "b", category: "bogus"}},
+      headers: auth_headers(@full_access_token)
+
+    assert_response :unprocessable_entity
+  end
+
+  test "update memory category via api" do
+    patch workspace_memory_url(@workspace, @memory, format: :json),
+      params: {memory: {category: "preference"}},
+      headers: auth_headers(@full_access_token)
+
+    assert_response :success
+    assert_equal "preference", @memory.reload.category
+  end
+
+  test "index filters by category" do
+    Memory.create_with_content(@workspace, title: "CatFilter1", content: "b", category: "decision")
+    Memory.create_with_content(@workspace, title: "CatFilter2", content: "b", category: "discovery")
+
+    get workspace_memories_url(@workspace, format: :json, category: "decision"),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    titles = json.map { |m| m["title"] }
+    assert_includes titles, "CatFilter1"
+    assert_not_includes titles, "CatFilter2"
+  end
+
   private
 
   def auth_headers(token)

@@ -39,6 +39,7 @@
     </div>
     <div class="sidebar-group">
       <div class="sidebar-heading">Memories</div>
+      <a href="#memory-categories" class="sidebar-link" data-section="memory-categories" data-action="click->marketing-sidebar#closeSidebar">Categories</a>
       <a href="#list-memories" class="sidebar-link" data-section="list-memories" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> List</a>
       <a href="#browse-memories" class="sidebar-link" data-section="browse-memories" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Browse</a>
       <a href="#get-memory" class="sidebar-link" data-section="get-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Get</a>
@@ -219,6 +220,7 @@
             <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td>10</td><td>Maximum pinned memories to return (1–50).</td></tr>
             <tr><td><span class="param-name">include_body</span></td><td><span class="param-type">boolean</span></td><td>true</td><td>Whether to include each pinned memory's body content.</td></tr>
             <tr><td><span class="param-name">max_body_chars</span></td><td><span class="param-type">integer</span></td><td>500</td><td>Maximum characters of body to return per memory (100–5000). Longer bodies are truncated.</td></tr>
+            <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td></td><td>Filter pinned memories to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
         </table>
         <div class="code-block">
@@ -238,6 +240,7 @@
       <span class="ck">"id"</span>: <span class="cn">17</span>,
       <span class="ck">"title"</span>: <span class="cs">"Architecture Notes"</span>,
       <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+      <span class="ck">"category"</span>: <span class="cs">"decision"</span>,
       <span class="ck">"tags"</span>: [<span class="cs">"design"</span>, <span class="cs">"core"</span>],
       <span class="ck">"pinned_at"</span>: <span class="cs">"2026-03-28T09:14:00Z"</span>,
       <span class="ck">"updated_at"</span>: <span class="cs">"2026-04-01T11:42:00Z"</span>,
@@ -333,6 +336,27 @@
         <div class="resource-header"><div class="resource-label">resource</div><h2>Memories</h2></div>
       </div>
 
+      <%# ===== MEMORY CATEGORIES ===== %>
+      <div class="api-section" id="memory-categories">
+        <div class="endpoint-head">
+          <h3>Memory Categories</h3>
+          <p>Every memory carries exactly one category from a locked four-value enum. Category defaults to <code>general</code> and is used to filter list, search, and workspace context endpoints. Versions inherit the parent memory's category unless overridden.</p>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Value</th><th>Label</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>decision</code></td><td>Decision</td><td>Architecture choices, library picks, tradeoffs with stated reasoning</td></tr>
+            <tr><td><code>discovery</code></td><td>Discovery</td><td>Non-obvious findings — gotchas, root causes, patterns, library quirks</td></tr>
+            <tr><td><code>preference</code></td><td>Preference</td><td>User-stated rules ("always X", "never Y")</td></tr>
+            <tr><td><code>general</code></td><td>General</td><td>Catch-all and default</td></tr>
+          </tbody>
+        </table>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>The <code>category</code> query parameter is supported on list, search, and workspace context endpoints to filter results to a single category.</span>
+        </div>
+      </div>
+
       <div class="endpoint" id="list-memories">
         <div class="endpoint-head"><h3>List Memories</h3><p>Returns all memories (latest versions only) for a workspace. Supports filtering by title pattern, tags, and source.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories.json</span></div>
@@ -345,6 +369,7 @@
             <tr><td><span class="param-name">title</span></td><td><span class="param-type">string</span></td><td>Glob pattern for title matching. <code>*</code> matches any characters, <code>?</code> matches one</td></tr>
             <tr><td><span class="param-name">tags</span></td><td><span class="param-type">string</span></td><td>Comma-separated tag list. Returns memories with ALL specified tags</td></tr>
             <tr><td><span class="param-name">source</span></td><td><span class="param-type">string</span></td><td>Exact match on source field</td></tr>
+            <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
             <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
             <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
           </tbody>
@@ -353,7 +378,7 @@
           <div class="code-head"><span class="code-label">examples</span></div>
           <div class="code-body"><code><span class="cc">GET</span> /workspaces/1/memories.json?title=Meeting*
 <span class="cc">GET</span> /workspaces/1/memories.json?tags=api,design&amp;sort=title&amp;direction=asc
-<span class="cc">GET</span> /workspaces/1/memories.json?source=claude-code-session&amp;per_page=50</code></div>
+<span class="cc">GET</span> /workspaces/1/memories.json?category=decision&amp;per_page=50</code></div>
         </div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
@@ -363,6 +388,7 @@
     <span class="ck">"title"</span>: <span class="cs">"Meeting Notes"</span>,
     <span class="ck">"version"</span>: <span class="cn">1</span>,
     <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+    <span class="ck">"category"</span>: <span class="cs">"decision"</span>,
     <span class="ck">"tags"</span>: [<span class="cs">"meetings"</span>, <span class="cs">"q1"</span>],
     <span class="ck">"created_at"</span>: <span class="cs">"2026-01-20T09:00:00Z"</span>,
     <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-03T16:45:00Z"</span>,
@@ -385,6 +411,7 @@
             <tr><td><span class="param-name">title</span></td><td><span class="param-type">string</span></td><td>Glob pattern for title matching. <code>*</code> matches any characters, <code>?</code> matches one</td></tr>
             <tr><td><span class="param-name">tags</span></td><td><span class="param-type">string</span></td><td>Comma-separated tag list. Returns memories with ALL specified tags</td></tr>
             <tr><td><span class="param-name">source</span></td><td><span class="param-type">string</span></td><td>Exact match on source field</td></tr>
+            <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
             <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
             <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
           </tbody>
@@ -425,6 +452,7 @@
   <span class="ck">"title"</span>: <span class="cs">"Meeting Notes"</span>,
   <span class="ck">"version"</span>: <span class="cn">1</span>,
   <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+  <span class="ck">"category"</span>: <span class="cs">"decision"</span>,
   <span class="ck">"tags"</span>: [<span class="cs">"meetings"</span>, <span class="cs">"q1"</span>],
   <span class="ck">"created_at"</span>: <span class="cs">"2026-01-20T09:00:00Z"</span>,
   <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-03T16:45:00Z"</span>,
@@ -498,6 +526,7 @@
             <tr><td><span class="param-name">memory[content]</span></td><td><span class="param-type">string</span></td><td>Memory body (Markdown)</td></tr>
             <tr><td><span class="param-name">memory[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier</td></tr>
             <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Array of tag strings</td></tr>
+            <tr><td><span class="param-name">memory[category]</span></td><td><span class="param-type">string</span></td><td>One of <code>decision</code>, <code>discovery</code>, <code>preference</code>, <code>general</code> (defaults to <code>general</code>). See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
         </table>
         <div class="code-block">
@@ -506,6 +535,7 @@
   <span class="ck">"memory"</span>: {
     <span class="ck">"title"</span>: <span class="cs">"API Documentation"</span>,
     <span class="ck">"content"</span>: <span class="cs">"# Overview\n\nThis document describes..."</span>,
+    <span class="ck">"category"</span>: <span class="cs">"decision"</span>,
     <span class="ck">"tags"</span>: [<span class="cs">"docs"</span>, <span class="cs">"api"</span>]
   }
 }</code></div>
@@ -527,6 +557,7 @@
             <tr><td><span class="param-name">memory[content]</span></td><td><span class="param-type">string</span></td><td>Memory body</td></tr>
             <tr><td><span class="param-name">memory[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier</td></tr>
             <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Array of tags</td></tr>
+            <tr><td><span class="param-name">memory[category]</span></td><td><span class="param-type">string</span></td><td>One of <code>decision</code>, <code>discovery</code>, <code>preference</code>, <code>general</code>. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
         </table>
         <div class="code-block">
@@ -562,6 +593,7 @@
             <tr><td><span class="param-name">version[content]</span></td><td><span class="param-type">string</span></td><td>Version body (defaults to parent)</td></tr>
             <tr><td><span class="param-name">version[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier (defaults to parent)</td></tr>
             <tr><td><span class="param-name">version[tags]</span></td><td><span class="param-type">array</span></td><td>Tags (defaults to parent)</td></tr>
+            <tr><td><span class="param-name">version[category]</span></td><td><span class="param-type">string</span></td><td>Category (defaults to the parent memory's category). See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
         </table>
         <div class="code-block">
@@ -579,6 +611,7 @@
   <span class="ck">"title"</span>: <span class="cs">"Meeting Notes"</span>,
   <span class="ck">"version"</span>: <span class="cn">2</span>,
   <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+  <span class="ck">"category"</span>: <span class="cs">"decision"</span>,
   <span class="ck">"tags"</span>: [<span class="cs">"meetings"</span>, <span class="cs">"q1"</span>],
   <span class="ck">"created_at"</span>: <span class="cs">"2026-02-04T16:00:00Z"</span>,
   <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T16:00:00Z"</span>,
@@ -612,6 +645,7 @@
             <tr><td><span class="param-name">q</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>Search query (3–100 characters)</td></tr>
             <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td></td><td>Page number (default: 1)</td></tr>
             <tr><td><span class="param-name">workspace_id</span></td><td><span class="param-type">integer</span></td><td></td><td>Filter results to a specific workspace</td></tr>
+            <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td></td><td>Filter results to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
             <tr><td><span class="param-name">mode</span></td><td><span class="param-type">string</span></td><td></td><td>Response mode: <code>snippet</code> (default) or <code>grep</code></td></tr>
             <tr><td><span class="param-name">context</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines before and after each match, like <code>grep -C</code> (0–10, default: 0). Only with <code>mode=grep</code></td></tr>
             <tr><td><span class="param-name">before</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines before each match, like <code>grep -B</code> (0–10). Overrides <code>context</code>. Only with <code>mode=grep</code></td></tr>
@@ -644,6 +678,7 @@
       <span class="ck">"version"</span>: <span class="cn">1</span>,
       <span class="ck">"version_label"</span>: <span class="cs">"v1"</span>,
       <span class="ck">"has_versions"</span>: <span class="cb">false</span>,
+      <span class="ck">"category"</span>: <span class="cs">"decision"</span>,
       <span class="ck">"tags"</span>: [<span class="cs">"design"</span>],
       <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
       <span class="ck">"snippet"</span>: <span class="cs">"Initial architecture overview..."</span>,

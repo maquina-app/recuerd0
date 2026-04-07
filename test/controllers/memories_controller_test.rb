@@ -87,6 +87,16 @@ class MemoriesControllerTest < ActionDispatch::IntegrationTest
     assert_no_match edit_workspace_memory_path(parent.workspace, v2), response.body
   end
 
+  test "workspace show filters memories by category" do
+    Memory.create_with_content(@workspace, title: "OnlyDecision", content: "b", category: "decision")
+    Memory.create_with_content(@workspace, title: "OnlyDiscovery", content: "b", category: "discovery")
+
+    get workspace_url(@workspace, category: "decision")
+    assert_response :success
+    assert_match "OnlyDecision", response.body
+    assert_no_match(/OnlyDiscovery/, response.body)
+  end
+
   test "destroy removes memory" do
     assert_difference("Memory.count", -1) do
       delete workspace_memory_url(@workspace, @memory)

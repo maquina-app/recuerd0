@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_06_195405) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_06_233357) do
   create_table "access_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
@@ -113,6 +113,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_06_195405) do
   end
 
   create_table "memories", force: :cascade do |t|
+    t.string "category", default: "general", null: false
     t.datetime "created_at", null: false
     t.integer "parent_memory_id"
     t.string "source"
@@ -121,6 +122,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_06_195405) do
     t.datetime "updated_at", null: false
     t.integer "version", default: 1, null: false
     t.integer "workspace_id", null: false
+    t.index ["category"], name: "index_memories_on_category"
     t.index ["parent_memory_id", "version"], name: "index_memories_on_parent_memory_id_and_version"
     t.index ["parent_memory_id"], name: "index_memories_on_parent_memory_id"
     t.index ["version"], name: "index_memories_on_version"

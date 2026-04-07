@@ -12,6 +12,7 @@ module MemoryFilterable
     scope = apply_title_filter(scope, params[:title])
     scope = apply_tags_filter(scope, params[:tags])
     scope = apply_source_filter(scope, params[:source])
+    scope = scope.by_category(params[:category])
     apply_sorting(scope)
   end
 

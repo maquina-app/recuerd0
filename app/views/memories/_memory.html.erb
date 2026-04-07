@@ -7,6 +7,11 @@
       <div class="flex items-center gap-2">
         <%= render "components/card/title", text: display_version.display_title %>
 
+        <% category_variant = { "decision" => :default, "discovery" => :secondary, "preference" => :warning, "general" => :outline }[display_version.category] || :outline %>
+        <%= render "components/badge", variant: category_variant, css_classes: "text-xs" do %>
+          <%= t("memories.categories.#{display_version.category}") %>
+        <% end %>
+
         <% if memory.versioned? %>
           <%= render "components/badge", variant: :outline, css_classes: "text-xs" do %>
             <%= display_version.version_label %>

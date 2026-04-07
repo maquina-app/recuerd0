@@ -122,6 +122,6 @@ class MemoriesController < ApplicationController
   end
 
   def memory_params
-    params.require(:memory).permit(:title, :source, :content, tags: [])
+    params.require(:memory).permit(:title, :source, :content, :category, tags: [])
   end
 end

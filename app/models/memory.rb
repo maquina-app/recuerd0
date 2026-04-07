@@ -13,19 +13,25 @@ class Memory < ApplicationRecord
   # Inherit workspace lifecycle state
   delegate :archived?, :deleted?, :active?, to: :workspace
 
+  # Categories
+  CATEGORIES = %w[decision discovery preference general].freeze
+  DEFAULT_CATEGORY = "general"
+
   # Scopes
   scope :latest_versions, -> { where(parent_memory_id: nil) }
   scope :versions_of, ->(memory) { where(parent_memory_id: memory.id) }
+  scope :by_category, ->(cat) { where(category: cat) if cat.present? && CATEGORIES.include?(cat) }
 
   # Validations
   validates :title, length: {maximum: 255}
   validates :version, presence: true, numericality: {greater_than: 0}
+  validates :category, presence: true, inclusion: {in: CATEGORIES}
 
   # Callbacks
   before_validation :set_version, on: :create
 
   def self.create_with_content(workspace, attributes)
-    memory = workspace.memories.build(attributes.slice(:title, :tags, :source))
+    memory = workspace.memories.build(attributes.slice(:title, :tags, :source, :category))
 
     transaction do
       memory.save!
@@ -39,7 +45,7 @@ class Memory < ApplicationRecord
 
   def update_with_content(attributes)
     transaction do
-      update!(attributes.slice(:title, :tags, :source))
+      update!(attributes.slice(:title, :tags, :source, :category))
 
       content_body = attributes[:content] || ""
       if content
@@ -107,7 +113,8 @@ class Memory < ApplicationRecord
       workspace: root.workspace,
       title: attributes[:title] || title,
       tags: attributes[:tags] || tags,
-      source: attributes[:source] || source
+      source: attributes[:source] || source,
+      category: attributes[:category].presence || category
     )
 
     transaction do

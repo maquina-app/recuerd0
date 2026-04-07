@@ -151,6 +151,21 @@ class ApiBrowseMemoriesTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "filters by category across workspaces" do
+    Memory.create_with_content(@workspace, title: "BrowseCatA", content: "b", category: "decision")
+    Memory.create_with_content(@workspace, title: "BrowseCatB", content: "b", category: "discovery")
+
+    get browse_memories_url(format: :json),
+      params: {category: "decision"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    titles = json.map { |m| m["title"] }
+    assert_includes titles, "BrowseCatA"
+    assert_not_includes titles, "BrowseCatB"
+  end
+
   private
 
   def auth_headers(token)

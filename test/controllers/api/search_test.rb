@@ -294,6 +294,22 @@ class ApiSearchTest < ActionDispatch::IntegrationTest
     assert_match(/Invalid search query syntax/, json["error"]["message"])
   end
 
+  test "filters search results by category" do
+    m1 = Memory.create_with_content(workspaces(:one), title: "Meeting alpha cat", content: "b", category: "decision")
+    m2 = Memory.create_with_content(workspaces(:one), title: "Meeting beta cat", content: "b", category: "discovery")
+    [m1, m2].each(&:rebuild_search_index)
+
+    get search_url(format: :json),
+      params: {q: "Meeting", category: "decision"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    titles = json["results"].map { |r| r["title"] }
+    assert_includes titles, "Meeting alpha cat"
+    assert_not_includes titles, "Meeting beta cat"
+  end
+
   private
 
   def auth_headers(token)

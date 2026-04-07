@@ -36,6 +36,7 @@ class WorkspacesController < ApplicationController
           .latest_versions
           .includes(:content, :pins, child_versions: :content)
           .order(updated_at: :desc)
+          .by_category(params[:category])
 
         load_workspace_memories(scope)
       end

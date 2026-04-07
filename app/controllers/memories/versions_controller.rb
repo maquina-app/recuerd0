@@ -54,6 +54,6 @@ class Memories::VersionsController < ApplicationController
   end
 
   def version_params
-    params.fetch(:version, {}).permit(:title, :content, :source, tags: [])
+    params.fetch(:version, {}).permit(:title, :content, :source, :category, tags: [])
   end
 end

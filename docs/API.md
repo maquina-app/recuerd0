@@ -131,6 +131,7 @@ GET /workspaces/:id/context.json
 | limit | integer | 10 | Maximum pinned memories to return (1–50). |
 | include_body | boolean | true | Whether to include each pinned memory's body content. |
 | max_body_chars | integer | 500 | Maximum characters of body to return per memory (100–5000). Bodies longer than this are truncated with `…`. |
+| category | string | — | Filter pinned memories to a single category (`decision`, `discovery`, `preference`, `general`). |
 
 **Response** `200 OK`
 
@@ -151,6 +152,7 @@ GET /workspaces/:id/context.json
       "title": "Architecture Notes",
       "source": "manual",
       "tags": ["design", "core"],
+      "category": "decision",
       "pinned_at": "2026-03-28T09:14:00Z",
       "updated_at": "2026-04-01T11:42:00Z",
       "url": "https://recuerd0.ai/workspaces/1/memories/17",
@@ -290,6 +292,19 @@ Returns the updated workspace object with `archived: false`.
 
 ## Memories
 
+### Memory Categories
+
+Every memory belongs to exactly one category. The set is fixed:
+
+| Value | Purpose |
+|-------|---------|
+| `decision` | Architecture choices, library picks, tradeoffs with stated reasoning |
+| `discovery` | Non-obvious findings — gotchas, root causes, patterns, library quirks |
+| `preference` | User-stated rules ("always X", "never Y") |
+| `general` | Catch-all and default |
+
+New memories default to `general` when no category is specified. The list, browse, search, and context endpoints all accept `?category=<value>` to filter results.
+
 ### List Memories
 
 Returns all memories (latest versions only) for a workspace. Supports filtering by title pattern, tags, and source.
@@ -307,6 +322,7 @@ GET /workspaces/:workspace_id/memories.json
 | title | string | Glob pattern for title matching. `*` matches any characters, `?` matches a single character |
 | tags | string | Comma-separated tag list. Returns memories containing ALL specified tags |
 | source | string | Exact match on source field |
+| category | string | Filter by category (`decision`, `discovery`, `preference`, `general`) |
 | sort | string | Sort field: `updated_at` (default), `created_at`, `title` |
 | direction | string | Sort direction: `desc` (default), `asc` |
 
@@ -328,6 +344,7 @@ GET /workspaces/1/memories.json?source=claude-code-session&per_page=50
     "version": 1,
     "source": "manual",
     "tags": ["meetings", "q1"],
+    "category": "general",
     "created_at": "2026-01-20T09:00:00Z",
     "updated_at": "2026-02-03T16:45:00Z",
     "url": "https://recuerd0.com/workspaces/1/memories/1"
@@ -359,6 +376,7 @@ GET /memories.json
 | title | string | Glob pattern for title matching. `*` matches any characters, `?` matches a single character |
 | tags | string | Comma-separated tag list. Returns memories containing ALL specified tags |
 | source | string | Exact match on source field |
+| category | string | Filter by category (`decision`, `discovery`, `preference`, `general`) |
 | sort | string | Sort field: `updated_at` (default), `created_at`, `title` |
 | direction | string | Sort direction: `desc` (default), `asc` |
 
@@ -412,6 +430,7 @@ GET /workspaces/1/memories/1.json?line_start=50&line_end=75
   "version": 1,
   "source": "manual",
   "tags": ["meetings", "q1"],
+  "category": "general",
   "created_at": "2026-01-20T09:00:00Z",
   "updated_at": "2026-02-03T16:45:00Z",
   "url": "https://recuerd0.com/workspaces/1/memories/1",
@@ -497,6 +516,7 @@ POST /workspaces/:workspace_id/memories.json
 | memory[content] | string | No | Memory body (Markdown) |
 | memory[source] | string | No | Source identifier |
 | memory[tags] | array | No | Array of tag strings |
+| memory[category] | string | No | One of `decision`, `discovery`, `preference`, `general` (default: `general`) |
 
 **Request**
 
@@ -532,6 +552,7 @@ PATCH /workspaces/:workspace_id/memories/:id.json
 | memory[content] | string | Memory body |
 | memory[source] | string | Source identifier |
 | memory[tags] | array | Array of tags |
+| memory[category] | string | One of `decision`, `discovery`, `preference`, `general` |
 
 **Response** `200 OK`
 
@@ -569,6 +590,7 @@ POST /workspaces/:workspace_id/memories/:memory_id/versions.json
 | version[content] | string | Version body (defaults to parent) |
 | version[source] | string | Source identifier (defaults to parent) |
 | version[tags] | array | Tags (defaults to parent) |
+| version[category] | string | Category (defaults to parent) |
 
 **Request**
 
@@ -589,6 +611,7 @@ POST /workspaces/:workspace_id/memories/:memory_id/versions.json
   "version": 2,
   "source": "manual",
   "tags": ["meetings", "q1"],
+  "category": "general",
   "created_at": "2026-02-04T16:00:00Z",
   "updated_at": "2026-02-04T16:00:00Z",
   "url": "https://recuerd0.com/workspaces/1/memories/5",
@@ -622,6 +645,7 @@ GET /search.json?q=<query>
 | q | string | Yes | Search query (3-100 characters) |
 | page | integer | No | Page number (default: 1) |
 | workspace_id | integer | No | Filter results to a specific workspace |
+| category | string | No | Filter results by category (`decision`, `discovery`, `preference`, `general`) |
 | mode | string | No | Response mode: `snippet` (default) or `grep` |
 | context | integer | No | Lines of context around each match, like `grep -C` (0-10, default: 0). Only used with `mode=grep` |
 | before | integer | No | Lines before each match, like `grep -B` (0-10). Overrides `context` for before. Only used with `mode=grep` |
@@ -657,6 +681,7 @@ The search query supports full FTS5 syntax:
       "has_versions": false,
       "tags": ["design"],
       "source": "manual",
+      "category": "decision",
       "snippet": "Initial architecture overview. The system uses a layered design...",
       "created_at": "2026-01-20T09:00:00Z",
       "updated_at": "2026-02-03T16:45:00Z",
@@ -688,6 +713,7 @@ When `mode=grep`, each result includes `matches` (line-level matches with contex
       "has_versions": false,
       "tags": ["design"],
       "source": "manual",
+      "category": "decision",
       "total_lines": 45,
       "matches": [
         {

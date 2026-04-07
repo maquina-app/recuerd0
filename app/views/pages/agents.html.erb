@@ -47,6 +47,7 @@
     <div class="sidebar-group">
       <div class="sidebar-heading">Search</div>
       <a href="#search-operators" class="sidebar-link" data-section="search-operators" data-action="click->marketing-sidebar#closeSidebar">Operators</a>
+      <a href="#categories" class="sidebar-link" data-section="categories" data-action="click->marketing-sidebar#closeSidebar">Categories</a>
       <a href="#tag-conventions" class="sidebar-link" data-section="tag-conventions" data-action="click->marketing-sidebar#closeSidebar">Tag Conventions</a>
     </div>
   </aside>
@@ -191,6 +192,7 @@ recuerd0 memory show --workspace 1 12</code></div>
           <div class="code-head"><span class="code-label">shell</span></div>
           <div class="code-body"><code>recuerd0 memory create --workspace 1 \
   --title "FTS5 error handling in Rails" \
+  --category discovery \
   --tags "sqlite,fts5,errors,rails" \
   --content "# FTS5 Error Handling
 
@@ -229,11 +231,13 @@ e.message.include?(\"fts5\") to distinguish from other SQL errors."</code></div>
           <div class="code-body"><code><span class="cc"># Initial decision</span>
 recuerd0 memory create --workspace 1 \
   --title "Auth strategy" \
-  --tags "decision,auth" \
+  --category decision \
+  --tags "auth" \
   --content "# Auth Strategy\n\nUsing session-based auth with Rails 8 generator..."
 
 <span class="cc"># Months later — decision evolved</span>
 recuerd0 version create --workspace 1 42 \
+  --category decision \
   --content "# Auth Strategy v2\n\nAdded Bearer token API auth alongside sessions..."</code></div>
         </div>
       </div>
@@ -383,10 +387,30 @@ recuerd0 version create --workspace 1 42 \
         </table>
       </div>
 
+      <div class="endpoint" id="categories">
+        <div class="endpoint-head">
+          <h3>Categories</h3>
+          <p>Every memory has exactly one category, picked from a locked four-value enum. Categories are enforced; tags are free-form. Use both — categories for filtering and finding the right <em>kind</em> of memory, tags for finding the right <em>topic</em>.</p>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Value</th><th>Label</th><th>When to pick it</th></tr></thead>
+          <tbody>
+            <tr><td><code>decision</code></td><td>Decision</td><td>Architecture choices, library picks, tradeoffs with stated reasoning</td></tr>
+            <tr><td><code>discovery</code></td><td>Discovery</td><td>Non-obvious findings — gotchas, root causes, patterns, library quirks</td></tr>
+            <tr><td><code>preference</code></td><td>Preference</td><td>User-stated rules ("always X", "never Y")</td></tr>
+            <tr><td><code>general</code></td><td>General</td><td>Catch-all and default</td></tr>
+          </tbody>
+        </table>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>If torn between two, prefer the more specific one. <code>general</code> is a fallback, not a default.</span>
+        </div>
+      </div>
+
       <div class="endpoint" id="tag-conventions">
         <div class="endpoint-head">
           <h3>Tag conventions</h3>
-          <p>Suggested tag patterns for organizing memories.</p>
+          <p>Tags are separate from categories. Categories are a small enforced enum (see <a href="#categories">Categories</a>); tags are free-form vocabulary you maintain. Use both. Suggested tag patterns for organizing memories.</p>
         </div>
         <table class="op-table">
           <thead><tr><th>Pattern</th><th>Example</th><th>Use</th></tr></thead>
@@ -423,6 +447,7 @@ recuerd0 memory show --workspace 1 12
 <span class="cc"># 4. Save what you learned</span>
 recuerd0 memory create --workspace 1 \
   --title "Session auth token rotation" \
+  --category decision \
   --tags "auth,tokens,security" \
   --content "# Token Rotation\n\nImplemented automatic token rotation..."
 
@@ -430,6 +455,7 @@ recuerd0 memory create --workspace 1 \
 cat transcript.md | recuerd0 memory create \
   --workspace 2 \
   --title "Session: token rotation" \
+  --category general \
   --tags "transcript,auth,2026-02" \
   --content -</code></div>
         </div>
