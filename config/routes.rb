@@ -35,6 +35,8 @@ Rails.application.routes.draw do
   resources :invitations, only: %i[show create], param: :token
 
   resources :workspaces do
+    resource :context, only: %i[show], controller: "workspaces/contexts", defaults: {format: :json}
+
     resources :memories do
       resource :markdown, only: %i[show], controller: "memories/markdowns"
       collection do

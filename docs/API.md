@@ -116,6 +116,61 @@ GET /workspaces/:id.json
 
 ---
 
+### Get Workspace Context
+
+Returns a compact "wake-up" snapshot of a workspace for AI agents to load in one call: workspace metadata, the current user's pinned memories scoped to the workspace, and stats. Supports HTTP caching via `ETag` / `If-None-Match`.
+
+```
+GET /workspaces/:id/context.json
+```
+
+**Parameters**
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| limit | integer | 10 | Maximum pinned memories to return (1–50). |
+| include_body | boolean | true | Whether to include each pinned memory's body content. |
+| max_body_chars | integer | 500 | Maximum characters of body to return per memory (100–5000). Bodies longer than this are truncated with `…`. |
+
+**Response** `200 OK`
+
+```json
+{
+  "workspace": {
+    "id": 1,
+    "name": "Project Alpha",
+    "description": "Main project workspace",
+    "memories_count": 42,
+    "state": "active",
+    "updated_at": "2026-04-01T12:00:00Z",
+    "url": "https://recuerd0.ai/workspaces/1"
+  },
+  "pinned_memories": [
+    {
+      "id": 17,
+      "title": "Architecture Notes",
+      "source": "manual",
+      "tags": ["design", "core"],
+      "pinned_at": "2026-03-28T09:14:00Z",
+      "updated_at": "2026-04-01T11:42:00Z",
+      "url": "https://recuerd0.ai/workspaces/1/memories/17",
+      "body": "# Architecture\n\nThe system is split into…",
+      "body_truncated": true
+    }
+  ],
+  "stats": {
+    "total_memories": 42,
+    "total_pinned": 3,
+    "returned_pinned": 1
+  },
+  "generated_at": "2026-04-06T10:00:00Z"
+}
+```
+
+Returns `404 NOT_FOUND` if the workspace is deleted or does not belong to the authenticated account.
+
+---
+
 ### Create Workspace
 
 Creates a new workspace. Requires `full_access` token.

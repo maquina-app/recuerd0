@@ -31,6 +31,7 @@
       <div class="sidebar-heading">Workspaces</div>
       <a href="#list-workspaces" class="sidebar-link" data-section="list-workspaces" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> List</a>
       <a href="#get-workspace" class="sidebar-link" data-section="get-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Get</a>
+      <a href="#get-workspace-context" class="sidebar-link" data-section="get-workspace-context" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Context</a>
       <a href="#create-workspace" class="sidebar-link" data-section="create-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create</a>
       <a href="#update-workspace" class="sidebar-link" data-section="update-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method patch">PATCH</span> Update</a>
       <a href="#archive-workspace" class="sidebar-link" data-section="archive-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Archive</a>
@@ -204,6 +205,53 @@
   <span class="ck">"created_at"</span>: <span class="cs">"2026-01-15T10:30:00Z"</span>,
   <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T14:22:00Z"</span>,
   <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>
+}</code></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="get-workspace-context">
+        <div class="endpoint-head"><h3>Get Workspace Context</h3><p>Returns a compact "wake-up" snapshot of a workspace for AI agents — workspace metadata, the current user's pinned memories scoped to the workspace, and stats. Supports HTTP caching via ETag.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:id</span>/context.json</span></div>
+        <div class="param-table-label">Query Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td>10</td><td>Maximum pinned memories to return (1–50).</td></tr>
+            <tr><td><span class="param-name">include_body</span></td><td><span class="param-type">boolean</span></td><td>true</td><td>Whether to include each pinned memory's body content.</td></tr>
+            <tr><td><span class="param-name">max_body_chars</span></td><td><span class="param-type">integer</span></td><td>500</td><td>Maximum characters of body to return per memory (100–5000). Longer bodies are truncated.</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"workspace"</span>: {
+    <span class="ck">"id"</span>: <span class="cn">1</span>,
+    <span class="ck">"name"</span>: <span class="cs">"Project Alpha"</span>,
+    <span class="ck">"description"</span>: <span class="cs">"Main project workspace"</span>,
+    <span class="ck">"memories_count"</span>: <span class="cn">42</span>,
+    <span class="ck">"state"</span>: <span class="cs">"active"</span>,
+    <span class="ck">"updated_at"</span>: <span class="cs">"2026-04-01T12:00:00Z"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>
+  },
+  <span class="ck">"pinned_memories"</span>: [
+    {
+      <span class="ck">"id"</span>: <span class="cn">17</span>,
+      <span class="ck">"title"</span>: <span class="cs">"Architecture Notes"</span>,
+      <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+      <span class="ck">"tags"</span>: [<span class="cs">"design"</span>, <span class="cs">"core"</span>],
+      <span class="ck">"pinned_at"</span>: <span class="cs">"2026-03-28T09:14:00Z"</span>,
+      <span class="ck">"updated_at"</span>: <span class="cs">"2026-04-01T11:42:00Z"</span>,
+      <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1/memories/17"</span>,
+      <span class="ck">"body"</span>: <span class="cs">"# Architecture\n\nThe system is split into…"</span>,
+      <span class="ck">"body_truncated"</span>: <span class="cb">true</span>
+    }
+  ],
+  <span class="ck">"stats"</span>: {
+    <span class="ck">"total_memories"</span>: <span class="cn">42</span>,
+    <span class="ck">"total_pinned"</span>: <span class="cn">3</span>,
+    <span class="ck">"returned_pinned"</span>: <span class="cn">1</span>
+  },
+  <span class="ck">"generated_at"</span>: <span class="cs">"2026-04-06T10:00:00Z"</span>
 }</code></div>
         </div>
       </div>
