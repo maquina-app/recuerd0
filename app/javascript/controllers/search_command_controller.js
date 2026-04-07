@@ -61,7 +61,7 @@ export default class extends Controller {
   }
 
   handleDialogClick(event) {
-    if (event.target === this._dialog) {
+    if (!event.target.closest("[data-search-command-panel]")) {
       this._dialog.close()
     }
   }

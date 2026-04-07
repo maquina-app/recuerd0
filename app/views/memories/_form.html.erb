@@ -10,7 +10,7 @@
       page navigation lifecycle for reliable teardown/reinit. %>
   <%= form_with model: [workspace, memory], local: true, class: "flex flex-col h-full gap-3" do |form| %>
     <%# Toolbar: title + actions %>
-    <div class="shrink-0 flex items-center">
+    <div class="shrink-0 flex items-center gap-2">
       <div class="flex-1 min-w-0" data-form-part="group">
         <%= form.text_field :title,
             placeholder: t("memories.form.title_placeholder"),
