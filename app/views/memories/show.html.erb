@@ -168,6 +168,28 @@
     <% end %>
   <% end %>
 
+  <%# Related memories (cross-workspace links) %>
+  <% if @memory.links_count > 0 %>
+    <div class="mt-6">
+      <%= render "components/separator" %>
+    </div>
+
+    <section class="mt-6" id="related-memories">
+      <h2 class="font-display text-lg font-medium tracking-tight mb-3"><%= t("memories.show.related_memories") %></h2>
+      <ul class="space-y-2">
+        <% @memory.linked_memories.latest_versions.includes(:workspace).order(updated_at: :desc).each do |linked| %>
+          <% linked_variant = {"decision" => :default, "discovery" => :secondary, "preference" => :warning, "general" => :outline}[linked.category] || :outline %>
+          <li class="flex items-center gap-2 text-sm flex-wrap">
+            <%= render "components/badge", variant: linked_variant, css_classes: "text-xs", text: t("memories.categories.#{linked.category}") %>
+            <%= link_to linked.display_title, workspace_memory_path(linked.workspace, linked), class: "font-medium hover:underline" %>
+            <span class="text-muted-foreground"><%= t("memories.show.related_in") %></span>
+            <%= link_to linked.workspace.name, workspace_path(linked.workspace), class: "text-muted-foreground hover:underline" %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
   <%# Version info %>
   <% if @memory.versioned? %>
     <div class="mt-6">

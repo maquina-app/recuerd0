@@ -130,6 +130,15 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
     assert_equal true, pinned["body_truncated"]
   end
 
+  test "pinned memories include links_count" do
+    get workspace_context_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    json["pinned_memories"].each { |m| assert m.key?("links_count") }
+  end
+
   test "pinned memories include category" do
     get workspace_context_url(@workspace, format: :json),
       headers: auth_headers(@read_only_token)

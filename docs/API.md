@@ -498,6 +498,39 @@ GET /workspaces/1/memories/1.json?mode=grep&q=TODO&before=0&after=5
 
 Returns `422` if `q` parameter is missing when `mode=grep`.
 
+**Workflow: grep, then fetch a window**
+
+For large memories, prefer a two-step pattern over loading the full body: call grep mode first to find the `line_number` of each match, then call again with `line_start`/`line_end` to fetch a window of surrounding context.
+
+```
+# 1. Find matches and their line numbers
+GET /workspaces/1/memories/1.json?mode=grep&q=TODO
+```
+
+```json
+{
+  "content": {
+    "total_lines": 412,
+    "matches": [
+      { "line_number": 47, "line": "TODO: revisit caching", "context_before": [], "context_after": [] }
+    ]
+  }
+}
+```
+
+```
+# 2. Fetch a 16-line window around line 47
+GET /workspaces/1/memories/1.json?line_start=40&line_end=55
+```
+
+Because `total_lines` is echoed on every response (both modes), clients can compute a "tail" of the last `N` lines without an extra round trip:
+
+```
+GET /workspaces/1/memories/1.json?line_start=(total_lines - N + 1)&line_end=total_lines
+```
+
+There is no `head=` or `tail=` query parameter — head and tail are expressed as `line_start=1&line_end=N` and `line_start=(total_lines - N + 1)&line_end=total_lines`, respectively.
+
 ---
 
 ### Create Memory
@@ -569,6 +602,82 @@ DELETE /workspaces/:workspace_id/memories/:id.json
 ```
 
 **Response** `204 No Content`
+
+---
+
+## Memory Links
+
+Cross-workspace "see also" connections between two memories within the same account. Links are **undirected** and **unlabeled** — they're just a set-style relationship. Internally a link is stored once with a normalized order (smaller memory id in `from_memory_id`), but callers don't need to care: querying or deleting works from either side.
+
+Memory and workspace context responses include a `links_count` integer field on each memory so clients can know whether links exist without fetching the full list.
+
+### List Memory Links
+
+Returns the memories linked to a given memory. Latest versions only, ordered by `updated_at` desc.
+
+```
+GET /workspaces/:workspace_id/memories/:memory_id/links.json
+```
+
+**Response** `200 OK`
+
+```json
+[
+  {
+    "id": 42,
+    "title": "Prompt Engineering Best Practices",
+    "category": "preference",
+    "tags": ["prompt-engineering"],
+    "source": "Claude discussion",
+    "updated_at": "2026-04-07T00:01:23Z",
+    "url": "https://example.com/workspaces/3/memories/42",
+    "workspace": {
+      "id": 3,
+      "name": "AI Research Notes",
+      "url": "https://example.com/workspaces/3"
+    }
+  }
+]
+```
+
+Supports `If-None-Match` / `If-Modified-Since` for `304 Not Modified` responses.
+
+### Create Memory Link
+
+Creates an undirected link between `:memory_id` and another memory in the same account. Requires `full_access` token.
+
+```
+POST /workspaces/:workspace_id/memories/:memory_id/links.json
+```
+
+**Body**
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `to_memory_id` | integer | yes | Id of the other memory. Must belong to the same account. May live in any workspace. |
+
+**Response** `201 Created` — same shape as one element of the list response, returning the *other* memory.
+
+**Errors**
+
+- `422 VALIDATION_ERROR` — `to_memory_id` is missing, equals `:memory_id` (self-link), references a memory in another account, or the link already exists (in either direction).
+- `403 FORBIDDEN` — token lacks `full_access`.
+- `404 NOT_FOUND` — `:workspace_id` or `:memory_id` is not visible to the current account.
+
+### Delete Memory Link
+
+Removes the link between `:memory_id` and the memory identified by `:id`. The URL `:id` is the **other memory's id**, NOT a `MemoryLink` row id — the server resolves the join row internally so clients never need to track it. Requires `full_access` token.
+
+```
+DELETE /workspaces/:workspace_id/memories/:memory_id/links/:id.json
+```
+
+**Response** `204 No Content`
+
+**Errors**
+
+- `404 NOT_FOUND` — no such link exists, or the other memory is not visible to the current account.
+- `403 FORBIDDEN` — token lacks `full_access`.
 
 ---
 

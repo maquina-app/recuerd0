@@ -6,6 +6,8 @@ class Memory < ApplicationRecord
   belongs_to :parent_memory, class_name: "Memory", optional: true
   has_one :content, dependent: :destroy
   has_many :child_versions, class_name: "Memory", foreign_key: "parent_memory_id", dependent: :destroy
+  has_many :outgoing_links, class_name: "MemoryLink", foreign_key: :from_memory_id, dependent: :destroy
+  has_many :incoming_links, class_name: "MemoryLink", foreign_key: :to_memory_id, dependent: :destroy
 
   # Serialize tags as an array - Rails 7+ syntax
   serialize :tags, coder: JSON, type: Array
@@ -143,6 +145,19 @@ class Memory < ApplicationRecord
       all_versions.where.not(id: id).destroy_all
       update!(parent_memory_id: nil, version: 1) if parent_memory_id.present?
     end
+  end
+
+  # Cross-workspace "see also" links
+  def linked_memory_ids
+    outgoing_links.pluck(:to_memory_id) + incoming_links.pluck(:from_memory_id)
+  end
+
+  def linked_memories
+    Memory.where(id: linked_memory_ids).includes(:content, :workspace)
+  end
+
+  def links_count
+    outgoing_links.size + incoming_links.size
   end
 
   # Display title with fallback for untitled memories

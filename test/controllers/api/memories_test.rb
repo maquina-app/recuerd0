@@ -38,6 +38,7 @@ class ApiMemoriesTest < ActionDispatch::IntegrationTest
     assert json.key?("content")
     assert json["content"].key?("body")
     assert json.key?("workspace")
+    assert json.key?("links_count")
   end
 
   test "show returns 404 for non-existent memory" do

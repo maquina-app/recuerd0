@@ -86,6 +86,10 @@ en:
       of_versions:
         one: "of %{count} version"
         other: "of %{count} versions"
+      related_memories: "Related memories"
+      related_in: "in"
+    links:
+      none: "No related memories"
     memory_show_actions:
       versions: "Versions"
       new_version: "New Version"

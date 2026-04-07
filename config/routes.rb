@@ -45,6 +45,8 @@ Rails.application.routes.draw do
       resources :versions, only: %i[index show create], controller: "memories/versions" do
         resource :consolidation, only: %i[create], controller: "memories/versions/consolidations"
       end
+      resources :links, only: %i[index create destroy], controller: "memories/links",
+        defaults: {format: :json}
     end
 
     collection do

@@ -1,7 +1,8 @@
-json.cache! memory do
+json.cache! [memory, "links_count:#{memory.links_count}"] do
   json.call(memory, :id, :title, :tags, :source, :category, :version)
   json.version_label memory.version_label
   json.has_versions memory.versioned?
+  json.links_count memory.links_count
   json.created_at memory.created_at.utc
   json.updated_at memory.updated_at.utc
   json.url workspace_memory_url(memory.workspace, memory)

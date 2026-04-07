@@ -18,6 +18,12 @@
           <% end %>
         <% end %>
 
+        <% if memory.links_count > 0 %>
+          <%= render "components/badge", variant: :outline, css_classes: "text-xs" do %>
+            → <%= memory.links_count %>
+          <% end %>
+        <% end %>
+
         <% if show_pinned || memory.pinned_by?(Current.user) %>
           <%= render "components/badge", variant: :secondary, css_classes: "text-xs" do %>
             <%= icon_for(:pin, class: "w-3 h-3") %>

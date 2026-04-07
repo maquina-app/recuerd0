@@ -32,8 +32,10 @@
       <a href="#cmd-account" class="sidebar-link" data-section="cmd-account" data-action="click->marketing-sidebar#closeSidebar">account</a>
       <a href="#cmd-workspace" class="sidebar-link" data-section="cmd-workspace" data-action="click->marketing-sidebar#closeSidebar">workspace</a>
       <a href="#cmd-memory" class="sidebar-link" data-section="cmd-memory" data-action="click->marketing-sidebar#closeSidebar">memory</a>
+      <a href="#cmd-memory-read" class="sidebar-link" data-section="cmd-memory-read" data-action="click->marketing-sidebar#closeSidebar">memory read</a>
       <a href="#cli-categories" class="sidebar-link" data-section="cli-categories" data-action="click->marketing-sidebar#closeSidebar">Categories</a>
       <a href="#cmd-version" class="sidebar-link" data-section="cmd-version" data-action="click->marketing-sidebar#closeSidebar">version</a>
+      <a href="#cli-memory-links" class="sidebar-link" data-section="cli-memory-links" data-action="click->marketing-sidebar#closeSidebar">Memory Links</a>
       <a href="#cmd-search" class="sidebar-link" data-section="cmd-search" data-action="click->marketing-sidebar#closeSidebar">search</a>
     </div>
     <div class="sidebar-group">
@@ -271,7 +273,10 @@ recuerd0 workspace unarchive &lt;id&gt;</code></div>
 recuerd0 memory show --workspace &lt;id&gt; &lt;memory_id&gt;
 recuerd0 memory create --workspace &lt;id&gt; --title &lt;title&gt; --content &lt;body|-&gt; [--category CAT]
 recuerd0 memory update --workspace &lt;id&gt; &lt;memory_id&gt; [--title &lt;title&gt;] [--content &lt;body|-&gt;] [--category CAT]
-recuerd0 memory delete --workspace &lt;id&gt; &lt;memory_id&gt;</code></div>
+recuerd0 memory delete --workspace &lt;id&gt; &lt;memory_id&gt;
+recuerd0 memory link list &lt;memory_id&gt; [--workspace &lt;id&gt;]
+recuerd0 memory link add &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--workspace &lt;id&gt;]
+recuerd0 memory link remove &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--workspace &lt;id&gt;]</code></div>
         </div>
         <div class="info-box note">
           <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
@@ -288,6 +293,34 @@ recuerd0 memory delete --workspace &lt;id&gt; &lt;memory_id&gt;</code></div>
             <tr><td><code>--category</code></td><td>One of <code>decision</code>, <code>discovery</code>, <code>preference</code>, <code>general</code> (defaults to <code>general</code>). See <a href="#cli-categories">Categories</a>.</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <%# — memory read — %>
+      <div class="endpoint" id="cmd-memory-read">
+        <div class="endpoint-head">
+          <h3>memory read</h3>
+          <p>Read just what you need from large memories — head, tail, an explicit line range, or grep matches with surrounding context. Avoids loading the full body when you only care about a slice.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">usage</span></div>
+          <div class="code-body"><code>recuerd0 memory read head &lt;memory_id&gt; --lines 20 [--workspace &lt;id&gt;]
+recuerd0 memory read tail &lt;memory_id&gt; --lines 20 [--workspace &lt;id&gt;]
+recuerd0 memory read lines &lt;memory_id&gt; --start 40 --end 55 [--workspace &lt;id&gt;]
+recuerd0 memory read grep &lt;memory_id&gt; "TODO" --context 2 [--workspace &lt;id&gt;]</code></div>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Subcommand</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>head</code></td><td>First <code>--lines N</code> lines of the memory body</td></tr>
+            <tr><td><code>tail</code></td><td>Last <code>--lines N</code> lines, computed from <code>total_lines</code></td></tr>
+            <tr><td><code>lines</code></td><td>Explicit range from <code>--start</code> to <code>--end</code> (1-based, inclusive)</td></tr>
+            <tr><td><code>grep</code></td><td>Find a pattern and print each match with <code>--context</code>, <code>--before</code>, or <code>--after</code> lines</td></tr>
+          </tbody>
+        </table>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Pair <code>memory read grep</code> with <code>memory read lines</code>: grep first to find the line number, then fetch a window of context around it. This is much cheaper than <code>memory show</code> for long transcripts and docs.</span>
+        </div>
       </div>
 
       <%# — Categories — %>
@@ -333,6 +366,43 @@ recuerd0 version show --workspace &lt;id&gt; &lt;version_id&gt;</code></div>
             <tr><td><code>show</code></td><td>Show a specific version with content</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <%# — Memory Links — %>
+      <div class="endpoint" id="cli-memory-links">
+        <div class="endpoint-head">
+          <h3>Memory Links</h3>
+          <p>Memory links — also called "tunnels" — are undirected, unlabeled "see also" connections between two memories within the same account. They cross workspace boundaries, so a memory in your <code>rails-app</code> workspace can link to one in your <code>mobile-app</code> workspace. Use them to express that two memories cover the same topic without duplicating content.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">usage</span></div>
+          <div class="code-body"><code>recuerd0 memory link list &lt;memory_id&gt; [--workspace &lt;id&gt;]
+recuerd0 memory link add &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--workspace &lt;id&gt;]
+recuerd0 memory link remove &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--workspace &lt;id&gt;]</code></div>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Subcommand</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>list</code></td><td>List all memories linked to <code>&lt;memory_id&gt;</code>, with each linked memory's workspace</td></tr>
+            <tr><td><code>add</code></td><td>Create an undirected link from <code>&lt;memory_id&gt;</code> to the memory id passed via <code>--to</code></td></tr>
+            <tr><td><code>remove</code></td><td>Remove the link to the memory id passed via <code>--to</code></td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">example workflow</span></div>
+          <div class="code-body"><code><span class="cc"># 1. Find a related memory in another workspace</span>
+recuerd0 search "auth strategy"
+
+<span class="cc"># 2. Link the two memories</span>
+recuerd0 memory link add 42 --to 118 --workspace 1
+
+<span class="cc"># 3. Confirm the link is in place</span>
+recuerd0 memory link list 42 --workspace 1</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Links are <strong>same-account only</strong> — cross-account links are rejected. <code>memory link remove</code> identifies the link by the <em>other memory's id</em> (passed via <code>--to</code>), not by a separate join row id, because links are undirected and stored once per pair.</span>
+        </div>
       </div>
 
       <%# — search — %>

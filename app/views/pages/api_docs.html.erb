@@ -40,6 +40,10 @@
     <div class="sidebar-group">
       <div class="sidebar-heading">Memories</div>
       <a href="#memory-categories" class="sidebar-link" data-section="memory-categories" data-action="click->marketing-sidebar#closeSidebar">Categories</a>
+      <a href="#memory-links" class="sidebar-link" data-section="memory-links" data-action="click->marketing-sidebar#closeSidebar">Memory Links</a>
+      <a href="#list-memory-links" class="sidebar-link" data-section="list-memory-links" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> List Links</a>
+      <a href="#create-memory-link" class="sidebar-link" data-section="create-memory-link" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create Link</a>
+      <a href="#delete-memory-link" class="sidebar-link" data-section="delete-memory-link" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method delete">DEL</span> Delete Link</a>
       <a href="#list-memories" class="sidebar-link" data-section="list-memories" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> List</a>
       <a href="#browse-memories" class="sidebar-link" data-section="browse-memories" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Browse</a>
       <a href="#get-memory" class="sidebar-link" data-section="get-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Get</a>
@@ -246,7 +250,8 @@
       <span class="ck">"updated_at"</span>: <span class="cs">"2026-04-01T11:42:00Z"</span>,
       <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1/memories/17"</span>,
       <span class="ck">"body"</span>: <span class="cs">"# Architecture\n\nThe system is split into…"</span>,
-      <span class="ck">"body_truncated"</span>: <span class="cb">true</span>
+      <span class="ck">"body_truncated"</span>: <span class="cb">true</span>,
+      <span class="ck">"links_count"</span>: <span class="cn">3</span>
     }
   ],
   <span class="ck">"stats"</span>: {
@@ -357,6 +362,112 @@
         </div>
       </div>
 
+      <%# ===== MEMORY LINKS ===== %>
+      <div class="api-section" id="memory-links">
+        <div class="endpoint-head">
+          <h3>Memory Links</h3>
+          <p>Memory links — also called "tunnels" — are undirected, unlabeled "see also" connections between two memories within the same account. They cross workspace boundaries: a memory in your <code>rails-app</code> workspace can link to a memory in your <code>mobile-app</code> workspace. Use them to express that two memories cover the same topic without duplicating content.</p>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>GET</code></td><td><code>/workspaces/:workspace_id/memories/:memory_id/links.json</code></td><td>List linked memories with their workspace info</td></tr>
+            <tr><td><code>POST</code></td><td><code>/workspaces/:workspace_id/memories/:memory_id/links.json</code></td><td>Create a link to another memory by id</td></tr>
+            <tr><td><code>DELETE</code></td><td><code>/workspaces/:workspace_id/memories/:memory_id/links/:id.json</code></td><td>Remove a link. <code>:id</code> is the <em>other memory's</em> id, not a join row id</td></tr>
+          </tbody>
+        </table>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Links are scoped to the <strong>same account</strong> — cross-account links are rejected with <code>422</code>. Storage is <strong>undirected</strong>: linking A↔B is the same as B↔A and the server normalizes the pair so the link is only created once. There is no cardinality limit, links carry no labels or metadata, and deleting a memory cascades to remove all of its links. The <code>DELETE</code> endpoint identifies the link by the <em>other memory's id</em>, not a join row id. Memory and pinned-memory JSON responses include a <code>links_count</code> field showing how many links a memory has.</span>
+        </div>
+      </div>
+
+      <div class="endpoint" id="list-memory-links">
+        <div class="endpoint-head"><h3>List Memory Links</h3><p>Returns all memories linked to a given memory, with each linked memory's workspace embedded.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/links.json</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code>[
+  {
+    <span class="ck">"id"</span>: <span class="cn">118</span>,
+    <span class="ck">"title"</span>: <span class="cs">"Auth strategy (mobile)"</span>,
+    <span class="ck">"category"</span>: <span class="cs">"decision"</span>,
+    <span class="ck">"tags"</span>: [<span class="cs">"auth"</span>, <span class="cs">"mobile"</span>],
+    <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+    <span class="ck">"updated_at"</span>: <span class="cs">"2026-03-22T11:05:00Z"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/2/memories/118"</span>,
+    <span class="ck">"workspace"</span>: {
+      <span class="ck">"id"</span>: <span class="cn">2</span>,
+      <span class="ck">"name"</span>: <span class="cs">"mobile-app"</span>,
+      <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/2"</span>
+    }
+  },
+  {
+    <span class="ck">"id"</span>: <span class="cn">204</span>,
+    <span class="ck">"title"</span>: <span class="cs">"Auth migration runbook"</span>,
+    <span class="ck">"category"</span>: <span class="cs">"discovery"</span>,
+    <span class="ck">"tags"</span>: [<span class="cs">"auth"</span>, <span class="cs">"infra"</span>],
+    <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+    <span class="ck">"updated_at"</span>: <span class="cs">"2026-04-02T08:30:00Z"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/5/memories/204"</span>,
+    <span class="ck">"workspace"</span>: {
+      <span class="ck">"id"</span>: <span class="cn">5</span>,
+      <span class="ck">"name"</span>: <span class="cs">"infra"</span>,
+      <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/5"</span>
+    }
+  }
+]</code></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="create-memory-link">
+        <div class="endpoint-head"><h3>Create Memory Link</h3><p>Creates an undirected link between this memory and another memory in the same account.</p></div>
+        <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/links.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">to_memory_id</span></td><td><span class="param-type">integer</span></td><td><span class="param-required">required</span></td><td>The id of the other memory to link to. Must belong to the same account.</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">request</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"to_memory_id"</span>: <span class="cn">118</span>
+}</code></div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s201">201 Created</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"id"</span>: <span class="cn">118</span>,
+  <span class="ck">"title"</span>: <span class="cs">"Auth strategy (mobile)"</span>,
+  <span class="ck">"category"</span>: <span class="cs">"decision"</span>,
+  <span class="ck">"tags"</span>: [<span class="cs">"auth"</span>, <span class="cs">"mobile"</span>],
+  <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+  <span class="ck">"updated_at"</span>: <span class="cs">"2026-03-22T11:05:00Z"</span>,
+  <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/2/memories/118"</span>,
+  <span class="ck">"workspace"</span>: {
+    <span class="ck">"id"</span>: <span class="cn">2</span>,
+    <span class="ck">"name"</span>: <span class="cs">"mobile-app"</span>,
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/2"</span>
+  }
+}</code></div>
+        </div>
+        <div class="info-box warn">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-patch)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <span>Returns <code>422</code> if <code>to_memory_id</code> belongs to a different account, references the same memory, or the link already exists.</span>
+        </div>
+      </div>
+
+      <div class="endpoint" id="delete-memory-link">
+        <div class="endpoint-head"><h3>Delete Memory Link</h3><p>Removes a link between two memories. The path <code>:id</code> is the <em>other</em> memory's id — not a separate join row id.</p></div>
+        <div class="route-bar delete"><span class="route-method">DELETE</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/links/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s204">204 No Content</span></div>
+          <div class="code-body"><span class="cc">Empty response body. Because links are undirected, removing the link from either side has the same effect.</span></div>
+        </div>
+      </div>
+
       <div class="endpoint" id="list-memories">
         <div class="endpoint-head"><h3>List Memories</h3><p>Returns all memories (latest versions only) for a workspace. Supports filtering by title pattern, tags, and source.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories.json</span></div>
@@ -463,6 +574,7 @@
     <span class="ck">"line_start"</span>: <span class="cn">1</span>,
     <span class="ck">"line_end"</span>: <span class="cn">142</span>
   },
+  <span class="ck">"links_count"</span>: <span class="cn">3</span>,
   <span class="ck">"workspace"</span>: {
     <span class="ck">"id"</span>: <span class="cn">1</span>,
     <span class="ck">"name"</span>: <span class="cs">"Project Alpha"</span>,
@@ -512,6 +624,33 @@
         <div class="info-box note">
           <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>In grep mode, the <code>content</code> object returns <code>matches</code> and <code>total_lines</code> instead of <code>body</code>. Returns <code>422</code> if <code>q</code> parameter is missing.</span>
+        </div>
+        <div class="param-table-label">Workflow: grep, then fetch a window</div>
+        <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin: 0.5rem 0 0.75rem;">
+          For large memories, prefer a two-step read: call grep mode first to find each match's <code>line_number</code>, then call again with <code>line_start</code>/<code>line_end</code> to fetch a window of surrounding context.
+        </p>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">step 1 — find matches</span></div>
+          <div class="code-body"><code><span class="cc">GET</span> /workspaces/1/memories/1.json?mode=grep&amp;q=TODO</code></div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"content"</span>: {
+    <span class="ck">"total_lines"</span>: <span class="cn">412</span>,
+    <span class="ck">"matches"</span>: [
+      { <span class="ck">"line_number"</span>: <span class="cn">47</span>, <span class="ck">"line"</span>: <span class="cs">"TODO: revisit caching"</span> }
+    ]
+  }
+}</code></div>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">step 2 — fetch a 16-line window around line 47</span></div>
+          <div class="code-body"><code><span class="cc">GET</span> /workspaces/1/memories/1.json?line_start=40&amp;line_end=55</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>There is no <code>head=</code> or <code>tail=</code> parameter. Head is <code>line_start=1&amp;line_end=N</code>; tail is <code>line_start=(total_lines - N + 1)&amp;line_end=total_lines</code>. Because <code>total_lines</code> is echoed on every response, clients can compute tail without an extra round trip.</span>
         </div>
       </div>
 

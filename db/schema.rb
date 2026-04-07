@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_06_233357) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_07_060129) do
   create_table "access_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
@@ -129,6 +129,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_233357) do
     t.index ["workspace_id"], name: "index_memories_on_workspace_id"
   end
 
+  create_table "memory_links", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "from_memory_id", null: false
+    t.integer "to_memory_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["from_memory_id", "to_memory_id"], name: "index_memory_links_on_from_memory_id_and_to_memory_id", unique: true
+    t.index ["from_memory_id"], name: "index_memory_links_on_from_memory_id"
+    t.index ["to_memory_id"], name: "index_memory_links_on_to_memory_id"
+  end
+
   create_table "pins", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "pinnable_id", null: false
@@ -186,6 +196,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_233357) do
   add_foreign_key "contents", "memories"
   add_foreign_key "memories", "memories", column: "parent_memory_id"
   add_foreign_key "memories", "workspaces"
+  add_foreign_key "memory_links", "memories", column: "from_memory_id"
+  add_foreign_key "memory_links", "memories", column: "to_memory_id"
   add_foreign_key "pins", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "users", "accounts"

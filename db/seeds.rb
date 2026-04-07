@@ -203,10 +203,32 @@ created_workspaces[1..5].each do |workspace|
   end
 end
 
+# Seed cross-workspace memory links ("see also" relationships)
+ai_pool = ai_research.memories.latest_versions.to_a
+project_pool = project_ideas.memories.latest_versions.to_a
+rails_pool = rails_workspace.memories.latest_versions.limit(5).to_a
+sysdesign_pool = system_design_workspace.memories.latest_versions.limit(5).to_a
+
+link_pairs = [
+  [ai_pool[0], project_pool[1]],
+  [ai_pool[1], project_pool[0]],
+  [ai_pool[2], sysdesign_pool[0]],
+  [project_pool[1], rails_pool[0]],
+  [rails_pool[1], sysdesign_pool[1]]
+]
+
+link_pairs.each do |a, b|
+  next if a.nil? || b.nil? || a.id == b.id
+  from_id, to_id = [a.id, b.id].minmax
+  next if MemoryLink.exists?(from_memory_id: from_id, to_memory_id: to_id)
+  MemoryLink.create!(from_memory_id: from_id, to_memory_id: to_id)
+end
+
 puts "Seeded database with:"
 puts "- #{User.count} user(s)"
 puts "- #{Workspace.count} workspace(s)"
 puts "- #{Memory.count} memory(ies) with content"
+puts "- #{MemoryLink.count} memory link(s)"
 puts ""
 puts "User: demo@recuerd0.com / password123"
 puts ""

@@ -48,6 +48,7 @@
       <div class="sidebar-heading">Search</div>
       <a href="#search-operators" class="sidebar-link" data-section="search-operators" data-action="click->marketing-sidebar#closeSidebar">Operators</a>
       <a href="#categories" class="sidebar-link" data-section="categories" data-action="click->marketing-sidebar#closeSidebar">Categories</a>
+      <a href="#cross-workspace-links" class="sidebar-link" data-section="cross-workspace-links" data-action="click->marketing-sidebar#closeSidebar">Cross-Workspace Links</a>
       <a href="#tag-conventions" class="sidebar-link" data-section="tag-conventions" data-action="click->marketing-sidebar#closeSidebar">Tag Conventions</a>
     </div>
   </aside>
@@ -178,7 +179,10 @@ Read with: recuerd0 memory show --workspace 1 &lt;id&gt;</code></div>
 recuerd0 search "authentication AND rails"
 
 <span class="cc"># Load a specific memory</span>
-recuerd0 memory show --workspace 1 12</code></div>
+recuerd0 memory show --workspace 1 12
+
+<span class="cc"># Discover related memories in other workspaces</span>
+recuerd0 memory link list 12 --workspace 1</code></div>
         </div>
       </div>
 
@@ -338,6 +342,16 @@ recuerd0 version create --workspace 1 42 \
         <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin: 1.25rem 0 0;">
           Failures (bad credentials, offline, rate limit) never interrupt your session — the hooks always exit cleanly and log a one-line entry to <code>~/.recuerd0/hook-errors.log</code>.
         </p>
+
+        <div class="endpoint-head">
+          <h3>Reading efficiently</h3>
+          <p>Agents can also read efficiently — grep first to find the matching line, then fetch only the surrounding window. Avoids loading the full body of long transcripts and docs.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code>recuerd0 memory read grep 42 "decision" --context 2 --pretty
+recuerd0 memory read lines 42 --start 38 --end 52 --pretty</code></div>
+        </div>
       </div>
 
       <%# — Other Tools — %>
@@ -407,6 +421,39 @@ recuerd0 version create --workspace 1 42 \
         </div>
       </div>
 
+      <div class="endpoint" id="cross-workspace-links">
+        <div class="endpoint-head">
+          <h3>Cross-Workspace Links</h3>
+          <p>The same topic often shows up in multiple workspaces — an auth migration touches <code>rails-app</code>, <code>mobile-app</code>, and <code>infra</code> all at once. Memory links (a.k.a. "tunnels") let you express that without duplicating the memory. A link is an undirected, unlabeled "see also" connection between two memories. Links cross workspace boundaries but stay scoped to a single account.</p>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Workspace</th><th>Memory</th><th>Topic</th></tr></thead>
+          <tbody>
+            <tr><td><code>rails-app</code></td><td>#42 — "Auth strategy"</td><td>Server-side session refactor</td></tr>
+            <tr><td><code>mobile-app</code></td><td>#118 — "Auth strategy (mobile)"</td><td>Token storage on iOS / Android</td></tr>
+            <tr><td><code>infra</code></td><td>#204 — "Auth migration runbook"</td><td>Rollout, rollback, monitoring</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin: 1.25rem 0 1rem;">
+          Linking #42 ↔ #118 ↔ #204 means an agent reading any one of those memories can pull the other two on demand without searching across every workspace. There is no automatic linking — the recuerd0 agent always confirms with you before creating a link, and there is no cardinality limit on how many links a memory can carry.
+        </p>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">shell</span></div>
+          <div class="code-body"><code><span class="cc"># Find related memories in another workspace</span>
+recuerd0 search "auth strategy"
+
+<span class="cc"># Create a link</span>
+recuerd0 memory link add 42 --to 118 --workspace 1
+
+<span class="cc"># List all links for a memory</span>
+recuerd0 memory link list 42 --workspace 1</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Links are undirected — linking A↔B is the same as B↔A. Same account only; cross-account linking is rejected. Deleting a memory cascades to remove all its links.</span>
+        </div>
+      </div>
+
       <div class="endpoint" id="tag-conventions">
         <div class="endpoint-head">
           <h3>Tag conventions</h3>
@@ -451,7 +498,10 @@ recuerd0 memory create --workspace 1 \
   --tags "auth,tokens,security" \
   --content "# Token Rotation\n\nImplemented automatic token rotation..."
 
-<span class="cc"># 5. Archive the session transcript</span>
+<span class="cc"># 5. Link the new memory to a related one in another workspace</span>
+recuerd0 memory link add 87 --to 118 --workspace 1
+
+<span class="cc"># 6. Archive the session transcript</span>
 cat transcript.md | recuerd0 memory create \
   --workspace 2 \
   --title "Session: token rotation" \
