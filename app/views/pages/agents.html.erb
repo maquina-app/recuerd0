@@ -41,6 +41,7 @@
     <div class="sidebar-group">
       <div class="sidebar-heading">Integrations</div>
       <a href="#claude-code-plugin" class="sidebar-link" data-section="claude-code-plugin" data-action="click->marketing-sidebar#closeSidebar">Claude Code Plugin</a>
+      <a href="#auto-save-hooks" class="sidebar-link" data-section="auto-save-hooks" data-action="click->marketing-sidebar#closeSidebar">Auto-Save Hooks</a>
       <a href="#other-tools" class="sidebar-link" data-section="other-tools" data-action="click->marketing-sidebar#closeSidebar">Other Tools</a>
     </div>
     <div class="sidebar-group">
@@ -260,6 +261,78 @@ recuerd0 version create --workspace 1 42 \
         </div>
         <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin-bottom: 1.5rem;">
           The plugin provides slash commands for saving session knowledge, searching memories, and workspace management — all within the Claude Code conversation flow.
+        </p>
+      </div>
+
+      <%# — Auto-Save Hooks — %>
+      <div class="endpoint" id="auto-save-hooks">
+        <div class="endpoint-head">
+          <h3>Auto-Save Hooks</h3>
+          <p>The plugin registers two Claude Code lifecycle hooks that capture session state automatically. No manual commands, no forgetting to save.</p>
+        </div>
+
+        <table class="op-table">
+          <thead><tr><th>Hook</th><th>When it fires</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>Stop</code></td>
+              <td>After each assistant turn, at most once every 15 minutes</td>
+              <td>Checkpoint memory tagged <code>claude-code,auto-save,stop</code></td>
+            </tr>
+            <tr>
+              <td><code>PreCompact</code></td>
+              <td>Right before Claude Code compresses the conversation</td>
+              <td>Emergency snapshot tagged <code>claude-code,auto-save,precompact</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin: 1.25rem 0 1rem;">
+          Both hooks capture the last 200 lines of the session transcript, build a titled Markdown memory, and save it to the configured workspace via the recuerd0 CLI. The title includes an ISO timestamp and session ID. The source is always <code>claude-code-session</code>, so you can filter auto-saved memories out of manual queries.
+        </p>
+
+        <div class="endpoint-head">
+          <h3>Workspace routing</h3>
+          <p>Drop a <code>.recuerd0.yaml</code> at each project root and every session started in that directory lands in the right workspace.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">project-root/.recuerd0.yaml</span></div>
+          <div class="code-body"><code><span class="ck">workspace</span>: <span class="cs">"12"</span></code></div>
+        </div>
+
+        <div class="info-box note">
+          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Hooks stay silent if the <code>recuerd0</code> CLI is missing, no account is configured, or no workspace is resolvable. A fresh install with no config produces zero activity — nothing is ever captured without your setup.</span>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Tuning</h3>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Env var</th><th>Default</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>RECUERD0_HOOK_DISABLE</code></td><td>unset</td><td>Set to <code>1</code> to disable both hooks entirely</td></tr>
+            <tr><td><code>RECUERD0_STOP_INTERVAL_MINUTES</code></td><td><code>15</code></td><td>Minimum minutes between Stop saves</td></tr>
+            <tr><td><code>RECUERD0_HOOK_TAIL_LINES</code></td><td><code>200</code></td><td>Transcript lines captured per save</td></tr>
+          </tbody>
+        </table>
+
+        <div class="endpoint-head">
+          <h3>Turning it off</h3>
+          <p>Four ways to stop auto-saving, from least invasive to most.</p>
+        </div>
+        <table class="op-table">
+          <thead><tr><th>Scope</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>Current shell</td><td><code>export RECUERD0_HOOK_DISABLE=1</code> before launching Claude Code</td></tr>
+            <tr><td>Single project</td><td>Remove the project's <code>.recuerd0.yaml</code> and don't set <code>RECUERD0_WORKSPACE</code></td></tr>
+            <tr><td>Just one hook</td><td>Edit <code>${CLAUDE_PLUGIN_ROOT}/hooks/hooks.json</code> and delete the <code>Stop</code> or <code>PreCompact</code> block</td></tr>
+            <tr><td>Permanently</td><td><code>/plugin uninstall recuerd0@maquina</code></td></tr>
+          </tbody>
+        </table>
+
+        <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin: 1.25rem 0 0;">
+          Failures (bad credentials, offline, rate limit) never interrupt your session — the hooks always exit cleanly and log a one-line entry to <code>~/.recuerd0/hook-errors.log</code>.
         </p>
       </div>
 
