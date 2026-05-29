@@ -1,5 +1,12 @@
 <%# locals: () %>
 
+<%# The House MD editor is a Web Component with no Turbo awareness; skip the
+    Turbo cache so a back/forward restore re-renders a fresh editor instead of
+    re-running connectedCallback on cached DOM (which would duplicate the toolbar). %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+
 <% content_for :page_title, "Edit #{@memory.display_title}" %>
 
 <% content_for :breadcrumb do %>

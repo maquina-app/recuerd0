@@ -98,7 +98,7 @@
   <%= render "components/card" do %>
     <%= render "components/card/content" do %>
       <div class="prose prose-sm max-w-none dark:prose-invert">
-        <%= simple_format(@version.content&.body || "No content") %>
+        <%= simple_format(@version.content&.body&.content.presence || "No content") %>
       </div>
     <% end %>
 

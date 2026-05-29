@@ -67,7 +67,7 @@
 
   <%= render "components/card/content" do %>
     <div class="prose prose-sm max-w-none text-muted-foreground">
-      <% plain = Content.strip_markdown(display_version.content&.body.to_s).gsub(/\n{3,}/, "\n\n").strip %>
+      <% plain = Content.strip_markdown(display_version.content&.body&.content.to_s).gsub(/\n{3,}/, "\n\n").strip %>
       <span class="whitespace-pre-line"><%= truncate(plain, length: 200, omission: "...") %></span>
     </div>
 

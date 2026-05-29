@@ -2,19 +2,6 @@ module ApplicationHelper
   include Pagy::Frontend
   include MaquinaComponentsHelper
 
-  # Render Markdown content as HTML
-  def render_markdown(text)
-    return "".html_safe if text.blank?
-
-    html = Commonmarker.to_html(text, options: {
-      parse: {smart: true},
-      extension: {tasklist: true}
-    })
-    sanitize(html,
-      tags: Loofah::HTML5::SafeList::ACCEPTABLE_ELEMENTS,
-      attributes: Loofah::HTML5::SafeList::ACCEPTABLE_ATTRIBUTES + %w[checked disabled])
-  end
-
   # Avatar helper methods
   def avatar_classes(size: "h-10 w-10", grayscale: false, css_classes: "")
     class_names(

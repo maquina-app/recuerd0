@@ -42,7 +42,9 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
-gem "commonmarker"
+gem "housemd", path: "/Users/mariochavez/Development/tools/housemd"
+gem "redcarpet", "~> 3.6"
+gem "rouge", "~> 4.5"
 gem "pagy", "~> 9.3"
 gem "maquina-components"
 gem "rubyzip", "~> 3.0", require: "zip"
@@ -65,8 +67,8 @@ end
 
 group :development do
   gem "letter_opener"
-  gem "log_bench"
-  gem "reactionview"
+  # gem "log_bench"
+  # gem "reactionview"
   gem "standard", "~> 1.54.0"
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"

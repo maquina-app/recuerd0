@@ -4,7 +4,7 @@ module GrepHelper
   GROUPING_CHARS = /[()"]/
 
   def grep_matches(memory, query, before: 0, after: 0)
-    lines = memory.content&.body.to_s.split("\n", -1)
+    lines = memory.content&.body&.content.to_s.split("\n", -1)
     pattern = build_grep_pattern(query)
     return [] if pattern.nil?
 

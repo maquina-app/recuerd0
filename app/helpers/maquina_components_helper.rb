@@ -430,6 +430,66 @@ module MaquinaComponentsHelper
           <circle cx="5" cy="12" r="1"></circle>
         </svg>
       SVG
+    when :bold
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <path d="M14 12a4 4 0 0 0 0-8H6v8"></path>
+          <path d="M15 20a4 4 0 0 0 0-8H6v8Z"></path>
+        </svg>
+      SVG
+    when :italic
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <line x1="19" x2="10" y1="4" y2="4"></line>
+          <line x1="14" x2="5" y1="20" y2="20"></line>
+          <line x1="15" x2="9" y1="4" y2="20"></line>
+        </svg>
+      SVG
+    when :text_quote
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <path d="M17 6H3"></path>
+          <path d="M21 12H8"></path>
+          <path d="M21 18H8"></path>
+          <path d="M3 12v6"></path>
+        </svg>
+      SVG
+    when :code
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+      SVG
+    when :link
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+      SVG
+    when :list
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <line x1="8" x2="21" y1="6" y2="6"></line>
+          <line x1="8" x2="21" y1="12" y2="12"></line>
+          <line x1="8" x2="21" y1="18" y2="18"></line>
+          <line x1="3" x2="3.01" y1="6" y2="6"></line>
+          <line x1="3" x2="3.01" y1="12" y2="12"></line>
+          <line x1="3" x2="3.01" y1="18" y2="18"></line>
+        </svg>
+      SVG
+    when :list_ordered
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <line x1="10" x2="21" y1="6" y2="6"></line>
+          <line x1="10" x2="21" y1="12" y2="12"></line>
+          <line x1="10" x2="21" y1="18" y2="18"></line>
+          <path d="M4 6h1v4"></path>
+          <path d="M4 10h2"></path>
+          <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path>
+        </svg>
+      SVG
     else
       nil # Return nil so gem can show its fallback or nothing
     end

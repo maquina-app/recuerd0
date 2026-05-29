@@ -121,7 +121,7 @@ class Memory < ApplicationRecord
 
     transaction do
       new_version.save!
-      new_version.create_content!(body: attributes[:content] || content&.body || "")
+      new_version.create_content!(body: attributes[:content] || content&.body&.content.to_s)
     end
 
     new_version

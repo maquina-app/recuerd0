@@ -174,7 +174,7 @@ class AccountTest < ActiveSupport::TestCase
     workspace = account.workspaces.find_by(name: "Start Here")
     workspace.memories.each do |memory|
       assert memory.content.present?, "Expected memory '#{memory.title}' to have content"
-      assert memory.content.body.present?, "Expected memory '#{memory.title}' to have non-empty body"
+      assert memory.content.body.content.present?, "Expected memory '#{memory.title}' to have non-empty body"
     end
   end
 

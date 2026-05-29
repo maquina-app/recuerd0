@@ -1,7 +1,7 @@
 namespace :search do
   desc "Rebuild full-text search index for all memories or a specific workspace"
   task :reindex, [:workspace_id] => :environment do |_t, args|
-    scope = Memory.latest_versions.includes(:content)
+    scope = Memory.latest_versions.includes(content: :markdown_body)
 
     if args[:workspace_id].present?
       workspace = Workspace.find(args[:workspace_id])

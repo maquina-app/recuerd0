@@ -4,7 +4,7 @@ class MemoryTest < ActiveSupport::TestCase
   test "create_with_content creates memory and content" do
     memory = Memory.create_with_content(workspaces(:one), title: "Test", content: "Body text", tags: ["tag"])
     assert memory.persisted?
-    assert_equal "Body text", memory.content.body
+    assert_equal "Body text", memory.content.body.content
   end
 
   test "update_with_content updates title and body" do
@@ -12,7 +12,7 @@ class MemoryTest < ActiveSupport::TestCase
     memory.update_with_content(title: "Updated", content: "New body")
     memory.reload
     assert_equal "Updated", memory.title
-    assert_equal "New body", memory.content.body
+    assert_equal "New body", memory.content.body.content
   end
 
   test "create_version! creates child linked to parent" do

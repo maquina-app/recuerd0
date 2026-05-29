@@ -1,5 +1,5 @@
 <%# locals: (memory:, workspace:, viewing_old_version: false) -%>
-<% if memory.content&.body.present? %>
+<% if memory.content&.body&.content.present? %>
   <%= render "components/dropdown_menu/item",
       href: workspace_memory_markdown_path(workspace, memory),
       target: "_blank" do %>

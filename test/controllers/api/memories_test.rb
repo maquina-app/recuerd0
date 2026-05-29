@@ -248,7 +248,7 @@ class ApiMemoriesTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     json = JSON.parse(response.body)
-    assert_equal @memory.content.body, json["content"]["body"]
+    assert_equal @memory.content.body.content, json["content"]["body"]
     assert_equal 1, json["content"]["line_start"]
   end
 

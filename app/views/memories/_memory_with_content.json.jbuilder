@@ -1,6 +1,6 @@
 json.partial! "memories/memory", memory: memory
 
-body = memory.content&.body.to_s
+body = memory.content&.body&.content.to_s
 lines = body.split("\n", -1)
 total_lines = lines.length
 

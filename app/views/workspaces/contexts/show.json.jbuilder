@@ -13,7 +13,7 @@ json.pinned_memories(@pinned_memories) do |memory|
   json.url workspace_memory_url(@workspace, memory)
 
   if @include_body
-    body = memory.content&.body.to_s
+    body = memory.content&.body&.content.to_s
     json.body body.truncate(@max_body_chars, omission: "…")
     json.body_truncated body.length > @max_body_chars
   end

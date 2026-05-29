@@ -87,7 +87,7 @@ module Accounts
         "updated_at" => memory.updated_at.iso8601
       }.compact
 
-      body = memory.content&.body || ""
+      body = memory.content&.body&.content.to_s
 
       content = "---\n#{frontmatter.to_yaml.sub("---\n", "")}---\n\n#{body}"
       File.write(File.join(workspace_dir, "#{filename}.md"), content)

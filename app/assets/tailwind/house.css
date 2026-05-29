@@ -1,0 +1,272 @@
+/* HouseMD editor styles.
+ *
+ * All theming flows through gem-namespaced `--house-*` custom properties so
+ * this stylesheet renders correctly in a vanilla Rails app AND adopts a host
+ * design system when one is present. Each default reads a common design-token
+ * name first (e.g. `--muted`, `--foreground`) and falls back to a neutral
+ * value — so we never clobber a host's tokens, we only consume them. Override
+ * any `--house-*` var in your own CSS to retheme. */
+:root {
+  --house-border-radius: 0.5em;
+
+  --house-color-bg: var(--background, #ffffff);
+  --house-color-fg: var(--foreground, #1a1a1a);
+  --house-color-muted: var(--muted, #f3f4f6);
+  --house-color-muted-fg: var(--muted-foreground, #6b7280);
+  --house-color-link: var(--ember, var(--color-link, #2563eb));
+  --house-color-negative: var(--destructive, #dc2626);
+  --house-color-positive: var(--success, #16a34a);
+  --house-color-ink-reversed: var(--destructive-foreground, #ffffff);
+  --house-color-selected: color-mix(in oklch, var(--house-color-link) 15%, var(--house-color-bg));
+
+  --house-font-display: var(--font-display, inherit);
+  --house-font-mono: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+:where(house-md) {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+
+  &:invalid {
+    border: var(--house-color-negative) 2px solid;
+  }
+}
+
+/* Toolbar — pill container with a soft background. */
+:where(house-md-toolbar) {
+  --hover-size: 0;
+
+  align-items: center;
+  background-color: var(--house-color-muted);
+  border-radius: 9999px;
+  display: flex;
+  gap: 0.125rem;
+  margin: 0 auto 0.75rem;
+  padding: 0.25rem 0.5rem;
+  width: fit-content;
+
+  :is(button, label) {
+    align-items: center;
+    appearance: none;
+    background-color: transparent;
+    border: none;
+    border-radius: 9999px;
+    color: var(--house-color-muted-fg);
+    cursor: pointer;
+    display: inline-flex;
+    flex-shrink: 0;
+    height: 1.75rem;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    transition: background-color 150ms ease, color 150ms ease;
+    width: 1.75rem;
+
+    :is(img, svg) {
+      -webkit-touch-callout: none;
+      block-size: 1rem;
+      fill: currentColor;
+      inline-size: 1rem;
+      user-select: none;
+    }
+
+    &:where(:focus-visible) {
+      background-color: var(--house-color-bg);
+      color: var(--house-color-fg);
+      outline: none;
+    }
+
+    @media (hover: hover) {
+      &:hover {
+        background-color: var(--house-color-bg);
+        color: var(--house-color-fg);
+      }
+    }
+
+    &:where(:active) {
+      background-color: var(--house-color-selected);
+      color: var(--house-color-fg);
+    }
+  }
+}
+
+/* Markdown Content */
+:where(.house-md-content) {
+  caret-color: var(--house-color-link);
+  flex-grow: 1;
+  min-block-size: 50dvh;
+  text-align: start;
+  white-space: break-spaces;
+
+  &:focus,
+  &:active {
+    border: none;
+    outline: none;
+  }
+
+  /* HouseMD's parser wraps block-level markdown in <span class="..."> sentinels.
+     Style each so the editor reflects markdown semantics live. */
+  .h1 {
+    display: inline-block;
+    font-family: var(--house-font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.025em;
+    margin-block: 0.4em 0.2em;
+  }
+  .h2 {
+    display: inline-block;
+    font-family: var(--house-font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    margin-block: 0.4em 0.2em;
+  }
+  .h3 {
+    display: inline-block;
+    font-family: var(--house-font-display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    margin-block: 0.35em 0.15em;
+  }
+  .h4, .h5, .h6 {
+    display: inline-block;
+    font-family: var(--house-font-display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-block: 0.3em 0.1em;
+  }
+  .hr {
+    color: var(--house-color-muted-fg);
+    letter-spacing: 0.5em;
+  }
+  .quote {
+    color: var(--house-color-muted-fg);
+    font-style: italic;
+  }
+  .link {
+    color: var(--house-color-link);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .code {
+    background-color: var(--house-color-muted);
+    border-radius: 0.25rem;
+    color: var(--house-color-fg);
+    font-family: var(--house-font-mono);
+    font-size: 0.875em;
+    padding: 1px 4px;
+  }
+
+  /* Fenced code blocks (```…```) — render as a continuous block with padding
+     around the whole thing. Without `display: block` an inline .code span only
+     paints the background where text sits, so multi-line code reads as separate
+     inline runs instead of one unified box. */
+  .code[data-fence] {
+    display: block;
+    margin: 0.5rem 0;
+    padding: 0.5rem 0.75rem;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+  .img {
+    color: var(--house-color-muted-fg);
+    font-style: italic;
+  }
+  .comment {
+    color: var(--house-color-muted-fg);
+    font-style: italic;
+    opacity: 0.7;
+  }
+}
+
+/* Uploads */
+:where(house-md-upload) {
+  border-radius: var(--house-border-radius);
+  margin-block: 0.5ex;
+  position: relative;
+
+  &[status="failed"] {
+    background-color: var(--house-color-negative);
+    color: var(--house-color-ink-reversed);
+    font-weight: bold;
+    padding: 0.5em;
+  }
+}
+
+:where(.md-close) {
+  appearance: none;
+  background-color: transparent;
+  block-size: 1em;
+  border: none;
+  cursor: pointer;
+  display: none;
+  inset: 0.5em 0.5em auto auto;
+  inline-size: 1em;
+  outline: none;
+  position: absolute;
+
+  house-md-upload[status="failed"] & {
+    color: var(--house-color-ink-reversed);
+    display: inline-block;
+  }
+
+  &::before {
+    color: var(--house-color-ink-reversed);
+    content: '×';
+    font-size: 24px;
+    font-weight: bold;
+    inset: 50% auto auto 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+  }
+}
+
+:where(.md-file) {
+  font-weight: normal;
+
+  house-md-upload[status="complete"] & {
+    color: var(--house-color-positive);
+  }
+}
+
+:where(.md-progress-bar) {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: var(--house-color-muted);
+  block-size: 1ex;
+  border-radius: var(--house-border-radius);
+  display: block;
+  inline-size: 100%;
+  line-height: inherit;
+  margin: 0;
+
+  house-md-upload[status="failed"] & ,
+  house-md-upload[status="complete"] & {
+    display: none;
+  }
+
+  &::-webkit-progress-bar {
+    background-color: var(--house-color-muted);
+    border-radius: var(--house-border-radius);
+  }
+
+  &::-webkit-progress-inner-element {
+    border-radius: var(--house-border-radius);
+  }
+
+  &::-webkit-progress-value {
+    background-color: var(--house-color-positive);
+    border-radius: var(--house-border-radius);
+  }
+
+  &::-moz-progress-bar {
+    background-color: var(--house-color-positive);
+    border-radius: var(--house-border-radius);
+  }
+}
