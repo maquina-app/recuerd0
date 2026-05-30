@@ -1,9 +1,3 @@
-PATH
-  remote: /Users/mariochavez/Development/tools/housemd
-  specs:
-    housemd (0.1.0)
-      railties (>= 7.0)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -411,7 +405,6 @@ DEPENDENCIES
   bundler-audit
   capybara
   debug
-  housemd!
   importmap-rails
   jbuilder
   kamal
