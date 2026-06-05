@@ -32,8 +32,8 @@
           <div class="hero-badge">source available · self-hosted · cloud</div>
           <h1>The knowledge base your <em>AI tools</em> deserve</h1>
           <p class="hero-sub">
-            Organize, version, and serve project context to any LLM — from Claude Code to Cursor to ChatGPT.
-            Human-curated memory, instantly accessible via REST API.
+            A small, human-curated knowledge base for your projects — versioned, searchable, and served to any AI tool over a REST API you control.
+            Claude Code, Cursor, ChatGPT: one source of truth, no vendor lock-in.
           </p>
           <div class="hero-actions">
             <% if authenticated? %>
@@ -325,6 +325,18 @@ as new versioned memories.</code>
         <div class="feature-card reveal reveal-delay-1">
           <div class="feature-marker"></div>
           <div>
+            <h3>Human-Curated</h3>
+            <p>Deliberate, human-in-the-loop knowledge — not automatic capture that accumulates noise. Every memory earns its place: reviewed, versioned, and yours.</p>
+            <div class="feature-meta">
+              <span class="feature-chip">human-curated</span>
+              <span class="feature-chip">versioned</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-marker"></div>
+          <div>
             <h3>Version History</h3>
             <p>Branch from any version with a flat versioning model. Track how your project knowledge evolves — like Git for context.</p>
             <div class="feature-meta">
@@ -338,7 +350,7 @@ as new versioned memories.</code>
           <div class="feature-marker"></div>
           <div>
             <h3>Full-Text Search</h3>
-            <p>SQLite FTS5 with trigram tokenizer. Find any memory in milliseconds with minimum 3-character queries across all workspaces.</p>
+            <p>Keyword search powered by SQLite FTS5 with the trigram tokenizer. Search every workspace in milliseconds, from 3-character queries up. Focused, curated workspaces keep the context you need easy to find.</p>
             <div class="feature-meta">
               <span class="feature-chip">fts5</span>
               <span class="feature-chip">trigram</span>
@@ -387,7 +399,7 @@ as new versioned memories.</code>
           <div class="feature-marker"></div>
           <div>
             <h3>Workspace Organization</h3>
-            <p>Pin, archive, soft-delete. Tag memories for filtering. Counter caches for instant workspace health. Designed for 5–20 memories per workspace.</p>
+            <p>Pin, archive, soft-delete, and tag. Workspaces are tuned for a curated set of high-value memories — think dozens, curation over accumulation — so the context you serve stays sharp, not noisy. Deep, large workspaces work too; keeping recall sharp as they grow is what semantic search (on the roadmap) is for.</p>
             <div class="feature-meta">
               <span class="feature-chip">pins</span>
               <span class="feature-chip">tags</span>
