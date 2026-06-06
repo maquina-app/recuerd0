@@ -44,7 +44,7 @@ module Searchable
       "FTS Delete", [root.id]
     )
 
-    body = newest.content&.body || ""
+    body = newest.content&.body&.content.to_s
     self.class.connection.exec_insert(
       "INSERT INTO memories_search(title, body, memory_id) VALUES (?, ?, ?)",
       "FTS Insert", [newest.title || "", body, root.id]

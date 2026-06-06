@@ -12,7 +12,7 @@ class Memories::MarkdownsControllerTest < ActionDispatch::IntegrationTest
     get workspace_memory_markdown_url(@workspace, @memory)
     assert_response :success
     assert_includes response.content_type, "text/markdown"
-    assert_equal @memory.content.body, response.body
+    assert_equal @memory.content.body.content, response.body
     assert_includes response.headers["Content-Disposition"], "inline"
     assert_includes response.headers["Content-Disposition"], ".md"
   end

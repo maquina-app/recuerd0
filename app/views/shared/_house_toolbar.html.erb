@@ -1,0 +1,41 @@
+<%# House MD editor toolbar. Buttons keep their required data-house-md-action and
+    are styled with the maquina Button engine (ghost icon buttons) + icon_for.
+    Image upload is deferred to a follow-up.
+    Based on Writebook by 37signals (MIT) — see NOTICE.md. %>
+<%= house_toolbar id: "house_toolbar", class: "shrink-0 flex items-center gap-0.5 border-b border-border bg-muted/30 px-2 py-1" do %>
+  <button type="button" data-house-md-action="bold"
+          data-component="button" data-variant="ghost" data-size="icon"
+          aria-label="<%= t("memories.form.toolbar.bold") %>">
+    <%= icon_for(:bold, class: "size-4") %>
+  </button>
+  <button type="button" data-house-md-action="italic"
+          data-component="button" data-variant="ghost" data-size="icon"
+          aria-label="<%= t("memories.form.toolbar.italic") %>">
+    <%= icon_for(:italic, class: "size-4") %>
+  </button>
+  <button type="button" data-house-md-action="quote"
+          data-component="button" data-variant="ghost" data-size="icon"
+          aria-label="<%= t("memories.form.toolbar.quote") %>">
+    <%= icon_for(:text_quote, class: "size-4") %>
+  </button>
+  <button type="button" data-house-md-action="code"
+          data-component="button" data-variant="ghost" data-size="icon"
+          aria-label="<%= t("memories.form.toolbar.code") %>">
+    <%= icon_for(:code, class: "size-4") %>
+  </button>
+  <button type="button" data-house-md-action="link"
+          data-component="button" data-variant="ghost" data-size="icon"
+          aria-label="<%= t("memories.form.toolbar.link") %>">
+    <%= icon_for(:link, class: "size-4") %>
+  </button>
+  <button type="button" data-house-md-action="bulletList"
+          data-component="button" data-variant="ghost" data-size="icon"
+          aria-label="<%= t("memories.form.toolbar.bullet_list") %>">
+    <%= icon_for(:list, class: "size-4") %>
+  </button>
+  <button type="button" data-house-md-action="numberList"
+          data-component="button" data-variant="ghost" data-size="icon"
+          aria-label="<%= t("memories.form.toolbar.numbered_list") %>">
+    <%= icon_for(:list_ordered, class: "size-4") %>
+  </button>
+<% end %>

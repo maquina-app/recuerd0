@@ -38,9 +38,9 @@
         <%= render "shared/pin_button", pinnable: @memory %>
       <% end %>
 
-      <% if @memory.content&.body.present? %>
+      <% if @memory.content&.body&.content.present? %>
         <div data-controller="clipboard">
-          <textarea data-clipboard-target="source" class="hidden"><%= @memory.content.body %></textarea>
+          <textarea data-clipboard-target="source" class="hidden"><%= @memory.content.body.content %></textarea>
           <button type="button"
                   data-component="button" data-variant="ghost" data-size="icon-sm"
                   data-action="clipboard#copy"
@@ -146,9 +146,9 @@
   </div>
 
   <%# Content %>
-  <% if @memory.content&.body.present? %>
+  <% if @memory.content&.body&.content.present? %>
     <div class="prose max-w-none dark:prose-invert">
-      <%= render_markdown(@memory.content.body) %>
+      <%= sanitize_content @memory.content.body.to_html %>
     </div>
   <% else %>
     <%= render "components/empty", variant: :outline do %>

@@ -56,10 +56,14 @@ en:
       cancel: "Cancel"
       save: "Save"
       create: "Create"
-      write_tab: "Write"
-      preview_tab: "Preview"
-      markdown_hint: "Markdown"
-      preview_placeholder: "Click Preview to render your markdown"
+      toolbar:
+        bold: "Bold"
+        italic: "Italic"
+        quote: "Quote"
+        code: "Code"
+        link: "Link"
+        bullet_list: "Bulleted list"
+        numbered_list: "Numbered list"
     show:
       copy_markdown: "Copy markdown"
       view_markdown: "View Markdown"

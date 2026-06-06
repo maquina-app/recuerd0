@@ -63,7 +63,7 @@
 
         <%= render "components/card/content" do %>
           <div class="prose prose-sm max-w-none text-muted-foreground">
-            <%= truncate(version.content&.body || "", length: 300) %>
+            <%= truncate(version.content&.body&.content.to_s, length: 300) %>
           </div>
 
           <% if version.tags.any? %>

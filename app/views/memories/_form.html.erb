@@ -1,14 +1,12 @@
 <%# locals: (workspace:, memory:) %>
 
-<div class="h-full flex flex-col" data-controller="markdown-editor">
-  <%# Custom form layout — intentionally omits data-component="form" to avoid
-      the gem's grid/gap styling. This editor layout uses its own flex structure
-      to maximize the writing area. Individual inputs still use data-component
-      attributes for consistent styling.
-      Uses local: true to bypass Turbo Drive form submission because the
-      markdown editor Stimulus controller and preview form require a standard
-      page navigation lifecycle for reliable teardown/reinit. %>
-  <%= form_with model: [workspace, memory], local: true, class: "flex flex-col h-full gap-3" do |form| %>
+<div class="h-full flex flex-col">
+  <%# Custom form layout — intentionally omits data-component="form" to avoid the
+      gem's grid/gap styling. This editor layout uses its own flex structure to
+      maximize the writing area. Individual inputs still use data-component
+      attributes for consistent styling. The House MD editor is a form-associated
+      Web Component and syncs its value on submit, so standard Turbo Drive works. %>
+  <%= form_with model: [workspace, memory], class: "flex flex-col h-full gap-3" do |form| %>
     <%# Toolbar: title + actions %>
     <div class="shrink-0 flex items-center gap-2">
       <div class="flex-1 min-w-0" data-form-part="group">
@@ -67,61 +65,17 @@
           data: { component: "button", variant: "primary", size: "sm" } %>
     </div>
 
-    <%# Editor area %>
-    <div class="flex-1 min-h-0 flex flex-col rounded-md border border-border overflow-hidden">
-      <%# Tab bar %>
-      <div class="shrink-0 flex items-center border-b border-border bg-muted/30 px-3" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected="true"
-          data-state="active"
-          data-markdown-editor-target="writeTab"
-          data-action="markdown-editor#showWrite"
-          class="px-3 py-1.5 text-sm font-medium border-b-2 -mb-px cursor-pointer transition-colors
-                 data-[state=active]:border-primary data-[state=active]:text-foreground
-                 data-[state=inactive]:border-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground"
-        >
-          <%= t("memories.form.write_tab") %>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected="false"
-          data-state="inactive"
-          data-markdown-editor-target="previewTab"
-          data-action="markdown-editor#showPreview"
-          class="px-3 py-1.5 text-sm font-medium border-b-2 -mb-px cursor-pointer transition-colors
-                 data-[state=active]:border-primary data-[state=active]:text-foreground
-                 data-[state=inactive]:border-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground"
-        >
-          <%= t("memories.form.preview_tab") %>
-        </button>
-        <span class="ml-auto text-xs text-muted-foreground"><%= t("memories.form.markdown_hint") %></span>
-      </div>
-
-      <%# Write pane %>
-      <div data-markdown-editor-target="writePane" class="flex-1 flex flex-col min-h-0">
-        <%= text_area_tag "memory[content]",
-            memory.content&.body,
-            class: "editor-textarea flex-1 overflow-y-auto font-mono text-sm p-3",
-            placeholder: t("memories.form.content_placeholder"),
-            data: { component: "textarea", markdown_editor_target: "textarea" } %>
-      </div>
-
-      <%# Preview pane %>
-      <div data-markdown-editor-target="previewPane" class="hidden flex-1 overflow-y-auto p-4">
-        <%= turbo_frame_tag "markdown_preview" do %>
-          <p class="text-sm text-muted-foreground italic"><%= t("memories.form.preview_placeholder") %></p>
-        <% end %>
-      </div>
+    <%# Editor area: maquina-styled toolbar + House MD editor.
+        Rendered with name="memory[content]" so the existing memory_params
+        contract and JSON API stay unchanged. %>
+    <div class="house-md-shell flex-1 min-h-0 flex flex-col rounded-md border border-border overflow-hidden">
+      <%= render "shared/house_toolbar" %>
+      <%# The editor adds its own inner .house-md-content contenteditable; these
+          classes size/scroll the host. Content is read from the inner text. %>
+      <%= tag.house_md memory.content&.body&.content.to_s,
+          name: "memory[content]",
+          toolbar: "house_toolbar",
+          class: "flex-1 min-h-0 overflow-y-auto p-3 text-sm" %>
     </div>
-  <% end %>
-
-  <%# Hidden preview form (sibling, not nested) %>
-  <%= form_with url: preview_workspace_memories_path(workspace),
-      data: { turbo_frame: "markdown_preview", markdown_editor_target: "previewForm" },
-      class: "hidden" do |preview_form| %>
-    <%= preview_form.hidden_field :content, value: "", data: { markdown_editor_target: "contentInput" } %>
   <% end %>
 </div>

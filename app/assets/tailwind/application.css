@@ -8,6 +8,7 @@
 @plugin "@tailwindcss/typography";
 
 @import "./prose.css";
+@import "./house.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -190,17 +191,50 @@
   background-color: color-mix(in oklch, var(--input) 30%, transparent);
 }
 
-/* Editor textarea: flush inside bordered editor container */
-.editor-textarea[data-component="textarea"] {
-  border: none;
-  box-shadow: none;
-  border-radius: 0;
-  min-height: 0;
-  resize: none;
+/* ===== House MD editor (overrides on top of ./house.css) ===== */
+
+/* Map the two accent vars the gem can't resolve from maquina tokens to our
+   design system, so light/dark/rebrand all flow through. */
+:root {
+  --house-color-link: var(--primary);
+  --house-font-display: var(--font-display);
 }
-.editor-textarea[data-component="textarea"]:focus,
-.editor-textarea[data-component="textarea"]:focus-visible {
-  box-shadow: none;
+
+/* Flatten the gem's centered pill toolbar into a full-width bar that sits
+   flush inside the bordered editor shell. Bare element selector outranks the
+   gem's :where(house-md-toolbar). */
+house-md-toolbar {
+  margin: 0;
+  width: auto;
+  border-radius: 0;
+  background-color: transparent;
+}
+
+/* icon_for renders stroke-based (outline) SVGs, but the gem's toolbar CSS
+   forces `fill: currentColor`, turning bold/link into solid blobs. Restore
+   stroke rendering for our maquina icon buttons. */
+house-md-toolbar button svg {
+  fill: none;
+  stroke: currentColor;
+}
+
+/* Hide the self-link anchor (#) the MarkdownRenderer appends to every heading
+   on the rendered show page. */
+.heading__link {
+  display: none;
+}
+
+/* The bordered shell owns the focus frame; the editor content area stays flush
+   (mirrors the .tag-input-container pattern). */
+.house-md-shell:focus-within {
+  border-color: var(--ring);
+  box-shadow:
+    var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05)),
+    0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+.house-md-content:focus,
+.house-md-content:focus-visible {
+  outline: none;
 }
 
 /* ===== Toast Overrides: Frosted Glass with Colored Accent ===== */

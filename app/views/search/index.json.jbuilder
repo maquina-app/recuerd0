@@ -5,7 +5,7 @@ json.results @memories do |memory|
   json.partial! "memories/memory", memory: memory
 
   if @grep_mode
-    lines = memory.content&.body.to_s.split("\n", -1)
+    lines = memory.content&.body&.content.to_s.split("\n", -1)
     json.total_lines lines.length
     json.matches grep_matches(memory, @query, before: @before_lines, after: @after_lines)
   else

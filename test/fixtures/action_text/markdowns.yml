@@ -1,0 +1,16 @@
+# Raw markdown bodies for the contents fixtures, stored as ActionText::Markdown
+# rows (the contents.body column was replaced by has_markdown :body).
+one:
+  record: one (Content)
+  name: body
+  content: "# Meeting Notes\n\nDiscussed project timeline."
+
+two:
+  record: two (Content)
+  name: body
+  content: "# Shopping List\n\n- Milk\n- Bread"
+
+versioned_parent:
+  record: versioned_parent (Content)
+  name: body
+  content: "# Design Doc\n\nInitial architecture overview."

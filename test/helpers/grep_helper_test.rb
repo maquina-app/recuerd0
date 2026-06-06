@@ -43,7 +43,9 @@ class GrepHelperTest < ActionView::TestCase
   # --- grep_matches ---
 
   def build_memory(body)
-    OpenStruct.new(content: OpenStruct.new(body: body))
+    # Mirrors the real graph: memory.content.body is an ActionText::Markdown
+    # whose .content holds the raw markdown string.
+    OpenStruct.new(content: OpenStruct.new(body: OpenStruct.new(content: body)))
   end
 
   test "grep_matches finds matching line with correct line_number" do

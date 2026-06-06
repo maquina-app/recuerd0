@@ -1,6 +1,11 @@
 class Content < ApplicationRecord
   belongs_to :memory, touch: true
 
+  # Stores the raw markdown in a sibling action_text_markdowns row.
+  # `body` returns the ActionText::Markdown record (.content is the raw string,
+  # .to_html renders); `body = "..."` accepts a String.
+  has_markdown :body
+
   after_save_commit :reindex_memory
 
   def self.strip_markdown(text)
@@ -18,7 +23,7 @@ class Content < ApplicationRecord
   end
 
   def plain_text
-    self.class.strip_markdown(body.to_s)
+    self.class.strip_markdown(body.content.to_s)
   end
 
   private

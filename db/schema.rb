@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_07_060129) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_29_173810) do
   create_table "access_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
@@ -45,14 +45,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_07_060129) do
     t.index ["deleted_at"], name: "index_accounts_on_deleted_at"
   end
 
+  create_table "action_text_markdowns", force: :cascade do |t|
+    t.text "content", default: "", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "record_id", null: false
+    t.string "record_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_type", "record_id"], name: "index_action_text_markdowns_on_record"
+  end
+
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
     t.string "name", null: false
     t.bigint "record_id", null: false
     t.string "record_type", null: false
+    t.string "slug"
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+    t.index ["slug"], name: "index_active_storage_attachments_on_slug", unique: true
   end
 
   create_table "active_storage_blobs", force: :cascade do |t|
@@ -105,7 +117,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_07_060129) do
   end
 
   create_table "contents", force: :cascade do |t|
-    t.text "body"
     t.datetime "created_at", null: false
     t.integer "memory_id", null: false
     t.datetime "updated_at", null: false

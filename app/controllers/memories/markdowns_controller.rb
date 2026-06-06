@@ -7,7 +7,7 @@ class Memories::MarkdownsController < ApplicationController
   def show
     @memory = @memory.resolve_current_version
 
-    send_data @memory.content&.body || "",
+    send_data @memory.content&.body&.content.to_s,
       type: "text/markdown; charset=utf-8",
       disposition: "inline",
       filename: "#{@memory.display_title.parameterize}.md"

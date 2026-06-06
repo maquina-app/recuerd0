@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  # House MD image uploads — deferred to a follow-up. Re-enable alongside the
+  # uploads controller and Content#markdown_uploadable_by? wiring.
+  # namespace :action_text, path: nil do
+  #   get  "/u/*slug" => "markdown/uploads#show",   as: :markdown_upload
+  #   post "/uploads" => "markdown/uploads#create", as: :markdown_uploads
+  # end
   resource :session
   resources :passwords, param: :token
 
@@ -39,9 +45,6 @@ Rails.application.routes.draw do
 
     resources :memories do
       resource :markdown, only: %i[show], controller: "memories/markdowns"
-      collection do
-        post :preview, to: "memories/previews#create"
-      end
       resources :versions, only: %i[index show create], controller: "memories/versions" do
         resource :consolidation, only: %i[create], controller: "memories/versions/consolidations"
       end
