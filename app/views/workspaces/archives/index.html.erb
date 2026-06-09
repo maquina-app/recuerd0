@@ -8,9 +8,10 @@
   ) %>
 <% end %>
 
-<div class="mx-auto max-w-4xl">
-  <div class="mb-6 flex items-center justify-between">
+<div class="mx-auto max-w-5xl">
+  <div class="mb-6 flex items-baseline gap-2.5">
     <h1 class="font-display text-2xl font-medium tracking-tight"><%= t(".heading") %></h1>
+    <span class="font-mono text-sm text-muted-foreground"><%= @pagy&.count || @workspaces.size %></span>
   </div>
 
   <%= render "components/alert", variant: :default, icon: :archive, css_classes: "mb-6" do %>
@@ -19,7 +20,11 @@
   <% end %>
 
   <% if @workspaces.any? %>
-    <%= render "workspaces/workspaces_list", workspaces: @workspaces, pagy: @pagy, path_helper: :archived_workspaces_path, show_status: true %>
+    <div class="mb-5 flex justify-end">
+      <%= render "workspaces/view_toggle", view_mode: @view_mode, path_helper: :archived_workspaces_path %>
+    </div>
+
+    <%= render "workspaces/workspaces_list", workspaces: @workspaces, pagy: @pagy, path_helper: :archived_workspaces_path, view_mode: @view_mode, show_pins: false, show_status: true %>
   <% else %>
     <%= render "workspaces/empty_state_generic", icon: :archive, title: t(".empty_title"), description: t(".empty_description") %>
   <% end %>

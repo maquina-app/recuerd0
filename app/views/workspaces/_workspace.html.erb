@@ -1,11 +1,19 @@
 <%# locals: (workspace:, show_status: false) -%>
-<div id="<%= dom_id(workspace) %>" class="group flex items-center gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-accent/50 <%= 'opacity-60' if workspace.deleted? %>">
-  <%# Name and description %>
+<div id="<%= dom_id(workspace) %>" class="group ws-row <%= 'is-deleted' if workspace.deleted? %>">
+  <%# Leading folder tile with optional pin marker %>
+  <div class="ws-tile">
+    <%= icon_for(:folder) %>
+    <% if workspace.pinned_by?(Current.user) %>
+      <span class="ws-pin-dot">
+        <%= icon_for(:pin) %>
+        <span class="sr-only"><%= t("workspaces.index.pinned_marker") %></span>
+      </span>
+    <% end %>
+  </div>
+
+  <%# Name, description, stats %>
   <div class="flex-1 min-w-0">
     <div class="flex items-center gap-2">
-      <% if workspace.pinned_by?(Current.user) %>
-        <%= icon_for(:pin, class: "w-3.5 h-3.5 text-primary rotate-45 flex-shrink-0") %>
-      <% end %>
       <h3 class="text-sm font-medium truncate">
         <% if (path = workspace_link_path(workspace)) %>
           <%= link_to workspace.name, path, class: "hover:underline" %>
@@ -13,30 +21,20 @@
           <%= workspace.name %>
         <% end %>
       </h3>
-      <% if show_status && workspace.deleted? %>
-        <%= render "components/badge", variant: :destructive, css_classes: "text-xs" do %>Deleted<% end %>
-      <% elsif show_status && workspace.archived? %>
-        <%= render "components/badge", variant: :warning, css_classes: "text-xs" do %>Archived<% end %>
-      <% end %>
+      <%= render "workspaces/workspace_badges", workspace: workspace, show_status: show_status %>
     </div>
+
     <% if workspace.description.present? %>
       <p class="text-xs text-muted-foreground truncate mt-0.5"><%= workspace.description %></p>
     <% end %>
+
+    <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+      <%= render "workspaces/workspace_stats", workspace: workspace %>
+    </div>
   </div>
 
-  <%# Metadata %>
-  <div class="hidden sm:flex items-center gap-4 text-xs text-muted-foreground flex-shrink-0">
-    <span class="inline-flex items-center gap-1">
-      <%= icon_for(:file_text, class: "w-3.5 h-3.5") %>
-      <%= workspace.memories_count %>
-    </span>
-    <span class="inline-flex items-center gap-1 w-20">
-      <%= time_ago_in_words(workspace.last_activity) %> ago
-    </span>
-  </div>
-
-  <%# Actions dropdown %>
-  <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+  <%# Actions dropdown — always reachable (visible, no hover gating) %>
+  <div class="flex-shrink-0">
     <%= render "components/dropdown_menu", auto_close: true do %>
       <%= render "components/dropdown_menu/trigger", as_child: true do %>
         <button

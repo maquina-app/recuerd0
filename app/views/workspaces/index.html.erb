@@ -7,9 +7,13 @@
   <%= responsive_breadcrumbs({}, "Workspaces") %>
 <% end %>
 
-<div class="mx-auto max-w-4xl">
-  <div class="mb-6 flex items-center justify-between">
-    <h1 class="font-display text-2xl font-medium tracking-tight">Workspaces</h1>
+<div class="mx-auto max-w-5xl">
+  <%# Header %>
+  <div class="mb-6 flex items-center justify-between gap-4">
+    <div class="flex items-baseline gap-2.5">
+      <h1 class="font-display text-2xl font-medium tracking-tight">Workspaces</h1>
+      <span class="font-mono text-sm text-muted-foreground"><%= @pagy&.count || @workspaces.size %></span>
+    </div>
 
     <%= link_to new_workspace_path, data: { component: "button", variant: "default" } do %>
       <%= icon_for(:plus, class: "w-4 h-4") %>
@@ -18,7 +22,52 @@
   </div>
 
   <% if @workspaces.any? %>
-    <%= render "workspaces/workspaces_list", workspaces: @workspaces, pagy: @pagy %>
+    <%# Toolbar: search trigger (left) + sort & view segmented controls (right) %>
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <%# Desktop search trigger %>
+      <button
+        type="button"
+        data-search-command-trigger
+        aria-label="<%= t("workspaces.index.search_aria") %>"
+        class="ws-search-trigger hidden w-full sm:inline-flex sm:max-w-sm"
+      >
+        <%= icon_for(:search) %>
+        <span class="flex-1 text-left"><%= t("workspaces.index.search_trigger") %></span>
+        <kbd data-search-command-shortcut>⌘K</kbd>
+      </button>
+      <%# Mobile search trigger (compact, icon-only) %>
+      <button
+        type="button"
+        data-search-command-trigger
+        aria-label="<%= t("workspaces.index.search_aria") %>"
+        class="ws-search-trigger ws-search-trigger-icon sm:hidden"
+      >
+        <%= icon_for(:search) %>
+      </button>
+
+      <div class="flex items-center gap-2">
+        <%# Sort segmented control %>
+        <div class="seg" role="group" aria-label="<%= t("workspaces.index.sort_label") %>">
+          <%= link_to t("workspaces.index.sort_recent"), workspaces_path(view: @view_mode),
+                class: "seg-item",
+                data: { state: (@sort.blank? ? "on" : "off") },
+                "aria-current": (@sort.blank? ? "true" : nil) %>
+          <%= link_to t("workspaces.index.sort_name"), workspaces_path(view: @view_mode, sort: "name"),
+                class: "seg-item",
+                data: { state: (@sort == "name" ? "on" : "off") },
+                "aria-current": (@sort == "name" ? "true" : nil) %>
+          <%= link_to t("workspaces.index.sort_memories"), workspaces_path(view: @view_mode, sort: "memories"),
+                class: "seg-item",
+                data: { state: (@sort == "memories" ? "on" : "off") },
+                "aria-current": (@sort == "memories" ? "true" : nil) %>
+        </div>
+
+        <%# View (list/grid) segmented control %>
+        <%= render "workspaces/view_toggle", view_mode: @view_mode, extra_params: { sort: @sort } %>
+      </div>
+    </div>
+
+    <%= render "workspaces/workspaces_list", workspaces: @workspaces, pagy: @pagy, view_mode: @view_mode, show_pins: true %>
   <% else %>
     <%= render "workspaces/empty_state" %>
   <% end %>

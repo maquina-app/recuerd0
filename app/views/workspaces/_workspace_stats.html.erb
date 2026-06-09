@@ -1,0 +1,10 @@
+<%# locals: (workspace:) -%>
+<span class="stat-chip" title="<%= t("workspaces.index.memories_count", count: workspace.memories_count) %>">
+  <%= icon_for(:file_text) %>
+  <strong><%= workspace.memories_count %></strong>
+  <%= (workspace.memories_count == 1) ? "memory" : "memories" %>
+</span>
+<span class="stat-chip" title="<%= workspace.last_activity.strftime("%B %-d, %Y at %-l:%M %p") %>">
+  <%= icon_for(:clock) %>
+  <%= t("workspaces.index.activity_ago", time: time_ago_in_words(workspace.last_activity)) %>
+</span>

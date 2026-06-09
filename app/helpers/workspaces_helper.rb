@@ -1,4 +1,8 @@
 module WorkspacesHelper
+  def workspace_view_mode
+    @view_mode || "list"
+  end
+
   def workspace_link_path(workspace)
     if workspace.active?
       workspace_path(workspace)

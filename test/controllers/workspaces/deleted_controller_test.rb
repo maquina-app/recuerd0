@@ -11,6 +11,13 @@ class Workspaces::DeletedControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "index renders grid view when view=grid and persists the shared cookie" do
+    get deleted_workspaces_url(view: "grid")
+    assert_response :success
+    assert_equal "grid", cookies[:recuerd0_workspace_view]
+    assert_select "[data-component=card]"
+  end
+
   test "destroy permanently deletes" do
     workspace = workspaces(:deleted)
     assert_difference("Workspace.count", -1) do
