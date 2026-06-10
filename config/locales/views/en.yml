@@ -10,8 +10,12 @@ en:
     back_to_workspaces: "Back to Workspaces"
   workspaces:
     form:
-      name_placeholder: "My Workspace"
+      name_placeholder: "Untitled workspace"
       description_placeholder: "Describe what this workspace is for..."
+      name_label: "Name"
+      cancel: "Cancel"
+      create: "Create workspace"
+      update: "Save"
     index:
       new_workspace: "New Workspace"
       count: "%{count}"
@@ -97,6 +101,7 @@ en:
       general: "General"
     form:
       category_label: "Category"
+      title_label: "Title"
       title_placeholder: "Untitled Memory"
       source_placeholder: "e.g., Claude, Book Title, URL..."
       content_placeholder: "Enter your memory content using Markdown..."

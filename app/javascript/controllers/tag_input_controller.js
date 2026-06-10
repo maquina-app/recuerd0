@@ -67,16 +67,19 @@ export default class extends Controller {
 
   renderTag(tagName) {
     const container = this.inputTarget.parentElement
+    const escaped = this.escapeHtml(tagName)
     const tagElement = document.createElement("span")
-    tagElement.draggable = false
-    tagElement.className = "transition-all border inline-flex items-center pl-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50 text-sm h-8 rounded-sm border-solid cursor-default animate-fadeIn font-normal"
+    tagElement.className = "tag-badge"
+    // icon_for is unavailable in JS, so the tag + x icons are inlined here using
+    // the same paths as main_icon_svg_for(:tag) / main_icon_svg_for(:x).
     tagElement.innerHTML = `
-      ${this.escapeHtml(tagName)}
-      <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:text-accent-foreground py-1 px-3 h-full hover:bg-transparent"
-              type="button"
-              data-action="click->tag-input#removeTag"
-              data-tag="${this.escapeHtml(tagName)}">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path>
+        <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle>
+      </svg>
+      <span class="tag-label">${escaped}</span>
+      <button type="button" class="tag-x" data-action="click->tag-input#removeTag" data-tag="${escaped}" aria-label="Remove ${escaped}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 6 6 18"></path>
           <path d="m6 6 12 12"></path>
         </svg>

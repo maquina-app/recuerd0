@@ -7,19 +7,20 @@
       attributes for consistent styling. The House MD editor is a form-associated
       Web Component and syncs its value on submit, so standard Turbo Drive works. %>
   <%= form_with model: [workspace, memory], class: "flex flex-col h-full gap-3" do |form| %>
-    <%# Toolbar: title + actions %>
-    <div class="shrink-0 flex items-center gap-2">
+    <%# Toolbar: borderless document title + desktop actions %>
+    <div class="shrink-0 flex items-start gap-2">
       <div class="flex-1 min-w-0" data-form-part="group">
+        <%= form.label :title, t("memories.form.title_label"), data: { component: "label" }, class: "sr-only" %>
         <%= form.text_field :title,
             placeholder: t("memories.form.title_placeholder"),
             maxlength: 255,
             autocomplete: "off",
-            data: { component: "input" } %>
+            class: "form-title" %>
         <% if memory.errors[:title].any? %>
           <p data-form-part="error" class="text-destructive"><%= memory.errors[:title].first %></p>
         <% end %>
       </div>
-      <div class="hidden sm:flex shrink-0 items-center gap-2">
+      <div class="hidden sm:flex shrink-0 items-center gap-2 pt-1">
         <%= link_to t("memories.form.cancel"),
             memory.persisted? ? workspace_memory_path(workspace, memory) : workspace_path(workspace),
             data: { component: "button", variant: "outline", size: "sm" } %>
@@ -28,29 +29,42 @@
       </div>
     </div>
 
-    <%# Metadata row: source + tags %>
-    <div class="shrink-0 flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-      <div class="sm:w-1/3 min-w-0" data-form-part="group">
-        <%= form.label :source, data: { component: "label" } %>
-        <%= form.text_field :source,
-            placeholder: t("memories.form.source_placeholder"),
-            autocomplete: "off",
-            data: { component: "input" } %>
-        <% if memory.errors[:source].any? %>
-          <p data-form-part="error" class="text-destructive"><%= memory.errors[:source].first %></p>
-        <% end %>
+    <%# Metadata: Source + Category on one aligned row; Tags full-width below %>
+    <div class="shrink-0 flex flex-col gap-3">
+      <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-6">
+        <div class="flex-1 min-w-0" data-form-part="group">
+          <%= form.label :source, data: { component: "label" } %>
+          <%= form.text_field :source,
+              placeholder: t("memories.form.source_placeholder"),
+              autocomplete: "off",
+              data: { component: "input" } %>
+          <% if memory.errors[:source].any? %>
+            <p data-form-part="error" class="text-destructive"><%= memory.errors[:source].first %></p>
+          <% end %>
+        </div>
+
+        <%# Category — segmented control backed by native radios (no JS needed). %>
+        <div class="shrink-0" data-form-part="group">
+          <span data-component="label" id="memory-category-label"><%= t("memories.form.category_label") %></span>
+          <div class="seg" role="radiogroup" aria-labelledby="memory-category-label">
+            <% selected_category = memory.category.presence || Memory::DEFAULT_CATEGORY %>
+            <% Memory::CATEGORIES.each do |c| %>
+              <label class="seg-item">
+                <%= form.radio_button :category, c,
+                    checked: selected_category == c,
+                    class: "sr-only" %>
+                <span class="category-dot" data-cat="<%= c %>"></span><%= t("memories.categories.#{c}") %>
+              </label>
+            <% end %>
+          </div>
+          <% if memory.errors[:category].any? %>
+            <p data-form-part="error" class="text-destructive"><%= memory.errors[:category].first %></p>
+          <% end %>
+        </div>
       </div>
-      <div class="sm:w-1/4 min-w-0" data-form-part="group">
-        <%= form.label :category, t("memories.form.category_label"), data: { component: "label" } %>
-        <%= form.select :category,
-            Memory::CATEGORIES.map { |c| [t("memories.categories.#{c}"), c] },
-            { selected: memory.category.presence || Memory::DEFAULT_CATEGORY },
-            data: { component: "input" } %>
-        <% if memory.errors[:category].any? %>
-          <p data-form-part="error" class="text-destructive"><%= memory.errors[:category].first %></p>
-        <% end %>
-      </div>
-      <div class="flex-1 min-w-0" data-form-part="group">
+
+      <%# Tags — full width below; chips use the tag-badge vocabulary %>
+      <div class="min-w-0" data-form-part="group">
         <%= form.label :tags, data: { component: "label" } %>
         <%= render "application/components/tag_input", form: form, field: :tags, value: memory.tags %>
       </div>

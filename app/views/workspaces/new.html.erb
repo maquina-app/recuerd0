@@ -8,15 +8,6 @@
   ) %>
 <% end %>
 
-<div class="mx-auto max-w-4xl">
-  <%= render "components/card" do %>
-    <%= render "components/card/header" do %>
-      <%= render "components/card/title", text: "Create a New Workspace" %>
-      <%= render "components/card/description", text: "Workspaces help you organize your memories" %>
-    <% end %>
-
-    <%= render "components/card/content" do %>
-      <%= render "form", workspace: @workspace %>
-    <% end %>
-  <% end %>
+<div class="mx-auto max-w-2xl">
+  <%= render "form", workspace: @workspace %>
 </div>
