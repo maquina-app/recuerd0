@@ -81,6 +81,90 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert response.headers["X-Total"].present?
   end
 
+  # -- show --
+
+  test "show responds 200 for active workspace" do
+    get workspace_url(@workspace)
+    assert_response :success
+  end
+
+  test "show defaults memory view to cards" do
+    get workspace_url(@workspace)
+    assert_response :success
+    assert_equal "cards", @controller.view_assigns["memory_view"]
+  end
+
+  test "show with view=compact sets the recuerd0_memory_view cookie" do
+    get workspace_url(@workspace, view: "compact")
+    assert_response :success
+    assert_equal "compact", @controller.view_assigns["memory_view"]
+    assert_equal "compact", cookies[:recuerd0_memory_view]
+  end
+
+  test "show populates category counts from memories" do
+    Memory.create_with_content(@workspace, title: "A decision", content: "b", category: "decision")
+    Memory.create_with_content(@workspace, title: "A discovery", content: "b", category: "discovery")
+
+    get workspace_url(@workspace)
+    assert_response :success
+
+    counts = @controller.view_assigns["category_counts"]
+    assert_equal 1, counts["decision"]
+    assert_equal 1, counts["discovery"]
+    # general memories come from fixtures (Meeting Notes + Design Doc)
+    assert_equal 2, counts["general"]
+    # missing category defaults to 0
+    assert_equal 0, counts["preference"]
+  end
+
+  test "show filters memories by category" do
+    decision = Memory.create_with_content(@workspace, title: "Decided", content: "b", category: "decision")
+    Memory.create_with_content(@workspace, title: "Found", content: "b", category: "discovery")
+
+    get workspace_url(@workspace, category: "decision")
+    assert_response :success
+
+    memories = @controller.view_assigns["memories"].to_a
+    assert_includes memories, decision
+    assert(memories.all? { |m| m.category == "decision" })
+    assert_equal "decision", @controller.view_assigns["category"]
+  end
+
+  test "show with sort=title responds 200 and sets memory_sort" do
+    get workspace_url(@workspace, sort: "title")
+    assert_response :success
+    assert_equal "title", @controller.view_assigns["memory_sort"]
+  end
+
+  test "show sort defaults to nil for invalid value" do
+    get workspace_url(@workspace, sort: "bogus")
+    assert_response :success
+    assert_nil @controller.view_assigns["memory_sort"]
+  end
+
+  test "show filters memories by q query" do
+    match = Memory.create_with_content(@workspace, title: "UniqueQueryTermXYZ", content: "b")
+    Memory.create_with_content(@workspace, title: "Unrelated", content: "b")
+
+    get workspace_url(@workspace, q: "UniqueQueryTermXYZ")
+    assert_response :success
+
+    memories = @controller.view_assigns["memories"].to_a
+    assert_includes memories, match
+    assert_equal 1, memories.size
+    assert_equal "UniqueQueryTermXYZ", @controller.view_assigns["memory_query"]
+  end
+
+  test "show redirects to archived path for archived workspace" do
+    get workspace_url(@archived_workspace)
+    assert_redirected_to archived_workspace_path(@archived_workspace)
+  end
+
+  test "show redirects to deleted path for deleted workspace" do
+    get workspace_url(@deleted_workspace)
+    assert_redirected_to deleted_workspace_path(@deleted_workspace)
+  end
+
   # -- new --
 
   test "should get new" do

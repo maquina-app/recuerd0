@@ -194,4 +194,63 @@ class MemoryTest < ActiveSupport::TestCase
     memory.destroy!
     assert_empty Memory.full_search("Deletable").to_a
   end
+
+  # search scope (LIKE-based filtering for toolbar)
+
+  test "search matches by title" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Kubernetes Migration", content: "body")
+    assert_includes workspaces(:one).memories.search("Kubernetes"), memory
+  end
+
+  test "search matches by tag" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Tagged", content: "body", tags: ["infrastructure"])
+    assert_includes workspaces(:one).memories.search("infrastructure"), memory
+  end
+
+  test "search matches by content body" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Notes", content: "the deployment pipeline runs nightly")
+    assert_includes workspaces(:one).memories.search("deployment pipeline"), memory
+  end
+
+  test "search returns all for blank query" do
+    all_count = Memory.count
+    assert_equal all_count, Memory.search("").count
+    assert_equal all_count, Memory.search(nil).count
+  end
+
+  test "search escapes LIKE wildcards" do
+    plain = Memory.create_with_content(workspaces(:one), title: "Plain title", content: "body")
+    assert_not_includes workspaces(:one).memories.search("%"), plain
+  end
+
+  # ordered_by scope
+
+  test "ordered_by title alphabetizes case-insensitively" do
+    ws = accounts(:one).workspaces.create!(name: "Ordering A")
+    Memory.create_with_content(ws, title: "banana", content: "b")
+    Memory.create_with_content(ws, title: "Apple", content: "b")
+    Memory.create_with_content(ws, title: "cherry", content: "b")
+    titles = ws.memories.latest_versions.ordered_by("title").pluck(:title)
+    assert_equal %w[Apple banana cherry], titles
+  end
+
+  test "ordered_by created sorts by created_at desc" do
+    ws = accounts(:one).workspaces.create!(name: "Ordering B")
+    first = Memory.create_with_content(ws, title: "First", content: "b")
+    first.update_column(:created_at, 2.days.ago)
+    second = Memory.create_with_content(ws, title: "Second", content: "b")
+    second.update_column(:created_at, 1.day.ago)
+    ordered = ws.memories.latest_versions.ordered_by("created").to_a
+    assert_equal [second, first], ordered
+  end
+
+  test "ordered_by default sorts by updated_at desc" do
+    ws = accounts(:one).workspaces.create!(name: "Ordering C")
+    older = Memory.create_with_content(ws, title: "Older", content: "b")
+    newer = Memory.create_with_content(ws, title: "Newer", content: "b")
+    older.update_column(:updated_at, 2.days.ago)
+    newer.update_column(:updated_at, 1.minute.ago)
+    ordered = ws.memories.latest_versions.ordered_by(nil).to_a
+    assert_equal [newer, older], ordered
+  end
 end

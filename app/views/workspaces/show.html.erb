@@ -8,44 +8,76 @@
   <%= responsive_breadcrumbs(workspace_breadcrumb_links(@workspace), @workspace.name, collapse_after: 2) %>
 <% end %>
 
-<div class="mx-auto max-w-4xl">
-  <%# Header %>
-  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <div class="min-w-0">
-      <div class="flex items-center gap-2 flex-wrap">
-        <h1 class="font-display text-2xl font-medium tracking-tight"><%= @workspace.name %></h1>
+<% is_pinned = @workspace.pinned_by?(Current.user) %>
+<% has_any_memories = @pinned_memories.any? || @regular_memories.any? %>
+<% filter_active = @category.present? || @memory_query.present? %>
 
-        <% if @workspace.archived? %>
-          <%= render "components/badge", variant: :warning, css_classes: "text-xs" do %>
-            <%= t("workspaces.show.archived_badge") %>
-          <% end %>
-        <% elsif @workspace.deleted? %>
-          <%= render "components/badge", variant: :destructive, css_classes: "text-xs" do %>
-            <%= t("workspaces.show.deleted_badge") %>
-          <% end %>
-        <% end %>
-
-        <% if @workspace.pinned_by?(Current.user) %>
-          <%= render "components/badge", variant: :secondary do %>
-            <%= icon_for(:pin, class: "size-3") %>
-            <%= t("workspaces.show.pinned_badge") %>
-          <% end %>
+<div class="mx-auto max-w-5xl">
+  <%# ===== HEADER ===== %>
+  <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="flex min-w-0 items-start gap-3.5">
+      <div class="ws-tile">
+        <%= icon_for(:folder) %>
+        <% if @workspace.active? && is_pinned %>
+          <span class="ws-pin-dot">
+            <%= icon_for(:pin) %>
+            <span class="sr-only"><%= t("workspaces.show.pinned_badge") %></span>
+          </span>
         <% end %>
       </div>
 
-      <% if @workspace.description.present? %>
-        <p class="text-muted-foreground mt-1"><%= @workspace.description %></p>
-      <% end %>
+      <div class="min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="font-display text-2xl font-medium tracking-tight break-words"><%= @workspace.name %></h1>
+
+          <% if @workspace.archived? %>
+            <%= render "components/badge", variant: :warning, size: :sm do %>
+              <%= t("workspaces.show.archived_badge") %>
+            <% end %>
+          <% elsif @workspace.deleted? %>
+            <%= render "components/badge", variant: :outline, size: :sm do %>
+              <%= t("workspaces.show.deleted_badge") %>
+            <% end %>
+          <% end %>
+
+          <% if @workspace.active? && is_pinned %>
+            <%= render "components/badge", variant: :secondary, size: :sm do %>
+              <%= icon_for(:pin, class: "size-3") %>
+              <%= t("workspaces.show.pinned_badge") %>
+            <% end %>
+          <% end %>
+        </div>
+
+        <% if @workspace.description.present? %>
+          <p class="mt-1 text-sm text-muted-foreground break-words"><%= @workspace.description %></p>
+        <% end %>
+
+        <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          <span class="stat-chip" title="<%= @workspace.created_at.strftime("%B %-d, %Y") %>">
+            <%= icon_for(:clock) %>
+            <%= t("workspaces.show.created_ago", time: time_ago_in_words(@workspace.created_at)) %>
+          </span>
+          <span class="stat-chip" title="<%= t("workspaces.index.memories_count", count: @workspace.memories_count) %>">
+            <%= icon_for(:file_text) %>
+            <strong><%= @workspace.memories_count %></strong>
+            <%= (@workspace.memories_count == 1) ? "memory" : "memories" %>
+          </span>
+          <span class="stat-chip" title="<%= @workspace.last_activity.strftime("%B %-d, %Y at %-l:%M %p") %>">
+            <%= icon_for(:clock) %>
+            <%= t("workspaces.show.activity_ago", time: time_ago_in_words(@workspace.last_activity)) %>
+          </span>
+        </div>
+      </div>
     </div>
 
-    <div class="flex items-center gap-1 flex-shrink-0 sm:ml-auto">
+    <div class="flex flex-shrink-0 items-center gap-1 sm:ml-auto">
       <% if @workspace.active? %>
-        <%= render "shared/pin_button", pinnable: @workspace %>
-
-        <%= link_to new_workspace_memory_path(@workspace), data: { component: "button", variant: "secondary", size: "sm" } do %>
+        <%= link_to new_workspace_memory_path(@workspace), data: { component: "button", variant: "default", size: "sm" } do %>
           <%= icon_for(:bookmark_plus, class: "size-4") %>
           New Memory
         <% end %>
+
+        <%= render "shared/pin_button", pinnable: @workspace %>
       <% end %>
 
       <%= render "components/dropdown_menu", auto_close: true do %>
@@ -65,54 +97,53 @@
           </button>
         <% end %>
 
-        <%= render "components/dropdown_menu/content",
-            align: :end,
-            css_classes: "w-48" do %>
+        <%= render "components/dropdown_menu/content", align: :end, css_classes: "w-48" do %>
           <%= render "workspaces/workspace_actions", workspace: @workspace %>
         <% end %>
       <% end %>
     </div>
   </div>
 
-  <%# State alerts %>
+  <%# ===== STATE BANNERS ===== %>
   <% if @workspace.archived? %>
-    <%= render "components/alert", variant: :default, icon: :archive, css_classes: "mb-6" do %>
+    <%= render "components/alert", variant: :default, icon: :archive, css_classes: "mb-5" do %>
       <%= render "components/alert/title", text: t("workspaces.show.archived_title") %>
       <%= render "components/alert/description", text: t("workspaces.show.archived_description") %>
     <% end %>
   <% elsif @workspace.deleted? %>
-    <% deletion_text = if @workspace.days_until_permanent_deletion > 0
-      t("workspaces.show.deleted_description_with_days", days: pluralize(@workspace.days_until_permanent_deletion, "day"))
+    <% days_left = @workspace.days_until_permanent_deletion %>
+    <% deletion_text = if days_left > 0
+      t("workspaces.show.deleted_description_with_days", days: pluralize(days_left, "day"))
     else
       t("workspaces.show.deleted_description_scheduled")
     end %>
-    <%= render "components/alert", variant: :warning, icon: :trash_2, css_classes: "mb-6" do %>
-      <%= render "components/alert/title", text: t("workspaces.show.deleted_title") %>
+    <%= render "components/alert", variant: :warning, icon: :trash_2, css_classes: "mb-5" do %>
+      <div class="flex flex-wrap items-center gap-2">
+        <%= render "components/alert/title", text: t("workspaces.show.deleted_title") %>
+        <% if days_left == 0 %>
+          <%= render "components/badge", variant: :destructive, size: :sm do %>
+            <%= t("workspaces.show.deleting_today") %>
+          <% end %>
+        <% else %>
+          <%= render "components/badge", variant: (days_left <= 7 ? :destructive : :warning), size: :sm do %>
+            <%= t("workspaces.show.deletes_in", count: days_left) %>
+          <% end %>
+        <% end %>
+      </div>
       <%= render "components/alert/description", text: deletion_text %>
     <% end %>
   <% end %>
 
-  <%# Metadata %>
-  <div class="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-    <span class="inline-flex items-center gap-1">
-      <%= icon_for(:clock, class: "size-4") %>
-      Created <%= time_ago_in_words(@workspace.created_at) %> ago
-    </span>
-    <span class="inline-flex items-center gap-1">
-      <%= icon_for(:file_text, class: "size-4") %>
-      <%= pluralize(@workspace.memories_count, "memory") %>
-    </span>
-    <% if @workspace.deleted? && @workspace.days_until_permanent_deletion > 0 %>
-      <%= render "components/badge", variant: :destructive, css_classes: "text-xs" do %>
-        <%= pluralize(@workspace.days_until_permanent_deletion, "day") %> left
-      <% end %>
-    <% end %>
-  </div>
-
-  <div class="mb-6">
+  <div class="mb-5">
     <%= render "components/separator" %>
   </div>
 
+  <%# ===== TOOLBAR ===== %>
+  <% if has_any_memories || filter_active %>
+    <%= render "workspaces/memory_toolbar", workspace: @workspace %>
+  <% end %>
+
+  <%# ===== MEMORIES ===== %>
   <%= render "workspaces/memories_section",
     workspace: @workspace,
     pinned_memories: @pinned_memories,

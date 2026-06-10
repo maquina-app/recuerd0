@@ -39,14 +39,7 @@ class WorkspacesController < ApplicationController
         end
 
         track_event("workspace.view", resource: @workspace)
-
-        scope = @workspace.memories
-          .latest_versions
-          .includes(:content, :pins, child_versions: :content)
-          .order(updated_at: :desc)
-          .by_category(params[:category])
-
-        load_workspace_memories(scope)
+        load_workspace_memories
       end
       format.json { stale?(@workspace) }
     end

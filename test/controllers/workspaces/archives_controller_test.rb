@@ -24,6 +24,16 @@ class Workspaces::ArchivesControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-component=card]"
   end
 
+  test "show renders memories for an archived workspace" do
+    workspace = workspaces(:archived)
+    Memory.create_with_content(workspace, title: "Archived note", content: "body")
+
+    get archived_workspace_url(workspace)
+    assert_response :success
+    assert_equal "cards", @controller.view_assigns["memory_view"]
+    assert_not_nil @controller.view_assigns["category_counts"]
+  end
+
   test "create archives a workspace" do
     workspace = workspaces(:one)
     post archive_workspace_url(workspace)

@@ -706,3 +706,266 @@ house-md-toolbar button svg {
   font-weight: 500;
   pointer-events: none;
 }
+
+/* ============================================================
+   workspace#show — memory toolbar, cards, and rows
+   ============================================================ */
+
+/* category-bar — horizontally scrollable chip row (its own scroll, never widens page) */
+.category-bar {
+  display: flex;
+  gap: 0.375rem;
+  overflow-x: auto;
+  padding-bottom: 0.125rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* category-chip — pill filter with a color dot + count */
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  height: 2rem;
+  padding: 0 0.75rem;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 150ms, color 150ms, border-color 150ms, box-shadow 150ms;
+}
+.category-chip:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.category-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+.category-chip[data-state="on"],
+.category-chip[aria-current="true"] {
+  background: var(--accent);
+  color: var(--accent-foreground);
+  border-color: color-mix(in oklch, var(--ring) 45%, var(--border));
+}
+.category-chip .cat-count {
+  font-family: var(--font-mono, "Geist Mono", ui-monospace, monospace);
+  font-size: 0.6875rem;
+  line-height: 1;
+  padding: 0.125rem 0.375rem;
+  border-radius: 999px;
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+.category-chip[data-state="on"] .cat-count,
+.category-chip[aria-current="true"] .cat-count {
+  background: color-mix(in oklch, var(--accent-foreground) 14%, transparent);
+  color: var(--accent-foreground);
+}
+
+/* category-dot — small color dot keyed to the category badge color */
+.category-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: var(--muted-foreground);
+}
+.category-dot[data-cat="decision"] {
+  background: var(--primary);
+}
+.category-dot[data-cat="discovery"] {
+  background: color-mix(in oklch, var(--secondary-foreground) 80%, var(--secondary));
+}
+.category-dot[data-cat="preference"] {
+  background: color-mix(in oklch, var(--warning-foreground) 70%, var(--warning));
+}
+.category-dot[data-cat="general"] {
+  background: var(--muted-foreground);
+}
+.category-chip .category-dot {
+  width: 0.5625rem;
+  height: 0.5625rem;
+}
+
+/* memory-card — composed from data-card-part, redesigned for memories */
+.memory-card [data-card-part="header"] {
+  gap: 0.5rem;
+}
+.memory-card .mc-title {
+  font-family: var(--font-display, "Jura", system-ui, sans-serif);
+  font-weight: 500;
+  font-size: 1.0625rem;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.memory-card .mc-title a:hover {
+  text-decoration: underline;
+}
+.memory-card .mc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+.memory-card .mc-source {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: start;
+  gap: 0.3125rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.memory-card .mc-source svg {
+  width: 0.8125rem;
+  height: 0.8125rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+.memory-card .mc-source .src-val {
+  color: var(--foreground);
+  min-width: 0;
+}
+
+/* excerpt-clamp — markdown-stripped preview clamped to ~3 lines */
+.excerpt-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+
+/* mc-ind — inline version / links indicator (mono) */
+.mc-ind {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono, "Geist Mono", ui-monospace, monospace);
+  white-space: nowrap;
+}
+.mc-ind svg {
+  width: 0.8125rem;
+  height: 0.8125rem;
+  flex-shrink: 0;
+}
+
+/* tag-badge — small token-based pill with leading tag icon, truncatable */
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  max-width: 100%;
+  height: 1.375rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--background);
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.tag-badge svg {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+.tag-badge .tag-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* mc-detail — "View details" link in the card footer */
+.mc-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--primary);
+  white-space: nowrap;
+}
+.mc-detail:hover {
+  text-decoration: underline;
+}
+.mc-detail svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}
+
+/* memory-row — dense compact row for scanning */
+.memory-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  transition: background-color 150ms;
+}
+.memory-row:hover {
+  background: color-mix(in oklch, var(--accent) 50%, transparent);
+}
+.memory-row .mr-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.memory-row .mr-title a:hover {
+  text-decoration: underline;
+}
+.memory-row.is-deleted {
+  opacity: 0.7;
+}
+
+/* empty-box — dashed-border empty / filtered-empty state */
+.empty-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 3.5rem 1.5rem;
+}
+.empty-box .empty-ic {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  margin-bottom: 1rem;
+}
+.empty-box .empty-ic svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}

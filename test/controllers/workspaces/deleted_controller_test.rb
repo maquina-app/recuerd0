@@ -18,6 +18,16 @@ class Workspaces::DeletedControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-component=card]"
   end
 
+  test "show renders memories for a deleted workspace" do
+    workspace = workspaces(:deleted)
+    Memory.create_with_content(workspace, title: "Deleted note", content: "body")
+
+    get deleted_workspace_url(workspace)
+    assert_response :success
+    assert_equal "cards", @controller.view_assigns["memory_view"]
+    assert_not_nil @controller.view_assigns["category_counts"]
+  end
+
   test "destroy permanently deletes" do
     workspace = workspaces(:deleted)
     assert_difference("Workspace.count", -1) do

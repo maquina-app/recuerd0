@@ -1,0 +1,64 @@
+<%# locals: (memory:, workspace:) %>
+<% display_version = memory.versioned? ? memory.current_version : memory %>
+<% category_variant = { "decision" => :default, "discovery" => :secondary, "preference" => :warning, "general" => :outline }[display_version.category] || :outline %>
+<% is_pinned = workspace.active? && memory.pinned_by?(Current.user) %>
+
+<div class="memory-row<%= " is-deleted" unless workspace.active? %>">
+  <span class="category-dot" data-cat="<%= display_version.category %>" title="<%= t("memories.categories.#{display_version.category}") %>"></span>
+
+  <div class="mr-title min-w-0 flex-1">
+    <%= link_to display_version.display_title, workspace_memory_path(workspace, display_version) %>
+  </div>
+
+  <div class="flex flex-shrink-0 items-center gap-2">
+    <%= render "components/badge", variant: category_variant, size: :sm, css_classes: "hidden sm:inline-flex" do %>
+      <%= t("memories.categories.#{display_version.category}") %>
+    <% end %>
+
+    <% if memory.versioned? %>
+      <span class="mc-ind" title="<%= display_version.version_label %>">
+        <%= icon_for(:git_branch) %><%= display_version.version_label %>
+      </span>
+    <% end %>
+
+    <% if memory.links_count > 0 %>
+      <span class="mc-ind" title="<%= pluralize(memory.links_count, "linked memory", "linked memories") %>">
+        <%= icon_for(:link) %><%= memory.links_count %>
+      </span>
+    <% end %>
+
+    <% if is_pinned %>
+      <span class="inline-flex text-primary" title="<%= t("workspaces.show.pinned_badge") %>">
+        <%= icon_for(:pin, class: "size-3.5") %>
+        <span class="sr-only"><%= t("workspaces.show.pinned_badge") %></span>
+      </span>
+    <% end %>
+
+    <span class="stat-chip hidden md:inline-flex" title="<%= t("memories.show.updated_ago", time: time_ago_in_words(memory.updated_at)) %>">
+      <%= icon_for(:clock) %>
+      <%= time_ago_in_words(memory.updated_at) %>
+    </span>
+
+    <%= render "components/dropdown_menu", auto_close: true do %>
+      <%= render "components/dropdown_menu/trigger", as_child: true do %>
+        <button
+          type="button"
+          data-component="button"
+          data-variant="ghost"
+          data-size="icon-sm"
+          data-dropdown-menu-target="trigger"
+          data-action="dropdown-menu#toggle"
+          aria-haspopup="menu"
+          aria-expanded="false"
+          aria-label="Memory actions"
+        >
+          <%= icon_for(:more_vertical, class: "size-4") %>
+        </button>
+      <% end %>
+
+      <%= render "components/dropdown_menu/content", align: :end, css_classes: "w-48" do %>
+        <%= render "memories/memory_actions", memory: memory, workspace: workspace %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

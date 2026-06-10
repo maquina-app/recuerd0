@@ -16,8 +16,20 @@ module WorkspaceScoped
     end
   end
 
-  def load_workspace_memories(scope = nil)
-    scope ||= @workspace.memories.includes(:content, :pins).order(created_at: :desc)
+  def load_workspace_memories
+    @memory_view = resolve_memory_view_mode
+    @memory_sort = params[:sort].presence_in(%w[created title]) # nil => "updated" default
+    @category = params[:category].presence_in(Memory::CATEGORIES)
+    @memory_query = params[:q].to_s.strip
+
+    base = @workspace.memories.latest_versions.includes(:content, :pins, child_versions: :content)
+    @category_counts = base.group(:category).count
+    @category_counts.default = 0
+
+    scope = base.by_category(@category)
+    scope = scope.search(@memory_query) if @memory_query.present?
+    scope = scope.ordered_by(@memory_sort)
+
     @pagy, @memories = pagy(scope, items: 10)
     @pinned_memories, @regular_memories = @memories.partition { |m| m.pinned_by?(Current.user) }
   end
