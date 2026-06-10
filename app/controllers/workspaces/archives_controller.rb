@@ -1,11 +1,13 @@
 class Workspaces::ArchivesController < ApplicationController
   include WorkspaceScoped
+  include WorkspaceViewMode
 
   before_action :set_workspace, except: [:index]
   before_action :require_full_access, only: %i[create destroy], if: :api_request?
 
   # GET /workspaces/archived
   def index
+    @view_mode = resolve_workspace_view_mode
     @pagy, @workspaces = pagy(Current.account.workspaces.archived_ordered)
   end
 

@@ -1,0 +1,15 @@
+<%# locals: (workspace:, show_status: false) -%>
+<% if show_status && workspace.archived? %>
+  <%= render "components/badge", variant: :warning, size: :sm do %>Archived<% end %>
+<% elsif show_status && workspace.deleted? %>
+  <%= render "components/badge", variant: :outline, size: :sm do %>Deleted<% end %>
+<% end %>
+
+<% if workspace.deleted? %>
+  <% days = workspace.days_until_permanent_deletion %>
+  <% if days == 0 %>
+    <%= render "components/badge", variant: :destructive, size: :sm do %><%= t("workspaces.index.deleting_today") %><% end %>
+  <% elsif days.present? %>
+    <%= render "components/badge", variant: (days <= 7 ? :destructive : :warning), size: :sm do %><%= t("workspaces.index.deletes_in", count: days) %><% end %>
+  <% end %>
+<% end %>

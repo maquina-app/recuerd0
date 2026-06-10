@@ -1,0 +1,10 @@
+<%# locals: (items:, view_mode: "list", show_status: false) %>
+<% if view_mode == "grid" %>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <%= render partial: "workspaces/workspace_card", collection: items, as: :workspace, locals: { show_status: show_status } %>
+  </div>
+<% else %>
+  <div class="divide-y divide-border">
+    <%= render partial: "workspaces/workspace", collection: items, as: :workspace, locals: { show_status: show_status } %>
+  </div>
+<% end %>

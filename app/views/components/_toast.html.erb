@@ -1,0 +1,65 @@
+<%# locals: (variant: :default, title: nil, description: nil, icon: nil, duration: 5000, dismissible: true, content: nil, css_classes: "", **html_options) %>
+<%#
+  App override of the gem's components/_toast partial.
+
+  maquina-components 0.4.4 renders toast icons with `builtin_icon_for`, but its
+  default_icons map references built-in names that do NOT exist in the engine's
+  built-in SVG set (`:circle_check`, `:circle_x`) and the close button uses `:x`
+  (also absent). The result: success/error icons and the ✕ render empty.
+
+  We render via `icon_for` instead, which resolves against the app's
+  `main_icon_svg_for` (Lucide) first — where `:check_circle`, `:x_circle`,
+  `:alert_triangle`, `:info`, and `:x` are all defined — falling back to the
+  engine built-ins. Remove this override once the gem ships matching icon names.
+-%>
+<%
+  default_icons = {
+    default: nil,
+    success: :check_circle,
+    info: :info,
+    warning: :alert_triangle,
+    error: :x_circle
+  }
+  toast_icon = icon || default_icons[variant]
+%>
+<% merged_data = (html_options.delete(:data) || {}).merge(
+    component: :toast,
+    controller: "toast",
+    variant: variant,
+    toast_duration_value: duration,
+    toast_dismissible_value: dismissible,
+    state: "entering"
+  ) %>
+
+<%= content_tag :div,
+      role: "alert",
+      class: css_classes.presence,
+      data: merged_data,
+      **html_options do %>
+  <% if toast_icon %>
+    <div data-toast-part="icon">
+      <%= icon_for toast_icon, class: "size-5" %>
+    </div>
+  <% end %>
+
+  <div data-toast-part="content">
+    <% if title.present? %>
+      <%= render "components/toast/title", text: title %>
+    <% end %>
+
+    <% if description.present? %>
+      <%= render "components/toast/description", text: description %>
+    <% end %>
+
+    <%= content if content %>
+  </div>
+
+  <% if dismissible %>
+    <button type="button"
+            data-toast-part="close"
+            data-action="toast#dismiss"
+            aria-label="Dismiss notification">
+      <%= icon_for :x, class: "size-4" %>
+    </button>
+  <% end %>
+<% end %>

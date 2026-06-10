@@ -4,29 +4,74 @@
   <%= responsive_breadcrumbs({}, t("accounts.show.page_title")) %>
 <% end %>
 
-<% if Current.user.admin? %>
-  <%# Two-column layout for admins: main content left, admin actions right %>
-  <div class="mx-auto max-w-5xl grid grid-cols-1 lg:grid-cols-5 items-start gap-6">
-    <div class="lg:col-span-3 space-y-6">
-      <%= render "accounts/details", account: @account %>
-      <%= render "accounts/users", account: @account, users: @users %>
-      <%= render "accounts/danger_zone" %>
+<div class="mx-auto max-w-5xl">
+  <%# ===== HEADER ===== %>
+  <div class="mb-5 flex min-w-0 items-start gap-3.5">
+    <div class="ws-tile">
+      <%= icon_for(:users) %>
     </div>
 
-    <div class="lg:col-span-2">
-      <div class="lg:sticky lg:top-6 space-y-6">
-        <%= render "accounts/invitations", account: @account %>
-        <%= render "accounts/data_export",
-            exports_this_month: @exports_this_month,
-            current_export: @current_export,
-            latest_export: @latest_export %>
+    <div class="min-w-0">
+      <div class="flex flex-wrap items-center gap-2">
+        <h1 class="font-display text-2xl font-medium leading-[1.4] tracking-tight break-words"><%= @account.name %></h1>
+
+        <% if Current.user.admin? %>
+          <%= render "components/badge", variant: :default, size: :sm do %>
+            <%= t("accounts.users.role_admin") %>
+          <% end %>
+        <% else %>
+          <%= render "components/badge", variant: :secondary, size: :sm do %>
+            <%= t("accounts.users.role_member") %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+        <span class="stat-chip" title="<%= @account.created_at.strftime("%B %-d, %Y") %>">
+          <%= icon_for(:clock) %>
+          <%= t("accounts.show.created_ago", time: time_ago_in_words(@account.created_at)) %>
+        </span>
+        <span class="stat-chip">
+          <%= icon_for(:users) %>
+          <% if multi_tenant? %>
+            <%= t("accounts.show.users_count", count: @account.active_users_count, limit: @account.user_limit) %>
+          <% else %>
+            <%= t("accounts.show.users_count_unlimited", count: @account.active_users_count) %>
+          <% end %>
+        </span>
       </div>
     </div>
   </div>
-<% else %>
-  <%# Single-column layout for members %>
-  <div class="mx-auto max-w-4xl space-y-6">
-    <%= render "accounts/details", account: @account %>
-    <%= render "accounts/users", account: @account, users: @users %>
+
+  <div class="mb-5">
+    <%= render "components/separator" %>
   </div>
-<% end %>
+
+  <%# ===== CONTENT ===== %>
+  <% if Current.user.admin? %>
+    <%# Two-column layout for admins: main content left, admin actions right %>
+    <div class="grid grid-cols-1 lg:grid-cols-5 items-start gap-6">
+      <div class="lg:col-span-3 space-y-6">
+        <%= render "accounts/details", account: @account %>
+        <%= render "accounts/users", account: @account, users: @users %>
+        <%= render "accounts/danger_zone" %>
+      </div>
+
+      <div class="lg:col-span-2">
+        <div class="lg:sticky lg:top-6 space-y-6">
+          <%= render "accounts/invitations", account: @account %>
+          <%= render "accounts/data_export",
+              exports_this_month: @exports_this_month,
+              current_export: @current_export,
+              latest_export: @latest_export %>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <%# Single-column layout for members %>
+    <div class="space-y-6">
+      <%= render "accounts/details", account: @account %>
+      <%= render "accounts/users", account: @account, users: @users %>
+    </div>
+  <% end %>
+</div>

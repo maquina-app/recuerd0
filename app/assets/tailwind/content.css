@@ -1,0 +1,264 @@
+/* ============================================================
+   .memory-content — scoped reading stylesheet for rendered
+   memory markdown (Redcarpet → sanitized HTML). Replaces the
+   Tailwind `prose` styling on the memory show page.
+
+   Every color maps to an oklch token, so it works in light AND
+   dark with no per-mode overrides. Body text inherits the app
+   sans font (Instrument Sans); code/pre/kbd use Geist Mono;
+   in-document headings use bold Instrument Sans.
+   ============================================================ */
+
+/* The reading panel uses card/content WITHOUT a card/header, so the gem's
+   top padding (normally supplied by the header) is missing — restore it so the
+   content has symmetric padding on all sides. Higher specificity than the gem's
+   [data-card-part="content"] rule, so it wins regardless of import order. */
+[data-card-part="content"]:has(> .memory-content) {
+  padding-top: 1.5rem;
+}
+
+.memory-content {
+  line-height: 1.6;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 0.9375rem;
+}
+
+.memory-content > :first-child {
+  margin-top: 0;
+}
+
+.memory-content > :last-child {
+  margin-bottom: 0;
+}
+
+/* --- Headings --- */
+
+.memory-content h1,
+.memory-content h2,
+.memory-content h3,
+.memory-content h4,
+.memory-content h5,
+.memory-content h6 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  color: var(--foreground);
+}
+
+.memory-content h1 {
+  font-size: 2em;
+}
+
+.memory-content h2 {
+  font-size: 1.6em;
+}
+
+.memory-content h3 {
+  font-size: 1.35em;
+}
+
+.memory-content h4 {
+  font-size: 1.15em;
+}
+
+.memory-content h5 {
+  font-size: 1em;
+}
+
+.memory-content h6 {
+  font-size: 1em;
+  color: var(--muted-foreground);
+}
+
+/* --- Body rhythm --- */
+
+.memory-content p,
+.memory-content ul,
+.memory-content ol,
+.memory-content blockquote,
+.memory-content table,
+.memory-content pre {
+  margin: 0.8em 0;
+}
+
+/* --- Lists --- */
+
+.memory-content ul,
+.memory-content ol {
+  padding-left: 1.75rem;
+}
+
+.memory-content li {
+  margin: 0.25em 0;
+  line-height: 1.6;
+}
+
+.memory-content li > ul,
+.memory-content li > ol {
+  margin: 0.25em 0;
+}
+
+.memory-content ul {
+  list-style: disc;
+}
+
+.memory-content ol {
+  list-style: decimal;
+}
+
+/* Collapse paragraph margins inside list items (loose lists) */
+.memory-content li > p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* --- Task lists (defensive: plain checkbox markup) --- */
+
+.memory-content ul:has(> li > input[type="checkbox"]) {
+  list-style: none;
+  padding-left: 0.25rem;
+}
+
+.memory-content li:has(> input[type="checkbox"]) {
+  list-style: none;
+}
+
+.memory-content li > input[type="checkbox"] {
+  accent-color: var(--primary);
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  cursor: default;
+}
+
+/* --- Links --- */
+
+.memory-content a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.memory-content a:hover {
+  color: color-mix(in oklch, var(--primary) 80%, var(--foreground));
+}
+
+/* --- Inline code --- */
+
+.memory-content code {
+  background: color-mix(in oklch, var(--muted) 70%, transparent);
+  padding: 0.1em 0.35em;
+  border-radius: calc(var(--radius) - 3px);
+  font-size: 0.9em;
+  font-family: "Geist Mono", ui-monospace, monospace;
+}
+
+/* --- Code fences --- */
+
+.memory-content pre {
+  background: var(--muted);
+  color: var(--foreground);
+  padding: 1rem;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+
+.memory-content pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  white-space: pre;
+}
+
+/* --- Blockquotes --- */
+
+.memory-content blockquote {
+  border-left: 4px solid color-mix(in oklch, var(--primary) 60%, var(--border));
+  background: color-mix(in oklch, var(--muted) 60%, transparent);
+  padding: 0.6rem 1rem;
+  color: var(--muted-foreground);
+  border-radius: 0 calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0;
+}
+
+.memory-content blockquote > :first-child {
+  margin-top: 0;
+}
+
+.memory-content blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* --- Tables (scroll within the panel, never the page) --- */
+
+.memory-content table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.memory-content th,
+.memory-content td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.8rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.memory-content th {
+  font-weight: 600;
+  background: color-mix(in oklch, var(--muted) 70%, transparent);
+}
+
+.memory-content tbody tr:nth-child(2n) {
+  background: color-mix(in oklch, var(--muted) 50%, transparent);
+}
+
+/* --- kbd --- */
+
+.memory-content kbd {
+  border: 1px solid var(--border);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  border-radius: calc(var(--radius) - 3px);
+  padding: 0.1em 0.4em;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 0.85em;
+  box-shadow: 0 1px 0 var(--border);
+}
+
+/* --- Highlight (==text== via Redcarpet :highlight) --- */
+
+.memory-content mark {
+  background: var(--warning);
+  color: var(--warning-foreground);
+  padding: 0.05em 0.3em;
+  border-radius: 3px;
+}
+
+/* --- Images --- */
+
+.memory-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: calc(var(--radius) - 2px);
+  display: block;
+  margin: 1rem 0;
+}
+
+/* --- Horizontal rules --- */
+
+.memory-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.5rem 0;
+}

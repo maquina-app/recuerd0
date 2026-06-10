@@ -1,0 +1,84 @@
+<%# locals: (workspace:) %>
+<div class="mb-6 flex flex-col gap-3">
+  <%# Category filter chips — own horizontal scroll, never widens the page %>
+  <div class="category-bar" role="group" aria-label="<%= t("workspaces.show.toolbar.filter_label") %>">
+    <% all_active = @category.nil? %>
+    <%= link_to workspace_show_path(workspace, **memory_filter_params(category: nil)),
+          class: "category-chip",
+          data: { state: (all_active ? "on" : "off") },
+          "aria-current": (all_active ? "true" : nil) do %>
+      <span><%= t("workspaces.show.toolbar.category_all") %></span>
+      <span class="cat-count"><%= @category_counts.values.sum %></span>
+    <% end %>
+
+    <% Memory::CATEGORIES.each do |cat| %>
+      <% active = (@category == cat) %>
+      <%= link_to workspace_show_path(workspace, **memory_filter_params(category: cat)),
+            class: "category-chip",
+            data: { state: (active ? "on" : "off") },
+            "aria-current": (active ? "true" : nil) do %>
+        <span class="category-dot" data-cat="<%= cat %>"></span>
+        <span><%= t("memories.categories.#{cat}") %></span>
+        <span class="cat-count"><%= @category_counts[cat] %></span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Controls: within-workspace search · sort · view density %>
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <%= form_with url: workspace_show_path(workspace), method: :get, class: "search-field w-full sm:max-w-xs", data: { turbo_action: "advance" } do %>
+      <%= icon_for(:search) %>
+      <label for="memory-toolbar-search" class="sr-only"><%= t("workspaces.show.toolbar.search_label") %></label>
+      <input
+        id="memory-toolbar-search"
+        type="search"
+        name="q"
+        value="<%= @memory_query %>"
+        data-component="input"
+        placeholder="<%= t("workspaces.show.toolbar.search_placeholder") %>"
+        autocomplete="off"
+      >
+      <% if @category.present? %><input type="hidden" name="category" value="<%= @category %>"><% end %>
+      <% if @memory_sort.present? %><input type="hidden" name="sort" value="<%= @memory_sort %>"><% end %>
+      <% if @memory_view.present? %><input type="hidden" name="view" value="<%= @memory_view %>"><% end %>
+    <% end %>
+
+    <div class="flex items-center gap-2">
+      <%# Sort segmented control %>
+      <div class="seg" role="group" aria-label="<%= t("workspaces.show.toolbar.sort_label") %>">
+        <%= link_to t("workspaces.show.toolbar.sort_updated"), workspace_show_path(workspace, **memory_filter_params(sort: nil)),
+              class: "seg-item",
+              data: { state: (@memory_sort.blank? ? "on" : "off") },
+              "aria-current": (@memory_sort.blank? ? "true" : nil) %>
+        <%= link_to t("workspaces.show.toolbar.sort_created"), workspace_show_path(workspace, **memory_filter_params(sort: "created")),
+              class: "seg-item",
+              data: { state: (@memory_sort == "created" ? "on" : "off") },
+              "aria-current": (@memory_sort == "created" ? "true" : nil) %>
+        <%= link_to t("workspaces.show.toolbar.sort_title"), workspace_show_path(workspace, **memory_filter_params(sort: "title")),
+              class: "seg-item",
+              data: { state: (@memory_sort == "title" ? "on" : "off") },
+              "aria-current": (@memory_sort == "title" ? "true" : nil) %>
+      </div>
+
+      <%# View density segmented control %>
+      <div class="seg" role="group" aria-label="<%= t("workspaces.show.toolbar.view_label") %>">
+        <%= link_to workspace_show_path(workspace, **memory_filter_params(view: "cards")),
+              class: "seg-item seg-item-icon",
+              data: { state: (@memory_view == "compact" ? "off" : "on") },
+              "aria-current": (@memory_view == "compact" ? nil : "true"),
+              "aria-label": t("workspaces.show.toolbar.view_cards"),
+              title: t("workspaces.show.toolbar.view_cards") do %>
+          <%= icon_for(:grid) %>
+        <% end %>
+        <%= link_to workspace_show_path(workspace, **memory_filter_params(view: "compact")),
+              class: "seg-item seg-item-icon",
+              data: { state: (@memory_view == "compact" ? "on" : "off") },
+              "aria-current": (@memory_view == "compact" ? "true" : nil),
+              "aria-label": t("workspaces.show.toolbar.view_compact"),
+              title: t("workspaces.show.toolbar.view_compact") do %>
+          <%= icon_for(:list) %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

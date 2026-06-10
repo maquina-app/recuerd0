@@ -1,59 +1,90 @@
 <%# locals: (workspace:, pinned_memories:, regular_memories:, pagy:) %>
+<%
+  has_results = pinned_memories.any? || regular_memories.any?
+  filter_active = @category.present? || @memory_query.present?
+  compact = (@memory_view == "compact")
+  # archived/deleted workspaces suppress pinned indicators → fold into "All"
+  show_pinned_group = workspace.active? && pinned_memories.any?
 
-<div class="space-y-6">
-  <% if pinned_memories.any? || regular_memories.any? %>
-    <%# Pinned memories section %>
-    <% if pinned_memories.any? %>
-      <div class="space-y-4">
-        <h3 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <%= icon_for(:pin, class: "w-4 h-4") %> Pinned Memories
-        </h3>
-        <div class="grid gap-4">
-          <% pinned_memories.each do |memory| %>
-            <%= render "memories/memory", memory: memory, workspace: workspace, show_pinned: true %>
-          <% end %>
+  pagination_helper = if workspace.archived?
+    :archived_workspace_path
+  elsif workspace.deleted?
+    :deleted_workspace_path
+  else
+    :workspace_path
+  end
+%>
+
+<% if has_results %>
+  <div class="space-y-6">
+    <% if show_pinned_group %>
+      <section>
+        <div class="mb-2 flex items-center gap-2 px-0.5">
+          <span class="text-primary"><%= icon_for(:pin, class: "size-3") %></span>
+          <span class="ws-group-label"><%= t("workspaces.show.group_pinned") %></span>
         </div>
-      </div>
-      <% if regular_memories.any? %>
-        <%= render "components/separator" %>
-      <% end %>
-    <% end %>
-    <%# Regular memories section %>
-    <% if regular_memories.any? %>
-      <div class="space-y-4">
-        <% if pinned_memories.any? %>
-          <h3 class="text-sm font-medium text-muted-foreground">
-            All Memories
-          </h3>
+        <% if compact %>
+          <div class="divide-y divide-border rounded-lg border">
+            <%= render partial: "memories/memory_row", collection: pinned_memories, as: :memory, locals: { workspace: workspace } %>
+          </div>
+        <% else %>
+          <div class="grid gap-4 lg:grid-cols-2">
+            <%= render partial: "memories/memory", collection: pinned_memories, as: :memory, locals: { workspace: workspace, show_pinned: true } %>
+          </div>
         <% end %>
-
-        <div class="grid gap-4">
-          <% regular_memories.each do |memory| %>
-            <%= render "memories/memory", memory: memory, workspace: workspace %>
-          <% end %>
-        </div>
-      </div>
+      </section>
     <% end %>
-    <%# Pagination %>
-    <div class="mt-6">
-      <%= pagination_nav(pagy, :workspace_path, params: { id: workspace.id }) %>
+
+    <% all_items = show_pinned_group ? regular_memories : (pinned_memories + regular_memories) %>
+    <% if all_items.any? %>
+      <section>
+        <div class="mb-2 px-0.5">
+          <span class="ws-group-label"><%= t("workspaces.show.group_all") %></span>
+        </div>
+        <% if compact %>
+          <div class="divide-y divide-border rounded-lg border">
+            <%= render partial: "memories/memory_row", collection: all_items, as: :memory, locals: { workspace: workspace } %>
+          </div>
+        <% else %>
+          <div class="grid gap-4 lg:grid-cols-2">
+            <%= render partial: "memories/memory", collection: all_items, as: :memory, locals: { workspace: workspace } %>
+          </div>
+        <% end %>
+      </section>
+    <% end %>
+
+    <div class="mt-8">
+      <%= pagination_nav(pagy, pagination_helper, params: { id: workspace.id }.merge(memory_filter_params)) %>
     </div>
-  <% else %>
-    <%# Empty state %>
-    <%= render "components/empty", variant: :outline do %>
-      <%= render "components/empty/header" do %>
-        <%= render "components/empty/media", icon: :sticky_note %>
-        <%= render "components/empty/title", text: "No memories yet" %>
-        <%= render "components/empty/description", text: workspace.active? ? "Start adding memories to this workspace." : "This workspace doesn't have any memories." %>
-      <% end %>
-      <% if workspace.active? %>
-        <%= render "components/empty/content" do %>
-          <%= link_to new_workspace_memory_path(workspace), data: { component: "button", variant: "secondary" } do %>
-            <%= icon_for(:bookmark_plus, class: "w-4 h-4") %>
-            Add First Memory
-          <% end %>
+  </div>
+
+<% elsif filter_active %>
+  <%# Filtered-empty: a filter/search is active but nothing matched %>
+  <div class="empty-box">
+    <div class="empty-ic">
+      <%= icon_for(:search, class: "size-6") %>
+    </div>
+    <h2 class="font-display text-lg font-medium"><%= t("workspaces.show.filtered_empty_title") %></h2>
+    <p class="mt-1 max-w-sm text-sm text-muted-foreground"><%= t("workspaces.show.filtered_empty_description") %></p>
+    <%= link_to t("workspaces.show.filtered_empty_clear"), workspace_show_path(workspace),
+          class: "mt-4", data: { component: "button", variant: "outline", size: "sm" } %>
+  </div>
+
+<% else %>
+  <%# No memories at all in this workspace %>
+  <%= render "components/empty", variant: :outline do %>
+    <%= render "components/empty/header" do %>
+      <%= render "components/empty/media", icon: :sticky_note %>
+      <%= render "components/empty/title", text: "No memories yet" %>
+      <%= render "components/empty/description", text: workspace.active? ? "Start adding memories to this workspace." : "This workspace doesn't have any memories." %>
+    <% end %>
+    <% if workspace.active? %>
+      <%= render "components/empty/content" do %>
+        <%= link_to new_workspace_memory_path(workspace), data: { component: "button", variant: "secondary" } do %>
+          <%= icon_for(:bookmark_plus, class: "w-4 h-4") %>
+          Add First Memory
         <% end %>
       <% end %>
     <% end %>
   <% end %>
-</div>
+<% end %>

@@ -1,0 +1,63 @@
+<%# locals: (workspace:, show_status: false) -%>
+<%= render "components/card", id: dom_id(workspace), css_classes: ("opacity-70" if workspace.deleted?) do %>
+  <%= render "components/card/header" do %>
+    <div class="flex items-start justify-between gap-2">
+      <div class="ws-tile ws-tile-sm">
+        <%= icon_for(:folder) %>
+        <% if workspace.pinned_by?(Current.user) %>
+          <span class="ws-pin-dot">
+            <%= icon_for(:pin_solid) %>
+            <span class="sr-only"><%= t("workspaces.index.pinned_marker") %></span>
+          </span>
+        <% end %>
+      </div>
+
+      <div class="flex-shrink-0">
+        <%= render "components/dropdown_menu", auto_close: true do %>
+          <%= render "components/dropdown_menu/trigger", as_child: true do %>
+            <button
+              type="button"
+              data-component="button"
+              data-variant="ghost"
+              data-size="icon-sm"
+              data-dropdown-menu-target="trigger"
+              data-action="dropdown-menu#toggle"
+              aria-haspopup="menu"
+              aria-expanded="false"
+              aria-label="Workspace actions"
+            >
+              <%= icon_for(:more_vertical, class: "w-4 h-4") %>
+            </button>
+          <% end %>
+
+          <%= render "components/dropdown_menu/content", align: :end, css_classes: "w-48" do %>
+            <%= render "workspaces/workspace_actions", workspace: workspace %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <%= render "components/card/title", css_classes: "truncate", content: capture {
+      if (path = workspace_link_path(workspace))
+        link_to workspace.name, path, class: "hover:underline"
+      else
+        workspace.name
+      end
+    } %>
+
+    <% if workspace.description.present? %>
+      <%= render "components/card/description", css_classes: "truncate", content: workspace.description %>
+    <% else %>
+      <%= render "components/card/description", css_classes: "opacity-60", text: t("workspaces.index.no_description") %>
+    <% end %>
+
+    <% badges = capture { render "workspaces/workspace_badges", workspace: workspace, show_status: show_status } %>
+    <% if badges.strip.present? %>
+      <div class="flex flex-wrap gap-1.5 pt-1"><%= badges %></div>
+    <% end %>
+  <% end %>
+
+  <%= render "components/card/footer", css_classes: "gap-4 flex-wrap" do %>
+    <%= render "workspaces/workspace_stats", workspace: workspace %>
+  <% end %>
+<% end %>

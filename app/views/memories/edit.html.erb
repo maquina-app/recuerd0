@@ -21,7 +21,7 @@
   ) %>
 <% end %>
 
-<div class="h-full flex flex-col">
+<div class="mx-auto flex h-full w-full max-w-5xl flex-col">
   <% unless @memory.root_version? %>
     <div class="shrink-0 mb-3">
       <%= render "components/alert", variant: :warning, icon: :info, css_classes: "py-2" do %>

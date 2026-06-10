@@ -25,20 +25,32 @@ class Workspace < ApplicationRecord
   scope :archived_ordered, -> { archived.not_deleted.order(archived_at: :desc) }
 
   # Additional scopes that consider pinning
-  scope :ordered_with_pins_first, ->(user) {
+  scope :ordered_with_pins_first, ->(user, sort: nil) {
+    tail = case sort
+    when "name" then Arel.sql("LOWER(workspaces.name) ASC")
+    when "memories" then Arel.sql("workspaces.memories_count DESC, workspaces.updated_at DESC")
+    else Arel.sql("workspaces.updated_at DESC")
+    end
+
     left_joins(:pins)
       .where(pins: {user_id: [user.id, nil]})
       .order(
         Arel.sql("CASE WHEN pins.id IS NOT NULL THEN 0 ELSE 1 END"),
         Arel.sql("pins.position ASC NULLS LAST"),
-        Arel.sql("workspaces.updated_at DESC")
+        tail
       )
       .distinct
   }
 
   # Instance methods
   def last_activity
-    memories.maximum(:created_at) || created_at
+    if has_attribute?(:last_activity_at)
+      ts = self[:last_activity_at]
+      return created_at if ts.blank?
+      ts.is_a?(String) ? Time.zone.parse(ts) : ts
+    else
+      memories.maximum(:created_at) || created_at
+    end
   end
 
   # Check if workspace can be used (not deleted or archived)

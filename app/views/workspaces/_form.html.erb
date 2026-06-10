@@ -1,38 +1,60 @@
 <%# locals: (workspace:) -%>
-<%= form_with(model: workspace, data: { component: "form" }) do |form| %>
-  <div data-form-part="group">
-    <%= form.label :name, data: { component: "label" } %>
-    <%= form.text_field :name,
-        autofocus: true,
-        placeholder: t("workspaces.form.name_placeholder"),
-        required: true,
-        maxlength: 100,
-        autocomplete: "off",
-        data: { component: "input" } %>
-    <% if workspace.errors[:name].any? %>
-      <p data-form-part="error" class="text-destructive"><%= workspace.errors[:name].first %></p>
-    <% end %>
+<%# Custom flat layout (omits data-component="form") consistent with the memory
+    form: a tonal tile + borderless name title that mirrors the workspace#show
+    header, actions top-right, and the description below. %>
+<%= form_with(model: workspace) do |form| %>
+  <%# Header: tile + borderless name + actions %>
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div class="flex min-w-0 flex-1 items-center gap-3.5">
+      <div class="ws-tile">
+        <%= icon_for(:folder) %>
+      </div>
+
+      <div class="min-w-0 flex-1" data-form-part="group">
+        <%= form.label :name, t("workspaces.form.name_label"), class: "sr-only", data: { component: "label" } %>
+        <%= form.text_field :name,
+            class: "form-title",
+            autofocus: true,
+            placeholder: t("workspaces.form.name_placeholder"),
+            required: true,
+            maxlength: 100,
+            autocomplete: "off" %>
+        <% if workspace.errors[:name].any? %>
+          <p data-form-part="error" class="mt-1 text-destructive"><%= workspace.errors[:name].first %></p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="hidden shrink-0 items-center gap-2 sm:flex">
+      <%= link_to t("workspaces.form.cancel"),
+          workspace.persisted? ? workspace_path(workspace) : workspaces_path,
+          data: { component: "button", variant: "outline", size: "sm" } %>
+      <%= form.submit workspace.persisted? ? t("workspaces.form.update") : t("workspaces.form.create"),
+          data: { component: "button", variant: "primary", size: "sm" } %>
+    </div>
   </div>
 
+  <%# Description %>
   <div data-form-part="group">
     <%= form.label :description, data: { component: "label" } %>
     <%= form.text_area :description,
-        rows: 4,
+        rows: 5,
         placeholder: t("workspaces.form.description_placeholder"),
         maxlength: 500,
         autocomplete: "off",
+        class: "resize-none",
         data: { component: "textarea" } %>
     <% if workspace.errors[:description].any? %>
-      <p data-form-part="error" class="text-destructive"><%= workspace.errors[:description].first %></p>
+      <p data-form-part="error" class="mt-1 text-destructive"><%= workspace.errors[:description].first %></p>
     <% end %>
   </div>
 
-  <div data-form-part="actions">
-    <%= form.submit workspace.persisted? ? "Update Workspace" : "Create Workspace",
-        data: { component: "button", variant: "primary" } %>
-
-    <%= link_to "Cancel",
+  <%# Mobile actions %>
+  <div class="mt-5 flex items-center gap-2 sm:hidden">
+    <%= link_to t("workspaces.form.cancel"),
         workspace.persisted? ? workspace_path(workspace) : workspaces_path,
-        data: { component: "button", variant: "outline" } %>
+        data: { component: "button", variant: "outline", size: "sm" } %>
+    <%= form.submit workspace.persisted? ? t("workspaces.form.update") : t("workspaces.form.create"),
+        data: { component: "button", variant: "primary", size: "sm" } %>
   </div>
 <% end %>

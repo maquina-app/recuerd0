@@ -24,6 +24,26 @@ class Memory < ApplicationRecord
   scope :versions_of, ->(memory) { where(parent_memory_id: memory.id) }
   scope :by_category, ->(cat) { where(category: cat) if cat.present? && CATEGORIES.include?(cat) }
 
+  # Within-workspace memory filter. Reuses the canonical FTS index
+  # (Searchable#full_search covers title + content body and is agnostic to how
+  # content is stored/rendered — content is markdown indexed via update_search_index),
+  # plus a tags LIKE fallback (tags live on the memories table, not in the index).
+  scope :search, ->(query) {
+    q = query.to_s.strip
+    return all if q.blank?
+
+    where(id: full_search(q).reselect(:id))
+      .or(where("memories.tags LIKE ?", "%#{sanitize_sql_like(q)}%"))
+  }
+
+  scope :ordered_by, ->(sort) {
+    case sort
+    when "created" then order(created_at: :desc)
+    when "title" then order(Arel.sql("LOWER(memories.title) ASC"))
+    else order(updated_at: :desc)
+    end
+  }
+
   # Validations
   validates :title, length: {maximum: 255}
   validates :version, presence: true, numericality: {greater_than: 0}

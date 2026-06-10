@@ -13,30 +13,17 @@
   >
     <%# Existing tags %>
     <% Array(value).each do |tag| %>
-      <span
-        draggable="false"
-        class="
-          transition-all border inline-flex items-center pl-2 bg-secondary
-          text-secondary-foreground hover:bg-secondary/80
-          disabled:cursor-not-allowed disabled:opacity-50 text-sm h-8
-          rounded-sm border-solid cursor-default animate-fadeIn font-normal
-        "
-      >
-        <%= tag %>
+      <span class="tag-badge">
+        <%= icon_for(:tag) %>
+        <span class="tag-label"><%= tag %></span>
         <button
-          class="
-            inline-flex items-center justify-center whitespace-nowrap
-            rounded-md text-sm font-medium transition-colors
-            focus-visible:outline-none focus-visible:ring-1
-            focus-visible:ring-ring disabled:pointer-events-none
-            disabled:opacity-50 hover:text-accent-foreground py-1 px-3
-            h-full hover:bg-transparent
-          "
           type="button"
+          class="tag-x"
           data-action="click->tag-input#removeTag"
           data-tag="<%= tag %>"
+          aria-label="<%= "Remove #{tag}" %>"
         >
-          <%= icon_for(:x, class: "w-3.5 h-3.5") %>
+          <%= icon_for(:x) %>
         </button>
       </span>
     <% end %>

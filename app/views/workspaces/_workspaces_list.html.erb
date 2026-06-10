@@ -1,14 +1,35 @@
-<%# locals: (workspaces:, pagy:, title: nil, path_helper: :workspaces_path, show_status: false) %>
+<%# locals: (workspaces:, pagy:, view_mode: "list", show_pins: false, show_status: false, title: nil, path_helper: :workspaces_path) %>
 <div>
-  <% if title %>
-    <h2 class="text-lg font-semibold mb-4 text-muted-foreground"><%= title %></h2>
+  <% if show_pins %>
+    <% pinned = workspaces.select { |w| w.pinned_by?(Current.user) } %>
+    <% rest = workspaces - pinned %>
+
+    <% if pinned.any? %>
+      <section class="mb-6">
+        <div class="mb-2 flex items-center gap-2 px-0.5">
+          <%= icon_for(:pin, class: "w-3 h-3 text-primary") %>
+          <span class="ws-group-label"><%= t("workspaces.index.pinned_label") %></span>
+        </div>
+        <%= render "workspaces/workspaces_group", items: pinned, view_mode: view_mode, show_status: show_status %>
+      </section>
+    <% end %>
+
+    <section>
+      <div class="mb-2 px-0.5">
+        <span class="ws-group-label"><%= t("workspaces.index.all_workspaces_label") %></span>
+      </div>
+      <%= render "workspaces/workspaces_group", items: rest, view_mode: view_mode, show_status: show_status %>
+    </section>
+  <% else %>
+    <% if title %>
+      <div class="mb-2 px-0.5">
+        <span class="ws-group-label"><%= title %></span>
+      </div>
+    <% end %>
+    <%= render "workspaces/workspaces_group", items: workspaces, view_mode: view_mode, show_status: show_status %>
   <% end %>
 
-  <div id="workspaces" class="divide-y divide-border">
-    <%= render partial: "workspaces/workspace", collection: workspaces, as: :workspace, locals: { show_status: show_status } %>
-  </div>
-
-  <div class="mt-6">
-    <%= pagination_nav(pagy, path_helper) %>
+  <div class="mt-8">
+    <%= pagination_nav(pagy, path_helper, params: { sort: params[:sort] }.compact) %>
   </div>
 </div>

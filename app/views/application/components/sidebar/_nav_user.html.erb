@@ -5,28 +5,29 @@
       <%= render "components/dropdown_menu/trigger", as_child: true, css_classes: "w-full" do %>
         <button
           type="button"
-          class="w-[calc(100%-1rem)] mx-2 my-2 px-2 py-2 rounded-md transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          data-sidebar-part="menu-button"
+          data-size="lg"
           data-dropdown-menu-target="trigger"
           data-action="dropdown-menu#toggle"
           aria-haspopup="menu"
           aria-expanded="false"
         >
-          <div class="flex items-center gap-2 w-full">
-            <%= render "application/components/avatar",
-            src: nil,
-            alt: user.email_address,
-            size: "h-8 w-8",
-            grayscale: true,
-            css_classes: "avatar rounded-lg" %>
-            <div class="grid flex-1 text-left text-sm leading-tight data-[state=collapsed]:hidden">
-              <span class="truncate font-medium"><%= user.name.presence || user.email_address.split("@").first %></span>
-              <span class="truncate text-xs text-muted-foreground">
-                <%= user.email_address %>
-              </span>
-            </div>
-            <%= icon_for :dots_vertical,
-            class: "size-4 ml-auto data-[state=collapsed]:hidden" %>
+          <%= render "application/components/avatar",
+          src: nil,
+          alt: user.email_address,
+          size: "h-8 w-8",
+          grayscale: true,
+          css_classes: "avatar rounded-lg" %>
+          <div class="grid flex-1 text-left text-sm leading-tight" data-sidebar-hide-on-collapse>
+            <span class="truncate font-medium"><%= user.name.presence || user.email_address.split("@").first %></span>
+            <span class="truncate text-xs text-muted-foreground">
+              <%= user.email_address %>
+            </span>
           </div>
+          <span class="ml-auto inline-flex" data-sidebar-hide-on-collapse>
+            <%= icon_for :dots_vertical, class: "size-4" %>
+          </span>
         </button>
       <% end %>
 

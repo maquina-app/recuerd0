@@ -7,11 +7,6 @@
 
   <%= render "components/card/content" do %>
     <%= form_with(model: user, url: profile_path, method: :patch, data: { component: "form" }) do |form| %>
-      <div class="flex items-center gap-2 text-sm">
-        <span class="font-medium text-muted-foreground"><%= t("profiles.personal_info.email_label") %></span>
-        <span><%= user.email_address %></span>
-      </div>
-
       <div data-form-part="group">
         <%= form.label :name, t("profiles.personal_info.name_label"), data: { component: "label" } %>
         <%= form.text_field :name,
