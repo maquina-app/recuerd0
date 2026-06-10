@@ -5,7 +5,7 @@
     <%= icon_for(:folder) %>
     <% if workspace.pinned_by?(Current.user) %>
       <span class="ws-pin-dot">
-        <%= icon_for(:pin) %>
+        <%= icon_for(:pin_solid) %>
         <span class="sr-only"><%= t("workspaces.index.pinned_marker") %></span>
       </span>
     <% end %>

@@ -139,6 +139,8 @@ en:
         other: "of %{count} versions"
       related_memories: "Related memories"
       related_in: "in"
+      versions_label: "Versions"
+      older_label: "older"
     links:
       none: "No related memories"
     memory_show_actions:

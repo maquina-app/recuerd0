@@ -8,6 +8,7 @@
 @plugin "@tailwindcss/typography";
 
 @import "./prose.css";
+@import "./content.css";
 @import "./house.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -528,6 +529,57 @@ house-md-toolbar button svg {
   color: var(--muted-foreground);
 }
 
+/* Version switcher — compact bordered pill control (memory show) */
+.version-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.75rem;
+  padding: 0 0.5rem 0 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.version-switch:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.version-switch:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+
+.version-switch svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.version-switch .vs-label {
+  font-family: var(--font-mono, "Geist Mono", ui-monospace, monospace);
+}
+
+.version-switch .vs-tag {
+  color: var(--muted-foreground);
+  font-weight: 400;
+}
+
+.version-switch.is-old {
+  border-color: color-mix(in oklch, var(--warning) 55%, var(--border));
+  background: color-mix(in oklch, var(--warning) 22%, var(--background));
+  color: var(--warning-foreground);
+}
+
+.version-switch.is-old .vs-tag {
+  color: color-mix(in oklch, var(--warning-foreground) 80%, transparent);
+}
+
 /* Folder tile — visual anchor for a workspace */
 .ws-tile {
   flex-shrink: 0;
@@ -802,7 +854,7 @@ house-md-toolbar button svg {
   font-family: var(--font-display, "Jura", system-ui, sans-serif);
   font-weight: 500;
   font-size: 1.0625rem;
-  line-height: 1.25;
+  line-height: 1.4;
   letter-spacing: 0.01em;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -820,7 +872,9 @@ house-md-toolbar button svg {
   align-items: center;
   gap: 0.375rem;
 }
-.memory-card .mc-source {
+/* Source line — used in memory cards AND on the memory show header (un-scoped
+   so the flex/icon-sizing applies in both contexts). */
+.mc-source {
   font-size: 0.75rem;
   color: var(--muted-foreground);
   display: flex;
@@ -830,13 +884,13 @@ house-md-toolbar button svg {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
-.memory-card .mc-source svg {
+.mc-source svg {
   width: 0.8125rem;
   height: 0.8125rem;
   flex-shrink: 0;
   margin-top: 0.125rem;
 }
-.memory-card .mc-source .src-val {
+.mc-source .src-val {
   color: var(--foreground);
   min-width: 0;
 }
@@ -932,6 +986,7 @@ house-md-toolbar button svg {
 .memory-row .mr-title {
   font-size: 0.875rem;
   font-weight: 500;
+  line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
