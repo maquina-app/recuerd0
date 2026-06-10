@@ -28,7 +28,7 @@
   </head>
 
   <body>
-    <%= render "components/toaster", position: :bottom_right, content: toast_flash_messages %>
+    <%= render "components/toaster", position: :bottom_right, content: toast_flash_messages(exclude: [:invitation_url, :new_token]) %>
 
     <div class="flex h-screen overflow-hidden">
       <%= render "application/sidebar" %>
