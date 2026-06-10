@@ -39,7 +39,7 @@
     <% if access_tokens.any? %>
       <div class="divide-y divide-border">
         <% access_tokens.each do |token| %>
-          <div class="group flex items-center gap-4 py-3">
+          <div class="flex items-center gap-4 py-3">
             <div class="flex items-center justify-center size-8 rounded-md bg-muted shrink-0">
               <%= icon_for(:key, class: "size-4 text-muted-foreground") %>
             </div>
@@ -72,7 +72,7 @@
                     size: "icon-sm",
                     turbo_confirm: t("profiles.access_tokens.delete_confirm")
                   },
-                  class: "text-destructive hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity" do %>
+                  class: "text-destructive hover:text-destructive" do %>
                 <%= icon_for(:trash_2, class: "size-4") %>
               <% end %>
             </div>

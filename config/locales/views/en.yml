@@ -192,6 +192,12 @@ en:
   profiles:
     show:
       page_title: "Profile"
+      role_admin: "Admin"
+      role_member: "Member"
+      member_since: "Member since %{time} ago"
+      tokens_count:
+        one: "%{count} token"
+        other: "%{count} tokens"
     personal_info:
       title: "Personal Information"
       description: "Manage your name and email address."
@@ -230,6 +236,11 @@ en:
   accounts:
     show:
       page_title: "Account"
+      created_ago: "Created %{time} ago"
+      users_count: "%{count} of %{limit} users"
+      users_count_unlimited:
+        one: "%{count} active user"
+        other: "%{count} active users"
     details:
       title: "Account Settings"
       description: "Manage your account name and details."

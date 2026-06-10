@@ -4,16 +4,58 @@
   <%= responsive_breadcrumbs({}, t("profiles.show.page_title")) %>
 <% end %>
 
-<%# Two-column layout: main content left, password right %>
-<div class="mx-auto max-w-5xl grid grid-cols-1 lg:grid-cols-5 items-start gap-6">
-  <div class="lg:col-span-3 space-y-6">
-    <%= render "profiles/personal_info", user: @user %>
-    <%= render "profiles/access_tokens", user: @user, access_tokens: @access_tokens %>
+<div class="mx-auto max-w-5xl">
+  <%# ===== HEADER ===== %>
+  <div class="mb-5 flex min-w-0 items-start gap-3.5">
+    <div class="ws-tile">
+      <%= icon_for(:user_circle) %>
+    </div>
+
+    <div class="min-w-0">
+      <div class="flex flex-wrap items-center gap-2">
+        <h1 class="font-display text-2xl font-medium leading-[1.4] tracking-tight break-words"><%= @user.name.presence || @user.email_address.split("@").first %></h1>
+
+        <% if @user.admin? %>
+          <%= render "components/badge", variant: :default, size: :sm do %>
+            <%= t("profiles.show.role_admin") %>
+          <% end %>
+        <% else %>
+          <%= render "components/badge", variant: :secondary, size: :sm do %>
+            <%= t("profiles.show.role_member") %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <p class="mt-1 text-sm text-muted-foreground break-words"><%= @user.email_address %></p>
+
+      <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+        <span class="stat-chip" title="<%= @user.created_at.strftime("%B %-d, %Y") %>">
+          <%= icon_for(:clock) %>
+          <%= t("profiles.show.member_since", time: time_ago_in_words(@user.created_at)) %>
+        </span>
+        <span class="stat-chip">
+          <%= icon_for(:key) %>
+          <%= t("profiles.show.tokens_count", count: @access_tokens.size) %>
+        </span>
+      </div>
+    </div>
   </div>
 
-  <div class="lg:col-span-2">
-    <div class="lg:sticky lg:top-6">
-      <%= render "profiles/change_password", user: @user %>
+  <div class="mb-5">
+    <%= render "components/separator" %>
+  </div>
+
+  <%# ===== CONTENT: main content left, password right ===== %>
+  <div class="grid grid-cols-1 lg:grid-cols-5 items-start gap-6">
+    <div class="lg:col-span-3 space-y-6">
+      <%= render "profiles/personal_info", user: @user %>
+      <%= render "profiles/access_tokens", user: @user, access_tokens: @access_tokens %>
+    </div>
+
+    <div class="lg:col-span-2">
+      <div class="lg:sticky lg:top-6">
+        <%= render "profiles/change_password", user: @user %>
+      </div>
     </div>
   </div>
 </div>
