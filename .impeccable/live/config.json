@@ -1,0 +1,10 @@
+{
+  "files": [
+    "app/views/layouts/marketing.html.erb",
+    "app/views/layouts/application.html.erb",
+    "app/views/layouts/security.html.erb"
+  ],
+  "insertBefore": "</body>",
+  "commentSyntax": "html",
+  "cspChecked": true
+}

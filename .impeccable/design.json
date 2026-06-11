@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-11T00:00:00Z",
+  "title": "Design System: Recuerd0",
+  "extensions": {
+    "colorMeta": {
+      "memory-green": {
+        "role": "primary",
+        "displayName": "Memory Green",
+        "canonical": "oklch(0.600 0.190 150)",
+        "tonalRamp": [
+          "oklch(0.250 0.090 150)",
+          "oklch(0.330 0.120 150)",
+          "oklch(0.420 0.150 150)",
+          "oklch(0.510 0.175 150)",
+          "oklch(0.600 0.190 150)",
+          "oklch(0.700 0.150 150)",
+          "oklch(0.820 0.090 150)",
+          "oklch(0.940 0.045 150)"
+        ]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Tint Green",
+        "canonical": "oklch(0.940 0.045 150)",
+        "tonalRamp": [
+          "oklch(0.280 0.055 150)",
+          "oklch(0.400 0.070 150)",
+          "oklch(0.520 0.075 150)",
+          "oklch(0.640 0.070 150)",
+          "oklch(0.760 0.060 150)",
+          "oklch(0.860 0.050 150)",
+          "oklch(0.940 0.045 150)",
+          "oklch(0.975 0.020 150)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "oklch(1.000 0.000 0)",
+        "tonalRamp": [
+          "oklch(0.170 0.010 150)",
+          "oklch(0.260 0.012 150)",
+          "oklch(0.400 0.010 150)",
+          "oklch(0.600 0.008 150)",
+          "oklch(0.760 0.006 150)",
+          "oklch(0.900 0.010 150)",
+          "oklch(0.975 0.006 150)",
+          "oklch(1.000 0.000 0)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(0.145 0.000 0)",
+        "tonalRamp": [
+          "oklch(0.145 0.000 0)",
+          "oklch(0.250 0.005 150)",
+          "oklch(0.350 0.008 150)",
+          "oklch(0.460 0.010 150)",
+          "oklch(0.600 0.010 150)",
+          "oklch(0.750 0.008 150)",
+          "oklch(0.880 0.006 150)",
+          "oklch(0.960 0.004 150)"
+        ]
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "oklch(0.460 0.010 150)",
+        "tonalRamp": [
+          "oklch(0.200 0.008 150)",
+          "oklch(0.300 0.010 150)",
+          "oklch(0.400 0.010 150)",
+          "oklch(0.460 0.010 150)",
+          "oklch(0.580 0.010 150)",
+          "oklch(0.720 0.008 150)",
+          "oklch(0.860 0.006 150)",
+          "oklch(0.940 0.004 150)"
+        ]
+      },
+      "destructive": {
+        "role": "semantic",
+        "displayName": "Destructive Red",
+        "canonical": "oklch(0.580 0.237 28.43)",
+        "tonalRamp": [
+          "oklch(0.300 0.130 28.43)",
+          "oklch(0.380 0.165 28.43)",
+          "oklch(0.460 0.195 28.43)",
+          "oklch(0.520 0.220 28.43)",
+          "oklch(0.580 0.237 28.43)",
+          "oklch(0.700 0.180 28.43)",
+          "oklch(0.840 0.100 28.43)",
+          "oklch(0.940 0.045 28.43)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display — Jura 500", "purpose": "Marketing hero and page headings. Ceiling under 6rem; the page designs, it does not shout." },
+      "headline": { "displayName": "Headline — Jura 500", "purpose": "Section headings, marketing and in-app." },
+      "title": { "displayName": "Title — Jura 500", "purpose": "Card titles and the borderless form-title document input." },
+      "body": { "displayName": "Body — Instrument Sans 400", "purpose": "All prose and UI text. Measure capped at 65–75ch." },
+      "label": { "displayName": "Label — Geist Mono 400", "purpose": "Tags, badges, technical metadata. The one technical tell; small chrome only." }
+    },
+    "shadows": [
+      { "name": "hairline", "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)", "purpose": "Inputs at rest and checked segmented-control items. The --shadow-xs workhorse." },
+      { "name": "focus-ring", "value": "0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, oklch(0.600 0.190 150) 50%, transparent)", "purpose": "Universal focus treatment on every focusable control. A 3px Memory-Green halo." },
+      { "name": "frosted-float", "value": "0 8px 32px rgb(0 0 0 / 0.08), 0 2px 8px rgb(0 0 0 / 0.05)", "purpose": "Toasts only, paired with backdrop-filter: blur(16px) saturate(1.4). The single frosted exception." }
+    ],
+    "motion": [
+      { "name": "state-150", "value": "150ms", "purpose": "Default duration for color/box-shadow state transitions (buttons, inputs, tag-x)." },
+      { "name": "ease-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Ease-out-quint for entrances and reveals. No bounce, no elastic." }
+    ],
+    "breakpoints": [
+      { "name": "mobile-max", "value": "767px" },
+      { "name": "sidebar-width", "value": "16rem" },
+      { "name": "sidebar-width-icon", "value": "3rem" },
+      { "name": "header-height", "value": "3.5rem" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single call-to-action. Memory Green fill, compact, no gloss or lift.",
+      "html": "<button class=\"ds-btn-primary\">Start preserving</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 36px; padding: 8px 16px; background: var(--primary, oklch(0.600 0.190 150)); color: var(--primary-foreground, oklch(1 0 0)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border: none; border-radius: var(--radius, 8px); cursor: pointer; transition: background 150ms; } .ds-btn-primary:hover { background: oklch(0.555 0.185 150); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.600 0.190 150)) 50%, transparent); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Quiet alternative action. Tint Green fill, Secondary Ink text.",
+      "html": "<button class=\"ds-btn-secondary\">Read the docs</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 36px; padding: 8px 16px; background: var(--secondary, oklch(0.940 0.045 150)); color: var(--secondary-foreground, oklch(0.280 0.055 150)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border: none; border-radius: var(--radius, 8px); cursor: pointer; transition: background 150ms; } .ds-btn-secondary:hover { background: oklch(0.910 0.050 150); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.600 0.190 150)) 50%, transparent); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Lowest-emphasis action. Transparent at rest, Muted fill on hover.",
+      "html": "<button class=\"ds-btn-ghost\">Cancel</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 36px; padding: 8px 16px; background: transparent; color: var(--foreground, oklch(0.145 0 0)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border: none; border-radius: var(--radius, 8px); cursor: pointer; transition: background 150ms; } .ds-btn-ghost:hover { background: var(--muted, oklch(0.960 0.008 150)); } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.600 0.190 150)) 50%, transparent); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard field. Hairline shadow at rest; Memory-Green border + halo on focus.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search memories…\" />",
+      "css": ".ds-input { width: 100%; height: 36px; padding: 8px 12px; background: var(--background, oklch(1 0 0)); color: var(--foreground, oklch(0.145 0 0)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; border: 1px solid var(--input, oklch(0.900 0.010 150)); border-radius: var(--radius, 8px); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); transition: color 150ms, box-shadow 150ms, border-color 150ms; } .ds-input::placeholder { color: var(--muted-foreground, oklch(0.460 0.010 150)); opacity: 0.75; } .ds-input:focus { outline: none; border-color: var(--ring, oklch(0.600 0.190 150)); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.600 0.190 150)) 50%, transparent); }"
+    },
+    {
+      "name": "Content Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A workspace or memory card. Flat at rest — separated by a hairline border, never a drop shadow.",
+      "html": "<article class=\"ds-card\"><h3 class=\"ds-card-title\">API conventions</h3><p class=\"ds-card-body\">Bearer auth, scoped tokens, Link-header pagination.</p></article>",
+      "css": ".ds-card { background: var(--card, oklch(1 0 0)); color: var(--card-foreground, oklch(0.145 0 0)); border: 1px solid var(--border, oklch(0.900 0.010 150)); border-radius: 12px; padding: 24px; } .ds-card-title { margin: 0 0 0.5rem; font-family: 'Jura', system-ui, sans-serif; font-weight: 500; font-size: 1.6rem; line-height: 1.4; letter-spacing: -0.01em; color: var(--foreground, oklch(0.145 0 0)); } .ds-card-body { margin: 0; font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.9375rem; line-height: 1.6; color: var(--muted-foreground, oklch(0.460 0.010 150)); }"
+    },
+    {
+      "name": "Tag Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Mono-type tag chip. The system's one technical tell — small chrome only.",
+      "html": "<span class=\"ds-tag\">architecture</span>",
+      "css": ".ds-tag { display: inline-flex; align-items: center; padding: 2px 8px; background: var(--muted, oklch(0.960 0.008 150)); color: var(--muted-foreground, oklch(0.460 0.010 150)); font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.625rem; letter-spacing: 0.15em; text-transform: lowercase; border-radius: 4px; }"
+    },
+    {
+      "name": "Toast",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "The single frosted-glass exception. Neutral surface, variant color lives in the icon badge, not a border stripe.",
+      "html": "<div class=\"ds-toast\"><span class=\"ds-toast-badge\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"></polyline></svg></span><span class=\"ds-toast-text\">Memory saved · v3</span></div>",
+      "css": ".ds-toast { display: inline-flex; align-items: center; gap: 0.625rem; padding: 16px; background: oklch(1 0 0 / 0.82); color: var(--foreground, oklch(0.145 0 0)); border: 1px solid color-mix(in oklch, var(--border, oklch(0.900 0.010 150)) 70%, transparent); border-radius: 0.75rem; backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); box-shadow: 0 8px 32px rgb(0 0 0 / 0.08), 0 2px 8px rgb(0 0 0 / 0.05); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; } .ds-toast-badge { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 999px; background: var(--success, oklch(0.940 0.035 150)); color: var(--success-foreground, oklch(0.300 0.065 150)); }"
+    },
+    {
+      "name": "Memory-Layers Logomark",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "The north star made literal: three rounded rectangles offset 8px diagonally at 15/40/100% opacity, all Memory Green.",
+      "html": "<svg class=\"ds-logo\" viewBox=\"0 0 52 56\" width=\"52\" height=\"56\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"16\" y=\"2\" width=\"32\" height=\"38\" rx=\"7\" fill=\"oklch(0.600 0.190 150)\" opacity=\"0.15\"/><rect x=\"8\" y=\"10\" width=\"32\" height=\"38\" rx=\"7\" fill=\"oklch(0.600 0.190 150)\" opacity=\"0.40\"/><rect x=\"0\" y=\"18\" width=\"32\" height=\"38\" rx=\"7\" fill=\"oklch(0.600 0.190 150)\"/></svg>",
+      "css": ".ds-logo { display: block; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Layered Archive",
+    "overview": "Recuerd0's interface is a place where knowledge accumulates in legible strata. The logomark — three rounded rectangles stacked at increasing opacity — is not decoration; it is the whole system's thesis. Each layer is a version, a decision, a preserved thought, and the design treats the screen the same way: clean planes of one calm green hue, depth built from transparency and tonal layering rather than noise. It is the visual form of 'like Git for context' — structure you can read at a glance, history you can trust. The personality is precise, human, and quietly confident — a developer tool built by people who care about craft. Density is moderate and breathing: generous whitespace, a single restrained accent, type that does the talking. Authority comes from clarity, not volume. The marketing surface is proof of the product's own philosophy ('simple tools, used well, beat complex ones'), so every element must earn its place.",
+    "keyCharacteristics": [
+      "One hue, hue 150 (green), carries the entire identity — light and dark.",
+      "Flat by default; depth from transparency and tonal layers, not heavy shadow.",
+      "Three-font system: Jura (display), Instrument Sans (body), Geist Mono (labels/code).",
+      "The accent is rare and load-bearing, never a wash.",
+      "Lowercase brand, always: recuerd0."
+    ],
+    "rules": [
+      { "name": "The One Green Rule", "body": "Memory Green is the only chromatic accent in the product palette. It appears on roughly ≤10% of any screen. If two things on a screen are green, one of them is wrong. Its scarcity is what makes it mean 'this matters / this is live.'", "section": "colors" },
+      { "name": "The True-Neutral Rule", "body": "Backgrounds are chroma-0 Paper or near-zero tinted neutrals. The cream/sand/beige warm-near-white is forbidden — warmth comes from Jura and the green, not from the body color.", "section": "colors" },
+      { "name": "The Dark-Mode Lift Rule", "body": "In dark mode the hue holds; lightness inverts around oklch(0.170 0.010 150) surfaces with oklch(0.580 0.180 150) accent. Never invert by desaturating to gray — the green identity survives the switch.", "section": "colors" },
+      { "name": "The Jura-Headlines Rule", "body": "Every heading is Jura 500. Body is never Jura; labels are never Instrument Sans. The three faces stay in their lanes so the contrast axis reads.", "section": "typography" },
+      { "name": "The Lowercase Wordmark Rule", "body": "The brand is always recuerd0, lowercase, with the terminal '0' in Memory Green at a heavier weight. Never capitalize, never recolor.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. Shadow appears only as a response to state — focus, the pressed segment, a floating toast. If a card has a resting drop-shadow, it is wrong; separate with a border or a tonal plane instead.", "section": "elevation" },
+      { "name": "The One-Frost Rule", "body": "Backdrop-blur glass exists in exactly one place: the toast. It floats above the app, so it earns the frost. Glassmorphism anywhere else — cards, nav, hero panels — is forbidden.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep Memory Green load-bearing and rare — ≤10% of any screen (The One Green Rule).",
+      "Do build depth from tonal planes (Paper / Muted / Sidebar) and transparency, not from resting shadows (The Flat-By-Default Rule).",
+      "Do use the exact Focus Ring formula on every focusable control: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent).",
+      "Do keep the three fonts in their lanes: Jura 500 for all headings, Instrument Sans for body, Geist Mono for labels/tags/code.",
+      "Do hold body and placeholder text to ≥4.5:1 (target 7:1 / AAA where feasible); bump Muted Ink toward Ink before shipping faint text.",
+      "Do pair every status with text or icon, never hue alone (color-blind safe).",
+      "Do write the brand lowercase: recuerd0, terminal '0' in Memory Green.",
+      "Do show real material — an actual API call, a version diff, a workspace — over abstract promises (concrete > abstract)."
+    ],
+    "donts": [
+      "Don't use a cream / sand / beige / warm-near-white body background. Backgrounds are chroma-0 Paper or near-zero tinted neutral (The True-Neutral Rule).",
+      "Don't ship the generic SaaS landing: no hero-metric template (big number + small label + gradient accent), no identical icon-heading-text card grids repeated down the page.",
+      "Don't put a tiny uppercase tracked eyebrow above every section, or 01 / 02 / 03 numbered markers as default scaffolding. Numbers earn their place only in a real sequence.",
+      "Don't frame this as an 'AI-powered' / 'intelligent' / 'magic' product, or use chat-bubble UI. The human curates; the machine consumes.",
+      "Don't use gradient text (background-clip: text), decorative glassmorphism (frost is toasts-only), or border-left/border-right > 1px as a colored stripe accent.",
+      "Don't add resting drop-shadows to cards, or transform-bounce/elastic motion on buttons. Motion is restrained; ease-out only, with a prefers-reduced-motion fallback.",
+      "Don't nest a card inside a card.",
+      "Don't reach for enterprise buzzwords or hype in UI copy (leverage, unlock, supercharge, 10x, seamless, frictionless, disrupt, game-changer, synergy, paradigm)."
+    ]
+  }
+}
