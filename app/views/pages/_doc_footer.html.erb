@@ -12,6 +12,7 @@
         <li><%= link_to "API Docs", api_docs_path %></li>
         <li><%= link_to "CLI", cli_path %></li>
         <li><%= link_to "Agents", agents_path %></li>
+        <li><%= link_to "MCP", mcp_path %></li>
       </ul>
     </div>
 
@@ -34,6 +35,14 @@
       </ul>
     </div>
   </div>
+
+  <button type="button"
+          class="back-to-top"
+          data-controller="back-to-top"
+          data-action="back-to-top#scrollTop"
+          aria-label="Back to top">
+    <%= icon_for(:chevron_up, class: "size-4") %>
+  </button>
 
   <div class="doc-footer-bottom">
     <span class="doc-footer-year">&copy; 2026 recuerd0 - Mario Alberto Chávez</span>

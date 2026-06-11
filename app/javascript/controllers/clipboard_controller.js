@@ -14,7 +14,9 @@ export default class extends Controller {
   }
 
   copy() {
-    const text = this.textValue || this.sourceTarget.value
+    // Read from the text value, an input's value, or a non-input element's
+    // text (e.g. a <code> block), in that order.
+    const text = this.textValue || this.sourceTarget.value || this.sourceTarget.textContent
     navigator.clipboard.writeText(text).then(() => {
       this.showFeedback()
     }).catch(() => {})

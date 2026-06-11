@@ -2,17 +2,29 @@
 <% content_for :description, "recuerd0 source code license: MIT with a no-competing-SaaS clause. Free to self-host, modify, and deploy." %>
 <% content_for :canonical_url, "https://recuerd0.ai/license" %>
 
+<% content_for :structured_data do %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://recuerd0.ai/" },
+    { "@type": "ListItem", "position": 2, "name": "License", "item": "https://recuerd0.ai/license" }
+  ]
+}
+</script>
+<% end %>
+
 <div data-controller="marketing-nav">
 
   <%= render "pages/marketing_nav" %>
 
-  <div class="legal-content">
-    <h1>License</h1>
-    <p class="legal-date">February 2026</p>
+  <main class="legal-content">
+    <%= render "pages/legal_header", title: "License", date_label: "February 2026", date_iso: "2026-02" %>
 
     <div class="legal-body">
       <h2>OSaaS License (MIT + No Competing SaaS)</h2>
-      <p>Copyright &copy; 2026 Mario Alberto Chavez Cardenas</p>
+      <p>Copyright &copy; 2026 <a href="https://mariochavez.io" target="_blank" rel="noopener">Mario Alberto Chávez Cárdenas</a></p>
 
       <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &ldquo;Software&rdquo;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
 
@@ -21,9 +33,11 @@
         <li>You may not use the Software, or any derivative work, to offer a commercially competing hosted service &mdash; that is, a software-as-a-service product whose primary purpose is substantially similar to the Software. Self-hosting for internal or personal use, including within an organization, is always permitted.</li>
       </ol>
 
-      <p>THE SOFTWARE IS PROVIDED &ldquo;AS IS&rdquo;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+      <p class="legal-disclaimer">THE SOFTWARE IS PROVIDED &ldquo;AS IS&rdquo;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+
+      <p>The canonical license and full source live in the <a href="https://github.com/maquina-app/recuerd0" target="_blank" rel="noopener">recuerd0 repository</a>.</p>
     </div>
-  </div>
+  </main>
 
   <%= render "pages/marketing_footer" %>
 

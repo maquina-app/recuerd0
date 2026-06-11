@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <%# Arm scroll-reveal before first paint: content is visible by default, so
+        no-JS visitors, crawlers, and prerenderers never see a blank page; this
+        flag opts JS-capable browsers into the entrance animation without a flash. %>
+    <script>document.documentElement.classList.add("reveal-on")</script>
     <title><%= content_for(:title) || "recuerd0 — The knowledge base your AI tools deserve" %></title>
     <meta name="description" content="<%= content_for(:description) || "Organize, version, and serve project context to any LLM. Human-curated memory, instantly accessible via REST API." %>">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -12,10 +16,14 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="recuerd0">
     <meta property="og:image" content="<%= content_for(:og_image) || image_url("recuerdo-og.png") %>">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="recuerd0 — the knowledge base your AI tools deserve">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<%= content_for(:og_title) || content_for(:title) || "recuerd0" %>">
     <meta name="twitter:description" content="<%= content_for(:og_description) || content_for(:description) || "Organize, version, and serve project context to any LLM." %>">
     <meta name="twitter:image" content="<%= content_for(:og_image) || image_url("recuerdo-og.png") %>">
+    <meta name="twitter:image:alt" content="recuerd0 — the knowledge base your AI tools deserve">
 
     <link rel="canonical" href="<%= content_for(:canonical_url) || request.original_url %>">
 

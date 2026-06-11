@@ -4,9 +4,9 @@
 
 /* Marketing-specific design tokens */
 .marketing {
-  --m-primary: oklch(0.480 0.190 150);
+  --m-primary: oklch(0.480 0.190 150); /* darker on-white variant of the canonical Memory Green (0.600); see DESIGN.md Colors */
   --m-primary-hover: oklch(0.420 0.180 150);
-  --m-primary-dim: oklch(0.550 0.140 150);
+  --m-primary-dim: oklch(0.470 0.160 150); /* 5.84:1 on --m-bg — clears WCAG AA (was 4.32:1, failing) */
   --m-primary-glow: oklch(0.480 0.190 150 / 0.10);
   --m-primary-ghost: oklch(0.480 0.190 150 / 0.05);
   --m-primary-wash: oklch(0.480 0.190 150 / 0.03);
@@ -24,7 +24,7 @@
 
   --m-text: #1a2420;
   --m-text-secondary: oklch(0.420 0.020 150);
-  --m-text-dim: oklch(0.550 0.015 150);
+  --m-text-dim: oklch(0.450 0.015 150); /* 7.00:1 on --m-bg — WCAG AAA, incl. small captions (was 4.56:1) */
 
   --m-code-bg: #f0f3f1;
   --m-code-border: oklch(0.800 0.020 150 / 0.5);
@@ -41,6 +41,11 @@
   --m-get: oklch(0.450 0.160 250);
   --m-get-bg: oklch(0.450 0.160 250 / 0.06);
   --m-get-border: oklch(0.450 0.160 250 / 0.15);
+  /* Note / info callouts — shares the GET blue value but is its own role so
+     doc notes don't borrow the HTTP-method token's meaning */
+  --m-note: oklch(0.450 0.160 250);
+  --m-note-bg: oklch(0.450 0.160 250 / 0.06);
+  --m-note-border: oklch(0.450 0.160 250 / 0.15);
   --m-post: oklch(0.480 0.190 150);
   --m-post-bg: oklch(0.480 0.190 150 / 0.06);
   --m-post-border: oklch(0.480 0.190 150 / 0.15);
@@ -52,6 +57,15 @@
   --m-delete-border: oklch(0.500 0.170 25 / 0.15);
   --m-sidebar-w: 260px;
   --m-header-h: 60px;
+
+  /* Doc-page small-text ramp — five deliberate steps below the headings
+     (h1 2.4 / h2 1.6 / h3 1.15 / lead 1.05rem stay literal). Snap muddy
+     values onto these so the cli/api-docs/agents pages share one scale. */
+  --doc-body: 0.9rem;    /* prose paragraphs */
+  --doc-dense: 0.85rem;  /* tables, callouts, dense content text */
+  --doc-code: 0.78rem;   /* mono / code body */
+  --doc-meta: 0.72rem;   /* small-caps meta, table headers */
+  --doc-label: 0.6rem;   /* micro uppercase chrome (labels, badges) */
 }
 
 /* ========================================
@@ -309,6 +323,7 @@
   font-size: clamp(2.5rem, 5vw, 3.8rem);
   line-height: 1.1;
   letter-spacing: -1px;
+  text-wrap: balance;
   color: var(--m-text);
   margin-bottom: 1.5rem;
   opacity: 0;
@@ -482,31 +497,13 @@
 /* ========================================
    SECTION HEADINGS
    ======================================== */
-.marketing .section-label {
-  font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 0.65rem;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--m-primary);
-  margin-bottom: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.marketing .section-label::before {
-  content: '';
-  width: 24px;
-  height: 1px;
-  background: var(--m-primary);
-}
-
 .marketing .m-section-title {
   font-family: 'Jura', system-ui, sans-serif;
-  font-weight: 300;
+  font-weight: 500; /* section headings carry the section on their own now that the eyebrow is gone (matches DESIGN.md) */
   font-size: clamp(1.8rem, 3.5vw, 2.6rem);
   line-height: 1.2;
   letter-spacing: -0.5px;
+  text-wrap: balance;
   margin-bottom: 1.25rem;
   color: var(--m-text);
 }
@@ -679,6 +676,10 @@
   text-transform: uppercase;
   color: var(--m-text-dim);
   padding: 0.65rem 1.5rem;
+  min-height: 44px; /* comfortable touch target */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   cursor: pointer;
@@ -784,36 +785,66 @@
   margin-top: 4rem;
 }
 
+/* Feature cards: icon-led, vertical. The green line icon is the per-card accent
+   (it carries the One Green Rule), the card body is neutral, and the tag row is a
+   quiet metadata footer — no side-stripe, no button-like chips. */
 .marketing .feature-card {
-  padding: 2.25rem;
+  padding: 2rem;
   background: var(--m-bg-card);
   border: 1px solid var(--m-border);
   border-radius: 10px;
   display: flex;
-  gap: 1.5rem;
-  transition: all 0.4s var(--m-ease-out);
+  flex-direction: column;
+  gap: 1rem;
+  transition: border-color 0.3s var(--m-ease-out), background 0.3s var(--m-ease-out), box-shadow 0.3s var(--m-ease-out), transform 0.3s var(--m-ease-out);
   box-shadow: var(--m-shadow-sm);
 }
 
 .marketing .feature-card:hover {
-  border-color: oklch(0.480 0.190 150 / 0.2);
+  border-color: oklch(0.480 0.190 150 / 0.25);
   background: var(--m-bg-card-hover);
   box-shadow: var(--m-shadow-md);
   transform: translateY(-2px);
 }
 
-.marketing .feature-marker {
+.marketing .feature-icon {
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
-  width: 3px;
-  background: linear-gradient(180deg, var(--m-primary), oklch(0.480 0.190 150 / 0.15));
-  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: var(--m-primary-ghost);
+  border: 1px solid oklch(0.480 0.190 150 / 0.12);
+  color: var(--m-primary);
+}
+
+.marketing .feature-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Content wrapper grows so the metadata footer can sit flush at the bottom,
+   keeping tag rows aligned across cards of unequal copy length. */
+.marketing .feature-card > div:last-child {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* The icon tile lifts toward the brand green on hover, tying the card's motion
+   to its one accent. */
+.marketing .feature-card:hover .feature-icon {
+  background: oklch(0.480 0.190 150 / 0.10);
+  border-color: oklch(0.480 0.190 150 / 0.30);
 }
 
 .marketing .feature-card h3 {
   font-family: 'Jura', system-ui, sans-serif;
   font-weight: 500;
-  font-size: 1.05rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
   color: var(--m-text);
 }
 
@@ -825,8 +856,11 @@
 
 .marketing .feature-meta {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: auto;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--m-border-subtle);
 }
 
 .marketing .feature-chip {
@@ -835,10 +869,6 @@
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--m-text-dim);
-  padding: 0.2rem 0.6rem;
-  border: 1px solid var(--m-border);
-  border-radius: 3px;
-  background: var(--m-surface);
 }
 
 /* ========================================
@@ -1037,11 +1067,11 @@
 .marketing .doc-sidebar::-webkit-scrollbar { width: 4px; }
 .marketing .doc-sidebar::-webkit-scrollbar-thumb { background: var(--m-border); border-radius: 4px; }
 .marketing .sidebar-group { margin-bottom: 1.75rem; padding: 0 1.25rem; }
-.marketing .sidebar-heading { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 2.5px; text-transform: uppercase; color: var(--m-text-dim); margin-bottom: 0.6rem; padding-left: 0.75rem; }
+.marketing .sidebar-heading { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 2.5px; text-transform: uppercase; color: var(--m-text-dim); margin-bottom: 0.6rem; padding-left: 0.75rem; }
 .marketing .sidebar-link { display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; color: var(--m-text-secondary); padding: 0.35rem 0.75rem; border-radius: 5px; transition: all 0.2s; margin-bottom: 1px; }
 .marketing .sidebar-link:hover { color: var(--m-primary); background: var(--m-primary-ghost); }
 .marketing .sidebar-link.active { color: var(--m-primary); background: var(--m-primary-ghost); font-weight: 500; }
-.marketing .sidebar-method { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.55rem; font-weight: 500; letter-spacing: 0.5px; padding: 0.1rem 0.35rem; border-radius: 3px; flex-shrink: 0; min-width: 36px; text-align: center; }
+.marketing .sidebar-method { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); font-weight: 500; letter-spacing: 0.5px; padding: 0.1rem 0.35rem; border-radius: 3px; flex-shrink: 0; min-width: 36px; text-align: center; }
 .marketing .sidebar-method.get { color: var(--m-get); background: var(--m-get-bg); }
 .marketing .sidebar-method.post { color: var(--m-post); background: var(--m-post-bg); }
 .marketing .sidebar-method.patch { color: var(--m-patch); background: var(--m-patch-bg); }
@@ -1054,26 +1084,24 @@
 .marketing .doc-content { max-width: 820px; margin: 0 auto; padding: 3rem 3rem 6rem; }
 
 .marketing .page-header { margin-bottom: 3.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--m-border-subtle); }
-.marketing .page-header h1 { font-family: 'Jura', system-ui, sans-serif; font-weight: 300; font-size: 2.4rem; letter-spacing: -0.5px; margin-bottom: 0.75rem; }
+.marketing .page-header h1 { font-family: 'Jura', system-ui, sans-serif; font-weight: 500; font-size: 2.4rem; letter-spacing: -0.5px; margin-bottom: 0.75rem; }
 .marketing .page-header h1 em { font-style: normal; color: var(--m-primary); font-weight: 500; }
 .marketing .page-header p { font-size: 1.05rem; color: var(--m-text-secondary); line-height: 1.7; max-width: 580px; }
-.marketing .base-url-bar { display: inline-flex; align-items: center; gap: 0.75rem; margin-top: 1.25rem; padding: 0.55rem 1rem; background: var(--m-code-bg); border: 1px solid var(--m-code-border); border-radius: 6px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; color: var(--m-text-secondary); }
-.marketing .base-url-bar .label { font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--m-text-dim); }
+.marketing .base-url-bar { display: inline-flex; align-items: center; gap: 0.75rem; margin-top: 1.25rem; padding: 0.55rem 1rem; background: var(--m-code-bg); border: 1px solid var(--m-code-border); border-radius: 6px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); color: var(--m-text-secondary); }
+.marketing .base-url-bar .label { font-size: var(--doc-label); letter-spacing: 1.5px; text-transform: uppercase; color: var(--m-text-dim); }
 .marketing .base-url-bar code { color: var(--m-primary); font-family: inherit; }
 
 /* Sections & endpoints */
 .marketing .api-section { margin-bottom: 2rem; scroll-margin-top: calc(var(--m-header-h) + 1.5rem); }
 .marketing .section-divider { height: 1px; background: var(--m-border-subtle); margin: 3rem 0; }
-.marketing .resource-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--m-primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem; }
-.marketing .resource-label::before { content: ''; width: 20px; height: 1px; background: var(--m-primary); }
 .marketing .resource-header { margin-bottom: 2rem; }
-.marketing .resource-header h2 { font-family: 'Jura', system-ui, sans-serif; font-weight: 300; font-size: 1.6rem; letter-spacing: -0.3px; margin-bottom: 0.5rem; }
-.marketing .resource-header p { font-size: 0.92rem; color: var(--m-text-secondary); line-height: 1.7; }
+.marketing .resource-header h2 { font-family: 'Jura', system-ui, sans-serif; font-weight: 500; font-size: 1.6rem; letter-spacing: -0.3px; margin-bottom: 0.5rem; }
+.marketing .resource-header p { font-size: var(--doc-body); color: var(--m-text-secondary); line-height: 1.7; }
 
 .marketing .endpoint { margin-bottom: 3rem; scroll-margin-top: calc(var(--m-header-h) + 1.5rem); }
 .marketing .endpoint-head { margin-bottom: 1rem; }
 .marketing .endpoint-head h3 { font-family: 'Jura', system-ui, sans-serif; font-weight: 500; font-size: 1.15rem; margin-bottom: 0.4rem; }
-.marketing .endpoint-head p { font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.6; }
+.marketing .endpoint-head p { font-size: var(--doc-body); color: var(--m-text-secondary); line-height: 1.6; }
 
 /* Route bars */
 .marketing .route-bar { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; border-radius: 8px; border: 1px solid; margin-bottom: 1.5rem; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.82rem; }
@@ -1081,26 +1109,26 @@
 .marketing .route-bar.post { background: var(--m-post-bg); border-color: var(--m-post-border); }
 .marketing .route-bar.patch { background: var(--m-patch-bg); border-color: var(--m-patch-border); }
 .marketing .route-bar.delete { background: var(--m-delete-bg); border-color: var(--m-delete-border); }
-.marketing .route-method { font-weight: 500; font-size: 0.72rem; letter-spacing: 0.5px; padding: 0.2rem 0.5rem; border-radius: 4px; min-width: 52px; text-align: center; }
+.marketing .route-method { font-weight: 500; font-size: var(--doc-meta); letter-spacing: 0.5px; padding: 0.2rem 0.5rem; border-radius: 4px; min-width: 52px; text-align: center; }
 .marketing .route-bar.get .route-method { color: var(--m-get); background: oklch(0.450 0.160 250 / 0.1); }
 .marketing .route-bar.post .route-method { color: var(--m-post); background: oklch(0.480 0.190 150 / 0.1); }
 .marketing .route-bar.patch .route-method { color: var(--m-patch); background: oklch(0.520 0.160 70 / 0.1); }
 .marketing .route-bar.delete .route-method { color: var(--m-delete); background: oklch(0.500 0.170 25 / 0.1); }
 .marketing .route-path { color: var(--m-text); }
 .marketing .route-path .param { color: var(--m-primary-dim); }
-.marketing .route-badge { margin-left: auto; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim); padding: 0.15rem 0.5rem; border: 1px solid var(--m-border); border-radius: 3px; background: var(--m-bg-elevated); }
+.marketing .route-badge { margin-left: auto; font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim); padding: 0.15rem 0.5rem; border: 1px solid var(--m-border); border-radius: 3px; background: var(--m-bg-elevated); }
 
 /* Tables */
-.marketing .param-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.85rem; }
-.marketing .param-table-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--m-text-dim); margin-bottom: 0.5rem; }
-.marketing .param-table thead th { font-weight: 500; font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase; color: var(--m-text-dim); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--m-border); background: var(--m-surface); }
+.marketing .param-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: var(--doc-dense); }
+.marketing .param-table-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 2px; text-transform: uppercase; color: var(--m-text-dim); margin-bottom: 0.5rem; }
+.marketing .param-table thead th { font-weight: 500; font-size: var(--doc-meta); letter-spacing: 0.5px; text-transform: uppercase; color: var(--m-text-dim); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--m-border); background: var(--m-surface); }
 .marketing .param-table thead th:first-child { border-radius: 6px 0 0 0; }
 .marketing .param-table thead th:last-child { border-radius: 0 6px 0 0; }
 .marketing .param-table tbody td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--m-border-subtle); color: var(--m-text-secondary); vertical-align: top; }
 .marketing .param-table tbody tr:last-child td { border-bottom: none; }
-.marketing .param-name { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; color: var(--m-text); white-space: nowrap; }
-.marketing .param-type { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.72rem; color: var(--m-text-dim); }
-.marketing .param-required { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 0.5px; color: var(--m-primary); background: var(--m-primary-ghost); padding: 0.1rem 0.35rem; border-radius: 3px; }
+.marketing .param-name { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); color: var(--m-text); white-space: nowrap; }
+.marketing .param-type { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-meta); color: var(--m-text-dim); }
+.marketing .param-required { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 0.5px; color: var(--m-primary); background: var(--m-primary-ghost); padding: 0.1rem 0.35rem; border-radius: 3px; }
 
 /* API code blocks (reuse .code-block but with different header) */
 .marketing .doc-content .code-block {
@@ -1108,7 +1136,42 @@
   margin-bottom: 1rem;
 }
 .marketing .code-head { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--m-border-subtle); background: var(--m-surface); }
-.marketing .code-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--m-text-dim); }
+.marketing .code-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 1.5px; text-transform: uppercase; color: var(--m-text-dim); }
+/* Output sample blocks (not runnable, no copy): unfilled head reads as a
+   result rather than something you type */
+.marketing .code-block--output .code-head { background: transparent; }
+.marketing .code-block--output .code-label::before { content: "↳ "; }
+
+/* Copy button in a code-head — muted icon, foreground on hover, green check on
+   success. Sits flush-right via the code-head's space-between; negative margins
+   keep it from growing the head height. Focus ring comes from the shared
+   .marketing button:focus-visible rule. */
+.marketing .code-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: -0.35rem -0.4rem -0.35rem 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: var(--m-text-dim);
+  cursor: pointer;
+  transition: color 150ms, background 150ms;
+}
+.marketing .code-copy:hover { color: var(--m-text); background: oklch(0 0 0 / 0.05); }
+/* Note: no `display` on .code-copy-glyph — it would outrank Tailwind's `.hidden`
+   and both icons would show. The clipboard controller toggles `.hidden`. */
+.marketing .code-copy svg { width: 14px; height: 14px; display: block; }
+.marketing .code-copy [data-clipboard-target="checkIcon"] { color: var(--m-primary); }
+.marketing .code-copy [data-clipboard-target="checkIcon"]:not(.hidden) { animation: m-copyPop 0.2s var(--m-ease-out); }
+
+@keyframes m-copyPop {
+  from { opacity: 0; transform: scale(0.55); }
+  to { opacity: 1; transform: scale(1); }
+}
 .marketing .code-status { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.62rem; letter-spacing: 0.5px; padding: 0.15rem 0.45rem; border-radius: 3px; }
 .marketing .code-status.s201 { color: var(--m-post); background: var(--m-post-bg); }
 .marketing .code-status.s200 { color: var(--m-get); background: var(--m-get-bg); }
@@ -1116,7 +1179,7 @@
 .marketing .code-status.s4xx { color: var(--m-delete); background: var(--m-delete-bg); }
 
 /* API code body syntax colors */
-.marketing .doc-content .code-body { padding: 1rem 1.25rem; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.76rem; line-height: 1.75; overflow-x: auto; background: var(--m-code-bg); color: var(--m-text-secondary); }
+.marketing .doc-content .code-body { padding: 1rem 1.25rem; font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); line-height: 1.75; overflow-x: auto; background: var(--m-code-bg); color: var(--m-text-secondary); }
 .marketing .doc-content .code-body code { font-family: inherit; white-space: pre; }
 .marketing .doc-content .code-body .ck { color: oklch(0.450 0.180 280); }
 .marketing .doc-content .code-body .cs { color: oklch(0.440 0.170 150); }
@@ -1125,29 +1188,37 @@
 .marketing .doc-content .code-body .cc { color: var(--m-text-dim); }
 
 /* Info boxes */
-.marketing .info-box { display: flex; gap: 0.75rem; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.6; color: var(--m-text-secondary); }
-.marketing .info-box.note { background: var(--m-get-bg); border: 1px solid var(--m-get-border); }
+.marketing .info-box { display: flex; gap: 0.75rem; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: var(--doc-dense); line-height: 1.6; color: var(--m-text-secondary); }
+.marketing .info-box.note { background: var(--m-note-bg); border: 1px solid var(--m-note-border); }
 .marketing .info-box.warn { background: var(--m-patch-bg); border: 1px solid var(--m-patch-border); }
 .marketing .info-box-icon { flex-shrink: 0; margin-top: 2px; }
-.marketing .info-box code { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; background: oklch(0 0 0 / 0.04); padding: 0.1rem 0.3rem; border-radius: 3px; }
+/* Carry the note role onto the inline icon so markup needn't hard-code the token */
+.marketing .info-box.note .info-box-icon svg { stroke: var(--m-note); }
+.marketing .info-box code { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); background: oklch(0 0 0 / 0.04); padding: 0.1rem 0.3rem; border-radius: 3px; }
+
+/* Shared doc note paragraph — replaces repeated inline font/color/line-height */
+.marketing .doc-note { font-size: var(--doc-body); color: var(--m-text-secondary); line-height: 1.7; margin: 1.25rem 0 1.5rem; }
+
+/* Horizontal scroll wrapper for wide tables on small viewports */
+.marketing .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
 /* Token grid */
 .marketing .token-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
 .marketing .token-card { padding: 1.25rem; border: 1px solid var(--m-border); border-radius: 8px; background: var(--m-bg-card); box-shadow: var(--m-shadow-sm); }
-.marketing .token-card h4 { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; color: var(--m-text); margin-bottom: 0.35rem; }
-.marketing .token-card p { font-size: 0.82rem; color: var(--m-text-secondary); line-height: 1.5; }
-.marketing .token-badge { display: inline-block; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.58rem; letter-spacing: 1px; text-transform: uppercase; padding: 0.15rem 0.4rem; border-radius: 3px; margin-bottom: 0.5rem; }
+.marketing .token-card h3 { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); color: var(--m-text); margin-bottom: 0.35rem; }
+.marketing .token-card p { font-size: var(--doc-dense); color: var(--m-text-secondary); line-height: 1.5; }
+.marketing .token-badge { display: inline-block; font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 1px; text-transform: uppercase; padding: 0.15rem 0.4rem; border-radius: 3px; margin-bottom: 0.5rem; }
 .marketing .token-badge.read { color: var(--m-get); background: var(--m-get-bg); border: 1px solid var(--m-get-border); }
 .marketing .token-badge.full { color: var(--m-post); background: var(--m-post-bg); border: 1px solid var(--m-post-border); }
 
 /* Operator table */
-.marketing .op-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.85rem; }
-.marketing .op-table thead th { font-weight: 500; font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase; color: var(--m-text-dim); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--m-border); background: var(--m-surface); }
+.marketing .op-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: var(--doc-dense); }
+.marketing .op-table thead th { font-weight: 500; font-size: var(--doc-meta); letter-spacing: 0.5px; text-transform: uppercase; color: var(--m-text-dim); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--m-border); background: var(--m-surface); }
 .marketing .op-table thead th:first-child { border-radius: 6px 0 0 0; }
 .marketing .op-table thead th:last-child { border-radius: 0 6px 0 0; }
 .marketing .op-table tbody td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--m-border-subtle); color: var(--m-text-secondary); }
 .marketing .op-table tbody tr:last-child td { border-bottom: none; }
-.marketing .op-table code { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.76rem; background: var(--m-code-bg); padding: 0.15rem 0.4rem; border-radius: 3px; color: var(--m-text); }
+.marketing .op-table code { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); background: var(--m-code-bg); padding: 0.15rem 0.4rem; border-radius: 3px; color: var(--m-text); }
 
 /* API docs footer — sits outside doc-content, inside doc-main */
 .marketing .doc-footer {
@@ -1216,6 +1287,42 @@
   border-top: 1px solid var(--m-border-subtle);
 }
 
+/* Back-to-top affordance for long doc pages — hidden until scrolled */
+.marketing .back-to-top {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--m-border);
+  border-radius: 8px;
+  background: var(--m-bg-elevated);
+  color: var(--m-text-secondary);
+  box-shadow: var(--m-shadow-md);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.2s var(--m-ease-out), transform 0.2s var(--m-ease-out), color 0.2s, border-color 0.2s;
+}
+.marketing .back-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.marketing .back-to-top:hover {
+  color: var(--m-primary);
+  border-color: var(--m-primary);
+}
+.marketing .back-to-top:focus-visible {
+  outline: 2px solid var(--m-primary);
+  outline-offset: 3px;
+}
+
 .marketing .doc-footer-year {
   font-family: 'Jura', system-ui, sans-serif;
   font-weight: 400;
@@ -1241,14 +1348,16 @@
    LEGAL PAGES (terms/privacy)
    ======================================== */
 .marketing .legal-content {
-  max-width: 720px;
+  /* 40rem keeps the body measure near ~70ch at 0.92rem — long clauses
+     stay in the comfortable reading band (was 720px / ~95ch) */
+  max-width: 40rem;
   margin: 0 auto;
   padding: 6rem 2rem 4rem;
 }
 
 .marketing .legal-content h1 {
   font-family: 'Jura', system-ui, sans-serif;
-  font-weight: 300;
+  font-weight: 500;
   font-size: 2rem;
   letter-spacing: -0.5px;
   margin-bottom: 0.5rem;
@@ -1270,7 +1379,49 @@
   margin-top: 2.5rem;
   margin-bottom: 0.75rem;
   color: var(--m-text);
+  scroll-margin-top: 5.5rem; /* clear the fixed nav on anchor jumps */
 }
+
+/* On-this-page jump list for the numbered legal sections */
+.marketing .legal-toc {
+  margin: 0 0 3rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--m-border-subtle);
+  border-radius: 8px;
+  background: var(--m-surface);
+}
+.marketing .legal-toc-label {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: var(--doc-label);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--m-text-dim);
+  margin: 0 0 0.75rem;
+}
+.marketing .legal-toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.35rem 1.5rem;
+  counter-reset: legal-toc;
+}
+.marketing .legal-toc li { counter-increment: legal-toc; }
+.marketing .legal-toc a {
+  display: block;
+  font-size: var(--doc-dense);
+  line-height: 1.5;
+  color: var(--m-text-secondary);
+  padding: 0.15rem 0;
+}
+.marketing .legal-toc a::before {
+  content: counter(legal-toc) ".";
+  color: var(--m-text-dim);
+  margin-right: 0.4rem;
+  font-variant-numeric: tabular-nums;
+}
+.marketing .legal-toc a:hover { color: var(--m-primary); }
 
 .marketing .legal-content .legal-body p {
   font-size: 0.92rem;
@@ -1295,6 +1446,41 @@
   color: var(--m-text);
 }
 
+/* All-caps legal disclaimer (license warranty block): keep the legal
+   convention but open the tracking slightly so it stays legible */
+.marketing .legal-content .legal-body .legal-disclaimer {
+  letter-spacing: 0.02em;
+}
+
+/* Description lists for "term: definition" content — same bulleted, inline
+   look as the <ul> lists, but semantically pairs each label with its value */
+.marketing .legal-content .legal-body dl {
+  margin: 0 0 1rem;
+  padding-left: 1.5rem;
+  font-size: var(--doc-body);
+  color: var(--m-text-secondary);
+}
+.marketing .legal-content .legal-body dl > div {
+  position: relative;
+  line-height: 1.8;
+  margin-bottom: 0.25rem;
+}
+.marketing .legal-content .legal-body dl > div::before {
+  content: "•";
+  position: absolute;
+  left: -1.1rem;
+  color: var(--m-text-dim);
+}
+.marketing .legal-content .legal-body dt {
+  display: inline;
+  font-weight: 600;
+  color: var(--m-text);
+}
+.marketing .legal-content .legal-body dd {
+  display: inline;
+  margin: 0;
+}
+
 /* ========================================
    ANIMATIONS
    ======================================== */
@@ -1313,15 +1499,58 @@
   50% { transform: translateY(-8px); }
 }
 
-.marketing .reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s var(--m-ease-out), transform 0.8s var(--m-ease-out);
+/* Honor prefers-reduced-motion across the whole marketing surface. Tiny non-zero
+   durations (not `animation: none`) snap `forwards` entrances to their final
+   frame — so the hero, which starts at opacity:0 and fades up via m-fadeUp, stays
+   VISIBLE rather than shipping blank. Infinite loops (m-pulse, m-layerFloat) run
+   once and stop; hover/scroll transitions become instant. */
+@media (prefers-reduced-motion: reduce) {
+  .marketing *,
+  .marketing *::before,
+  .marketing *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-.marketing .reveal.visible {
+/* Visible keyboard focus for every interactive marketing element. Buttons and
+   tabs use border:none / background:none, so without this they show no focus
+   ring at all. Brand-green outline with offset, echoing the app's focus ring. */
+.marketing a:focus-visible,
+.marketing button:focus-visible,
+.marketing .btn-primary:focus-visible,
+.marketing .btn-ghost:focus-visible,
+.marketing .code-tab:focus-visible,
+.marketing .nav-mobile-toggle:focus-visible {
+  outline: 2px solid var(--m-primary);
+  outline-offset: 3px;
+}
+
+/* Scroll-reveal is progressive enhancement layered over a visible default.
+   Content renders fully at rest, so no-JS visitors, crawlers, and headless /
+   prerender renderers never get a blank page. The hidden start-state is armed
+   only when the `reveal-on` flag is set before paint (scripting confirmed) AND
+   the user hasn't asked to reduce motion. */
+.marketing .reveal {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.reveal-on .marketing .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s var(--m-ease-out), transform 0.8s var(--m-ease-out);
+  }
+
+  html.reveal-on .marketing .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .marketing .reveal-delay-1 { transition-delay: 0.1s; }
@@ -1340,6 +1569,7 @@
 .marketing .pricing-hero .m-section-title {
   max-width: 600px;
   margin: 0 auto 1rem;
+  font-size: clamp(2.2rem, 4vw, 3.2rem); /* page-hero scale: larger than a section title, quieter than the home hero */
 }
 
 .marketing .pricing-hero .section-desc {
@@ -1441,19 +1671,23 @@
   color: var(--m-text-secondary);
   line-height: 1.6;
   padding: 0.35rem 0;
-  padding-left: 1.25rem;
+  padding-left: 1.5rem;
   position: relative;
 }
 
+/* A green checkmark, not a dot: on a "what's included" list the check carries
+   meaning ("yes, included"), so the green is load-bearing rather than decorative.
+   Drawn with borders so it renders identically regardless of font. */
 .marketing .pricing-features li::before {
   content: '';
   position: absolute;
-  left: 0;
-  top: 0.75rem;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--m-primary);
+  left: 2px;
+  top: 0.6rem;
+  width: 5px;
+  height: 9px;
+  border: solid var(--m-primary);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
 }
 
 .marketing .pricing-cta {
@@ -1512,7 +1746,9 @@
    ======================================== */
 @media (max-width: 900px) {
   .marketing .hero-content { grid-template-columns: 1fr; }
-  .marketing .hero-visual { display: none; }
+  /* Keep the signature memory-layers visual on tablet, centered and bounded so
+     the absolutely-positioned cards fit (it's hidden only on small phones below). */
+  .marketing .hero-visual { max-width: 420px; margin: 2.5rem auto 0; }
   .marketing .problem-grid { grid-template-columns: 1fr; }
   .marketing .code-tab { padding: 0.55rem 1rem; font-size: 0.62rem; }
   .marketing .features-grid { grid-template-columns: 1fr; }
@@ -1552,4 +1788,18 @@
   .marketing .doc-footer-tagline { max-width: none; }
   .marketing .doc-footer-col-links { align-items: center; }
   .marketing .doc-footer-bottom { flex-direction: column; align-items: center; gap: 0.75rem; }
+}
+
+/* Small phones: the absolute hero visual can't fit, and dense spacing/rows need
+   to relax. This sits after the 900px block so it wins on narrow viewports. */
+@media (max-width: 600px) {
+  .marketing .hero { min-height: auto; padding-top: 5rem; }
+  .marketing .hero-visual { display: none; }
+  .marketing .hero-actions { flex-direction: column; align-items: stretch; }
+  .marketing .hero-actions .btn-primary,
+  .marketing .hero-actions .btn-ghost { justify-content: center; }
+  .marketing .feature-card { padding: 1.75rem; }
+  .marketing .feature-card h3 { font-size: 1rem; }
+  .marketing section { padding: 4rem 0; }
+  .marketing .cta-section { padding: 6rem 0; }
 }

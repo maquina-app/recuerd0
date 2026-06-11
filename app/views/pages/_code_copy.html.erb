@@ -1,0 +1,6 @@
+<%# Copy button for doc code blocks. Reuses the shared `clipboard` Stimulus
+    controller; the code text is read from the sibling <code data-clipboard-target="source">. %>
+<button type="button" class="code-copy" data-action="clipboard#copy" aria-label="Copy code to clipboard">
+  <span data-clipboard-target="copyIcon" class="code-copy-glyph"><%= icon_for(:copy, class: "size-4") %></span>
+  <span data-clipboard-target="checkIcon" class="code-copy-glyph hidden"><%= icon_for(:check, class: "size-4") %></span>
+</button>
