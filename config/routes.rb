@@ -21,8 +21,9 @@ Rails.application.routes.draw do
     post "revoke", to: "revocations#create"        # RFC 7009 revocation
   end
 
-  # Remote MCP server endpoint (JSON-RPC 2.0 over HTTP).
-  post "/mcp", to: "mcp#call"
+  # Remote MCP server endpoint (JSON-RPC 2.0 over HTTP). Named explicitly so it
+  # doesn't collide with the `mcp` marketing page route (GET /mcp) below.
+  post "/mcp", to: "mcp#call", as: :mcp_endpoint
 
   if Rails.application.config.multi_tenant
     resource :registration, only: %i[new create]
