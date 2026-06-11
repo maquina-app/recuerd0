@@ -8,6 +8,22 @@ Rails.application.routes.draw do
   resource :session
   resources :passwords, param: :token
 
+  # OAuth 2.1 Authorization Server (for the remote MCP server). Always routable.
+  get "/.well-known/oauth-protected-resource", to: "oauth/well_known#protected_resource"
+  get "/.well-known/oauth-protected-resource/mcp", to: "oauth/well_known#protected_resource"
+  get "/.well-known/oauth-authorization-server", to: "oauth/well_known#authorization_server"
+
+  namespace :oauth do
+    post "register", to: "registrations#create"   # Dynamic Client Registration (RFC 7591)
+    get "authorize", to: "authorizations#new"      # consent screen
+    post "authorize", to: "authorizations#create"  # consent submit
+    post "token", to: "tokens#create"              # code/refresh -> token
+    post "revoke", to: "revocations#create"        # RFC 7009 revocation
+  end
+
+  # Remote MCP server endpoint (JSON-RPC 2.0 over HTTP).
+  post "/mcp", to: "mcp#call"
+
   if Rails.application.config.multi_tenant
     resource :registration, only: %i[new create]
 

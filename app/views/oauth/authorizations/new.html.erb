@@ -1,0 +1,51 @@
+<% content_for :title, t("oauth.authorizations.new.title") %>
+
+<%= render "components/card" do %>
+  <%= render "components/card/header", css_classes: "text-center" do %>
+    <h2 class="text-xl font-display font-medium"><%= t("oauth.authorizations.new.title") %></h2>
+    <p class="text-sm text-muted-foreground mt-1">
+      <%= t("oauth.authorizations.new.subtitle_html", client: tag.strong(@client.client_name)) %>
+    </p>
+  <% end %>
+
+  <%= render "components/card/content" do %>
+    <div class="space-y-4">
+      <div class="space-y-2 text-sm">
+        <p class="font-medium"><%= t("oauth.authorizations.new.permissions_heading") %></p>
+        <ul class="space-y-1.5 text-muted-foreground">
+          <% @authorization[:scope].to_s.split.each do |scope| %>
+            <li class="flex items-center gap-2">
+              <%= icon_for(:check, class: "size-4 text-primary shrink-0") %>
+              <%= t("oauth.authorizations.scopes.#{scope.tr(":", "_")}", default: scope) %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+
+      <p class="text-xs text-muted-foreground">
+        <%= t("oauth.authorizations.new.signed_in_as_html", email: tag.strong(Current.user.email_address)) %>
+      </p>
+
+      <%# turbo: false — the approval redirects to the client's cross-origin callback
+          (e.g. https://claude.ai/api/mcp/auth_callback). Turbo would follow that redirect
+          via fetch and be blocked by CORS; a real browser navigation is required. %>
+      <%= form_with url: oauth_authorize_path, method: :post, data: { component: "form", turbo: false } do |form| %>
+        <%= form.hidden_field :client_id, value: @client.client_id %>
+        <%= form.hidden_field :redirect_uri, value: @authorization[:redirect_uri] %>
+        <%= form.hidden_field :state, value: @authorization[:state] %>
+        <%= form.hidden_field :scope, value: @authorization[:scope] %>
+        <%= form.hidden_field :code_challenge, value: @authorization[:code_challenge] %>
+        <%= form.hidden_field :code_challenge_method, value: @authorization[:code_challenge_method] %>
+
+        <div data-form-part="actions" class="flex flex-col gap-2">
+          <%= button_tag t("oauth.authorizations.new.allow"),
+              type: "submit", name: "approved", value: "true",
+              data: { component: "button", variant: "primary" }, class: "w-full" %>
+          <%= button_tag t("oauth.authorizations.new.deny"),
+              type: "submit", name: "approved", value: "false",
+              data: { component: "button", variant: "outline" }, class: "w-full" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

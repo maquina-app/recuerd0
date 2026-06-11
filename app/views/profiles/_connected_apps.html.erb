@@ -1,0 +1,53 @@
+<%# locals: (connected_apps:) %>
+<%= render "components/card" do %>
+  <%= render "components/card/header" do %>
+    <%= render "components/card/title", text: t("profiles.connected_apps.title") %>
+    <%= render "components/card/description", text: t("profiles.connected_apps.description") %>
+  <% end %>
+
+  <%= render "components/card/content" do %>
+    <% if connected_apps.any? %>
+      <div class="divide-y divide-border">
+        <% connected_apps.each do |token| %>
+          <div class="flex items-center gap-4 py-3">
+            <div class="flex items-center justify-center size-8 rounded-md bg-muted shrink-0">
+              <%= icon_for(:plug, class: "size-4 text-muted-foreground") %>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium truncate">
+                <%= token.oauth_client&.client_name.presence || token.description %>
+              </p>
+              <p class="text-xs text-muted-foreground mt-0.5">
+                <%= t("profiles.connected_apps.connected_ago", time: time_ago_in_words(token.created_at)) %>
+              </p>
+            </div>
+
+            <div class="shrink-0">
+              <%= button_to profile_access_token_path(token),
+                  method: :delete,
+                  data: {
+                    component: "button",
+                    variant: "ghost",
+                    size: "icon-sm",
+                    turbo_confirm: t("profiles.connected_apps.revoke_confirm")
+                  },
+                  class: "text-destructive hover:text-destructive",
+                  title: t("profiles.connected_apps.revoke") do %>
+                <%= icon_for(:trash_2, class: "size-4") %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render "components/empty", variant: :outline do %>
+        <%= render "components/empty/header" do %>
+          <%= render "components/empty/media", icon: :plug %>
+          <%= render "components/empty/title", text: t("profiles.connected_apps.empty_title") %>
+          <%= render "components/empty/description", text: t("profiles.connected_apps.empty_description") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

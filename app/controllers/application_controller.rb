@@ -12,9 +12,12 @@ class ApplicationController < ActionController::Base
   # Skip CSRF verification for API requests (authenticated via Bearer token)
   skip_forgery_protection if: -> { api_request? }
 
-  # Rate limit API requests: 100 requests per minute per token/user/IP
+  # Rate limit API requests: 100 requests per minute per token/user/IP.
+  # OAuth + MCP endpoints opt out (self_managed_rate_limit?) — their traffic
+  # arrives from shared proxy/agent egress IPs, so they limit per-token/client
+  # via their own rate_limit blocks instead of this per-IP one.
   rate_limit to: 100, within: 1.minute,
-    if: -> { api_request? },
+    if: -> { api_request? && !self_managed_rate_limit? },
     by: -> { current_access_token&.id || Current.user&.id || request.remote_ip },
     with: -> { render_rate_limited }
 
@@ -49,5 +52,11 @@ class ApplicationController < ActionController::Base
 
   def api_request?
     request.format.json? || request.accepts.any? { |type| type.json? }
+  end
+
+  # OAuth and MCP controllers declare their own rate limits keyed by token/client,
+  # so they skip the global per-IP API limit (their traffic shares egress IPs).
+  def self_managed_rate_limit?
+    controller_path.start_with?("oauth/") || controller_path == "mcp"
   end
 end
