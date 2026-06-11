@@ -1137,6 +1137,10 @@
 }
 .marketing .code-head { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--m-border-subtle); background: var(--m-surface); }
 .marketing .code-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 1.5px; text-transform: uppercase; color: var(--m-text-dim); }
+/* Output sample blocks (not runnable, no copy): unfilled head reads as a
+   result rather than something you type */
+.marketing .code-block--output .code-head { background: transparent; }
+.marketing .code-block--output .code-label::before { content: "↳ "; }
 
 /* Copy button in a code-head — muted icon, foreground on hover, green check on
    success. Sits flush-right via the code-head's space-between; negative margins
@@ -1281,6 +1285,42 @@
   margin-top: 3rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--m-border-subtle);
+}
+
+/* Back-to-top affordance for long doc pages — hidden until scrolled */
+.marketing .back-to-top {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--m-border);
+  border-radius: 8px;
+  background: var(--m-bg-elevated);
+  color: var(--m-text-secondary);
+  box-shadow: var(--m-shadow-md);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.2s var(--m-ease-out), transform 0.2s var(--m-ease-out), color 0.2s, border-color 0.2s;
+}
+.marketing .back-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.marketing .back-to-top:hover {
+  color: var(--m-primary);
+  border-color: var(--m-primary);
+}
+.marketing .back-to-top:focus-visible {
+  outline: 2px solid var(--m-primary);
+  outline-offset: 3px;
 }
 
 .marketing .doc-footer-year {

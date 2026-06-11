@@ -436,9 +436,9 @@ recuerd0 search "title:architecture"</code></div>
           <p>All commands output JSON by default. Use <code>--pretty</code> for formatted output.</p>
         </div>
 
-        <div class="code-block" data-controller="clipboard">
-          <div class="code-head"><span class="code-label">search output</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">{
+        <div class="code-block code-block--output">
+          <div class="code-head"><span class="code-label">search output</span></div>
+          <div class="code-body"><code>{
   <span class="ck">"query"</span>: <span class="cs">"authentication"</span>,
   <span class="ck">"total_results"</span>: <span class="cn">2</span>,
   <span class="ck">"results"</span>: [
@@ -455,9 +455,9 @@ recuerd0 search "title:architecture"</code></div>
         <div class="endpoint-head">
           <h3>Error output</h3>
         </div>
-        <div class="code-block" data-controller="clipboard">
-          <div class="code-head"><span class="code-label">error</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">{
+        <div class="code-block code-block--output">
+          <div class="code-head"><span class="code-label">error</span></div>
+          <div class="code-body"><code>{
   <span class="ck">"error"</span>: {
     <span class="ck">"code"</span>: <span class="cs">"NOT_FOUND"</span>,
     <span class="ck">"message"</span>: <span class="cs">"Resource not found"</span>,
