@@ -58,6 +58,11 @@ TODO*
 /CLAUDE.md
 /.mcp.json
 
+# Ignore local agent / tooling working directories
+/.claude/
+/.github/skills/
+/.impeccable/critique/
+
 # Ignore spec-driven development specs (local working docs)
 /sdd/
 
