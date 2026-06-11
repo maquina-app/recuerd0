@@ -1150,7 +1150,7 @@
 /* Token grid */
 .marketing .token-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
 .marketing .token-card { padding: 1.25rem; border: 1px solid var(--m-border); border-radius: 8px; background: var(--m-bg-card); box-shadow: var(--m-shadow-sm); }
-.marketing .token-card h4 { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; color: var(--m-text); margin-bottom: 0.35rem; }
+.marketing .token-card h3 { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; color: var(--m-text); margin-bottom: 0.35rem; }
 .marketing .token-card p { font-size: 0.82rem; color: var(--m-text-secondary); line-height: 1.5; }
 .marketing .token-badge { display: inline-block; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.58rem; letter-spacing: 1px; text-transform: uppercase; padding: 0.15rem 0.4rem; border-radius: 3px; margin-bottom: 0.5rem; }
 .marketing .token-badge.read { color: var(--m-get); background: var(--m-get-bg); border: 1px solid var(--m-get-border); }
