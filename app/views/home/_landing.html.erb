@@ -12,8 +12,8 @@
   "operatingSystem": "Web, Docker",
   "description": "The knowledge base your AI tools deserve. Organize, version, and serve project context to any LLM.",
   "offers": [
-    { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Self-Hosted" },
-    { "@type": "Offer", "price": "15", "priceCurrency": "USD", "description": "Cloud", "billingIncrement": "P1M" }
+    { "@type": "Offer", "price": "15", "priceCurrency": "USD", "description": "Cloud", "billingIncrement": "P1M" },
+    { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Self-Hosted" }
   ]
 }
 </script>
@@ -29,7 +29,7 @@
     <div class="m-container">
       <div class="hero-content">
         <div class="hero-text">
-          <div class="hero-badge">source available · self-hosted · cloud</div>
+          <div class="hero-badge">managed cloud · self-host · source available</div>
           <h1>The knowledge base your <em>AI tools</em> deserve</h1>
           <p class="hero-sub">
             A small, human-curated knowledge base for your projects — versioned, searchable, and served to any AI tool over a REST API you control.
@@ -448,13 +448,11 @@ as new versioned memories.</code>
       <div class="reveal">
         <h2 class="m-section-title">Stop re-explaining your project.<br>Start <em style="color:var(--m-primary);font-style:normal;font-family:'Jura',system-ui,sans-serif;font-weight:500;">preserving</em>.</h2>
         <p class="section-desc">
-          One command. Your server, your data, your context &mdash; accessible from any AI tool.
+          Start in minutes on the managed cloud &mdash; or run it on your own server. Your data, your context, accessible from any AI tool.
         </p>
       </div>
 
       <div class="cta-actions reveal reveal-delay-1" style="flex-direction: column; align-items: center; gap: 1.5rem;">
-        <%= link_to "Self-hosted \u2192", "https://github.com/maquina-app/recuerd0", target: "_blank", rel: "noopener", data: { component: "button", variant: "ghost" }, class: "btn-ghost" %>
-        <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim);">or</span>
         <div style="display: flex; gap: 1rem; align-items: center;">
           <% if authenticated? %>
             <%= link_to "Go to App \u2192", workspaces_path, data: { component: "button", variant: "default" }, class: "btn-primary" %>
@@ -463,6 +461,8 @@ as new versioned memories.</code>
           <% end %>
           <%= link_to "See pricing", pricing_path, data: { component: "button", variant: "ghost" }, class: "btn-ghost" %>
         </div>
+        <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim);">or</span>
+        <%= link_to "Self-host \u2192", "https://github.com/maquina-app/recuerd0", target: "_blank", rel: "noopener", data: { component: "button", variant: "ghost" }, class: "btn-ghost" %>
       </div>
     </div>
   </section>

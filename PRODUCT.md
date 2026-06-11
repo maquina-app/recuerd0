@@ -33,9 +33,11 @@ built by people who care, or another AI-hype wrapper?"* The page has seconds to 
 
 ## Product Purpose
 
-Recuerd0 is a self-hosted knowledge base for organizing, versioning, and serving
-project knowledge to AI coding tools via a REST API. It is the deliberate middle
-layer between scattered CLAUDE.md files and opaque, auto-extracted AI memory.
+Recuerd0 is a hosted knowledge base for organizing, versioning, and serving
+project knowledge to AI coding tools via a REST API — available as a managed cloud
+service, or self-hosted for teams that want to run it themselves. It is the
+deliberate middle layer between scattered CLAUDE.md files and opaque,
+auto-extracted AI memory.
 
 Humans write, organize, and version their project context into workspaces of
 markdown memories; any AI tool consumes it through a simple authenticated API. One
@@ -66,12 +68,12 @@ rendered/raw preview; flat-branch versioning with consolidation; SQLite FTS5 sea
 Bearer-token REST API with scoped read/write tokens, rate limiting, and Link-header
 pagination; full account export as a markdown ZIP; a `recuerd0` CLI; MCP/agent
 integration; and PWA install. Stack as a trust signal: Rails 8 + SQLite, zero
-external dependencies, self-hosted via Kamal.
+external dependencies, deployable via Kamal (and self-hostable for the same reason).
 
 Success for the brand surface: a developer lands, immediately understands this is a
 human-curated (not AI-magic) tool, grasps the new-category distinction, trusts the
-craft, and either starts self-hosting or reads the docs/API. Success is comprehension
-and credibility, not vanity metrics.
+craft, and either starts a cloud account or reads the docs/API (self-hosting is there
+for those who want it). Success is comprehension and credibility, not vanity metrics.
 
 ## Brand Personality
 
@@ -91,7 +93,7 @@ patterns, context scattered across five systems) with *calm, organized clarity* 
 you decide what matters, and everything falls in line.
 
 Reusable anchors: "The knowledge base your AI tools deserve." · "You decide what your
-AI tools know." · "Your server. Your data. Your context." · "Curate once, access everywhere."
+AI tools know." · "Your data. Your context. Your call." · "Curate once, access everywhere."
 
 ## Anti-references
 
@@ -128,9 +130,10 @@ seamless, frictionless, disrupt, automagically.
    trust with a technical audience.
 4. **Quiet confidence, not volume.** Authority comes from craft and clarity, not from
    shouting "revolutionary." If it reads like a pitch deck, it's wrong.
-5. **Ownership and control are the throughline.** Self-hosted, your data, your
-   context, tool-agnostic. These are the emotional and rational core — reinforce them
-   everywhere rather than burying them in a feature list.
+5. **Ownership and control are the throughline.** Your data, your context,
+   tool-agnostic — yours whether we host it or you run it yourself. These are the
+   emotional and rational core — reinforce them everywhere rather than burying them
+   in a feature list.
 
 ## Accessibility & Inclusion
 
