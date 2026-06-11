@@ -38,7 +38,7 @@
     </div>
     <div class="sidebar-group">
       <div class="sidebar-heading">Tools &amp; permissions</div>
-      <a href="#tools" class="sidebar-link" data-section="tools" data-action="click->marketing-sidebar#closeSidebar">The five tools</a>
+      <a href="#tools" class="sidebar-link" data-section="tools" data-action="click->marketing-sidebar#closeSidebar">The six tools</a>
       <a href="#scopes" class="sidebar-link" data-section="scopes" data-action="click->marketing-sidebar#closeSidebar">Scopes &amp; permissions</a>
     </div>
     <div class="sidebar-group">
@@ -62,7 +62,7 @@
       <div class="api-section" id="overview">
         <div class="resource-header">
           <h2>What you get</h2>
-          <p>MCP — the Model Context Protocol — is an open standard for connecting AI clients to outside tools and data. recuerd0 runs a remote MCP server at <code>POST /mcp</code> (Streamable HTTP, JSON-RPC 2.0): point an MCP client at your instance and it can read, search, and write memories across your workspaces, through five tools scoped to the access you approve.</p>
+          <p>MCP — the Model Context Protocol — is an open standard for connecting AI clients to outside tools and data. recuerd0 runs a remote MCP server at <code>POST /mcp</code> (Streamable HTTP, JSON-RPC 2.0): point an MCP client at your instance and it can read, search, and write memories across your workspaces, through six tools scoped to the access you approve.</p>
         </div>
 
         <p class="doc-note">
@@ -189,8 +189,8 @@
       <%# ===== TOOLS ===== %>
       <div class="api-section" id="tools">
         <div class="resource-header">
-          <h2>The five tools</h2>
-          <p>The server exposes five tools. Three read, two write. Each one is scoped to your account's workspaces.</p>
+          <h2>The six tools</h2>
+          <p>The server exposes six tools. Three read, three write. Each one is scoped to your account's workspaces.</p>
         </div>
         <div class="table-scroll">
           <table class="op-table">
@@ -199,8 +199,9 @@
               <tr><td><code>list_workspaces</code></td><td>read</td><td>List the workspaces in your account</td></tr>
               <tr><td><code>list_memories</code></td><td>read</td><td>List memories in a workspace; optional FTS5 <code>query</code> and <code>category</code> filter</td></tr>
               <tr><td><code>read_memory</code></td><td>read</td><td>Read the full content of one memory</td></tr>
-              <tr><td><code>create_memory</code></td><td>write</td><td>Create a memory in a workspace</td></tr>
-              <tr><td><code>update_memory</code></td><td>write</td><td>Update a memory's title or content</td></tr>
+              <tr><td><code>create_memory</code></td><td>write</td><td>Create a memory in a workspace, with optional <code>tags</code></td></tr>
+              <tr><td><code>update_memory</code></td><td>write</td><td>Update a memory in place — title, content, category, or tags</td></tr>
+              <tr><td><code>create_version</code></td><td>write</td><td>Append a new immutable version to a memory, preserving history</td></tr>
             </tbody>
           </table>
         </div>
@@ -240,7 +241,7 @@
           </table>
         </div>
         <p class="doc-note">
-          A <code>read_only</code> token can call <code>list_workspaces</code>, <code>list_memories</code>, and <code>read_memory</code>. The two write tools — <code>create_memory</code> and <code>update_memory</code> — need <code>full_access</code>.
+          A <code>read_only</code> token can call <code>list_workspaces</code>, <code>list_memories</code>, and <code>read_memory</code>. The three write tools — <code>create_memory</code>, <code>update_memory</code>, and <code>create_version</code> — need <code>full_access</code>.
         </p>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
