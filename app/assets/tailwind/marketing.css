@@ -57,6 +57,15 @@
   --m-delete-border: oklch(0.500 0.170 25 / 0.15);
   --m-sidebar-w: 260px;
   --m-header-h: 60px;
+
+  /* Doc-page small-text ramp — five deliberate steps below the headings
+     (h1 2.4 / h2 1.6 / h3 1.15 / lead 1.05rem stay literal). Snap muddy
+     values onto these so the cli/api-docs/agents pages share one scale. */
+  --doc-body: 0.9rem;    /* prose paragraphs */
+  --doc-dense: 0.85rem;  /* tables, callouts, dense content text */
+  --doc-code: 0.78rem;   /* mono / code body */
+  --doc-meta: 0.72rem;   /* small-caps meta, table headers */
+  --doc-label: 0.6rem;   /* micro uppercase chrome (labels, badges) */
 }
 
 /* ========================================
@@ -1058,11 +1067,11 @@
 .marketing .doc-sidebar::-webkit-scrollbar { width: 4px; }
 .marketing .doc-sidebar::-webkit-scrollbar-thumb { background: var(--m-border); border-radius: 4px; }
 .marketing .sidebar-group { margin-bottom: 1.75rem; padding: 0 1.25rem; }
-.marketing .sidebar-heading { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 2.5px; text-transform: uppercase; color: var(--m-text-dim); margin-bottom: 0.6rem; padding-left: 0.75rem; }
+.marketing .sidebar-heading { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 2.5px; text-transform: uppercase; color: var(--m-text-dim); margin-bottom: 0.6rem; padding-left: 0.75rem; }
 .marketing .sidebar-link { display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; color: var(--m-text-secondary); padding: 0.35rem 0.75rem; border-radius: 5px; transition: all 0.2s; margin-bottom: 1px; }
 .marketing .sidebar-link:hover { color: var(--m-primary); background: var(--m-primary-ghost); }
 .marketing .sidebar-link.active { color: var(--m-primary); background: var(--m-primary-ghost); font-weight: 500; }
-.marketing .sidebar-method { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.55rem; font-weight: 500; letter-spacing: 0.5px; padding: 0.1rem 0.35rem; border-radius: 3px; flex-shrink: 0; min-width: 36px; text-align: center; }
+.marketing .sidebar-method { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); font-weight: 500; letter-spacing: 0.5px; padding: 0.1rem 0.35rem; border-radius: 3px; flex-shrink: 0; min-width: 36px; text-align: center; }
 .marketing .sidebar-method.get { color: var(--m-get); background: var(--m-get-bg); }
 .marketing .sidebar-method.post { color: var(--m-post); background: var(--m-post-bg); }
 .marketing .sidebar-method.patch { color: var(--m-patch); background: var(--m-patch-bg); }
@@ -1078,8 +1087,8 @@
 .marketing .page-header h1 { font-family: 'Jura', system-ui, sans-serif; font-weight: 500; font-size: 2.4rem; letter-spacing: -0.5px; margin-bottom: 0.75rem; }
 .marketing .page-header h1 em { font-style: normal; color: var(--m-primary); font-weight: 500; }
 .marketing .page-header p { font-size: 1.05rem; color: var(--m-text-secondary); line-height: 1.7; max-width: 580px; }
-.marketing .base-url-bar { display: inline-flex; align-items: center; gap: 0.75rem; margin-top: 1.25rem; padding: 0.55rem 1rem; background: var(--m-code-bg); border: 1px solid var(--m-code-border); border-radius: 6px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; color: var(--m-text-secondary); }
-.marketing .base-url-bar .label { font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--m-text-dim); }
+.marketing .base-url-bar { display: inline-flex; align-items: center; gap: 0.75rem; margin-top: 1.25rem; padding: 0.55rem 1rem; background: var(--m-code-bg); border: 1px solid var(--m-code-border); border-radius: 6px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); color: var(--m-text-secondary); }
+.marketing .base-url-bar .label { font-size: var(--doc-label); letter-spacing: 1.5px; text-transform: uppercase; color: var(--m-text-dim); }
 .marketing .base-url-bar code { color: var(--m-primary); font-family: inherit; }
 
 /* Sections & endpoints */
@@ -1087,12 +1096,12 @@
 .marketing .section-divider { height: 1px; background: var(--m-border-subtle); margin: 3rem 0; }
 .marketing .resource-header { margin-bottom: 2rem; }
 .marketing .resource-header h2 { font-family: 'Jura', system-ui, sans-serif; font-weight: 500; font-size: 1.6rem; letter-spacing: -0.3px; margin-bottom: 0.5rem; }
-.marketing .resource-header p { font-size: 0.92rem; color: var(--m-text-secondary); line-height: 1.7; }
+.marketing .resource-header p { font-size: var(--doc-body); color: var(--m-text-secondary); line-height: 1.7; }
 
 .marketing .endpoint { margin-bottom: 3rem; scroll-margin-top: calc(var(--m-header-h) + 1.5rem); }
 .marketing .endpoint-head { margin-bottom: 1rem; }
 .marketing .endpoint-head h3 { font-family: 'Jura', system-ui, sans-serif; font-weight: 500; font-size: 1.15rem; margin-bottom: 0.4rem; }
-.marketing .endpoint-head p { font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.6; }
+.marketing .endpoint-head p { font-size: var(--doc-body); color: var(--m-text-secondary); line-height: 1.6; }
 
 /* Route bars */
 .marketing .route-bar { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; border-radius: 8px; border: 1px solid; margin-bottom: 1.5rem; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.82rem; }
@@ -1100,26 +1109,26 @@
 .marketing .route-bar.post { background: var(--m-post-bg); border-color: var(--m-post-border); }
 .marketing .route-bar.patch { background: var(--m-patch-bg); border-color: var(--m-patch-border); }
 .marketing .route-bar.delete { background: var(--m-delete-bg); border-color: var(--m-delete-border); }
-.marketing .route-method { font-weight: 500; font-size: 0.72rem; letter-spacing: 0.5px; padding: 0.2rem 0.5rem; border-radius: 4px; min-width: 52px; text-align: center; }
+.marketing .route-method { font-weight: 500; font-size: var(--doc-meta); letter-spacing: 0.5px; padding: 0.2rem 0.5rem; border-radius: 4px; min-width: 52px; text-align: center; }
 .marketing .route-bar.get .route-method { color: var(--m-get); background: oklch(0.450 0.160 250 / 0.1); }
 .marketing .route-bar.post .route-method { color: var(--m-post); background: oklch(0.480 0.190 150 / 0.1); }
 .marketing .route-bar.patch .route-method { color: var(--m-patch); background: oklch(0.520 0.160 70 / 0.1); }
 .marketing .route-bar.delete .route-method { color: var(--m-delete); background: oklch(0.500 0.170 25 / 0.1); }
 .marketing .route-path { color: var(--m-text); }
 .marketing .route-path .param { color: var(--m-primary-dim); }
-.marketing .route-badge { margin-left: auto; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim); padding: 0.15rem 0.5rem; border: 1px solid var(--m-border); border-radius: 3px; background: var(--m-bg-elevated); }
+.marketing .route-badge { margin-left: auto; font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim); padding: 0.15rem 0.5rem; border: 1px solid var(--m-border); border-radius: 3px; background: var(--m-bg-elevated); }
 
 /* Tables */
-.marketing .param-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.85rem; }
-.marketing .param-table-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--m-text-dim); margin-bottom: 0.5rem; }
-.marketing .param-table thead th { font-weight: 500; font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase; color: var(--m-text-dim); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--m-border); background: var(--m-surface); }
+.marketing .param-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: var(--doc-dense); }
+.marketing .param-table-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 2px; text-transform: uppercase; color: var(--m-text-dim); margin-bottom: 0.5rem; }
+.marketing .param-table thead th { font-weight: 500; font-size: var(--doc-meta); letter-spacing: 0.5px; text-transform: uppercase; color: var(--m-text-dim); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--m-border); background: var(--m-surface); }
 .marketing .param-table thead th:first-child { border-radius: 6px 0 0 0; }
 .marketing .param-table thead th:last-child { border-radius: 0 6px 0 0; }
 .marketing .param-table tbody td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--m-border-subtle); color: var(--m-text-secondary); vertical-align: top; }
 .marketing .param-table tbody tr:last-child td { border-bottom: none; }
-.marketing .param-name { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; color: var(--m-text); white-space: nowrap; }
-.marketing .param-type { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.72rem; color: var(--m-text-dim); }
-.marketing .param-required { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 0.5px; color: var(--m-primary); background: var(--m-primary-ghost); padding: 0.1rem 0.35rem; border-radius: 3px; }
+.marketing .param-name { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); color: var(--m-text); white-space: nowrap; }
+.marketing .param-type { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-meta); color: var(--m-text-dim); }
+.marketing .param-required { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 0.5px; color: var(--m-primary); background: var(--m-primary-ghost); padding: 0.1rem 0.35rem; border-radius: 3px; }
 
 /* API code blocks (reuse .code-block but with different header) */
 .marketing .doc-content .code-block {
@@ -1127,7 +1136,7 @@
   margin-bottom: 1rem;
 }
 .marketing .code-head { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--m-border-subtle); background: var(--m-surface); }
-.marketing .code-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--m-text-dim); }
+.marketing .code-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 1.5px; text-transform: uppercase; color: var(--m-text-dim); }
 
 /* Copy button in a code-head — muted icon, foreground on hover, green check on
    success. Sits flush-right via the code-head's space-between; negative margins
@@ -1166,7 +1175,7 @@
 .marketing .code-status.s4xx { color: var(--m-delete); background: var(--m-delete-bg); }
 
 /* API code body syntax colors */
-.marketing .doc-content .code-body { padding: 1rem 1.25rem; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.76rem; line-height: 1.75; overflow-x: auto; background: var(--m-code-bg); color: var(--m-text-secondary); }
+.marketing .doc-content .code-body { padding: 1rem 1.25rem; font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); line-height: 1.75; overflow-x: auto; background: var(--m-code-bg); color: var(--m-text-secondary); }
 .marketing .doc-content .code-body code { font-family: inherit; white-space: pre; }
 .marketing .doc-content .code-body .ck { color: oklch(0.450 0.180 280); }
 .marketing .doc-content .code-body .cs { color: oklch(0.440 0.170 150); }
@@ -1175,16 +1184,16 @@
 .marketing .doc-content .code-body .cc { color: var(--m-text-dim); }
 
 /* Info boxes */
-.marketing .info-box { display: flex; gap: 0.75rem; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.6; color: var(--m-text-secondary); }
+.marketing .info-box { display: flex; gap: 0.75rem; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: var(--doc-dense); line-height: 1.6; color: var(--m-text-secondary); }
 .marketing .info-box.note { background: var(--m-note-bg); border: 1px solid var(--m-note-border); }
 .marketing .info-box.warn { background: var(--m-patch-bg); border: 1px solid var(--m-patch-border); }
 .marketing .info-box-icon { flex-shrink: 0; margin-top: 2px; }
 /* Carry the note role onto the inline icon so markup needn't hard-code the token */
 .marketing .info-box.note .info-box-icon svg { stroke: var(--m-note); }
-.marketing .info-box code { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; background: oklch(0 0 0 / 0.04); padding: 0.1rem 0.3rem; border-radius: 3px; }
+.marketing .info-box code { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); background: oklch(0 0 0 / 0.04); padding: 0.1rem 0.3rem; border-radius: 3px; }
 
 /* Shared doc note paragraph — replaces repeated inline font/color/line-height */
-.marketing .doc-note { font-size: 0.9rem; color: var(--m-text-secondary); line-height: 1.7; margin: 1.25rem 0 1.5rem; }
+.marketing .doc-note { font-size: var(--doc-body); color: var(--m-text-secondary); line-height: 1.7; margin: 1.25rem 0 1.5rem; }
 
 /* Horizontal scroll wrapper for wide tables on small viewports */
 .marketing .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -1192,20 +1201,20 @@
 /* Token grid */
 .marketing .token-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
 .marketing .token-card { padding: 1.25rem; border: 1px solid var(--m-border); border-radius: 8px; background: var(--m-bg-card); box-shadow: var(--m-shadow-sm); }
-.marketing .token-card h3 { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.78rem; color: var(--m-text); margin-bottom: 0.35rem; }
-.marketing .token-card p { font-size: 0.82rem; color: var(--m-text-secondary); line-height: 1.5; }
-.marketing .token-badge { display: inline-block; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.58rem; letter-spacing: 1px; text-transform: uppercase; padding: 0.15rem 0.4rem; border-radius: 3px; margin-bottom: 0.5rem; }
+.marketing .token-card h3 { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); color: var(--m-text); margin-bottom: 0.35rem; }
+.marketing .token-card p { font-size: var(--doc-dense); color: var(--m-text-secondary); line-height: 1.5; }
+.marketing .token-badge { display: inline-block; font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 1px; text-transform: uppercase; padding: 0.15rem 0.4rem; border-radius: 3px; margin-bottom: 0.5rem; }
 .marketing .token-badge.read { color: var(--m-get); background: var(--m-get-bg); border: 1px solid var(--m-get-border); }
 .marketing .token-badge.full { color: var(--m-post); background: var(--m-post-bg); border: 1px solid var(--m-post-border); }
 
 /* Operator table */
-.marketing .op-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.85rem; }
-.marketing .op-table thead th { font-weight: 500; font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase; color: var(--m-text-dim); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--m-border); background: var(--m-surface); }
+.marketing .op-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: var(--doc-dense); }
+.marketing .op-table thead th { font-weight: 500; font-size: var(--doc-meta); letter-spacing: 0.5px; text-transform: uppercase; color: var(--m-text-dim); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--m-border); background: var(--m-surface); }
 .marketing .op-table thead th:first-child { border-radius: 6px 0 0 0; }
 .marketing .op-table thead th:last-child { border-radius: 0 6px 0 0; }
 .marketing .op-table tbody td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--m-border-subtle); color: var(--m-text-secondary); }
 .marketing .op-table tbody tr:last-child td { border-bottom: none; }
-.marketing .op-table code { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.76rem; background: var(--m-code-bg); padding: 0.15rem 0.4rem; border-radius: 3px; color: var(--m-text); }
+.marketing .op-table code { font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); background: var(--m-code-bg); padding: 0.15rem 0.4rem; border-radius: 3px; color: var(--m-text); }
 
 /* API docs footer — sits outside doc-content, inside doc-main */
 .marketing .doc-footer {
