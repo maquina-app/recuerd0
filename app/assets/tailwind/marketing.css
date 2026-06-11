@@ -1406,6 +1406,12 @@
   color: var(--m-text);
 }
 
+/* All-caps legal disclaimer (license warranty block): keep the legal
+   convention but open the tracking slightly so it stays legible */
+.marketing .legal-content .legal-body .legal-disclaimer {
+  letter-spacing: 0.02em;
+}
+
 /* Description lists for "term: definition" content — same bulleted, inline
    look as the <ul> lists, but semantically pairs each label with its value */
 .marketing .legal-content .legal-body dl {

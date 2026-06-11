@@ -1,0 +1,7 @@
+<%# Shared header for legal pages (terms, privacy, license): the page title
+    and the dated line. Render inside <main class="legal-content">.
+    Locals: title, date_label (e.g. "February 2026"), date_iso (e.g. "2026-02"),
+    optional intro_label (default "Last updated:"). %>
+<% intro_label = local_assigns.fetch(:intro_label, "Last updated:") %>
+<h1><%= title %></h1>
+<p class="legal-date"><%= intro_label %> <time datetime="<%= date_iso %>"><%= date_label %></time></p>

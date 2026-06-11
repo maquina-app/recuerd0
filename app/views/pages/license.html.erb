@@ -6,9 +6,8 @@
 
   <%= render "pages/marketing_nav" %>
 
-  <div class="legal-content">
-    <h1>License</h1>
-    <p class="legal-date">February 2026</p>
+  <main class="legal-content">
+    <%= render "pages/legal_header", title: "License", date_label: "February 2026", date_iso: "2026-02" %>
 
     <div class="legal-body">
       <h2>OSaaS License (MIT + No Competing SaaS)</h2>
@@ -21,9 +20,11 @@
         <li>You may not use the Software, or any derivative work, to offer a commercially competing hosted service &mdash; that is, a software-as-a-service product whose primary purpose is substantially similar to the Software. Self-hosting for internal or personal use, including within an organization, is always permitted.</li>
       </ol>
 
-      <p>THE SOFTWARE IS PROVIDED &ldquo;AS IS&rdquo;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+      <p class="legal-disclaimer">THE SOFTWARE IS PROVIDED &ldquo;AS IS&rdquo;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+
+      <p>The canonical license and full source live in the <a href="https://github.com/maquina-app/recuerd0" target="_blank" rel="noopener">recuerd0 repository</a>.</p>
     </div>
-  </div>
+  </main>
 
   <%= render "pages/marketing_footer" %>
 
