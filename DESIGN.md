@@ -147,10 +147,16 @@ small set of semantic signals. Restraint is the strategy: the surface is near-wh
 the green appears only where it means something.
 
 ### Primary
-- **Memory Green** (`oklch(0.600 0.190 150)`): The single brand accent. Primary
-  buttons, links, focus rings, the wordmark's terminal "0", active sidebar items,
-  chart series. Mid-tone — bright enough to signal, dark enough to read on white. It is
-  load-bearing, never a background wash.
+- **Memory Green** (`oklch(0.600 0.190 150)` ≈ `#009d3a`): The single brand accent and
+  canonical brand green. In-app buttons, links, focus rings, the wordmark's terminal
+  "0", active sidebar items, chart series, and the browser `theme-color`. Mid-tone —
+  bright enough to signal, dark enough to read on white. Load-bearing, never a wash.
+- **Memory Green (on-white variant)** (`oklch(0.480 0.190 150)` ≈ `#00780d`): A
+  deliberately darker step used **only on the marketing surface** (`--m-primary`),
+  where text and small accents sit on a near-white page. The darker value clears
+  WCAG AA/AAA on `#f8f9f8` that the standard Memory Green would miss. Same hue and
+  chroma — this is one brand green at two lightnesses for two backgrounds, not a
+  second color. Keep them in lockstep if the hue ever shifts.
 
 ### Secondary
 - **Tint Green** (`oklch(0.940 0.045 150)`): Subtle filled backgrounds for secondary

@@ -4,7 +4,7 @@
 
 /* Marketing-specific design tokens */
 .marketing {
-  --m-primary: oklch(0.480 0.190 150);
+  --m-primary: oklch(0.480 0.190 150); /* darker on-white variant of the canonical Memory Green (0.600); see DESIGN.md Colors */
   --m-primary-hover: oklch(0.420 0.180 150);
   --m-primary-dim: oklch(0.470 0.160 150); /* 5.84:1 on --m-bg — clears WCAG AA (was 4.32:1, failing) */
   --m-primary-glow: oklch(0.480 0.190 150 / 0.10);
@@ -681,6 +681,10 @@
   text-transform: uppercase;
   color: var(--m-text-dim);
   padding: 0.65rem 1.5rem;
+  min-height: 44px; /* comfortable touch target */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   cursor: pointer;
@@ -786,6 +790,13 @@
   margin-top: 4rem;
 }
 
+/* TODO (design debt): rework the feature cards. The .feature-marker is a 3px
+   left-edge gradient bar — a side-stripe accent, which the design rules ban —
+   and it fades to nothing at the bottom, reading as unfinished. Seven identical
+   cards also flatten the section. Redesign: drop the side-stripe (use the full
+   hairline border, a small per-feature icon, or nothing), give the chips a
+   lighter non-button treatment, and vary/group the cards so the grid isn't a
+   monotone 7-up. Tracked as a P2; see .impeccable/critique snapshot. */
 .marketing .feature-card {
   padding: 2.25rem;
   background: var(--m-bg-card);
@@ -1557,7 +1568,9 @@
    ======================================== */
 @media (max-width: 900px) {
   .marketing .hero-content { grid-template-columns: 1fr; }
-  .marketing .hero-visual { display: none; }
+  /* Keep the signature memory-layers visual on tablet, centered and bounded so
+     the absolutely-positioned cards fit (it's hidden only on small phones below). */
+  .marketing .hero-visual { max-width: 420px; margin: 2.5rem auto 0; }
   .marketing .problem-grid { grid-template-columns: 1fr; }
   .marketing .code-tab { padding: 0.55rem 1rem; font-size: 0.62rem; }
   .marketing .features-grid { grid-template-columns: 1fr; }
@@ -1597,4 +1610,18 @@
   .marketing .doc-footer-tagline { max-width: none; }
   .marketing .doc-footer-col-links { align-items: center; }
   .marketing .doc-footer-bottom { flex-direction: column; align-items: center; gap: 0.75rem; }
+}
+
+/* Small phones: the absolute hero visual can't fit, and dense spacing/rows need
+   to relax. This sits after the 900px block so it wins on narrow viewports. */
+@media (max-width: 600px) {
+  .marketing .hero { min-height: auto; padding-top: 5rem; }
+  .marketing .hero-visual { display: none; }
+  .marketing .hero-actions { flex-direction: column; align-items: stretch; }
+  .marketing .hero-actions .btn-primary,
+  .marketing .hero-actions .btn-ghost { justify-content: center; }
+  .marketing .feature-card { padding: 1.75rem; }
+  .marketing .feature-card h3 { font-size: 1rem; }
+  .marketing section { padding: 4rem 0; }
+  .marketing .cta-section { padding: 6rem 0; }
 }
