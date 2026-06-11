@@ -1501,19 +1501,23 @@
   color: var(--m-text-secondary);
   line-height: 1.6;
   padding: 0.35rem 0;
-  padding-left: 1.25rem;
+  padding-left: 1.5rem;
   position: relative;
 }
 
+/* A green checkmark, not a dot: on a "what's included" list the check carries
+   meaning ("yes, included"), so the green is load-bearing rather than decorative.
+   Drawn with borders so it renders identically regardless of font. */
 .marketing .pricing-features li::before {
   content: '';
   position: absolute;
-  left: 0;
-  top: 0.75rem;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--m-primary);
+  left: 2px;
+  top: 0.6rem;
+  width: 5px;
+  height: 9px;
+  border: solid var(--m-primary);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
 }
 
 .marketing .pricing-cta {
