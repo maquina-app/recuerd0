@@ -37,7 +37,8 @@ module Mcp
       },
       {
         name: "create_memory",
-        description: "Create a new memory in a workspace.",
+        description: "Create a new memory in a workspace. The calling application " \
+          "is recorded automatically as the memory's source.",
         annotations: {readOnlyHint: false, destructiveHint: false},
         inputSchema: {
           type: "object",
@@ -45,21 +46,46 @@ module Mcp
             workspace_id: {type: "string"},
             title: {type: "string"},
             content: {type: "string"},
-            category: {type: "string", enum: CATEGORIES}
+            category: {type: "string", enum: CATEGORIES},
+            tags: {type: "array", items: {type: "string"},
+                   description: "Optional tags for search and filtering"}
           },
           required: %w[workspace_id title content]
         }
       },
       {
         name: "update_memory",
-        description: "Update the content or title of an existing memory.",
+        description: "Update an existing memory in place (title, content, category, " \
+          "or tags). Does not create a new version — use create_version to preserve history.",
         annotations: {readOnlyHint: false, destructiveHint: false},
         inputSchema: {
           type: "object",
           properties: {
             memory_id: {type: "string"},
             title: {type: "string"},
-            content: {type: "string"}
+            content: {type: "string"},
+            category: {type: "string", enum: CATEGORIES},
+            tags: {type: "array", items: {type: "string"},
+                   description: "Optional tags for search and filtering"}
+          },
+          required: ["memory_id"]
+        }
+      },
+      {
+        name: "create_version",
+        description: "Append a new immutable version to an existing memory, " \
+          "preserving prior versions as history. Any omitted field inherits its " \
+          "value from the latest version.",
+        annotations: {readOnlyHint: false, destructiveHint: false},
+        inputSchema: {
+          type: "object",
+          properties: {
+            memory_id: {type: "string"},
+            title: {type: "string"},
+            content: {type: "string"},
+            category: {type: "string", enum: CATEGORIES},
+            tags: {type: "array", items: {type: "string"},
+                   description: "Optional tags for search and filtering"}
           },
           required: ["memory_id"]
         }

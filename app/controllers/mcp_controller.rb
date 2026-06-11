@@ -18,7 +18,10 @@ class McpController < ApplicationController
   SUPPORTED_PROTOCOL_VERSIONS = %w[2025-06-18 2025-03-26 2024-11-05].freeze
   LATEST_PROTOCOL_VERSION = SUPPORTED_PROTOCOL_VERSIONS.first
 
-  WRITE_TOOLS = %w[create_memory update_memory].freeze
+  WRITE_TOOLS = %w[create_memory update_memory create_version].freeze
+
+  # Tools that create a new record whose `source` we stamp with the calling app.
+  SOURCE_STAMPED_TOOLS = %w[create_memory create_version].freeze
 
   # POST /mcp
   def call
@@ -70,10 +73,19 @@ class McpController < ApplicationController
       return jsonrpc_error(@jsonrpc_id, -32_001, "Insufficient scope — write access required")
     end
 
-    value = Mcp::Tools.public_send(name, @mcp_account, params["arguments"] || {})
+    arguments = params["arguments"] || {}
+    # `source` is server-authoritative: the authenticated OAuth client's name,
+    # never whatever a client might pass. Stamped only on record creation.
+    arguments["source"] = mcp_client_name if SOURCE_STAMPED_TOOLS.include?(name)
+
+    value = Mcp::Tools.public_send(name, @mcp_account, arguments)
     jsonrpc_result(content: [{type: "text", text: value.to_json}])
   rescue Mcp::ToolError => e
     jsonrpc_result(content: [{type: "text", text: e.message}], isError: true)
+  end
+
+  def mcp_client_name
+    @current_oauth_token.oauth_client&.client_name
   end
 
   def jsonrpc_result(result)

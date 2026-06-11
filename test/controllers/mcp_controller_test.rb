@@ -52,10 +52,23 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_predicate response.body.strip, :empty?
   end
 
-  test "tools/list returns the five tools" do
+  test "tools/list returns the six tools" do
     result = mcp(rpc("tools/list"), token: @read_token.raw_token)
     names = result["result"]["tools"].map { |t| t["name"] }
     assert_equal Mcp::ToolDefinitions::NAMES.sort, names.sort
+    assert_includes names, "create_version"
+  end
+
+  test "tools/list advertises tags and category inputs on write tools" do
+    result = mcp(rpc("tools/list"), token: @read_token.raw_token)
+    tools = result["result"]["tools"].index_by { |t| t["name"] }
+
+    create_props = tools["create_memory"]["inputSchema"]["properties"]
+    assert_equal "array", create_props["tags"]["type"]
+
+    update_props = tools["update_memory"]["inputSchema"]["properties"]
+    assert_equal "array", update_props["tags"]["type"]
+    assert_equal Mcp::ToolDefinitions::CATEGORIES, update_props["category"]["enum"]
   end
 
   test "list_workspaces returns the account's workspaces" do
@@ -73,16 +86,117 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal(-32_001, result["error"]["code"])
   end
 
-  test "create_memory succeeds with a full_access token" do
+  test "create_memory persists tags and stamps source with the client name" do
+    result = nil
     assert_difference -> { @workspace.memories.count }, 1 do
       result = mcp(
         rpc("tools/call", name: "create_memory",
-          arguments: {workspace_id: @workspace.id.to_s, title: "From MCP", content: "Body", category: "decision"}),
+          arguments: {workspace_id: @workspace.id.to_s, title: "From MCP", content: "Body",
+                      category: "decision", tags: ["newsletter", "mailer"]}),
+        token: @full_token.raw_token
+      )
+    end
+
+    payload = JSON.parse(result["result"]["content"].first["text"])
+    assert_equal "From MCP", payload["title"]
+    assert_equal ["newsletter", "mailer"], payload["tags"]
+    assert_equal "Claude", payload["source"]
+
+    memory = @workspace.memories.find(payload["id"])
+    assert_equal ["newsletter", "mailer"], memory.tags
+    assert_equal "Claude", memory.source
+  end
+
+  test "create_memory ignores a client-supplied source and uses the OAuth client name" do
+    result = mcp(
+      rpc("tools/call", name: "create_memory",
+        arguments: {workspace_id: @workspace.id.to_s, title: "Spoof", content: "x", source: "Evil App"}),
+      token: @full_token.raw_token
+    )
+    payload = JSON.parse(result["result"]["content"].first["text"])
+    assert_equal "Claude", payload["source"]
+    assert_equal "Claude", @workspace.memories.find(payload["id"]).source
+  end
+
+  test "read_memory returns tags, source, and version" do
+    memory = Memory.create_with_content(@workspace,
+      title: "Tagged", content: "Body", tags: ["a", "b"], source: "Claude")
+
+    result = mcp(
+      rpc("tools/call", name: "read_memory", arguments: {memory_id: memory.id.to_s}),
+      token: @read_token.raw_token
+    )
+    payload = JSON.parse(result["result"]["content"].first["text"])
+    assert_equal ["a", "b"], payload["tags"]
+    assert_equal "Claude", payload["source"]
+    assert_equal 1, payload["version"]
+    assert_equal "Body", payload["content"]
+  end
+
+  test "list_memories includes tags and source" do
+    Memory.create_with_content(@workspace,
+      title: "Listed", content: "Body", tags: ["x"], source: "Claude")
+
+    result = mcp(
+      rpc("tools/call", name: "list_memories", arguments: {workspace_id: @workspace.id.to_s}),
+      token: @read_token.raw_token
+    )
+    payload = JSON.parse(result["result"]["content"].first["text"])
+    listed = payload.find { |m| m["title"] == "Listed" }
+    assert_equal ["x"], listed["tags"]
+    assert_equal "Claude", listed["source"]
+  end
+
+  test "update_memory changes category and tags in place without a new version" do
+    memory = Memory.create_with_content(@workspace, title: "Edit me", content: "Body")
+
+    assert_no_difference -> { memory.all_versions.count } do
+      result = mcp(
+        rpc("tools/call", name: "update_memory",
+          arguments: {memory_id: memory.id.to_s, category: "preference", tags: ["edited"]}),
         token: @full_token.raw_token
       )
       payload = JSON.parse(result["result"]["content"].first["text"])
-      assert_equal "From MCP", payload["title"]
+      assert_equal "preference", payload["category"]
+      assert_equal ["edited"], payload["tags"]
     end
+
+    memory.reload
+    assert_equal "preference", memory.category
+    assert_equal ["edited"], memory.tags
+  end
+
+  test "create_version appends a new version and read_memory returns its content" do
+    memory = Memory.create_with_content(@workspace, title: "v1", content: "First")
+
+    assert_difference -> { memory.all_versions.count }, 1 do
+      result = mcp(
+        rpc("tools/call", name: "create_version",
+          arguments: {memory_id: memory.id.to_s, content: "Second", tags: ["v2"]}),
+        token: @full_token.raw_token
+      )
+      payload = JSON.parse(result["result"]["content"].first["text"])
+      assert_equal "Claude", payload["source"]
+      assert_equal ["v2"], payload["tags"]
+    end
+
+    read = mcp(
+      rpc("tools/call", name: "read_memory", arguments: {memory_id: memory.id.to_s}),
+      token: @read_token.raw_token
+    )
+    read_payload = JSON.parse(read["result"]["content"].first["text"])
+    assert_equal "Second", read_payload["content"]
+    assert_equal 2, read_payload["version"]
+  end
+
+  test "create_version is denied for a read_only token" do
+    memory = Memory.create_with_content(@workspace, title: "v1", content: "First")
+    result = mcp(
+      rpc("tools/call", name: "create_version",
+        arguments: {memory_id: memory.id.to_s, content: "Second"}),
+      token: @read_token.raw_token
+    )
+    assert_equal(-32_001, result["error"]["code"])
   end
 
   test "tools enforce account isolation" do
