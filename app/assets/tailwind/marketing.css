@@ -790,43 +790,66 @@
   margin-top: 4rem;
 }
 
-/* TODO (design debt): rework the feature cards. The .feature-marker is a 3px
-   left-edge gradient bar — a side-stripe accent, which the design rules ban —
-   and it fades to nothing at the bottom, reading as unfinished. Seven identical
-   cards also flatten the section. Redesign: drop the side-stripe (use the full
-   hairline border, a small per-feature icon, or nothing), give the chips a
-   lighter non-button treatment, and vary/group the cards so the grid isn't a
-   monotone 7-up. Tracked as a P2; see .impeccable/critique snapshot. */
+/* Feature cards: icon-led, vertical. The green line icon is the per-card accent
+   (it carries the One Green Rule), the card body is neutral, and the tag row is a
+   quiet metadata footer — no side-stripe, no button-like chips. */
 .marketing .feature-card {
-  padding: 2.25rem;
+  padding: 2rem;
   background: var(--m-bg-card);
   border: 1px solid var(--m-border);
   border-radius: 10px;
   display: flex;
-  gap: 1.5rem;
-  transition: all 0.4s var(--m-ease-out);
+  flex-direction: column;
+  gap: 1rem;
+  transition: border-color 0.3s var(--m-ease-out), background 0.3s var(--m-ease-out), box-shadow 0.3s var(--m-ease-out), transform 0.3s var(--m-ease-out);
   box-shadow: var(--m-shadow-sm);
 }
 
 .marketing .feature-card:hover {
-  border-color: oklch(0.480 0.190 150 / 0.2);
+  border-color: oklch(0.480 0.190 150 / 0.25);
   background: var(--m-bg-card-hover);
   box-shadow: var(--m-shadow-md);
   transform: translateY(-2px);
 }
 
-.marketing .feature-marker {
+.marketing .feature-icon {
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
-  width: 3px;
-  background: linear-gradient(180deg, var(--m-primary), oklch(0.480 0.190 150 / 0.15));
-  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: var(--m-primary-ghost);
+  border: 1px solid oklch(0.480 0.190 150 / 0.12);
+  color: var(--m-primary);
+}
+
+.marketing .feature-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Content wrapper grows so the metadata footer can sit flush at the bottom,
+   keeping tag rows aligned across cards of unequal copy length. */
+.marketing .feature-card > div:last-child {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* The icon tile lifts toward the brand green on hover, tying the card's motion
+   to its one accent. */
+.marketing .feature-card:hover .feature-icon {
+  background: oklch(0.480 0.190 150 / 0.10);
+  border-color: oklch(0.480 0.190 150 / 0.30);
 }
 
 .marketing .feature-card h3 {
   font-family: 'Jura', system-ui, sans-serif;
   font-weight: 500;
-  font-size: 1.05rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
   color: var(--m-text);
 }
 
@@ -838,8 +861,11 @@
 
 .marketing .feature-meta {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: auto;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--m-border-subtle);
 }
 
 .marketing .feature-chip {
@@ -848,10 +874,6 @@
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--m-text-dim);
-  padding: 0.2rem 0.6rem;
-  border: 1px solid var(--m-border);
-  border-radius: 3px;
-  background: var(--m-surface);
 }
 
 /* ========================================
