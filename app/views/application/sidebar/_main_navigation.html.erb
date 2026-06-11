@@ -64,5 +64,13 @@
           icon_name: :brain,
           target: "_blank" %>
     <% end %>
+
+    <%= render "components/sidebar/menu_item" do %>
+      <%= render "components/sidebar/menu_button",
+          title: "MCP",
+          url: "https://recuerd0.ai/mcp",
+          icon_name: :plug,
+          target: "_blank" %>
+    <% end %>
   <% end %>
 <% end %>
