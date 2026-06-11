@@ -62,7 +62,7 @@
       <div class="api-section" id="overview">
         <div class="resource-header">
           <h2>What you get</h2>
-          <p>recuerd0 runs a remote MCP server at <code>POST /mcp</code> (Streamable HTTP, JSON-RPC 2.0). Point an MCP client at your instance and it can read, search, and write memories across your workspaces — through five tools, scoped to the access you approve.</p>
+          <p>MCP — the Model Context Protocol — is an open standard for connecting AI clients to outside tools and data. recuerd0 runs a remote MCP server at <code>POST /mcp</code> (Streamable HTTP, JSON-RPC 2.0): point an MCP client at your instance and it can read, search, and write memories across your workspaces, through five tools scoped to the access you approve.</p>
         </div>
 
         <p class="doc-note">
@@ -76,16 +76,9 @@
           <h3>Why MCP</h3>
           <p>MCP lets the model reach your curated context in the middle of a conversation, instead of you pasting it in.</p>
         </div>
-        <div class="table-scroll">
-          <table class="op-table">
-            <thead><tr><th>Without MCP</th><th>With recuerd0 over MCP</th></tr></thead>
-            <tbody>
-              <tr><td>Copy a personal API token into each tool's config</td><td>Approve a consent screen once — the client registers itself</td></tr>
-              <tr><td>Paste context into the prompt by hand</td><td>The model queries memories on demand: <code>list</code>, <code>search</code>, <code>read</code></td></tr>
-              <tr><td>One static token with broad access</td><td>Scoped, revocable access you can see and disconnect</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <p class="doc-note">
+          Without it, you copy a personal API token into each tool's config and paste context into prompts by hand — one static token with broad access. With recuerd0 over MCP, you approve a consent screen once (the client registers itself), the model queries memories on demand — list, search, read — and access stays scoped and revocable: you can see every connected client and disconnect it.
+        </p>
       </div>
 
       <div class="section-divider"></div>
@@ -102,7 +95,6 @@
             <tbody>
               <tr><td>Claude Desktop</td><td>Add a custom connector with your server URL</td></tr>
               <tr><td>Claude.ai</td><td>Add the connector in settings</td></tr>
-              <tr><td>Cowork</td><td>Add the MCP server URL</td></tr>
               <tr><td>Any MCP client</td><td>Send JSON-RPC 2.0 to <code>POST /mcp</code> (Streamable HTTP)</td></tr>
             </tbody>
           </table>
@@ -110,9 +102,9 @@
       </div>
 
       <%# ===== CONNECT CLAUDE DESKTOP ===== %>
-      <div class="endpoint" id="connect-claude-desktop">
-        <div class="endpoint-head">
-          <h3>Connect Claude Desktop</h3>
+      <div class="api-section" id="connect-claude-desktop">
+        <div class="resource-header">
+          <h2>Connect Claude Desktop</h2>
           <p>Three steps. The OAuth handshake runs itself once you add the URL.</p>
         </div>
 
@@ -183,15 +175,13 @@
       <div class="endpoint" id="consent">
         <div class="endpoint-head">
           <h3>The consent screen</h3>
-          <p>Every client connection shows exactly what it is asking for. You approve or deny — nothing is granted silently.</p>
+          <p>Every client connection shows exactly what it is asking for. You approve or deny — nothing is granted silently. On the screen, titled <em>Connect to Recuerd0</em>, you approve exactly:</p>
         </div>
-        <div class="code-block code-block--output">
-          <div class="code-head"><span class="code-label">connect to recuerd0</span></div>
-          <div class="code-body"><code><span class="cc">This will allow it to:</span>
-  Read your memories
-  Create and update memories
-  View your workspaces</code></div>
-        </div>
+        <ul>
+          <li>Read your memories</li>
+          <li>Create and update memories</li>
+          <li>View your workspaces</li>
+        </ul>
       </div>
 
       <div class="section-divider"></div>
@@ -241,23 +231,17 @@
         </div>
         <div class="table-scroll">
           <table class="op-table">
-            <thead><tr><th>Scope</th><th>Grants</th></tr></thead>
+            <thead><tr><th>Scope</th><th>Grants</th><th>Tier</th></tr></thead>
             <tbody>
-              <tr><td><code>memories:read</code></td><td>Read and search memories</td></tr>
-              <tr><td><code>memories:write</code></td><td>Create and update memories</td></tr>
-              <tr><td><code>workspaces:read</code></td><td>List your workspaces</td></tr>
+              <tr><td><code>memories:read</code></td><td>Read and search memories</td><td><code>read_only</code></td></tr>
+              <tr><td><code>memories:write</code></td><td>Create and update memories</td><td><code>full_access</code></td></tr>
+              <tr><td><code>workspaces:read</code></td><td>List your workspaces</td><td><code>read_only</code></td></tr>
             </tbody>
           </table>
         </div>
-        <div class="table-scroll">
-          <table class="op-table">
-            <thead><tr><th>Token tier</th><th>Can call</th></tr></thead>
-            <tbody>
-              <tr><td><code>read_only</code></td><td><code>list_workspaces</code>, <code>list_memories</code>, <code>read_memory</code></td></tr>
-              <tr><td><code>full_access</code></td><td>All five tools, including <code>create_memory</code> and <code>update_memory</code></td></tr>
-            </tbody>
-          </table>
-        </div>
+        <p class="doc-note">
+          A <code>read_only</code> token can call <code>list_workspaces</code>, <code>list_memories</code>, and <code>read_memory</code>. The two write tools — <code>create_memory</code> and <code>update_memory</code> — need <code>full_access</code>.
+        </p>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Every tool scopes to your account's workspaces. A token can never read or write another account's memories, whatever it asks for.</span>
