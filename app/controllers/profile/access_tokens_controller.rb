@@ -1,6 +1,6 @@
 class Profile::AccessTokensController < ApplicationController
   def create
-    @access_token = Current.user.access_tokens.build(access_token_params)
+    @access_token = Current.user.access_tokens.manual.build(access_token_params)
 
     if @access_token.save
       flash[:notice] = t(".created")
@@ -14,9 +14,15 @@ class Profile::AccessTokensController < ApplicationController
 
   def destroy
     @access_token = Current.user.access_tokens.find(params[:id])
-    @access_token.destroy
 
-    redirect_to profile_path, notice: t(".deleted")
+    # OAuth-issued tokens are revoked (kept for audit); manual tokens are deleted.
+    if @access_token.oauth_client_id?
+      @access_token.revoke!
+      redirect_to profile_path, notice: t(".disconnected")
+    else
+      @access_token.destroy
+      redirect_to profile_path, notice: t(".deleted")
+    end
   end
 
   private

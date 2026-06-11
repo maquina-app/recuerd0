@@ -232,6 +232,14 @@ en:
       description_placeholder: "e.g., CI/CD pipeline"
       permission_label: "Permission"
       create_submit: "Create Token"
+    connected_apps:
+      title: "Connected applications"
+      description: "Apps connected through MCP that can access your memories."
+      revoke: "Disconnect"
+      revoke_confirm: "Disconnect this application? It will need to reconnect to regain access."
+      connected_ago: "Connected %{time} ago"
+      empty_title: "No connected applications"
+      empty_description: "Connect Recuerd0 to Claude or another MCP client to see it here."
 
   accounts:
     show:
@@ -330,3 +338,17 @@ en:
       create_account: "Create your own account"
       or: "or"
       back_to_sign_in: "Back to sign in"
+
+  oauth:
+    authorizations:
+      new:
+        title: "Connect to Recuerd0"
+        subtitle_html: "%{client} is requesting access to your memories."
+        permissions_heading: "This will allow it to:"
+        signed_in_as_html: "Signed in as %{email}"
+        allow: "Allow access"
+        deny: "Deny"
+      scopes:
+        memories_read: "Read your memories"
+        memories_write: "Create and update memories"
+        workspaces_read: "View your workspaces"

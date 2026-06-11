@@ -10,15 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_29_173810) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_10_000003) do
   create_table "access_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
+    t.datetime "expires_at"
     t.datetime "last_used_at"
+    t.integer "oauth_client_id"
+    t.string "oauth_scope"
     t.string "permission", default: "read_only", null: false
+    t.string "refresh_token_digest"
+    t.datetime "revoked_at"
     t.string "token_digest", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.index ["oauth_client_id"], name: "index_access_tokens_on_oauth_client_id"
+    t.index ["refresh_token_digest"], name: "index_access_tokens_on_refresh_token_digest", unique: true
     t.index ["token_digest"], name: "index_access_tokens_on_token_digest", unique: true
     t.index ["user_id"], name: "index_access_tokens_on_user_id"
   end
@@ -150,6 +157,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_173810) do
     t.index ["to_memory_id"], name: "index_memory_links_on_to_memory_id"
   end
 
+  create_table "oauth_authorization_codes", force: :cascade do |t|
+    t.string "code", null: false
+    t.string "code_challenge", null: false
+    t.string "code_challenge_method", default: "S256", null: false
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", null: false
+    t.integer "oauth_client_id", null: false
+    t.string "redirect_uri", null: false
+    t.string "scope"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["code"], name: "index_oauth_authorization_codes_on_code", unique: true
+    t.index ["oauth_client_id"], name: "index_oauth_authorization_codes_on_oauth_client_id"
+    t.index ["user_id"], name: "index_oauth_authorization_codes_on_user_id"
+  end
+
+  create_table "oauth_clients", force: :cascade do |t|
+    t.string "client_id", null: false
+    t.string "client_name", null: false
+    t.string "client_secret_digest"
+    t.datetime "created_at", null: false
+    t.string "grant_types", default: "authorization_code"
+    t.text "redirect_uris", null: false
+    t.datetime "registered_at", null: false
+    t.string "scope", default: "memories:read memories:write workspaces:read"
+    t.string "token_endpoint_auth_method", default: "none"
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_oauth_clients_on_client_id", unique: true
+  end
+
   create_table "pins", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "pinnable_id", null: false
@@ -199,6 +236,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_173810) do
     t.index ["deleted_at"], name: "index_workspaces_on_deleted_at"
   end
 
+  add_foreign_key "access_tokens", "oauth_clients"
   add_foreign_key "access_tokens", "users"
   add_foreign_key "account_exports", "accounts"
   add_foreign_key "account_exports", "users"
@@ -209,6 +247,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_173810) do
   add_foreign_key "memories", "workspaces"
   add_foreign_key "memory_links", "memories", column: "from_memory_id"
   add_foreign_key "memory_links", "memories", column: "to_memory_id"
+  add_foreign_key "oauth_authorization_codes", "oauth_clients"
+  add_foreign_key "oauth_authorization_codes", "users"
   add_foreign_key "pins", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "users", "accounts"
