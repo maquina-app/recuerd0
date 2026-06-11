@@ -69,19 +69,19 @@
           <p>MEMORY.md works — until it doesn't. 200 lines, project-scoped, no search, no versioning, no cross-project queries. Every session starts with the same truncated cheat sheet.</p>
         </div>
 
-        <p style="font-size: 0.92rem; color: var(--m-text-secondary); line-height: 1.8; margin-bottom: 1.5rem;">
+        <p class="doc-note">
           recuerd0 is the deep, searchable, cross-project knowledge layer. Your agent queries exactly the context it needs — architecture decisions, debugging patterns, API conventions — without bloating the system prompt. Keep MEMORY.md for quick hits. Use recuerd0 for everything else.
         </p>
       </div>
 
       <%# ===== THREE LAYERS ===== %>
       <div class="api-section" id="three-layers">
-        <div class="endpoint-head">
-          <h3>The Three Layers</h3>
+        <div class="resource-header">
+          <h2>The Three Layers</h2>
           <p>Each layer serves a different scope and lifespan.</p>
         </div>
 
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Layer</th><th>Role</th><th>Scope</th><th>Lifespan</th></tr></thead>
           <tbody>
             <tr>
@@ -103,7 +103,7 @@
               <td>Archive, rarely queried</td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <div class="section-divider"></div>
@@ -133,7 +133,7 @@
         </div>
 
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>With <code>.recuerd0.yaml</code> in your project root, you can omit <code>--workspace</code> from all commands when working in that directory.</span>
         </div>
       </div>
@@ -249,6 +249,7 @@ recuerd0 version create --workspace 1 42 \
       <div class="api-section" id="integrations-section">
         <div class="resource-header">
           <h2>Integrations</h2>
+          <p>Connect recuerd0 to Claude Code, Cursor, ChatGPT, and anything that speaks HTTP or shell.</p>
         </div>
       </div>
 
@@ -263,7 +264,7 @@ recuerd0 version create --workspace 1 42 \
           <div class="code-body"><code data-clipboard-target="source">/plugin marketplace add maquina-app/rails-claude-code
 /plugin install recuerd0@maquina</code></div>
         </div>
-        <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin-bottom: 1.5rem;">
+        <p class="doc-note">
           The plugin provides slash commands for saving session knowledge, searching memories, and workspace management — all within the Claude Code conversation flow.
         </p>
       </div>
@@ -275,7 +276,7 @@ recuerd0 version create --workspace 1 42 \
           <p>The plugin registers two Claude Code lifecycle hooks that capture session state automatically. No manual commands, no forgetting to save.</p>
         </div>
 
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Hook</th><th>When it fires</th><th>What it does</th></tr></thead>
           <tbody>
             <tr>
@@ -289,9 +290,9 @@ recuerd0 version create --workspace 1 42 \
               <td>Emergency snapshot tagged <code>claude-code,auto-save,precompact</code></td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
 
-        <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin: 1.25rem 0 1rem;">
+        <p class="doc-note">
           Both hooks capture the last 200 lines of the session transcript, build a titled Markdown memory, and save it to the configured workspace via the recuerd0 CLI. The title includes an ISO timestamp and session ID. The source is always <code>claude-code-session</code>, so you can filter auto-saved memories out of manual queries.
         </p>
 
@@ -305,27 +306,27 @@ recuerd0 version create --workspace 1 42 \
         </div>
 
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Hooks stay silent if the <code>recuerd0</code> CLI is missing, no account is configured, or no workspace is resolvable. A fresh install with no config produces zero activity — nothing is ever captured without your setup.</span>
         </div>
 
         <div class="endpoint-head">
           <h3>Tuning</h3>
         </div>
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Env var</th><th>Default</th><th>Purpose</th></tr></thead>
           <tbody>
             <tr><td><code>RECUERD0_HOOK_DISABLE</code></td><td>unset</td><td>Set to <code>1</code> to disable both hooks entirely</td></tr>
             <tr><td><code>RECUERD0_STOP_INTERVAL_MINUTES</code></td><td><code>15</code></td><td>Minimum minutes between Stop saves</td></tr>
             <tr><td><code>RECUERD0_HOOK_TAIL_LINES</code></td><td><code>200</code></td><td>Transcript lines captured per save</td></tr>
           </tbody>
-        </table>
+        </table></div>
 
         <div class="endpoint-head">
           <h3>Turning it off</h3>
           <p>Four ways to stop auto-saving, from least invasive to most.</p>
         </div>
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Scope</th><th>How</th></tr></thead>
           <tbody>
             <tr><td>Current shell</td><td><code>export RECUERD0_HOOK_DISABLE=1</code> before launching Claude Code</td></tr>
@@ -333,9 +334,9 @@ recuerd0 version create --workspace 1 42 \
             <tr><td>Just one hook</td><td>Edit <code>${CLAUDE_PLUGIN_ROOT}/hooks/hooks.json</code> and delete the <code>Stop</code> or <code>PreCompact</code> block</td></tr>
             <tr><td>Permanently</td><td><code>/plugin uninstall recuerd0@maquina</code></td></tr>
           </tbody>
-        </table>
+        </table></div>
 
-        <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin: 1.25rem 0 0;">
+        <p class="doc-note">
           Failures (bad credentials, offline, rate limit) never interrupt your session — the hooks always exit cleanly and log a one-line entry to <code>~/.recuerd0/hook-errors.log</code>.
         </p>
 
@@ -356,7 +357,7 @@ recuerd0 memory read lines 42 --start 38 --end 52 --pretty</code></div>
           <h3>Other AI tools</h3>
           <p>Any tool that supports HTTP or shell commands can use recuerd0.</p>
         </div>
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Tool</th><th>Integration</th></tr></thead>
           <tbody>
             <tr><td>Cursor</td><td>CLI commands in terminal, or REST API via custom tools</td></tr>
@@ -364,7 +365,7 @@ recuerd0 memory read lines 42 --start 38 --end 52 --pretty</code></div>
             <tr><td>Windsurf</td><td>CLI commands in terminal</td></tr>
             <tr><td>Custom scripts</td><td>REST API directly — <code>curl</code>, Python, Ruby, anything</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <div class="section-divider"></div>
@@ -381,7 +382,7 @@ recuerd0 memory read lines 42 --start 38 --end 52 --pretty</code></div>
         <div class="endpoint-head">
           <h3>Operators</h3>
         </div>
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Operator</th><th>Example</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td>Term</td><td><code>architecture</code></td><td>Matches documents containing the substring</td></tr>
@@ -393,7 +394,7 @@ recuerd0 memory read lines 42 --start 38 --end 52 --pretty</code></div>
             <tr><td>Column</td><td><code>body:implementation</code></td><td>Search only in body</td></tr>
             <tr><td>Grouping</td><td><code>(auth OR session) AND rails</code></td><td>Parentheses for precedence</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <div class="endpoint" id="categories">
@@ -401,7 +402,7 @@ recuerd0 memory read lines 42 --start 38 --end 52 --pretty</code></div>
           <h3>Categories</h3>
           <p>Every memory has exactly one category, picked from a locked four-value enum. Categories are enforced; tags are free-form. Use both — categories for filtering and finding the right <em>kind</em> of memory, tags for finding the right <em>topic</em>.</p>
         </div>
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Value</th><th>Label</th><th>When to pick it</th></tr></thead>
           <tbody>
             <tr><td><code>decision</code></td><td>Decision</td><td>Architecture choices, library picks, tradeoffs with stated reasoning</td></tr>
@@ -409,9 +410,9 @@ recuerd0 memory read lines 42 --start 38 --end 52 --pretty</code></div>
             <tr><td><code>preference</code></td><td>Preference</td><td>User-stated rules ("always X", "never Y")</td></tr>
             <tr><td><code>general</code></td><td>General</td><td>Catch-all and default</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>If torn between two, prefer the more specific one. <code>general</code> is a fallback, not a default.</span>
         </div>
       </div>
@@ -421,15 +422,15 @@ recuerd0 memory read lines 42 --start 38 --end 52 --pretty</code></div>
           <h3>Cross-Workspace Links</h3>
           <p>The same topic often shows up in multiple workspaces — an auth migration touches <code>rails-app</code>, <code>mobile-app</code>, and <code>infra</code> all at once. Memory links (a.k.a. "tunnels") let you express that without duplicating the memory. A link is an undirected, unlabeled "see also" connection between two memories. Links cross workspace boundaries but stay scoped to a single account.</p>
         </div>
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Workspace</th><th>Memory</th><th>Topic</th></tr></thead>
           <tbody>
             <tr><td><code>rails-app</code></td><td>#42 — "Auth strategy"</td><td>Server-side session refactor</td></tr>
             <tr><td><code>mobile-app</code></td><td>#118 — "Auth strategy (mobile)"</td><td>Token storage on iOS / Android</td></tr>
             <tr><td><code>infra</code></td><td>#204 — "Auth migration runbook"</td><td>Rollout, rollback, monitoring</td></tr>
           </tbody>
-        </table>
-        <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin: 1.25rem 0 1rem;">
+        </table></div>
+        <p class="doc-note">
           Linking #42 ↔ #118 ↔ #204 means an agent reading any one of those memories can pull the other two on demand without searching across every workspace. There is no automatic linking — the recuerd0 agent always confirms with you before creating a link, and there is no cardinality limit on how many links a memory can carry.
         </p>
         <div class="code-block" data-controller="clipboard">
@@ -444,7 +445,7 @@ recuerd0 memory link add 42 --to 118 --workspace 1
 recuerd0 memory link list 42 --workspace 1</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Links are undirected — linking A↔B is the same as B↔A. Same account only; cross-account linking is rejected. Deleting a memory cascades to remove all its links.</span>
         </div>
       </div>
@@ -454,7 +455,7 @@ recuerd0 memory link list 42 --workspace 1</code></div>
           <h3>Tag conventions</h3>
           <p>Tags are separate from categories. Categories are a small enforced enum (see <a href="#categories">Categories</a>); tags are free-form vocabulary you maintain. Use both. Suggested tag patterns for organizing memories.</p>
         </div>
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Pattern</th><th>Example</th><th>Use</th></tr></thead>
           <tbody>
             <tr><td>Domain</td><td><code>auth</code>, <code>deploy</code>, <code>testing</code></td><td>What area of the codebase</td></tr>
@@ -463,7 +464,7 @@ recuerd0 memory link list 42 --workspace 1</code></div>
             <tr><td>Source</td><td><code>transcript</code>, <code>manual</code>, <code>claude-code</code></td><td>How it was created</td></tr>
             <tr><td>Date</td><td><code>2026-02</code>, <code>q1-2026</code></td><td>When it was relevant</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <div class="section-divider"></div>

@@ -86,7 +86,7 @@
 <span class="ck">Content-Type</span>: <span class="cs">application/json</span></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>All requests must include <code>Content-Type: application/json</code>. Responses use the same content type.</span>
         </div>
         <div class="token-grid">
@@ -141,7 +141,7 @@
   }
 }</code></div>
         </div>
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Status</th><th>Code</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><code>401</code></td><td><code>UNAUTHORIZED</code></td><td>Invalid or missing access token</td></tr>
@@ -150,7 +150,7 @@
             <tr><td><code>422</code></td><td><code>VALIDATION_ERROR</code></td><td>Invalid request data (includes <code>details</code>)</td></tr>
             <tr><td><code>429</code></td><td><code>RATE_LIMITED</code></td><td>Rate limit exceeded</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <div class="section-divider"></div>
@@ -169,10 +169,10 @@
         </div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces.json</span></div>
         <div class="param-table-label">Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody><tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr></tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><code>[
@@ -189,7 +189,7 @@
 ]</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Pagination headers <code>X-Page</code>, <code>X-Per-Page</code>, <code>X-Total</code>, <code>X-Total-Pages</code>, and <code>Link</code> are included in all list responses.</span>
         </div>
       </div>
@@ -216,7 +216,7 @@
         <div class="endpoint-head"><h3>Get Workspace Context</h3><p>Returns a compact "wake-up" snapshot of a workspace for AI agents — workspace metadata, the current user's pinned memories scoped to the workspace, and stats. Supports HTTP caching via ETag.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:id</span>/context.json</span></div>
         <div class="param-table-label">Query Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td>10</td><td>Maximum pinned memories to return (1–50).</td></tr>
@@ -224,7 +224,7 @@
             <tr><td><span class="param-name">max_body_chars</span></td><td><span class="param-type">integer</span></td><td>500</td><td>Maximum characters of body to return per memory (100–5000). Longer bodies are truncated.</td></tr>
             <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td></td><td>Filter pinned memories to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><code>{
@@ -266,13 +266,13 @@
         <div class="endpoint-head"><h3>Create Workspace</h3><p>Creates a new workspace.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">workspace[name]</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>Workspace name (max 100 characters)</td></tr>
             <tr><td><span class="param-name">workspace[description]</span></td><td><span class="param-type">string</span></td><td></td><td>Workspace description</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">request</span></div>
           <div class="code-body"><code>{
@@ -301,13 +301,13 @@
         <div class="endpoint-head"><h3>Update Workspace</h3><p>Updates an existing workspace.</p></div>
         <div class="route-bar patch"><span class="route-method">PATCH</span><span class="route-path">/workspaces/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">workspace[name]</span></td><td><span class="param-type">string</span></td><td>Workspace name</td></tr>
             <tr><td><span class="param-name">workspace[description]</span></td><td><span class="param-type">string</span></td><td>Workspace description</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><span class="cc">Returns the updated workspace object.</span></div>
@@ -345,7 +345,7 @@
           <h3>Memory Categories</h3>
           <p>Every memory carries exactly one category from a locked four-value enum. Category defaults to <code>general</code> and is used to filter list, search, and workspace context endpoints. Versions inherit the parent memory's category unless overridden.</p>
         </div>
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Value</th><th>Label</th><th>Purpose</th></tr></thead>
           <tbody>
             <tr><td><code>decision</code></td><td>Decision</td><td>Architecture choices, library picks, tradeoffs with stated reasoning</td></tr>
@@ -353,9 +353,9 @@
             <tr><td><code>preference</code></td><td>Preference</td><td>User-stated rules ("always X", "never Y")</td></tr>
             <tr><td><code>general</code></td><td>General</td><td>Catch-all and default</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>The <code>category</code> query parameter is supported on list, search, and workspace context endpoints to filter results to a single category.</span>
         </div>
       </div>
@@ -366,16 +366,16 @@
           <h3>Memory Links</h3>
           <p>Memory links — also called "tunnels" — are undirected, unlabeled "see also" connections between two memories within the same account. They cross workspace boundaries: a memory in your <code>rails-app</code> workspace can link to a memory in your <code>mobile-app</code> workspace. Use them to express that two memories cover the same topic without duplicating content.</p>
         </div>
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><code>GET</code></td><td><code>/workspaces/:workspace_id/memories/:memory_id/links.json</code></td><td>List linked memories with their workspace info</td></tr>
             <tr><td><code>POST</code></td><td><code>/workspaces/:workspace_id/memories/:memory_id/links.json</code></td><td>Create a link to another memory by id</td></tr>
             <tr><td><code>DELETE</code></td><td><code>/workspaces/:workspace_id/memories/:memory_id/links/:id.json</code></td><td>Remove a link. <code>:id</code> is the <em>other memory's</em> id, not a join row id</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Links are scoped to the <strong>same account</strong> — cross-account links are rejected with <code>422</code>. Storage is <strong>undirected</strong>: linking A↔B is the same as B↔A and the server normalizes the pair so the link is only created once. There is no cardinality limit, links carry no labels or metadata, and deleting a memory cascades to remove all of its links. The <code>DELETE</code> endpoint identifies the link by the <em>other memory's id</em>, not a join row id. Memory and pinned-memory JSON responses include a <code>links_count</code> field showing how many links a memory has.</span>
         </div>
       </div>
@@ -422,12 +422,12 @@
         <div class="endpoint-head"><h3>Create Memory Link</h3><p>Creates an undirected link between this memory and another memory in the same account.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/links.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">to_memory_id</span></td><td><span class="param-type">integer</span></td><td><span class="param-required">required</span></td><td>The id of the other memory to link to. Must belong to the same account.</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">request</span></div>
           <div class="code-body"><code>{
@@ -470,7 +470,7 @@
         <div class="endpoint-head"><h3>List Memories</h3><p>Returns all memories (latest versions only) for a workspace. Supports filtering by title pattern, tags, and source.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories.json</span></div>
         <div class="param-table-label">Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr>
@@ -482,7 +482,7 @@
             <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
             <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">examples</span></div>
           <div class="code-body"><code><span class="cc">GET</span> /workspaces/1/memories.json?title=Meeting*
@@ -511,7 +511,7 @@
         <div class="endpoint-head"><h3>Browse Memories</h3><p>Returns memories across all active workspaces for the current account. Supports the same filtering parameters as List Memories. JSON-only endpoint.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/memories.json</span></div>
         <div class="param-table-label">Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr>
@@ -524,7 +524,7 @@
             <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
             <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">examples</span></div>
           <div class="code-body"><code><span class="cc">GET</span> /memories.json?title=*architecture*
@@ -532,7 +532,7 @@
 <span class="cc">GET</span> /memories.json?workspace_id=1&amp;source=manual</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Only returns memories from active (non-archived, non-deleted) workspaces. Each memory includes its workspace in the response. Same response format and pagination headers as List Memories.</span>
         </div>
       </div>
@@ -541,13 +541,13 @@
         <div class="endpoint-head"><h3>Get Memory</h3><p>Returns a memory with its content. Supports line range parameters to read specific portions.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span></div>
         <div class="param-table-label">Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">line_start</span></td><td><span class="param-type">integer</span></td><td>First line to return (1-based, inclusive). Default: 1</td></tr>
             <tr><td><span class="param-name">line_end</span></td><td><span class="param-type">integer</span></td><td>Last line to return (1-based, inclusive). Default: last line</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">examples</span></div>
           <div class="code-body"><code><span class="cc">GET</span> /workspaces/1/memories/1.json
@@ -581,11 +581,11 @@
 }</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>The <code>content</code> object always includes <code>total_lines</code>, <code>line_start</code>, and <code>line_end</code>. When line range parameters are provided, <code>body</code> contains only the requested lines. Returns <code>422</code> if <code>line_start</code> > <code>line_end</code>.</span>
         </div>
         <div class="param-table-label">Grep Mode Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">mode</span></td><td><span class="param-type">string</span></td><td>Set to <code>grep</code> to search within the memory</td></tr>
@@ -594,7 +594,7 @@
             <tr><td><span class="param-name">before</span></td><td><span class="param-type">integer</span></td><td>Lines before match, overrides <code>context</code> (0–10)</td></tr>
             <tr><td><span class="param-name">after</span></td><td><span class="param-type">integer</span></td><td>Lines after match, overrides <code>context</code> (0–10)</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">examples</span></div>
           <div class="code-body"><code><span class="cc">GET</span> /workspaces/1/memories/1.json?mode=grep&amp;q=architecture
@@ -620,7 +620,7 @@
 }</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>In grep mode, the <code>content</code> object returns <code>matches</code> and <code>total_lines</code> instead of <code>body</code>. Returns <code>422</code> if <code>q</code> parameter is missing.</span>
         </div>
         <div class="param-table-label">Workflow: grep, then fetch a window</div>
@@ -647,7 +647,7 @@
           <div class="code-body"><code><span class="cc">GET</span> /workspaces/1/memories/1.json?line_start=40&amp;line_end=55</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>There is no <code>head=</code> or <code>tail=</code> parameter. Head is <code>line_start=1&amp;line_end=N</code>; tail is <code>line_start=(total_lines - N + 1)&amp;line_end=total_lines</code>. Because <code>total_lines</code> is echoed on every response, clients can compute tail without an extra round trip.</span>
         </div>
       </div>
@@ -656,7 +656,7 @@
         <div class="endpoint-head"><h3>Create Memory</h3><p>Creates a new memory with content.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">memory[title]</span></td><td><span class="param-type">string</span></td><td>Memory title (max 255 characters)</td></tr>
@@ -665,7 +665,7 @@
             <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Array of tag strings</td></tr>
             <tr><td><span class="param-name">memory[category]</span></td><td><span class="param-type">string</span></td><td>One of <code>decision</code>, <code>discovery</code>, <code>preference</code>, <code>general</code> (defaults to <code>general</code>). See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">request</span></div>
           <div class="code-body"><code>{
@@ -687,7 +687,7 @@
         <div class="endpoint-head"><h3>Update Memory</h3><p>Updates an existing memory.</p></div>
         <div class="route-bar patch"><span class="route-method">PATCH</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">memory[title]</span></td><td><span class="param-type">string</span></td><td>Memory title</td></tr>
@@ -696,7 +696,7 @@
             <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Array of tags</td></tr>
             <tr><td><span class="param-name">memory[category]</span></td><td><span class="param-type">string</span></td><td>One of <code>decision</code>, <code>discovery</code>, <code>preference</code>, <code>general</code>. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><span class="cc">Returns the updated memory object with content.</span></div>
@@ -723,7 +723,7 @@
         <div class="endpoint-head"><h3>Create Version</h3><p>Creates a new version of a memory. Fields default to the parent version values if not provided.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/versions.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">version[title]</span></td><td><span class="param-type">string</span></td><td>Version title (defaults to parent)</td></tr>
@@ -732,7 +732,7 @@
             <tr><td><span class="param-name">version[tags]</span></td><td><span class="param-type">array</span></td><td>Tags (defaults to parent)</td></tr>
             <tr><td><span class="param-name">version[category]</span></td><td><span class="param-type">string</span></td><td>Category (defaults to the parent memory's category). See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">request</span></div>
           <div class="code-body"><code>{
@@ -776,7 +776,7 @@
         <div class="endpoint-head"><h3>Search Memories</h3><p>Full-text search across all memories in active workspaces. Supports FTS5 query operators and a grep mode for line-level matching.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/search.json?q=<span class="param">&lt;query&gt;</span></span></div>
         <div class="param-table-label">Parameters</div>
-        <table class="param-table">
+        <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">q</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>Search query (3–100 characters)</td></tr>
@@ -788,9 +788,9 @@
             <tr><td><span class="param-name">before</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines before each match, like <code>grep -B</code> (0–10). Overrides <code>context</code>. Only with <code>mode=grep</code></td></tr>
             <tr><td><span class="param-name">after</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines after each match, like <code>grep -A</code> (0–10). Overrides <code>context</code>. Only with <code>mode=grep</code></td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="param-table-label">Query Operators (FTS5)</div>
-        <table class="op-table">
+        <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Operator</th><th>Example</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td>Term</td><td><code>architecture</code></td><td>Matches documents containing the substring</td></tr>
@@ -802,7 +802,7 @@
             <tr><td>Column</td><td><code>body:implementation</code></td><td>Search only in body field</td></tr>
             <tr><td>Grouping</td><td><code>(meeting OR standup) AND notes</code></td><td>Parentheses for precedence</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">snippet mode response (default)</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><code>{
@@ -855,7 +855,7 @@
           <span>Query must be 3–100 characters. Invalid FTS5 syntax returns a <code>422</code> with <code>VALIDATION_ERROR</code>.</span>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>In grep mode, each result includes <code>matches</code> and <code>total_lines</code> instead of <code>snippet</code>. FTS5 finds candidate memories, then line-level matching extracts specific lines with context.</span>
         </div>
       </div>
