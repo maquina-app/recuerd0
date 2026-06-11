@@ -220,6 +220,7 @@
           <%= link_to "Full API Reference →", api_docs_path, data: { component: "button", variant: "ghost" }, class: "btn-ghost" %>
           <%= link_to "CLI Reference →", cli_path, data: { component: "button", variant: "ghost" }, class: "btn-ghost" %>
           <%= link_to "Agent Workflows →", agents_path, data: { component: "button", variant: "ghost" }, class: "btn-ghost" %>
+          <%= link_to "MCP Guide →", mcp_path, data: { component: "button", variant: "ghost" }, class: "btn-ghost" %>
         </div>
       </div>
 
@@ -228,6 +229,7 @@
           <button class="code-tab" role="tab" id="code-tab-0" aria-controls="code-panel-0" tabindex="0" data-code-tabs-target="tab" data-action="code-tabs#select keydown->code-tabs#navigate" data-index="0" data-state="active" aria-selected="true">rest api</button>
           <button class="code-tab" role="tab" id="code-tab-1" aria-controls="code-panel-1" tabindex="-1" data-code-tabs-target="tab" data-action="code-tabs#select keydown->code-tabs#navigate" data-index="1" data-state="inactive" aria-selected="false">cli</button>
           <button class="code-tab" role="tab" id="code-tab-2" aria-controls="code-panel-2" tabindex="-1" data-code-tabs-target="tab" data-action="code-tabs#select keydown->code-tabs#navigate" data-index="2" data-state="inactive" aria-selected="false">agents</button>
+          <button class="code-tab" role="tab" id="code-tab-3" aria-controls="code-panel-3" tabindex="-1" data-code-tabs-target="tab" data-action="code-tabs#select keydown->code-tabs#navigate" data-index="3" data-state="inactive" aria-selected="false">mcp</button>
         </div>
 
         <div class="code-block" role="tabpanel" id="code-panel-0" aria-labelledby="code-tab-0" tabindex="0" data-code-tabs-target="panel">
@@ -300,6 +302,27 @@ Save key decisions and patterns
 as new versioned memories.</code>
           </div>
         </div>
+
+        <div class="code-block hidden" role="tabpanel" id="code-panel-3" aria-labelledby="code-tab-3" tabindex="0" data-code-tabs-target="panel">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-lang">mcp</span>
+          </div>
+          <div class="code-body">
+<code><span class="comment"># Add the server in Claude Desktop or Claude.ai</span>
+<span class="comment"># Settings → Connectors → Add custom connector</span>
+<span class="string">https://recuerd0.ai/mcp</span>
+
+<span class="comment"># First connect opens a consent screen —</span>
+<span class="comment"># approve the scopes, no token to copy:</span>
+<span class="comment">#   Read your memories</span>
+<span class="comment">#   Create and update memories</span>
+<span class="comment">#   View your workspaces</span>
+
+<span class="comment"># Then ask the model directly:</span>
+<span class="comment">#   "Search my recuerd0 memories for auth decisions"</span></code>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -366,14 +389,14 @@ as new versioned memories.</code>
         </div>
 
         <div class="feature-card reveal reveal-delay-2">
-          <div class="feature-icon"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>
+          <div class="feature-icon"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v5"/><path d="M15 2v5"/><path d="M7 7h10v4a5 5 0 0 1-10 0V7Z"/><path d="M12 16v6"/></svg></div>
           <div>
-            <h3>Deploy Your Way</h3>
-            <p>Self-host with Docker on your own infrastructure, or use the managed cloud. Same features, same limits — you choose where your data lives.</p>
+            <h3>MCP Server</h3>
+            <p>Connect Claude Desktop, Claude.ai, and any MCP client straight to your memories in the managed cloud. The client registers itself and you approve a consent screen — no tokens to copy, no config files to hand-edit. Five tools cover reading, searching, and writing memories across your workspaces.</p>
             <div class="feature-meta">
-              <span class="feature-chip">docker</span>
-              <span class="feature-chip">cloud</span>
-              <span class="feature-chip">sqlite</span>
+              <span class="feature-chip">remote mcp</span>
+              <span class="feature-chip">oauth 2.1</span>
+              <span class="feature-chip">consent-based</span>
             </div>
           </div>
         </div>

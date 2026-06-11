@@ -1,0 +1,330 @@
+<% content_for :title, "MCP Server — recuerd0" %>
+<% content_for :description, "Connect Claude Desktop, Claude.ai, and any MCP client to your recuerd0 memories over a remote MCP server with OAuth 2.1 and consent-based access." %>
+<% content_for :canonical_url, "https://recuerd0.ai/mcp" %>
+
+<% content_for :structured_data do %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://recuerd0.ai/" },
+    { "@type": "ListItem", "position": 2, "name": "MCP Server", "item": "https://recuerd0.ai/mcp" }
+  ]
+}
+</script>
+<% end %>
+
+<div data-controller="marketing-sidebar">
+
+  <%= render "pages/doc_header", section: "MCP" %>
+
+  <%# ========== SIDEBAR ========== %>
+  <aside class="doc-sidebar" data-marketing-sidebar-target="sidebar">
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Overview</div>
+      <a href="#overview" class="sidebar-link active" data-section="overview" data-action="click->marketing-sidebar#closeSidebar">What you get</a>
+      <a href="#why-mcp" class="sidebar-link" data-section="why-mcp" data-action="click->marketing-sidebar#closeSidebar">Why MCP</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Getting started</div>
+      <a href="#supported-clients" class="sidebar-link" data-section="supported-clients" data-action="click->marketing-sidebar#closeSidebar">Supported clients</a>
+      <a href="#connect-claude-desktop" class="sidebar-link" data-section="connect-claude-desktop" data-action="click->marketing-sidebar#closeSidebar">Connect Claude Desktop</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">How it works</div>
+      <a href="#oauth-flow" class="sidebar-link" data-section="oauth-flow" data-action="click->marketing-sidebar#closeSidebar">Authorization</a>
+      <a href="#consent" class="sidebar-link" data-section="consent" data-action="click->marketing-sidebar#closeSidebar">Consent screen</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Tools &amp; permissions</div>
+      <a href="#tools" class="sidebar-link" data-section="tools" data-action="click->marketing-sidebar#closeSidebar">The five tools</a>
+      <a href="#scopes" class="sidebar-link" data-section="scopes" data-action="click->marketing-sidebar#closeSidebar">Scopes &amp; permissions</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Managing &amp; security</div>
+      <a href="#connected-apps" class="sidebar-link" data-section="connected-apps" data-action="click->marketing-sidebar#closeSidebar">Connected applications</a>
+      <a href="#security" class="sidebar-link" data-section="security" data-action="click->marketing-sidebar#closeSidebar">Security &amp; limits</a>
+      <a href="#troubleshooting" class="sidebar-link" data-section="troubleshooting" data-action="click->marketing-sidebar#closeSidebar">Troubleshooting</a>
+    </div>
+  </aside>
+
+  <%# ========== MAIN CONTENT ========== %>
+  <main class="doc-main">
+    <div class="doc-content">
+
+      <div class="page-header">
+        <h1>MCP <em>Server</em></h1>
+        <p>Connect Claude Desktop, Claude.ai, and any MCP client to your memories — over a remote MCP server with OAuth 2.1 and consent-based access. No tokens to copy.</p>
+      </div>
+
+      <%# ===== OVERVIEW ===== %>
+      <div class="api-section" id="overview">
+        <div class="resource-header">
+          <h2>What you get</h2>
+          <p>recuerd0 runs a remote MCP server at <code>POST /mcp</code> (Streamable HTTP, JSON-RPC 2.0). Point an MCP client at your instance and it can read, search, and write memories across your workspaces — through five tools, scoped to the access you approve.</p>
+        </div>
+
+        <p class="doc-note">
+          The connection is consent-based. The client registers itself, you approve a short permission screen, and that's it — there is no API token to generate, copy, or paste into a config file. Approve once per client; disconnect any time.
+        </p>
+      </div>
+
+      <%# ===== WHY MCP ===== %>
+      <div class="api-section" id="why-mcp">
+        <div class="endpoint-head">
+          <h3>Why MCP</h3>
+          <p>MCP lets the model reach your curated context in the middle of a conversation, instead of you pasting it in.</p>
+        </div>
+        <div class="table-scroll">
+          <table class="op-table">
+            <thead><tr><th>Without MCP</th><th>With recuerd0 over MCP</th></tr></thead>
+            <tbody>
+              <tr><td>Copy a personal API token into each tool's config</td><td>Approve a consent screen once — the client registers itself</td></tr>
+              <tr><td>Paste context into the prompt by hand</td><td>The model queries memories on demand: <code>list</code>, <code>search</code>, <code>read</code></td></tr>
+              <tr><td>One static token with broad access</td><td>Scoped, revocable access you can see and disconnect</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== SUPPORTED CLIENTS ===== %>
+      <div class="api-section" id="supported-clients">
+        <div class="resource-header">
+          <h2>Supported clients</h2>
+          <p>Any client that speaks the Model Context Protocol over HTTP can connect.</p>
+        </div>
+        <div class="table-scroll">
+          <table class="op-table">
+            <thead><tr><th>Client</th><th>How it connects</th></tr></thead>
+            <tbody>
+              <tr><td>Claude Desktop</td><td>Add a custom connector with your server URL</td></tr>
+              <tr><td>Claude.ai</td><td>Add the connector in settings</td></tr>
+              <tr><td>Cowork</td><td>Add the MCP server URL</td></tr>
+              <tr><td>Any MCP client</td><td>Send JSON-RPC 2.0 to <code>POST /mcp</code> (Streamable HTTP)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <%# ===== CONNECT CLAUDE DESKTOP ===== %>
+      <div class="endpoint" id="connect-claude-desktop">
+        <div class="endpoint-head">
+          <h3>Connect Claude Desktop</h3>
+          <p>Three steps. The OAuth handshake runs itself once you add the URL.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>1. Open connector settings</h3>
+          <p>In Claude Desktop or Claude.ai, go to <strong>Settings → Connectors → Add custom connector</strong>.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>2. Add your server URL</h3>
+          <p>Use the MCP endpoint of your instance.</p>
+        </div>
+        <div class="code-block code-block--output">
+          <div class="code-head"><span class="code-label">server url</span></div>
+          <div class="code-body"><code>https://recuerd0.ai/mcp</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>3. Approve the consent screen</h3>
+          <p>The first connection opens a browser screen titled <em>Connect to Recuerd0</em>. Approve the scopes and the client is connected.</p>
+        </div>
+
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>You need to be signed in to recuerd0 in the same browser — the consent screen approves access on behalf of your account.</span>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== AUTHORIZATION ===== %>
+      <div class="api-section" id="oauth-flow">
+        <div class="resource-header">
+          <h2>Authorization</h2>
+          <p>recuerd0 is its own OAuth 2.1 authorization server — built into the app, no external service. Clients self-register with Dynamic Client Registration and prove themselves with PKCE; there are no shared secrets to manage.</p>
+        </div>
+        <div class="table-scroll">
+          <table class="op-table">
+            <thead><tr><th>Endpoint</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td><code>GET /.well-known/oauth-authorization-server</code></td><td>Authorization server metadata (RFC 8414)</td></tr>
+              <tr><td><code>GET /.well-known/oauth-protected-resource</code></td><td>Protected resource metadata (RFC 9728)</td></tr>
+              <tr><td><code>GET /.well-known/oauth-protected-resource/mcp</code></td><td>Path-suffixed variant clients probe first</td></tr>
+              <tr><td><code>POST /oauth/register</code></td><td>Dynamic Client Registration (RFC 7591)</td></tr>
+              <tr><td><code>GET · POST /oauth/authorize</code></td><td>Consent screen and authorization code</td></tr>
+              <tr><td><code>POST /oauth/token</code></td><td>Exchange the code, or refresh an access token</td></tr>
+              <tr><td><code>POST /oauth/revoke</code></td><td>Revoke a token (RFC 7009)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Check discovery</h3>
+          <p>The authorization server metadata is public — a quick way to confirm an instance is reachable.</p>
+        </div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">curl https://recuerd0.ai/.well-known/oauth-authorization-server</code></div>
+        </div>
+
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Access tokens last one hour; refresh tokens rotate, so a connected client stays connected without asking you to approve again.</span>
+        </div>
+      </div>
+
+      <%# ===== CONSENT ===== %>
+      <div class="endpoint" id="consent">
+        <div class="endpoint-head">
+          <h3>The consent screen</h3>
+          <p>Every client connection shows exactly what it is asking for. You approve or deny — nothing is granted silently.</p>
+        </div>
+        <div class="code-block code-block--output">
+          <div class="code-head"><span class="code-label">connect to recuerd0</span></div>
+          <div class="code-body"><code><span class="cc">This will allow it to:</span>
+  Read your memories
+  Create and update memories
+  View your workspaces</code></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== TOOLS ===== %>
+      <div class="api-section" id="tools">
+        <div class="resource-header">
+          <h2>The five tools</h2>
+          <p>The server exposes five tools. Three read, two write. Each one is scoped to your account's workspaces.</p>
+        </div>
+        <div class="table-scroll">
+          <table class="op-table">
+            <thead><tr><th>Tool</th><th>Type</th><th>What it does</th></tr></thead>
+            <tbody>
+              <tr><td><code>list_workspaces</code></td><td>read</td><td>List the workspaces in your account</td></tr>
+              <tr><td><code>list_memories</code></td><td>read</td><td>List memories in a workspace; optional FTS5 <code>query</code> and <code>category</code> filter</td></tr>
+              <tr><td><code>read_memory</code></td><td>read</td><td>Read the full content of one memory</td></tr>
+              <tr><td><code>create_memory</code></td><td>write</td><td>Create a memory in a workspace</td></tr>
+              <tr><td><code>update_memory</code></td><td>write</td><td>Update a memory's title or content</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>A tool call</h3>
+          <p>Tools are JSON-RPC 2.0 methods. The client handles this — you just ask the model in plain language.</p>
+        </div>
+        <div class="code-block code-block--output">
+          <div class="code-head"><span class="code-label">json-rpc</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"jsonrpc"</span>: <span class="cs">"2.0"</span>,
+  <span class="ck">"id"</span>: <span class="cn">1</span>,
+  <span class="ck">"method"</span>: <span class="cs">"tools/call"</span>,
+  <span class="ck">"params"</span>: {
+    <span class="ck">"name"</span>: <span class="cs">"list_memories"</span>,
+    <span class="ck">"arguments"</span>: { <span class="ck">"workspace_id"</span>: <span class="cs">"1"</span>, <span class="ck">"query"</span>: <span class="cs">"authentication"</span> }
+  }
+}</code></div>
+        </div>
+      </div>
+
+      <%# ===== SCOPES ===== %>
+      <div class="endpoint" id="scopes">
+        <div class="endpoint-head">
+          <h3>Scopes &amp; permissions</h3>
+          <p>A client asks for scopes; recuerd0 maps them to a permission tier on the token it issues.</p>
+        </div>
+        <div class="table-scroll">
+          <table class="op-table">
+            <thead><tr><th>Scope</th><th>Grants</th></tr></thead>
+            <tbody>
+              <tr><td><code>memories:read</code></td><td>Read and search memories</td></tr>
+              <tr><td><code>memories:write</code></td><td>Create and update memories</td></tr>
+              <tr><td><code>workspaces:read</code></td><td>List your workspaces</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-scroll">
+          <table class="op-table">
+            <thead><tr><th>Token tier</th><th>Can call</th></tr></thead>
+            <tbody>
+              <tr><td><code>read_only</code></td><td><code>list_workspaces</code>, <code>list_memories</code>, <code>read_memory</code></td></tr>
+              <tr><td><code>full_access</code></td><td>All five tools, including <code>create_memory</code> and <code>update_memory</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Every tool scopes to your account's workspaces. A token can never read or write another account's memories, whatever it asks for.</span>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <%# ===== CONNECTED APPS ===== %>
+      <div class="api-section" id="connected-apps">
+        <div class="resource-header">
+          <h2>Connected applications</h2>
+          <p>Every client you approve appears in your profile under <strong>Connected applications</strong>, with the name it registered and when it connected.</p>
+        </div>
+        <div class="endpoint-head">
+          <h3>Disconnect a client</h3>
+          <p>Disconnecting revokes the token immediately (RFC 7009). The client loses access until it reconnects and you approve it again.</p>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Revoked tokens are kept as a record, not deleted — so a disconnect leaves an audit trail rather than vanishing.</span>
+        </div>
+      </div>
+
+      <%# ===== SECURITY ===== %>
+      <div class="api-section" id="security">
+        <div class="resource-header">
+          <h2>Security &amp; limits</h2>
+          <p>The MCP and OAuth endpoints are rate-limited per token or per IP. Exceeding a limit returns <code>429 Too Many Requests</code>.</p>
+        </div>
+        <div class="table-scroll">
+          <table class="op-table">
+            <thead><tr><th>Endpoint</th><th>Limit</th></tr></thead>
+            <tbody>
+              <tr><td><code>POST /mcp</code></td><td>120 requests / minute per token</td></tr>
+              <tr><td><code>POST /oauth/token</code></td><td>30 requests / minute per IP</td></tr>
+              <tr><td><code>POST /oauth/register</code></td><td>15 requests / minute per IP</td></tr>
+              <tr><td><code>POST /oauth/revoke</code></td><td>30 requests / minute per IP</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="doc-note">
+          Clients prove themselves with PKCE rather than a shared secret, access tokens are short-lived, and tokens are stored only as hashes — the raw value exists just long enough to hand to the client.
+        </p>
+      </div>
+
+      <%# ===== TROUBLESHOOTING ===== %>
+      <div class="api-section" id="troubleshooting">
+        <div class="resource-header">
+          <h2>Troubleshooting</h2>
+        </div>
+        <div class="table-scroll">
+          <table class="op-table">
+            <thead><tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr></thead>
+            <tbody>
+              <tr><td>Client can't authorize</td><td>The instance URL isn't reachable, or the URL is wrong</td><td>Use the full <code>https://&lt;instance&gt;/mcp</code> URL; confirm the instance is public</td></tr>
+              <tr><td>Consent screen sends you to sign in</td><td>No active recuerd0 session in that browser</td><td>Sign in to recuerd0 first, then retry the connection</td></tr>
+              <tr><td>Write tools are missing</td><td>The token is <code>read_only</code></td><td>Reconnect and approve <em>Create and update memories</em></td></tr>
+              <tr><td>App stopped working after a disconnect</td><td>Its token was revoked</td><td>Reconnect — the client re-registers and re-consents</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <%= render "pages/doc_footer" %>
+  </main>
+
+</div>
