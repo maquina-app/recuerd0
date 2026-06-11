@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <%# Arm scroll-reveal before first paint: content is visible by default, so
+        no-JS visitors, crawlers, and prerenderers never see a blank page; this
+        flag opts JS-capable browsers into the entrance animation without a flash. %>
+    <script>document.documentElement.classList.add("reveal-on")</script>
     <title><%= content_for(:title) || "recuerd0 — The knowledge base your AI tools deserve" %></title>
     <meta name="description" content="<%= content_for(:description) || "Organize, version, and serve project context to any LLM. Human-curated memory, instantly accessible via REST API." %>">
     <meta name="viewport" content="width=device-width,initial-scale=1">

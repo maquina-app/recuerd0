@@ -6,7 +6,7 @@
 .marketing {
   --m-primary: oklch(0.480 0.190 150);
   --m-primary-hover: oklch(0.420 0.180 150);
-  --m-primary-dim: oklch(0.550 0.140 150);
+  --m-primary-dim: oklch(0.470 0.160 150); /* 5.84:1 on --m-bg — clears WCAG AA (was 4.32:1, failing) */
   --m-primary-glow: oklch(0.480 0.190 150 / 0.10);
   --m-primary-ghost: oklch(0.480 0.190 150 / 0.05);
   --m-primary-wash: oklch(0.480 0.190 150 / 0.03);
@@ -24,7 +24,7 @@
 
   --m-text: #1a2420;
   --m-text-secondary: oklch(0.420 0.020 150);
-  --m-text-dim: oklch(0.550 0.015 150);
+  --m-text-dim: oklch(0.450 0.015 150); /* 7.00:1 on --m-bg — WCAG AAA, incl. small captions (was 4.56:1) */
 
   --m-code-bg: #f0f3f1;
   --m-code-border: oklch(0.800 0.020 150 / 0.5);
@@ -309,6 +309,7 @@
   font-size: clamp(2.5rem, 5vw, 3.8rem);
   line-height: 1.1;
   letter-spacing: -1px;
+  text-wrap: balance;
   color: var(--m-text);
   margin-bottom: 1.5rem;
   opacity: 0;
@@ -503,10 +504,11 @@
 
 .marketing .m-section-title {
   font-family: 'Jura', system-ui, sans-serif;
-  font-weight: 300;
+  font-weight: 500; /* section headings carry the section on their own now that the eyebrow is gone (matches DESIGN.md) */
   font-size: clamp(1.8rem, 3.5vw, 2.6rem);
   line-height: 1.2;
   letter-spacing: -0.5px;
+  text-wrap: balance;
   margin-bottom: 1.25rem;
   color: var(--m-text);
 }
@@ -1313,15 +1315,58 @@
   50% { transform: translateY(-8px); }
 }
 
-.marketing .reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s var(--m-ease-out), transform 0.8s var(--m-ease-out);
+/* Honor prefers-reduced-motion across the whole marketing surface. Tiny non-zero
+   durations (not `animation: none`) snap `forwards` entrances to their final
+   frame — so the hero, which starts at opacity:0 and fades up via m-fadeUp, stays
+   VISIBLE rather than shipping blank. Infinite loops (m-pulse, m-layerFloat) run
+   once and stop; hover/scroll transitions become instant. */
+@media (prefers-reduced-motion: reduce) {
+  .marketing *,
+  .marketing *::before,
+  .marketing *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-.marketing .reveal.visible {
+/* Visible keyboard focus for every interactive marketing element. Buttons and
+   tabs use border:none / background:none, so without this they show no focus
+   ring at all. Brand-green outline with offset, echoing the app's focus ring. */
+.marketing a:focus-visible,
+.marketing button:focus-visible,
+.marketing .btn-primary:focus-visible,
+.marketing .btn-ghost:focus-visible,
+.marketing .code-tab:focus-visible,
+.marketing .nav-mobile-toggle:focus-visible {
+  outline: 2px solid var(--m-primary);
+  outline-offset: 3px;
+}
+
+/* Scroll-reveal is progressive enhancement layered over a visible default.
+   Content renders fully at rest, so no-JS visitors, crawlers, and headless /
+   prerender renderers never get a blank page. The hidden start-state is armed
+   only when the `reveal-on` flag is set before paint (scripting confirmed) AND
+   the user hasn't asked to reduce motion. */
+.marketing .reveal {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.reveal-on .marketing .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s var(--m-ease-out), transform 0.8s var(--m-ease-out);
+  }
+
+  html.reveal-on .marketing .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .marketing .reveal-delay-1 { transition-delay: 0.1s; }

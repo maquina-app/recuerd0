@@ -95,7 +95,6 @@
   <section class="problem" id="problem">
     <div class="m-container">
       <div class="reveal">
-        <div class="section-label">the problem</div>
         <h2 class="m-section-title">Your AI tools forget everything.<br>Every. Single. Session.</h2>
         <p class="section-desc">
           Context engineering has become a core developer skill, yet there are no dedicated tools for it.
@@ -106,7 +105,7 @@
       <div class="problem-grid">
         <div class="problem-card reveal reveal-delay-1">
           <div class="problem-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M12 8v4l3 3"/>
               <circle cx="12" cy="12" r="10"/>
               <path d="M4 4l4 4M20 4l-4 4" opacity="0.4"/>
@@ -118,7 +117,7 @@
 
         <div class="problem-card reveal reveal-delay-2">
           <div class="problem-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <rect x="2" y="3" width="8" height="8" rx="2"/>
               <rect x="14" y="13" width="8" height="8" rx="2"/>
               <path d="M10 7h4M14 17H10" opacity="0.4"/>
@@ -130,7 +129,7 @@
 
         <div class="problem-card reveal reveal-delay-3">
           <div class="problem-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M12 3v18M3 12h18" opacity="0.15"/>
               <path d="M5 19c2-4 5-8 7-9s5 1 7 5" stroke-dasharray="3 3"/>
               <circle cx="12" cy="10" r="2"/>
@@ -147,9 +146,6 @@
   <section class="how-it-works" id="how">
     <div class="m-container">
       <div class="reveal" style="text-align:center; max-width:560px; margin:0 auto;">
-        <div class="section-label" style="justify-content:center;">
-          <span style="display:none;">—</span>how it works
-        </div>
         <h2 class="m-section-title">Curate once, access everywhere</h2>
         <p class="section-desc" style="margin:0 auto;">
           Organize project knowledge into workspaces. Write versioned markdown memories.
@@ -163,7 +159,7 @@
       <div class="flow-diagram reveal">
         <div class="flow-step">
           <div class="flow-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--m-primary)" stroke-width="1.5">
+            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--m-primary)" stroke-width="1.5">
               <rect x="3" y="3" width="18" height="18" rx="3"/>
               <path d="M3 9h18M9 3v18" opacity="0.4"/>
             </svg>
@@ -173,14 +169,14 @@
         </div>
 
         <div class="flow-arrow">
-          <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
+          <svg aria-hidden="true" width="32" height="16" viewBox="0 0 32 16" fill="none">
             <path d="M0 8h28M22 2l6 6-6 6" stroke="currentColor" stroke-width="1.5"/>
           </svg>
         </div>
 
         <div class="flow-step">
           <div class="flow-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--m-primary)" stroke-width="1.5">
+            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--m-primary)" stroke-width="1.5">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
               <polyline points="14 2 14 8 20 8"/>
               <line x1="9" y1="13" x2="15" y2="13" opacity="0.4"/>
@@ -192,14 +188,14 @@
         </div>
 
         <div class="flow-arrow">
-          <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
+          <svg aria-hidden="true" width="32" height="16" viewBox="0 0 32 16" fill="none">
             <path d="M0 8h28M22 2l6 6-6 6" stroke="currentColor" stroke-width="1.5"/>
           </svg>
         </div>
 
         <div class="flow-step">
           <div class="flow-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--m-primary)" stroke-width="1.5">
+            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--m-primary)" stroke-width="1.5">
               <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
               <line x1="4" y1="22" x2="4" y2="15" opacity="0.4"/>
             </svg>
@@ -215,7 +211,6 @@
   <section class="code-section" id="api">
     <div class="m-container">
       <div class="reveal">
-        <div class="section-label">api, cli &amp; agents</div>
         <h2 class="m-section-title">Built for developer workflows</h2>
         <p class="section-desc">
           Full REST API with token authentication. CLI for terminal access.
@@ -229,13 +224,13 @@
       </div>
 
       <div class="code-tabs reveal reveal-delay-1" data-controller="code-tabs">
-        <div class="code-tab-bar" role="tablist">
-          <button class="code-tab" role="tab" data-code-tabs-target="tab" data-action="code-tabs#select" data-index="0" data-state="active" aria-selected="true">rest api</button>
-          <button class="code-tab" role="tab" data-code-tabs-target="tab" data-action="code-tabs#select" data-index="1" data-state="inactive" aria-selected="false">cli</button>
-          <button class="code-tab" role="tab" data-code-tabs-target="tab" data-action="code-tabs#select" data-index="2" data-state="inactive" aria-selected="false">agents</button>
+        <div class="code-tab-bar" role="tablist" aria-label="Code examples">
+          <button class="code-tab" role="tab" id="code-tab-0" aria-controls="code-panel-0" tabindex="0" data-code-tabs-target="tab" data-action="code-tabs#select keydown->code-tabs#navigate" data-index="0" data-state="active" aria-selected="true">rest api</button>
+          <button class="code-tab" role="tab" id="code-tab-1" aria-controls="code-panel-1" tabindex="-1" data-code-tabs-target="tab" data-action="code-tabs#select keydown->code-tabs#navigate" data-index="1" data-state="inactive" aria-selected="false">cli</button>
+          <button class="code-tab" role="tab" id="code-tab-2" aria-controls="code-panel-2" tabindex="-1" data-code-tabs-target="tab" data-action="code-tabs#select keydown->code-tabs#navigate" data-index="2" data-state="inactive" aria-selected="false">agents</button>
         </div>
 
-        <div class="code-block" role="tabpanel" data-code-tabs-target="panel">
+        <div class="code-block" role="tabpanel" id="code-panel-0" aria-labelledby="code-tab-0" tabindex="0" data-code-tabs-target="panel">
           <div class="code-header">
             <div class="code-dots"><span></span><span></span><span></span></div>
             <span class="code-lang">rest api</span>
@@ -262,7 +257,7 @@
           </div>
         </div>
 
-        <div class="code-block hidden" role="tabpanel" data-code-tabs-target="panel">
+        <div class="code-block hidden" role="tabpanel" id="code-panel-1" aria-labelledby="code-tab-1" tabindex="0" data-code-tabs-target="panel">
           <div class="code-header">
             <div class="code-dots"><span></span><span></span><span></span></div>
             <span class="code-lang">cli tool</span>
@@ -285,7 +280,7 @@ $ <span class="fn">cat</span> notes.md | <span class="fn">recuerd0</span> <span 
           </div>
         </div>
 
-        <div class="code-block hidden" role="tabpanel" data-code-tabs-target="panel">
+        <div class="code-block hidden" role="tabpanel" id="code-panel-2" aria-labelledby="code-tab-2" tabindex="0" data-code-tabs-target="panel">
           <div class="code-header">
             <div class="code-dots"><span></span><span></span><span></span></div>
             <span class="code-lang">agent config</span>
@@ -313,7 +308,6 @@ as new versioned memories.</code>
   <section class="features" id="features">
     <div class="m-container">
       <div class="reveal">
-        <div class="section-label">features</div>
         <h2 class="m-section-title">Everything you need, nothing you don't</h2>
         <p class="section-desc">
           Built with Rails 8, SQLite, and a philosophy of simplicity.
@@ -415,9 +409,6 @@ as new versioned memories.</code>
   <section class="cta-section" id="start">
     <div class="m-container">
       <div class="reveal">
-        <div class="section-label" style="justify-content:center;">
-          <span style="display:none;">&mdash;</span>get started
-        </div>
         <h2 class="m-section-title">Stop re-explaining your project.<br>Start <em style="color:var(--m-primary);font-style:normal;font-family:'Jura',system-ui,sans-serif;font-weight:500;">preserving</em>.</h2>
         <p class="section-desc">
           One command. Your server, your data, your context &mdash; accessible from any AI tool.
