@@ -483,25 +483,6 @@
 /* ========================================
    SECTION HEADINGS
    ======================================== */
-.marketing .section-label {
-  font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 0.65rem;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--m-primary);
-  margin-bottom: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.marketing .section-label::before {
-  content: '';
-  width: 24px;
-  height: 1px;
-  background: var(--m-primary);
-}
-
 .marketing .m-section-title {
   font-family: 'Jura', system-ui, sans-serif;
   font-weight: 500; /* section headings carry the section on their own now that the eyebrow is gone (matches DESIGN.md) */
@@ -1418,6 +1399,7 @@
 .marketing .pricing-hero .m-section-title {
   max-width: 600px;
   margin: 0 auto 1rem;
+  font-size: clamp(2.2rem, 4vw, 3.2rem); /* page-hero scale: larger than a section title, quieter than the home hero */
 }
 
 .marketing .pricing-hero .section-desc {
