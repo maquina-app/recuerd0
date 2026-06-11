@@ -87,7 +87,7 @@
 <span class="ck">Content-Type</span>: <span class="cs">application/json</span></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>All requests must include <code>Content-Type: application/json</code>. Responses use the same content type.</span>
         </div>
         <div class="token-grid">
@@ -191,7 +191,7 @@
 ]</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Pagination headers <code>X-Page</code>, <code>X-Per-Page</code>, <code>X-Total</code>, <code>X-Total-Pages</code>, and <code>Link</code> are included in all list responses.</span>
         </div>
       </div>
@@ -357,7 +357,7 @@
           </tbody>
         </table>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>The <code>category</code> query parameter is supported on list, search, and workspace context endpoints to filter results to a single category.</span>
         </div>
       </div>
@@ -377,7 +377,7 @@
           </tbody>
         </table>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Links are scoped to the <strong>same account</strong> — cross-account links are rejected with <code>422</code>. Storage is <strong>undirected</strong>: linking A↔B is the same as B↔A and the server normalizes the pair so the link is only created once. There is no cardinality limit, links carry no labels or metadata, and deleting a memory cascades to remove all of its links. The <code>DELETE</code> endpoint identifies the link by the <em>other memory's id</em>, not a join row id. Memory and pinned-memory JSON responses include a <code>links_count</code> field showing how many links a memory has.</span>
         </div>
       </div>
@@ -454,7 +454,7 @@
 }</code></div>
         </div>
         <div class="info-box warn">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-patch)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-patch)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
           <span>Returns <code>422</code> if <code>to_memory_id</code> belongs to a different account, references the same memory, or the link already exists.</span>
         </div>
       </div>
@@ -534,7 +534,7 @@
 <span class="cc">GET</span> /memories.json?workspace_id=1&amp;source=manual</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Only returns memories from active (non-archived, non-deleted) workspaces. Each memory includes its workspace in the response. Same response format and pagination headers as List Memories.</span>
         </div>
       </div>
@@ -583,7 +583,7 @@
 }</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>The <code>content</code> object always includes <code>total_lines</code>, <code>line_start</code>, and <code>line_end</code>. When line range parameters are provided, <code>body</code> contains only the requested lines. Returns <code>422</code> if <code>line_start</code> > <code>line_end</code>.</span>
         </div>
         <div class="param-table-label">Grep Mode Parameters</div>
@@ -622,7 +622,7 @@
 }</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>In grep mode, the <code>content</code> object returns <code>matches</code> and <code>total_lines</code> instead of <code>body</code>. Returns <code>422</code> if <code>q</code> parameter is missing.</span>
         </div>
         <div class="param-table-label">Workflow: grep, then fetch a window</div>
@@ -649,7 +649,7 @@
           <div class="code-body"><code><span class="cc">GET</span> /workspaces/1/memories/1.json?line_start=40&amp;line_end=55</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>There is no <code>head=</code> or <code>tail=</code> parameter. Head is <code>line_start=1&amp;line_end=N</code>; tail is <code>line_start=(total_lines - N + 1)&amp;line_end=total_lines</code>. Because <code>total_lines</code> is echoed on every response, clients can compute tail without an extra round trip.</span>
         </div>
       </div>
@@ -853,11 +853,11 @@
 }</code></div>
         </div>
         <div class="info-box warn">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-patch)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-patch)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
           <span>Query must be 3–100 characters. Invalid FTS5 syntax returns a <code>422</code> with <code>VALIDATION_ERROR</code>.</span>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>In grep mode, each result includes <code>matches</code> and <code>total_lines</code> instead of <code>snippet</code>. FTS5 finds candidate memories, then line-level matching extracts specific lines with context.</span>
         </div>
       </div>

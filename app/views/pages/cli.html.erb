@@ -279,7 +279,7 @@ recuerd0 memory link add &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--works
 recuerd0 memory link remove &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--workspace &lt;id&gt;]</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Use <code>--content -</code> to read from stdin. Pipe markdown files directly: <code>cat notes.md | recuerd0 memory create --workspace 1 --title "Notes" --content -</code></span>
         </div>
         <table class="op-table">
@@ -318,7 +318,7 @@ recuerd0 memory read grep &lt;memory_id&gt; "TODO" --context 2 [--workspace &lt;
           </tbody>
         </table>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Pair <code>memory read grep</code> with <code>memory read lines</code>: grep first to find the line number, then fetch a window of context around it. This is much cheaper than <code>memory show</code> for long transcripts and docs.</span>
         </div>
       </div>
@@ -400,7 +400,7 @@ recuerd0 memory link add 42 --to 118 --workspace 1
 recuerd0 memory link list 42 --workspace 1</code></div>
         </div>
         <div class="info-box note">
-          <span class="info-box-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-get)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>Links are <strong>same-account only</strong> — cross-account links are rejected. <code>memory link remove</code> identifies the link by the <em>other memory's id</em> (passed via <code>--to</code>), not by a separate join row id, because links are undirected and stored once per pair.</span>
         </div>
       </div>
