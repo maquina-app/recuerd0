@@ -6,18 +6,34 @@
 
   <%= render "pages/marketing_nav" %>
 
-  <div class="legal-content">
+  <main class="legal-content">
     <h1>Terms of Service</h1>
-    <p class="legal-date">Last updated: February 2026</p>
+    <p class="legal-date">Last updated: <time datetime="2026-02">February 2026</time></p>
+
+    <nav class="legal-toc" aria-label="Sections">
+      <p class="legal-toc-label">On this page</p>
+      <ol>
+        <li><a href="#service">Service description</a></li>
+        <li><a href="#account">Your account</a></li>
+        <li><a href="#data-ownership">Your data belongs to you</a></li>
+        <li><a href="#acceptable-use">Acceptable use</a></li>
+        <li><a href="#api-usage">API usage</a></li>
+        <li><a href="#service-changes">Service changes</a></li>
+        <li><a href="#termination">Termination</a></li>
+        <li><a href="#disclaimers">Disclaimers</a></li>
+        <li><a href="#liability">Limitation of liability</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ol>
+    </nav>
 
     <div class="legal-body">
-      <h2>1. Service description</h2>
+      <h2 id="service">1. Service description</h2>
       <p>recuerd0 is a personal knowledge management tool that lets you preserve, version, and organize conversations and notes into workspaces. The service is provided as-is for individual use.</p>
 
-      <h2>2. Your account</h2>
+      <h2 id="account">2. Your account</h2>
       <p>You need an account to use recuerd0. You are responsible for keeping your password secure and for any activity that occurs under your account. Use a strong, unique password and notify us immediately if you suspect unauthorized access.</p>
 
-      <h2>3. Your data belongs to you</h2>
+      <h2 id="data-ownership">3. Your data belongs to you</h2>
       <p>Everything you create in recuerd0 — workspaces, memories, versions, tags — belongs to you. We claim no ownership or intellectual property rights over your content.</p>
       <p>Specifically:</p>
       <ul>
@@ -28,7 +44,7 @@
         <li>You can <strong>delete your account</strong> and all associated data at any time</li>
       </ul>
 
-      <h2>4. Acceptable use</h2>
+      <h2 id="acceptable-use">4. Acceptable use</h2>
       <p>Use recuerd0 for its intended purpose. Do not use the service to:</p>
       <ul>
         <li>Store or distribute content that violates applicable law</li>
@@ -37,25 +53,25 @@
         <li>Use automated systems to access the service beyond the provided API</li>
       </ul>
 
-      <h2>5. API usage</h2>
-      <p>recuerd0 provides an API for programmatic access to your data. API usage is subject to rate limits (currently 100 requests per minute). Excessive or abusive API usage may result in temporary throttling.</p>
+      <h2 id="api-usage">5. API usage</h2>
+      <p>recuerd0 provides an API for programmatic access to your data. API usage is subject to the <a href="/api-docs#rate-limits">rate limits documented in the API reference</a>. Excessive or abusive API usage may result in temporary throttling.</p>
 
-      <h2>6. Service changes</h2>
+      <h2 id="service-changes">6. Service changes</h2>
       <p>We may modify or discontinue features of the service. If we make significant changes, we will provide reasonable notice. If we discontinue the service entirely, we will give you time and tools to export your data.</p>
 
-      <h2>7. Termination</h2>
+      <h2 id="termination">7. Termination</h2>
       <p>You can close your account at any time. After account closure, your data will be retained for 30 days before permanent deletion, giving you time to change your mind or export your data. We may suspend or terminate accounts that violate these terms. If we terminate your account, we will provide a reasonable period for you to export your data unless the termination is for serious abuse.</p>
 
-      <h2>8. Disclaimers</h2>
+      <h2 id="disclaimers">8. Disclaimers</h2>
       <p>recuerd0 is provided "as is" without warranties of any kind. We make reasonable efforts to keep the service available and your data secure, but we cannot guarantee uninterrupted access or absolute security. Back up important data externally.</p>
 
-      <h2>9. Limitation of liability</h2>
+      <h2 id="liability">9. Limitation of liability</h2>
       <p>To the maximum extent permitted by law, recuerd0 is not liable for indirect, incidental, or consequential damages arising from your use of the service. Our total liability is limited to the amount you paid for the service in the 12 months preceding the claim.</p>
 
-      <h2>10. Contact</h2>
+      <h2 id="contact">10. Contact</h2>
       <p>Questions about these terms? Reach out at <a href="mailto:info@recuerd0.ai">info@recuerd0.ai</a>.</p>
     </div>
-  </div>
+  </main>
 
   <%= render "pages/marketing_footer" %>
 

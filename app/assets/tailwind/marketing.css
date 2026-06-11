@@ -1308,14 +1308,16 @@
    LEGAL PAGES (terms/privacy)
    ======================================== */
 .marketing .legal-content {
-  max-width: 720px;
+  /* 40rem keeps the body measure near ~70ch at 0.92rem — long clauses
+     stay in the comfortable reading band (was 720px / ~95ch) */
+  max-width: 40rem;
   margin: 0 auto;
   padding: 6rem 2rem 4rem;
 }
 
 .marketing .legal-content h1 {
   font-family: 'Jura', system-ui, sans-serif;
-  font-weight: 300;
+  font-weight: 500;
   font-size: 2rem;
   letter-spacing: -0.5px;
   margin-bottom: 0.5rem;
@@ -1337,7 +1339,49 @@
   margin-top: 2.5rem;
   margin-bottom: 0.75rem;
   color: var(--m-text);
+  scroll-margin-top: 5.5rem; /* clear the fixed nav on anchor jumps */
 }
+
+/* On-this-page jump list for the numbered legal sections */
+.marketing .legal-toc {
+  margin: 0 0 3rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--m-border-subtle);
+  border-radius: 8px;
+  background: var(--m-surface);
+}
+.marketing .legal-toc-label {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: var(--doc-label);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--m-text-dim);
+  margin: 0 0 0.75rem;
+}
+.marketing .legal-toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.35rem 1.5rem;
+  counter-reset: legal-toc;
+}
+.marketing .legal-toc li { counter-increment: legal-toc; }
+.marketing .legal-toc a {
+  display: block;
+  font-size: var(--doc-dense);
+  line-height: 1.5;
+  color: var(--m-text-secondary);
+  padding: 0.15rem 0;
+}
+.marketing .legal-toc a::before {
+  content: counter(legal-toc) ".";
+  color: var(--m-text-dim);
+  margin-right: 0.4rem;
+  font-variant-numeric: tabular-nums;
+}
+.marketing .legal-toc a:hover { color: var(--m-primary); }
 
 .marketing .legal-content .legal-body p {
   font-size: 0.92rem;
