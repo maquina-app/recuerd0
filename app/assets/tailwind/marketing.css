@@ -1406,6 +1406,35 @@
   color: var(--m-text);
 }
 
+/* Description lists for "term: definition" content — same bulleted, inline
+   look as the <ul> lists, but semantically pairs each label with its value */
+.marketing .legal-content .legal-body dl {
+  margin: 0 0 1rem;
+  padding-left: 1.5rem;
+  font-size: var(--doc-body);
+  color: var(--m-text-secondary);
+}
+.marketing .legal-content .legal-body dl > div {
+  position: relative;
+  line-height: 1.8;
+  margin-bottom: 0.25rem;
+}
+.marketing .legal-content .legal-body dl > div::before {
+  content: "•";
+  position: absolute;
+  left: -1.1rem;
+  color: var(--m-text-dim);
+}
+.marketing .legal-content .legal-body dt {
+  display: inline;
+  font-weight: 600;
+  color: var(--m-text);
+}
+.marketing .legal-content .legal-body dd {
+  display: inline;
+  margin: 0;
+}
+
 /* ========================================
    ANIMATIONS
    ======================================== */
