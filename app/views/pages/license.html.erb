@@ -2,6 +2,19 @@
 <% content_for :description, "recuerd0 source code license: MIT with a no-competing-SaaS clause. Free to self-host, modify, and deploy." %>
 <% content_for :canonical_url, "https://recuerd0.ai/license" %>
 
+<% content_for :structured_data do %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://recuerd0.ai/" },
+    { "@type": "ListItem", "position": 2, "name": "License", "item": "https://recuerd0.ai/license" }
+  ]
+}
+</script>
+<% end %>
+
 <div data-controller="marketing-nav">
 
   <%= render "pages/marketing_nav" %>
