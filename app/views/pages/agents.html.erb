@@ -118,17 +118,17 @@
         <div class="endpoint-head">
           <h3>1. Create a workspace</h3>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code>recuerd0 workspace create --name "my-rails-app" --description "Rails 8 monolith"</code></div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 workspace create --name "my-rails-app" --description "Rails 8 monolith"</code></div>
         </div>
 
         <div class="endpoint-head">
           <h3>2. Add project-local config</h3>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">.recuerd0.yaml</span></div>
-          <div class="code-body"><code><span class="ck">account</span>: <span class="cs">personal</span>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">.recuerd0.yaml</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="ck">account</span>: <span class="cs">personal</span>
 <span class="ck">workspace</span>: <span class="cn">1</span></code></div>
         </div>
 
@@ -144,9 +144,9 @@
           <h3>CLAUDE.md hint</h3>
           <p>Add a one-liner to your CLAUDE.md so the agent knows recuerd0 is available.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">CLAUDE.md</span></div>
-          <div class="code-body"><code><span class="cc">## Project Knowledge</span>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">CLAUDE.md</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc">## Project Knowledge</span>
 
 Deep project knowledge (architecture, patterns, decisions) is stored in recuerd0.
 Search with: recuerd0 search "&lt;query&gt;"
@@ -170,9 +170,9 @@ Read with: recuerd0 memory show --workspace 1 &lt;id&gt;</code></div>
           <h3>Pre-session context loading</h3>
           <p>Search for relevant context before starting a task. The agent can do this automatically if your CLAUDE.md tells it to.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code><span class="cc"># Find architecture decisions relevant to the task</span>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># Find architecture decisions relevant to the task</span>
 recuerd0 search "authentication AND rails"
 
 <span class="cc"># Load a specific memory</span>
@@ -189,9 +189,9 @@ recuerd0 memory link list 12 --workspace 1</code></div>
           <h3>Capture knowledge during a session</h3>
           <p>When you solve something worth remembering, save it immediately.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code>recuerd0 memory create --workspace 1 \
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 memory create --workspace 1 \
   --title "FTS5 error handling in Rails" \
   --category discovery \
   --tags "sqlite,fts5,errors,rails" \
@@ -211,9 +211,9 @@ e.message.include?(\"fts5\") to distinguish from other SQL errors."</code></div>
           <h3>Archive transcripts</h3>
           <p>Pipe session transcripts into recuerd0 for later mining.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code>cat transcript-2026-02-05.md | recuerd0 memory create \
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">cat transcript-2026-02-05.md | recuerd0 memory create \
   --workspace 2 \
   --title "Session: Auth refactor" \
   --tags "transcript,auth,2026-02" \
@@ -227,9 +227,9 @@ e.message.include?(\"fts5\") to distinguish from other SQL errors."</code></div>
           <h3>Track evolving decisions</h3>
           <p>Use versions to record how decisions change over time. The original stays intact; each update creates a new version.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code><span class="cc"># Initial decision</span>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># Initial decision</span>
 recuerd0 memory create --workspace 1 \
   --title "Auth strategy" \
   --category decision \
@@ -258,9 +258,9 @@ recuerd0 version create --workspace 1 42 \
           <h3>Claude Code Plugin</h3>
           <p>Native integration for Claude Code. Save sessions, search, and manage workspaces without leaving the agent.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">install</span></div>
-          <div class="code-body"><code>/plugin marketplace add maquina-app/rails-claude-code
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">install</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">/plugin marketplace add maquina-app/rails-claude-code
 /plugin install recuerd0@maquina</code></div>
         </div>
         <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin-bottom: 1.5rem;">
@@ -299,9 +299,9 @@ recuerd0 version create --workspace 1 42 \
           <h3>Workspace routing</h3>
           <p>Drop a <code>.recuerd0.yaml</code> at each project root and every session started in that directory lands in the right workspace.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">project-root/.recuerd0.yaml</span></div>
-          <div class="code-body"><code><span class="ck">workspace</span>: <span class="cs">"12"</span></code></div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">project-root/.recuerd0.yaml</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="ck">workspace</span>: <span class="cs">"12"</span></code></div>
         </div>
 
         <div class="info-box note">
@@ -343,9 +343,9 @@ recuerd0 version create --workspace 1 42 \
           <h3>Reading efficiently</h3>
           <p>Agents can also read efficiently — grep first to find the matching line, then fetch only the surrounding window. Avoids loading the full body of long transcripts and docs.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code>recuerd0 memory read grep 42 "decision" --context 2 --pretty
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 memory read grep 42 "decision" --context 2 --pretty
 recuerd0 memory read lines 42 --start 38 --end 52 --pretty</code></div>
         </div>
       </div>
@@ -432,9 +432,9 @@ recuerd0 memory read lines 42 --start 38 --end 52 --pretty</code></div>
         <p style="font-size: 0.88rem; color: var(--m-text-secondary); line-height: 1.7; margin: 1.25rem 0 1rem;">
           Linking #42 ↔ #118 ↔ #204 means an agent reading any one of those memories can pull the other two on demand without searching across every workspace. There is no automatic linking — the recuerd0 agent always confirms with you before creating a link, and there is no cardinality limit on how many links a memory can carry.
         </p>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code><span class="cc"># Find related memories in another workspace</span>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># Find related memories in another workspace</span>
 recuerd0 search "auth strategy"
 
 <span class="cc"># Create a link</span>
@@ -475,9 +475,9 @@ recuerd0 memory link list 42 --workspace 1</code></div>
           <p>A full workflow from context loading to knowledge capture.</p>
         </div>
 
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">full workflow</span></div>
-          <div class="code-body"><code><span class="cc"># 1. Starting a new task — load relevant context</span>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">full workflow</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># 1. Starting a new task — load relevant context</span>
 recuerd0 search "authentication AND patterns"
 
 <span class="cc"># 2. Read the most relevant memory</span>

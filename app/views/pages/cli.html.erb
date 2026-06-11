@@ -68,17 +68,17 @@
         <div class="endpoint-head">
           <h3>Homebrew (macOS / Linux)</h3>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code>brew install maquina-app/homebrew-tap/recuerd0-cli</code></div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">brew install maquina-app/homebrew-tap/recuerd0-cli</code></div>
         </div>
 
         <div class="endpoint-head">
           <h3>Debian / Ubuntu</h3>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code>curl -fsSL https://pkg.recuerd0.ai/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/recuerd0.gpg
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">curl -fsSL https://pkg.recuerd0.ai/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/recuerd0.gpg
 echo "deb [signed-by=/usr/share/keyrings/recuerd0.gpg] https://pkg.recuerd0.ai/apt stable main" \
   | sudo tee /etc/apt/sources.list.d/recuerd0.list
 sudo apt update && sudo apt install recuerd0-cli</code></div>
@@ -87,35 +87,35 @@ sudo apt update && sudo apt install recuerd0-cli</code></div>
         <div class="endpoint-head">
           <h3>Fedora / RHEL</h3>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code>sudo dnf config-manager --add-repo https://pkg.recuerd0.ai/rpm/recuerd0.repo
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">sudo dnf config-manager --add-repo https://pkg.recuerd0.ai/rpm/recuerd0.repo
 sudo dnf install recuerd0-cli</code></div>
         </div>
 
         <div class="endpoint-head">
           <h3>Windows (scoop)</h3>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">powershell</span></div>
-          <div class="code-body"><code>scoop bucket add recuerd0 https://github.com/maquina-app/scoop-bucket
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">powershell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">scoop bucket add recuerd0 https://github.com/maquina-app/scoop-bucket
 scoop install recuerd0-cli</code></div>
         </div>
 
         <div class="endpoint-head">
           <h3>Go install</h3>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code>go install github.com/maquina-app/recuerd0-cli@latest</code></div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">go install github.com/maquina-app/recuerd0-cli@latest</code></div>
         </div>
 
         <div class="endpoint-head">
           <h3>From source</h3>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code>git clone https://github.com/maquina-app/recuerd0-cli.git
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">git clone https://github.com/maquina-app/recuerd0-cli.git
 cd recuerd0-cli
 make install</code></div>
         </div>
@@ -130,9 +130,9 @@ make install</code></div>
           <p>Four commands to go from install to search.</p>
         </div>
 
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">shell</span></div>
-          <div class="code-body"><code><span class="cc"># 1. Add your account</span>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># 1. Add your account</span>
 recuerd0 account add personal --api-url https://your-server.com --token YOUR_TOKEN
 
 <span class="cc"># 2. List workspaces</span>
@@ -159,9 +159,9 @@ recuerd0 search "authentication"</code></div>
           <h3>Global config</h3>
           <p>Stored at <code>~/.config/recuerd0/config.yaml</code>. Manages multiple accounts.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">~/.config/recuerd0/config.yaml</span></div>
-          <div class="code-body"><code><span class="ck">default_account</span>: <span class="cs">personal</span>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">~/.config/recuerd0/config.yaml</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="ck">default_account</span>: <span class="cs">personal</span>
 <span class="ck">accounts</span>:
   <span class="ck">personal</span>:
     <span class="ck">api_url</span>: <span class="cs">https://recuerd0.example.com</span>
@@ -175,9 +175,9 @@ recuerd0 search "authentication"</code></div>
           <h3>Project-local config</h3>
           <p>Place a <code>.recuerd0.yaml</code> in any project root to set defaults for that directory.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">.recuerd0.yaml</span></div>
-          <div class="code-body"><code><span class="ck">account</span>: <span class="cs">work</span>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">.recuerd0.yaml</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="ck">account</span>: <span class="cs">work</span>
 <span class="ck">workspace</span>: <span class="cn">3</span></code></div>
         </div>
 
@@ -211,9 +211,9 @@ recuerd0 search "authentication"</code></div>
           <h3>account</h3>
           <p>Manage server connections.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">usage</span></div>
-          <div class="code-body"><code>recuerd0 account add &lt;name&gt; --api-url &lt;url&gt; --token &lt;token&gt;
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">usage</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 account add &lt;name&gt; --api-url &lt;url&gt; --token &lt;token&gt;
 recuerd0 account list
 recuerd0 account remove &lt;name&gt;
 recuerd0 account default &lt;name&gt;</code></div>
@@ -235,9 +235,9 @@ recuerd0 account default &lt;name&gt;</code></div>
           <h3>workspace</h3>
           <p>List and manage workspaces.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">usage</span></div>
-          <div class="code-body"><code>recuerd0 workspace list
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">usage</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 workspace list
 recuerd0 workspace show &lt;id&gt;
 recuerd0 workspace create --name &lt;name&gt; [--description &lt;desc&gt;]
 recuerd0 workspace update &lt;id&gt; --name &lt;name&gt;
@@ -263,9 +263,9 @@ recuerd0 workspace unarchive &lt;id&gt;</code></div>
           <h3>memory</h3>
           <p>Create, read, update, and delete memories.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">usage</span></div>
-          <div class="code-body"><code>recuerd0 memory list --workspace &lt;id&gt; [--category CAT]
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">usage</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 memory list --workspace &lt;id&gt; [--category CAT]
 recuerd0 memory show --workspace &lt;id&gt; &lt;memory_id&gt;
 recuerd0 memory create --workspace &lt;id&gt; --title &lt;title&gt; --content &lt;body|-&gt; [--category CAT]
 recuerd0 memory update --workspace &lt;id&gt; &lt;memory_id&gt; [--title &lt;title&gt;] [--content &lt;body|-&gt;] [--category CAT]
@@ -297,9 +297,9 @@ recuerd0 memory link remove &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--wo
           <h3>memory read</h3>
           <p>Read just what you need from large memories — head, tail, an explicit line range, or grep matches with surrounding context. Avoids loading the full body when you only care about a slice.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">usage</span></div>
-          <div class="code-body"><code>recuerd0 memory read head &lt;memory_id&gt; --lines 20 [--workspace &lt;id&gt;]
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">usage</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 memory read head &lt;memory_id&gt; --lines 20 [--workspace &lt;id&gt;]
 recuerd0 memory read tail &lt;memory_id&gt; --lines 20 [--workspace &lt;id&gt;]
 recuerd0 memory read lines &lt;memory_id&gt; --start 40 --end 55 [--workspace &lt;id&gt;]
 recuerd0 memory read grep &lt;memory_id&gt; "TODO" --context 2 [--workspace &lt;id&gt;]</code></div>
@@ -334,9 +334,9 @@ recuerd0 memory read grep &lt;memory_id&gt; "TODO" --context 2 [--workspace &lt;
             <tr><td><code>general</code></td><td>General</td><td>Catch-all and default</td></tr>
           </tbody>
         </table>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">examples</span></div>
-          <div class="code-body"><code>recuerd0 memory create --workspace 1 --title "Postgres over SQLite for Orion" \
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">examples</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 memory create --workspace 1 --title "Postgres over SQLite for Orion" \
   --content "Concurrent writes + 10GB+ dataset." --category decision
 recuerd0 memory list --workspace 1 --category decision</code></div>
         </div>
@@ -348,9 +348,9 @@ recuerd0 memory list --workspace 1 --category decision</code></div>
           <h3>version</h3>
           <p>Create new versions of existing memories.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">usage</span></div>
-          <div class="code-body"><code>recuerd0 version create --workspace &lt;id&gt; &lt;memory_id&gt; --content &lt;body|-&gt; [--category CAT]
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">usage</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 version create --workspace &lt;id&gt; &lt;memory_id&gt; --content &lt;body|-&gt; [--category CAT]
 recuerd0 version list --workspace &lt;id&gt; &lt;memory_id&gt;
 recuerd0 version show --workspace &lt;id&gt; &lt;version_id&gt;</code></div>
         </div>
@@ -370,9 +370,9 @@ recuerd0 version show --workspace &lt;id&gt; &lt;version_id&gt;</code></div>
           <h3>Memory Links</h3>
           <p>Memory links — also called "tunnels" — are undirected, unlabeled "see also" connections between two memories within the same account. They cross workspace boundaries, so a memory in your <code>rails-app</code> workspace can link to one in your <code>mobile-app</code> workspace. Use them to express that two memories cover the same topic without duplicating content.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">usage</span></div>
-          <div class="code-body"><code>recuerd0 memory link list &lt;memory_id&gt; [--workspace &lt;id&gt;]
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">usage</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 memory link list &lt;memory_id&gt; [--workspace &lt;id&gt;]
 recuerd0 memory link add &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--workspace &lt;id&gt;]
 recuerd0 memory link remove &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--workspace &lt;id&gt;]</code></div>
         </div>
@@ -384,9 +384,9 @@ recuerd0 memory link remove &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--wo
             <tr><td><code>remove</code></td><td>Remove the link to the memory id passed via <code>--to</code></td></tr>
           </tbody>
         </table>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">example workflow</span></div>
-          <div class="code-body"><code><span class="cc"># 1. Find a related memory in another workspace</span>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">example workflow</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># 1. Find a related memory in another workspace</span>
 recuerd0 search "auth strategy"
 
 <span class="cc"># 2. Link the two memories</span>
@@ -407,13 +407,13 @@ recuerd0 memory link list 42 --workspace 1</code></div>
           <h3>search</h3>
           <p>Full-text search across all memories. Supports FTS5 operators.</p>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">usage</span></div>
-          <div class="code-body"><code>recuerd0 search &lt;query&gt; [--workspace &lt;id&gt;] [--category CAT]</code></div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">usage</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 search &lt;query&gt; [--workspace &lt;id&gt;] [--category CAT]</code></div>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">examples</span></div>
-          <div class="code-body"><code><span class="cc"># Simple search</span>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">examples</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># Simple search</span>
 recuerd0 search "authentication"
 
 <span class="cc"># FTS5 operators</span>
@@ -436,9 +436,9 @@ recuerd0 search "title:architecture"</code></div>
           <p>All commands output JSON by default. Use <code>--pretty</code> for formatted output.</p>
         </div>
 
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">search output</span></div>
-          <div class="code-body"><code>{
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">search output</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">{
   <span class="ck">"query"</span>: <span class="cs">"authentication"</span>,
   <span class="ck">"total_results"</span>: <span class="cn">2</span>,
   <span class="ck">"results"</span>: [
@@ -455,9 +455,9 @@ recuerd0 search "title:architecture"</code></div>
         <div class="endpoint-head">
           <h3>Error output</h3>
         </div>
-        <div class="code-block">
-          <div class="code-head"><span class="code-label">error</span></div>
-          <div class="code-body"><code>{
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">error</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">{
   <span class="ck">"error"</span>: {
     <span class="ck">"code"</span>: <span class="cs">"NOT_FOUND"</span>,
     <span class="ck">"message"</span>: <span class="cs">"Resource not found"</span>,

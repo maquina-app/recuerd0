@@ -1123,6 +1123,37 @@
 }
 .marketing .code-head { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--m-border-subtle); background: var(--m-surface); }
 .marketing .code-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--m-text-dim); }
+
+/* Copy button in a code-head — muted icon, foreground on hover, green check on
+   success. Sits flush-right via the code-head's space-between; negative margins
+   keep it from growing the head height. Focus ring comes from the shared
+   .marketing button:focus-visible rule. */
+.marketing .code-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: -0.35rem -0.4rem -0.35rem 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: var(--m-text-dim);
+  cursor: pointer;
+  transition: color 150ms, background 150ms;
+}
+.marketing .code-copy:hover { color: var(--m-text); background: oklch(0 0 0 / 0.05); }
+/* Note: no `display` on .code-copy-glyph — it would outrank Tailwind's `.hidden`
+   and both icons would show. The clipboard controller toggles `.hidden`. */
+.marketing .code-copy svg { width: 14px; height: 14px; display: block; }
+.marketing .code-copy [data-clipboard-target="checkIcon"] { color: var(--m-primary); }
+.marketing .code-copy [data-clipboard-target="checkIcon"]:not(.hidden) { animation: m-copyPop 0.2s var(--m-ease-out); }
+
+@keyframes m-copyPop {
+  from { opacity: 0; transform: scale(0.55); }
+  to { opacity: 1; transform: scale(1); }
+}
 .marketing .code-status { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.62rem; letter-spacing: 0.5px; padding: 0.15rem 0.45rem; border-radius: 3px; }
 .marketing .code-status.s201 { color: var(--m-post); background: var(--m-post-bg); }
 .marketing .code-status.s200 { color: var(--m-get); background: var(--m-get-bg); }
