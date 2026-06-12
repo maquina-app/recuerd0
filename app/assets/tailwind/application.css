@@ -782,6 +782,25 @@ house-md-toolbar button svg {
    workspace#show — memory toolbar, cards, and rows
    ============================================================ */
 
+/* search-field — within-workspace filter input with a leading search icon */
+.search-field {
+  position: relative;
+  display: block;
+}
+.search-field > svg {
+  position: absolute;
+  left: 0.625rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+.search-field input[data-component="input"] {
+  padding-left: 2rem;
+}
+
 /* category-bar — horizontally scrollable chip row (its own scroll, never widens page) */
 .category-bar {
   display: flex;
