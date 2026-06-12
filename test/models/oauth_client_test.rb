@@ -39,4 +39,30 @@ class OauthClientTest < ActiveSupport::TestCase
     assert_includes client.errors.attribute_names, :client_name
     assert_includes client.errors.attribute_names, :redirect_uris
   end
+
+  test "accepts absolute https redirect URIs" do
+    client = OauthClient.new(client_name: "Claude", redirect_uris: JSON.generate(["https://claude.ai/cb"]))
+
+    assert client.valid?
+  end
+
+  test "accepts http redirect URI for loopback hosts" do
+    client = OauthClient.new(client_name: "Native", redirect_uris: JSON.generate(["http://localhost:1234/cb", "http://127.0.0.1/cb"]))
+
+    assert client.valid?
+  end
+
+  test "rejects non-https redirect URI on a remote host" do
+    client = OauthClient.new(client_name: "Evil", redirect_uris: JSON.generate(["http://attacker.test/cb"]))
+
+    assert_not client.valid?
+    assert_includes client.errors.attribute_names, :redirect_uris
+  end
+
+  test "rejects a malformed redirect URI" do
+    client = OauthClient.new(client_name: "Bad", redirect_uris: JSON.generate(["::not a uri::"]))
+
+    assert_not client.valid?
+    assert_includes client.errors.attribute_names, :redirect_uris
+  end
 end

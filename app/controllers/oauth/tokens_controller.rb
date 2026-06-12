@@ -47,7 +47,15 @@ class Oauth::TokensController < ApplicationController
 
   def refresh
     token = AccessToken.find_by_refresh_token(params[:refresh_token])
-    return render_error("invalid_grant", "Refresh token invalid or expired") unless token
+    unless token
+      # A well-formed but unknown refresh token is a reuse signal: rotation
+      # overwrites the digest, so a replayed (already-rotated) token no longer
+      # matches any row. Log it for monitoring without leaking the token value.
+      if params[:refresh_token].present?
+        Rails.logger.warn("[oauth] refresh_token rejected (unknown/rotated/revoked) client_id=#{params[:client_id]} ip=#{request.remote_ip}")
+      end
+      return render_error("invalid_grant", "Refresh token invalid or expired")
+    end
 
     token.assign_access_token!
     token.assign_refresh_token!
