@@ -4,7 +4,7 @@
     <%# Arm scroll-reveal before first paint: content is visible by default, so
         no-JS visitors, crawlers, and prerenderers never see a blank page; this
         flag opts JS-capable browsers into the entrance animation without a flash. %>
-    <script>document.documentElement.classList.add("reveal-on")</script>
+    <script nonce="<%= content_security_policy_nonce %>">document.documentElement.classList.add("reveal-on")</script>
     <title><%= content_for(:title) || "recuerd0 — The knowledge base your AI tools deserve" %></title>
     <meta name="description" content="<%= content_for(:description) || "Organize, version, and serve project context to any LLM. Human-curated memory, instantly accessible via REST API." %>">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -32,7 +32,7 @@
 
     <%= yield :head %>
 
-    <script type="application/ld+json">
+    <script type="application/ld+json" nonce="<%= content_security_policy_nonce %>">
     {
       "@context": "https://schema.org",
       "@graph": [
@@ -67,7 +67,7 @@
 
     <!-- Privacy-friendly analytics by Plausible -->
     <script async src="https://plausible.maquina.app/js/pa-uTuQ7v91jt7E0eiSxsSRZ.js"></script>
-    <script>
+    <script nonce="<%= content_security_policy_nonce %>">
       window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
       plausible.init()
     </script>

@@ -2,29 +2,28 @@
 
 # Application-wide Content Security Policy.
 # See https://guides.rubyonrails.org/security.html#content-security-policy-header
-#
-# Shipped in REPORT-ONLY mode first: violations are reported (browser console)
-# but nothing is blocked, so we can observe real traffic before enforcing.
-# Flip `content_security_policy_report_only` to false once the console is clean.
 Rails.application.configure do
   config.content_security_policy do |policy|
     policy.default_src :self
     policy.font_src :self, :data
     policy.img_src :self, :https, :data, :blob
     policy.object_src :none
-    policy.script_src :self
+    # Plausible analytics: external script host. Inline init scripts are nonced in the layouts.
+    policy.script_src :self, "https://plausible.maquina.app"
     # Tailwind emits inline styles; keep :unsafe_inline for styles until the
     # nonce path is verified, then tighten.
     policy.style_src :self, :unsafe_inline
-    policy.connect_src :self
+    # Plausible event beacon (/api/event).
+    policy.connect_src :self, "https://plausible.maquina.app"
     policy.base_uri :self
     policy.frame_ancestors :none
   end
 
-  # Generate session nonces for permitted importmap and inline scripts.
-  config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
+  # Per-request nonce for inline scripts. Prefer the session id (stable across a
+  # session, so Turbo-cached pages keep matching nonces) but fall back to a random
+  # value for anonymous requests with no session — otherwise the nonce would be
+  # empty ('nonce-') and every inline script would be refused. csp_meta_tag is in
+  # the layouts so Turbo re-applies the nonce across navigations.
+  config.content_security_policy_nonce_generator = ->(request) { request.session.id&.to_s.presence || SecureRandom.base64(16) }
   config.content_security_policy_nonce_directives = %w[script-src]
-
-  # Observe violations without enforcing. Remove once the policy is validated.
-  config.content_security_policy_report_only = true
 end
