@@ -3,7 +3,7 @@
 <% content_for :canonical_url, "https://recuerd0.ai/" %>
 
 <% content_for :structured_data do %>
-<script type="application/ld+json">
+<script type="application/ld+json" nonce="<%= content_security_policy_nonce %>">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
