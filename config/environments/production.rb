@@ -78,12 +78,12 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [:id]
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # Enable DNS rebinding protection. Allowed hosts come from APP_HOSTS
+  # (set in config/deploy.production.yml). If unset — e.g. a local production
+  # console — host authorization stays off rather than rejecting everything.
+  if (app_hosts = ENV["APP_HOSTS"]).present?
+    config.hosts = app_hosts.split(",").map(&:strip).reject(&:blank?)
+    # Skip host authorization for the Kamal health check (hits the container directly).
+    config.host_authorization = {exclude: ->(request) { request.path == "/up" }}
+  end
 end

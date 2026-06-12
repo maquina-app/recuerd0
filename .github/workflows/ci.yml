@@ -4,6 +4,11 @@ on:
   pull_request:
   push:
     branches: [ main ]
+  schedule:
+    # Weekly Monday 09:00 UTC — re-runs gem/JS audits to catch advisories
+    # published after the last code change.
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
 
 jobs:
   scan_ruby:
@@ -21,6 +26,22 @@ jobs:
 
       - name: Scan for common Rails security vulnerabilities using static analysis
         run: bin/brakeman --no-pager
+
+  scan_gems:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Audit gems for known vulnerabilities
+        run: bin/bundler-audit --update
 
   scan_js:
     runs-on: ubuntu-latest
