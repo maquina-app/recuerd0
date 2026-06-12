@@ -12,11 +12,13 @@ Rails.application.configure do
     policy.font_src :self, :data
     policy.img_src :self, :https, :data, :blob
     policy.object_src :none
-    policy.script_src :self
+    # Plausible analytics: external script host. Inline init scripts are nonced in the layouts.
+    policy.script_src :self, "https://plausible.maquina.app"
     # Tailwind emits inline styles; keep :unsafe_inline for styles until the
     # nonce path is verified, then tighten.
     policy.style_src :self, :unsafe_inline
-    policy.connect_src :self
+    # Plausible event beacon (/api/event).
+    policy.connect_src :self, "https://plausible.maquina.app"
     policy.base_uri :self
     policy.frame_ancestors :none
   end
