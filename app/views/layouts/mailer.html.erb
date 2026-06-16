@@ -1,50 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <!--[if mso]>
     <style>
+      table, td, div, p, a { font-family: Arial, Helvetica, sans-serif !important; }
+    </style>
+    <![endif]-->
+    <style>
+      /* ---- Base ---- */
       body {
         margin: 0;
         padding: 0;
-        background-color: #f5f5f5;
+        width: 100% !important;
+        background-color: #f2f4f2;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         font-size: 16px;
         line-height: 1.6;
         color: #1a1a1a;
         -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
       }
-      .wrapper {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 40px 20px;
-      }
-      .card {
-        background-color: #ffffff;
-        border-radius: 8px;
-        border: 1px solid #e5e5e5;
-        overflow: hidden;
-      }
-      .header {
-        padding: 24px 32px;
-        border-bottom: 1px solid #e5e5e5;
-      }
-      .brand {
-        text-decoration: none;
-      }
-      .brand img {
-        height: 32px;
-        width: auto;
-      }
-      .content {
-        padding: 32px;
-      }
-      .content p {
-        margin: 0 0 16px;
-      }
-      .content p:last-child {
-        margin-bottom: 0;
-      }
+      img { border: 0; line-height: 100%; outline: none; text-decoration: none; }
+      table { border-collapse: collapse; }
+      a { color: #009D39; }
+
       .btn {
         display: inline-block;
         padding: 12px 24px;
@@ -56,43 +39,226 @@
         font-weight: 500;
         line-height: 1;
       }
-      .footer {
-        padding: 24px 32px;
-        text-align: center;
-        font-size: 13px;
-        color: #737373;
+      .muted { color: #737373; font-size: 14px; }
+
+      /* ----------------------------------------------------------------
+         Newsletter content typography. Scoped to .mn-body (the wrapper the
+         maquina_newsletters engine renders the rich-text body into) so the
+         transactional mailers that share this layout are visually unchanged.
+         Recreates the proposal aesthetic, recolored to the recuerd0 brand:
+         Memory Green (#009D39) as the only accent, true-neutral surfaces.
+      ---------------------------------------------------------------- */
+      .mn-body { color: #333333; }
+      .mn-body img {
+        max-width: 100% !important;
+        height: auto !important;
+        display: block;
+        border-radius: 4px;
       }
-      .footer a {
+      .mn-body h1 {
+        font-size: 26px;
+        font-weight: 700;
+        color: #0f1a0f;
+        line-height: 1.25;
+        letter-spacing: -0.5px;
+        margin: 0 0 20px;
+      }
+      .mn-body h2 {
+        font-size: 19px;
+        font-weight: 700;
+        color: #0f1a0f;
+        line-height: 1.3;
+        letter-spacing: -0.3px;
+        margin: 0 0 10px;
+      }
+      .mn-body h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f1a0f;
+        margin: 0 0 8px;
+      }
+      /* Section label — the editor emits these as <h4> (e.g. "WHAT'S NEW") */
+      .mn-body h4 {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
         color: #009D39;
-        text-decoration: none;
+        margin: 0 0 12px;
       }
-      .muted {
-        color: #737373;
+      .mn-body p { font-size: 15px; color: #333333; line-height: 1.7; margin: 0 0 14px; }
+      .mn-body a { color: #009D39; text-decoration: underline; }
+      .mn-body strong { color: #0f1a0f; }
+      .mn-body em { font-style: italic; }
+
+      /* Intro / callout */
+      .mn-body blockquote {
+        margin: 0 0 24px;
+        padding: 4px 0 4px 16px;
+        border-left: 3px solid #009D39;
+        color: #333333;
+      }
+      .mn-body blockquote p { font-size: 16px; margin: 0; }
+
+      .mn-body hr {
+        border: 0;
+        border-top: 1px solid #e5e5e5;
+        margin: 32px 0;
+      }
+
+      /* Inline + block code */
+      .mn-body code {
+        font-family: 'Geist Mono', 'SF Mono', 'Fira Mono', Consolas, monospace;
+        font-size: 13px;
+        background: #f3f5f3;
+        padding: 1px 5px;
+        border-radius: 3px;
+        color: #1a1a1a;
+      }
+      .mn-body pre {
+        background: #f3f5f3;
+        border: 1px solid #e5e5e5;
+        border-left: 3px solid #009D39;
+        padding: 14px 16px;
+        margin: 16px 0;
+        font-family: 'Geist Mono', 'SF Mono', 'Fira Mono', Consolas, monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #1a1a1a;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .mn-body pre code { background: transparent; padding: 0; font-size: 13px; }
+
+      /* Lists — feature-list style with green arrow markers */
+      .mn-body ul { list-style: none; margin: 14px 0; padding: 0; }
+      .mn-body ul li {
+        font-size: 15px;
+        color: #333333;
+        line-height: 1.65;
+        padding: 6px 0 6px 22px;
+        position: relative;
+        border-bottom: 1px solid #f0f2f0;
+      }
+      .mn-body ul li:last-child { border-bottom: none; }
+      .mn-body ul li::before {
+        content: "\2192";
+        position: absolute;
+        left: 0;
+        color: #009D39;
+        font-weight: 700;
+      }
+      .mn-body ol { margin: 14px 0 14px 20px; padding: 0; }
+      .mn-body ol li { font-size: 15px; color: #333333; line-height: 1.65; padding: 4px 0; }
+
+      /* Tables (editor wraps them in figure.lexxy-content__table-wrapper) */
+      .mn-body table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 16px 0;
         font-size: 14px;
+      }
+      .mn-body figure { margin: 16px 0; }
+      .mn-body th {
+        background: #1a1a1a;
+        color: #f5f7f5;
+        padding: 8px 12px;
+        text-align: left;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+      .mn-body td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #e5e5e5;
+        color: #333333;
+      }
+      .mn-body tr:nth-child(even) td { background: #f7f8f7; }
+      .mn-body th p, .mn-body td p { margin: 0; font-size: 14px; }
+
+      /* ---- Mobile ---- */
+      @media only screen and (max-width: 600px) {
+        .sm-px { padding-left: 20px !important; padding-right: 20px !important; }
+        .sm-py { padding-top: 24px !important; padding-bottom: 24px !important; }
+        .mn-body h1 { font-size: 22px !important; }
+        .mn-body h2 { font-size: 18px !important; }
+        .mn-body pre, .mn-body td, .mn-body th { font-size: 13px !important; }
+      }
+
+      /* ---- Dark mode ----
+         Keep the card (header + content) light so the dark recuerd0 wordmark
+         and content stay legible; only darken the outer page and footer chrome. */
+      @media (prefers-color-scheme: dark) {
+        body, .page-bg { background-color: #0f120f !important; }
+        .footer-text { color: #9aa39a !important; }
+        .footer-text a { color: #3fc46a !important; }
       }
     </style>
   </head>
 
-  <body>
-    <div class="wrapper">
-      <div class="card">
-        <div class="header">
-          <a href="<%= root_url %>" class="brand"><%= image_tag(attachments["recuerdo-email.png"].url, alt: "recuerd0", style: "height:32px;width:auto;") %></a>
-        </div>
+  <body style="margin:0; padding:0; background-color:#f2f4f2;">
+    <!-- Page background -->
+    <table role="presentation" class="page-bg" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f2f4f2" style="background-color:#f2f4f2;">
+      <tr>
+        <td align="center" style="padding:40px 20px;">
+          <!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;">
 
-        <div class="content">
-          <%= yield %>
-        </div>
-      </div>
+            <!-- Card -->
+            <tr>
+              <td style="background-color:#ffffff; border:1px solid #e5e5e5; border-radius:8px;">
 
-      <div class="footer">
-        <p>recuerd0 — LLM context management</p>
-        <p style="margin-top: 12px; font-size: 12px;">&copy; 2026 recuerd0 - Mario Alberto Chávez</p>
-        <p style="margin-top: 8px; font-size: 12px;">
-          Designed &amp; built by
-          <a href="https://maquina.app" style="color: #50B1FD; text-decoration: none;"><%= image_tag(attachments["maquina-email.png"].url, alt: "Maquina", style: "height:16px;width:auto;vertical-align:middle;margin-left:4px;") %></a>
-        </p>
-      </div>
-    </div>
+                <!-- Header -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td class="sm-px" style="padding:24px 32px;">
+                      <a href="<%= root_url %>" style="text-decoration:none;">
+                        <%= image_tag attachments["recuerdo-email.png"].url, alt: "recuerd0", width: 176, height: 32, style: "height:32px; width:176px; display:block; border:0;" %>
+                      </a>
+                      <div style="margin-top:8px; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#737373;">
+                        Versioned knowledge for AI tools
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:0; line-height:0; height:3px; background-color:#009D39;">&nbsp;</td>
+                  </tr>
+                </table>
+
+                <!-- Content -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td class="sm-px sm-py" style="padding:32px;">
+                      <%= yield %>
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td class="footer-text" style="padding:24px 32px; text-align:center; font-size:13px; color:#737373;">
+                <p style="margin:0;">recuerd0 — LLM context management</p>
+                <p style="margin:12px 0 0; font-size:12px;">&copy; 2026 recuerd0 · Mario Alberto Chávez</p>
+                <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:8px auto 0;">
+                  <tr>
+                    <td style="font-size:12px; color:#737373; padding-right:6px; vertical-align:middle;">Designed &amp; built by</td>
+                    <td style="vertical-align:middle;">
+                      <a href="https://maquina.app" style="text-decoration:none;">
+                        <%= image_tag attachments["maquina-email.png"].url, alt: "maquina", width: 62, height: 16, style: "height:16px; width:62px; display:block; border:0;" %>
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+          </table>
+          <!--[if mso]></td></tr></table><![endif]-->
+        </td>
+      </tr>
+    </table>
   </body>
 </html>
