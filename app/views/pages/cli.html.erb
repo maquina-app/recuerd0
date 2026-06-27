@@ -55,7 +55,7 @@
         <p>Manage workspaces, memories, and search from your terminal. The CLI wraps the REST API with multi-account support and structured output.</p>
         <div class="base-url-bar" style="width: 100%; box-sizing: border-box;">
           <span class="label">Install</span>
-          <code>brew install maquina-app/homebrew-tap/recuerd0-cli</code>
+          <code>curl -fsSL https://github.com/maquina-app/recuerd0-cli/releases/latest/download/install.sh | sh</code>
         </div>
       </div>
 
@@ -66,11 +66,24 @@
         </div>
 
         <div class="endpoint-head">
-          <h3>Homebrew (macOS / Linux)</h3>
+          <h3>curl (macOS / Linux)</h3>
+          <p>The recommended install. Detects your OS and architecture, downloads the matching release archive, and verifies its checksum before installing.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">brew install maquina-app/homebrew-tap/recuerd0-cli</code></div>
+          <div class="code-body"><code data-clipboard-target="source">curl -fsSL https://github.com/maquina-app/recuerd0-cli/releases/latest/download/install.sh | sh</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>The installer verifies the download against the release <code>checksums.txt</code> (sha256) and installs to <code>/usr/local/bin</code>, falling back to <code>$HOME/.local/bin</code> if that isn't writable.</span>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Homebrew (macOS)</h3>
+        </div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">brew install maquina-app/tap/recuerd0</code></div>
         </div>
 
         <div class="endpoint-head">
@@ -78,10 +91,9 @@
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">curl -fsSL https://pkg.recuerd0.ai/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/recuerd0.gpg
-echo "deb [signed-by=/usr/share/keyrings/recuerd0.gpg] https://pkg.recuerd0.ai/apt stable main" \
-  | sudo tee /etc/apt/sources.list.d/recuerd0.list
-sudo apt update && sudo apt install recuerd0-cli</code></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># Download the .deb for your arch (amd64 or arm64) from the latest release:</span>
+<span class="cc"># https://github.com/maquina-app/recuerd0-cli/releases/latest</span>
+sudo dpkg -i recuerd0_*_linux_amd64.deb</code></div>
         </div>
 
         <div class="endpoint-head">
@@ -89,17 +101,19 @@ sudo apt update && sudo apt install recuerd0-cli</code></div>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">sudo dnf config-manager --add-repo https://pkg.recuerd0.ai/rpm/recuerd0.repo
-sudo dnf install recuerd0-cli</code></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># Download the .rpm for your arch (amd64 or arm64) from the latest release:</span>
+<span class="cc"># https://github.com/maquina-app/recuerd0-cli/releases/latest</span>
+sudo rpm -i recuerd0_*_linux_amd64.rpm</code></div>
         </div>
 
         <div class="endpoint-head">
-          <h3>Windows (scoop)</h3>
+          <h3>Windows</h3>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">powershell</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">scoop bucket add recuerd0 https://github.com/maquina-app/scoop-bucket
-scoop install recuerd0-cli</code></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># Download recuerd0-windows-amd64.zip (or -arm64) from the latest release:</span>
+<span class="cc"># https://github.com/maquina-app/recuerd0-cli/releases/latest</span>
+<span class="cc"># Unzip it and add recuerd0.exe to your PATH.</span></code></div>
         </div>
 
         <div class="endpoint-head">
@@ -107,7 +121,7 @@ scoop install recuerd0-cli</code></div>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">go install github.com/maquina-app/recuerd0-cli@latest</code></div>
+          <div class="code-body"><code data-clipboard-target="source">go install github.com/maquina/recuerd0-cli/cmd/recuerd0@latest</code></div>
         </div>
 
         <div class="endpoint-head">
@@ -117,7 +131,8 @@ scoop install recuerd0-cli</code></div>
           <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
           <div class="code-body"><code data-clipboard-target="source">git clone https://github.com/maquina-app/recuerd0-cli.git
 cd recuerd0-cli
-make install</code></div>
+make build
+./bin/recuerd0 --help</code></div>
         </div>
       </div>
 
