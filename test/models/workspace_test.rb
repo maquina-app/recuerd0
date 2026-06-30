@@ -48,6 +48,24 @@ class WorkspaceTest < ActiveSupport::TestCase
 
   # -- ordered_with_pins_first --
 
+  test "ordered_with_pins_first still shows workspaces pinned by other users" do
+    account = accounts(:one)
+    # workspaces(:one) is pinned by users(:one) (Alice) via the workspace_pin fixture.
+    # users(:member) (Bob) has not pinned it but must still see it.
+    result = account.workspaces.active.ordered_with_pins_first(users(:member)).to_a
+
+    assert_includes result, workspaces(:one),
+      "workspace pinned by another user must remain visible"
+  end
+
+  test "ordered_with_pins_first does not put another user's pins first" do
+    account = accounts(:one)
+    # For Bob, workspaces(:one) is just an ordinary unpinned workspace.
+    result = account.workspaces.active.ordered_with_pins_first(users(:member)).to_a
+    # No CASE-0 (pinned) rows for Bob, so ordering falls through to updated_at desc.
+    assert_equal result.sort_by { |w| -w.updated_at.to_i }.map(&:id), result.map(&:id)
+  end
+
   test "ordered_with_pins_first default puts pinned first then updated_at desc" do
     user = users(:one)
     account = accounts(:one)

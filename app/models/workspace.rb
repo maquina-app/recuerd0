@@ -32,8 +32,13 @@ class Workspace < ApplicationRecord
     else Arel.sql("workspaces.updated_at DESC")
     end
 
-    left_joins(:pins)
-      .where(pins: {user_id: [user.id, nil]})
+    join_sql = sanitize_sql_array([
+      "LEFT OUTER JOIN pins ON pins.pinnable_id = workspaces.id " \
+      "AND pins.pinnable_type = ? AND pins.user_id = ?",
+      "Workspace", user.id
+    ])
+
+    joins(join_sql)
       .order(
         Arel.sql("CASE WHEN pins.id IS NOT NULL THEN 0 ELSE 1 END"),
         Arel.sql("pins.position ASC NULLS LAST"),
