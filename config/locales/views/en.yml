@@ -19,8 +19,6 @@ en:
     index:
       new_workspace: "New Workspace"
       count: "%{count}"
-      search_trigger: "Search workspaces and memories…"
-      search_aria: "Search workspaces and memories"
       sort_label: "Sort by"
       sort_recent: "Recent"
       sort_name: "Name"

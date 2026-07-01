@@ -22,29 +22,8 @@
   </div>
 
   <% if @workspaces.any? %>
-    <%# Toolbar: search trigger (left) + sort & view segmented controls (right) %>
-    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <%# Desktop search trigger %>
-      <button
-        type="button"
-        data-search-command-trigger
-        aria-label="<%= t("workspaces.index.search_aria") %>"
-        class="ws-search-trigger hidden w-full sm:inline-flex sm:max-w-sm"
-      >
-        <%= icon_for(:search) %>
-        <span class="flex-1 text-left"><%= t("workspaces.index.search_trigger") %></span>
-        <kbd data-search-command-shortcut>⌘K</kbd>
-      </button>
-      <%# Mobile search trigger (compact, icon-only) %>
-      <button
-        type="button"
-        data-search-command-trigger
-        aria-label="<%= t("workspaces.index.search_aria") %>"
-        class="ws-search-trigger ws-search-trigger-icon sm:hidden"
-      >
-        <%= icon_for(:search) %>
-      </button>
-
+    <%# Toolbar: sort & view segmented controls (search lives in the sidebar header) %>
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
       <div class="flex items-center gap-2">
         <%# Sort segmented control %>
         <div class="seg" role="group" aria-label="<%= t("workspaces.index.sort_label") %>">
