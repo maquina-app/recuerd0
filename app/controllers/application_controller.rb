@@ -51,7 +51,7 @@ class ApplicationController < ActionController::Base
   end
 
   def api_request?
-    request.format.json? || request.accepts.any? { |type| type.json? }
+    request.format.json? || request.accepts.any? { |type| type&.json? }
   end
 
   # OAuth and MCP controllers declare their own rate limits keyed by token/client,
