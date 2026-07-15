@@ -166,6 +166,20 @@ class ApiBrowseMemoriesTest < ActionDispatch::IntegrationTest
     assert_not_includes titles, "BrowseCatB"
   end
 
+  test "batch fetches memories by ids" do
+    a = Memory.create_with_content(@workspace, title: "BatchA", content: "b")
+    b = Memory.create_with_content(@workspace, title: "BatchB", content: "b")
+    Memory.create_with_content(@workspace, title: "BatchC", content: "b")
+
+    get browse_memories_url(format: :json),
+      params: {ids: "#{a.id},#{b.id}"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal ["BatchA", "BatchB"], json.map { |m| m["title"] }.sort
+  end
+
   private
 
   def auth_headers(token)

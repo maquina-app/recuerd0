@@ -60,6 +60,9 @@ Rails.application.routes.draw do
 
   resources :workspaces do
     resource :context, only: %i[show], controller: "workspaces/contexts", defaults: {format: :json}
+    resource :stats, only: %i[show], controller: "workspaces/stats", defaults: {format: :json}
+    resource :merge_candidates, only: %i[show], controller: "workspaces/merge_candidates",
+      defaults: {format: :json}
 
     resources :memories do
       resource :markdown, only: %i[show], controller: "memories/markdowns"

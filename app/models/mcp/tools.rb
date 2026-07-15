@@ -18,14 +18,36 @@ module Mcp
       end
     end
 
+    # Default/max page sizes for list_memories. A workspace can hold hundreds of
+    # memories; without a cap a single tool call returns an unbounded blob and the
+    # client can't tell it was truncated. The envelope (total_count/has_more)
+    # gives callers an explicit signal to page.
+    LIST_DEFAULT_LIMIT = 50
+    LIST_MAX_LIMIT = 200
+
+    # Cap on ids accepted by read_memories in one call, to bound response size.
+    BATCH_READ_LIMIT = 50
+
     def list_memories(account, args = {})
       workspace = find_workspace(account, args["workspace_id"])
+      validate_category!(args["category"])
+      limit = clamp_limit(args["limit"])
+      offset = [args["offset"].to_i, 0].max
 
       memories = workspace.memories.latest_versions
       memories = memories.search(args["query"]) if args["query"].present?
       memories = memories.by_category(args["category"]) if args["category"].present?
+      memories = memories.ordered_by(args["sort"])
 
-      memories.map { |memory| memory_json(memory.resolve_current_version) }
+      total_count = memories.count
+      page = memories.offset(offset).limit(limit)
+
+      {
+        memories: page.map { |memory| memory_json(memory.resolve_current_version) },
+        total_count: total_count,
+        has_more: offset + limit < total_count,
+        next_offset: (offset + limit < total_count) ? offset + limit : nil
+      }
     end
 
     def read_memory(account, args = {})
@@ -34,12 +56,32 @@ module Mcp
       memory_json(memory).merge(content: memory.content&.body&.content.to_s)
     end
 
+    # Batch counterpart to read_memory: fetch several memories (with content) in a
+    # single call. Unknown/foreign ids are reported in `missing` rather than failing
+    # the whole call, so a caller verifying a set of candidates gets partial results.
+    def read_memories(account, args = {})
+      ids = Array(args["memory_ids"]).map(&:to_s).reject(&:blank?).first(BATCH_READ_LIMIT)
+
+      found = Memory.joins(:workspace)
+        .where(workspaces: {account_id: account.id})
+        .latest_versions
+        .where(id: ids)
+        .index_by { |memory| memory.id.to_s }
+
+      memories = ids.filter_map do |id|
+        memory = found[id]&.resolve_current_version
+        next unless memory
+
+        memory_json(memory).merge(content: memory.content&.body&.content.to_s)
+      end
+
+      {memories: memories, missing: ids - found.keys}
+    end
+
     def create_memory(account, args = {})
       workspace = find_workspace(account, args["workspace_id"])
+      validate_category!(args["category"])
       category = args["category"].presence || Memory::DEFAULT_CATEGORY
-      unless Memory::CATEGORIES.include?(category)
-        raise ToolError, "Invalid category: #{category}"
-      end
 
       memory = Memory.create_with_content(
         workspace,
@@ -62,9 +104,7 @@ module Mcp
       attributes[:content] = args["content"] if args.key?("content")
       attributes[:tags] = normalize_tags(args["tags"]) if args.key?("tags")
       if args["category"].present?
-        unless Memory::CATEGORIES.include?(args["category"])
-          raise ToolError, "Invalid category: #{args["category"]}"
-        end
+        validate_category!(args["category"])
         attributes[:category] = args["category"]
       end
 
@@ -78,10 +118,8 @@ module Mcp
     # which overwrites in place). Omitted fields inherit from the latest version.
     def create_version(account, args = {})
       memory = find_memory(account, args["memory_id"])
+      validate_category!(args["category"])
       category = args["category"].presence
-      if category && !Memory::CATEGORIES.include?(category)
-        raise ToolError, "Invalid category: #{category}"
-      end
 
       version = memory.create_version!(
         title: args["title"],
@@ -93,6 +131,82 @@ module Mcp
       raise ToolError, version.errors.full_messages.to_sentence if version.errors.any?
 
       memory_json(version)
+    end
+
+    # Cross-workspace "see also" links between memories in the same account.
+    # Links are undirected and unlabeled — MemoryLink#normalize_order canonicalizes
+    # the pair, so link_memories(a, b) and link_memories(b, a) are the same link.
+    def list_memory_links(account, args = {})
+      memory = find_memory(account, args["memory_id"])
+
+      memory.linked_memories.latest_versions.map do |linked|
+        memory_json(linked.resolve_current_version)
+      end
+    end
+
+    def link_memories(account, args = {})
+      memory = find_memory(account, args["memory_id"])
+      other = find_memory(account, args["to_memory_id"])
+      raise ToolError, "Cannot link a memory to itself" if memory.id == other.id
+
+      link = MemoryLink.new(from_memory: memory, to_memory: other)
+      raise ToolError, link.errors.full_messages.to_sentence unless link.save
+
+      {linked: true, memory_id: memory.id.to_s, to_memory_id: other.id.to_s}
+    end
+
+    def unlink_memories(account, args = {})
+      memory = find_memory(account, args["memory_id"])
+      other = find_memory(account, args["to_memory_id"])
+
+      link = MemoryLink.where(
+        "(from_memory_id = ? AND to_memory_id = ?) OR (from_memory_id = ? AND to_memory_id = ?)",
+        memory.id, other.id, other.id, memory.id
+      ).first
+      raise ToolError, "Link not found" unless link
+
+      link.destroy
+      {unlinked: true, memory_id: memory.id.to_s, to_memory_id: other.id.to_s}
+    end
+
+    # Aggregate rollup for a workspace, computed server-side so callers can get
+    # counts and trends without paging the full memory list (which is what hit the
+    # truncation ceiling that motivated the envelope on list_memories).
+    def workspace_stats(account, args = {})
+      workspace = find_workspace(account, args["workspace_id"])
+      roots = workspace.memories.latest_versions
+
+      counts_by_category = Memory::CATEGORIES.index_with { 0 }.merge(roots.group(:category).count)
+      workspace_memory_ids = workspace.memories.select(:id)
+
+      {
+        workspace_id: workspace.id.to_s,
+        total_memories: roots.count,
+        total_versions: workspace.memories.count,
+        counts_by_category: counts_by_category,
+        total_links: MemoryLink
+          .where(from_memory_id: workspace_memory_ids)
+          .or(MemoryLink.where(to_memory_id: workspace_memory_ids))
+          .count,
+        top_tags: top_tags(roots),
+        memories_by_week: roots.group(Arel.sql("strftime('%Y-%W', memories.created_at)")).count
+      }
+    end
+
+    # Read-only clustering of likely-duplicate memories (by shared tags + title
+    # similarity). Suggestions only — merging stays a human decision.
+    def suggest_merge_candidates(account, args = {})
+      workspace = find_workspace(account, args["workspace_id"])
+      min_score = args["min_score"].presence&.to_f
+
+      finder = min_score ? WorkspaceMergeCandidates.new(workspace, min_score: min_score) : WorkspaceMergeCandidates.new(workspace)
+      finder.clusters.map do |cluster|
+        {
+          score: cluster.score,
+          reasons: cluster.reasons,
+          memories: cluster.memories.map { |memory| memory_json(memory.resolve_current_version) }
+        }
+      end
     end
 
     # Single serialization shape for a memory, mirroring the REST jbuilder
@@ -115,6 +229,46 @@ module Mcp
       Array(value).map { |tag| tag.to_s.strip }.reject(&:blank?)
     end
     private_class_method :normalize_tags
+
+    # Raises on an invalid non-blank category so a bad filter value fails loudly
+    # instead of silently returning every memory (by_category no-ops on unknown
+    # values). Blank is allowed — it means "no category filter".
+    def validate_category!(category)
+      return if category.blank?
+      return if Memory::CATEGORIES.include?(category)
+
+      raise ToolError, "Invalid category: #{category}"
+    end
+    private_class_method :validate_category!
+
+    def clamp_limit(value)
+      limit = value.to_i
+      limit = LIST_DEFAULT_LIMIT if limit < 1
+      [limit, LIST_MAX_LIMIT].min
+    end
+    private_class_method :clamp_limit
+
+    # Tag frequency across a relation of memories, most common first. Reads tags
+    # in Ruby because they're a serialized JSON array, not a queryable column.
+    def top_tags(relation, limit = 20)
+      counts = Hash.new(0)
+      relation.pluck(:tags).each do |tags|
+        tags = parse_tags(tags)
+        tags.each { |tag| counts[tag] += 1 }
+      end
+      counts.sort_by { |tag, count| [-count, tag] }.first(limit).map { |tag, count| {tag: tag, count: count} }
+    end
+    private_class_method :top_tags
+
+    # pluck bypasses the serialize coder, so a JSON-array column can come back as a
+    # raw string; normalize both shapes to an array.
+    def parse_tags(value)
+      value = JSON.parse(value) if value.is_a?(String)
+      Array(value)
+    rescue JSON::ParserError
+      []
+    end
+    private_class_method :parse_tags
 
     def find_workspace(account, workspace_id)
       account.workspaces.active.find_by(id: workspace_id) ||

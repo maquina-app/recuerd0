@@ -76,6 +76,7 @@ class Memory < ApplicationRecord
         create_content!(body: content_body)
       end
     end
+    sync_root_category!
 
     self
   rescue ActiveRecord::RecordInvalid
@@ -143,10 +144,22 @@ class Memory < ApplicationRecord
       new_version.save!
       new_version.create_content!(body: attributes[:content] || content&.body&.content.to_s)
     end
+    new_version.sync_root_category!
 
     new_version
   rescue ActiveRecord::RecordInvalid
     new_version
+  end
+
+  # Keep the root row's category in sync with the current (latest) version's.
+  # The root's category is what DB-level filters (by_category) and rollups
+  # (group(:category)) read, but every surface displays resolve_current_version's
+  # category — without this they diverge and a category filter returns memories
+  # whose serialized category contradicts the filter.
+  def sync_root_category!
+    root = root_memory
+    current_category = root.current_version.category
+    root.update_column(:category, current_category) if root.category != current_category
   end
 
   # Human-readable version label

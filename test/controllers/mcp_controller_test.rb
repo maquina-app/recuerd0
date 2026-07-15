@@ -52,11 +52,15 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_predicate response.body.strip, :empty?
   end
 
-  test "tools/list returns the six tools" do
+  test "tools/list returns every defined tool" do
     result = mcp(rpc("tools/list"), token: @read_token.raw_token)
     names = result["result"]["tools"].map { |t| t["name"] }
     assert_equal Mcp::ToolDefinitions::NAMES.sort, names.sort
     assert_includes names, "create_version"
+    assert_includes names, "read_memories"
+    assert_includes names, "link_memories"
+    assert_includes names, "workspace_stats"
+    assert_includes names, "suggest_merge_candidates"
   end
 
   test "tools/list advertises tags and category inputs on write tools" do
@@ -133,18 +137,119 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Body", payload["content"]
   end
 
-  test "list_memories includes tags and source" do
+  test "list_memories returns a paginated envelope with tags and source" do
     Memory.create_with_content(@workspace,
       title: "Listed", content: "Body", tags: ["x"], source: "Claude")
 
-    result = mcp(
-      rpc("tools/call", name: "list_memories", arguments: {workspace_id: @workspace.id.to_s}),
-      token: @read_token.raw_token
-    )
-    payload = JSON.parse(result["result"]["content"].first["text"])
-    listed = payload.find { |m| m["title"] == "Listed" }
+    payload = call_tool("list_memories", {workspace_id: @workspace.id.to_s})
+
+    assert_kind_of Array, payload["memories"]
+    assert_kind_of Integer, payload["total_count"]
+    assert_includes [true, false], payload["has_more"]
+    listed = payload["memories"].find { |m| m["title"] == "Listed" }
     assert_equal ["x"], listed["tags"]
     assert_equal "Claude", listed["source"]
+  end
+
+  test "list_memories paginates via limit and offset" do
+    3.times { |i| Memory.create_with_content(@workspace, title: "Page#{i}", content: "b") }
+
+    first = call_tool("list_memories", {workspace_id: @workspace.id.to_s, limit: 2, offset: 0})
+    assert_equal 2, first["memories"].size
+    assert first["has_more"]
+    assert_equal 2, first["next_offset"]
+
+    second = call_tool("list_memories",
+      {workspace_id: @workspace.id.to_s, limit: 2, offset: first["next_offset"]})
+    assert_operator first["total_count"], :==, second["total_count"]
+    overlap = first["memories"].map { |m| m["id"] } & second["memories"].map { |m| m["id"] }
+    assert_empty overlap, "pages should not overlap"
+  end
+
+  test "list_memories category filter matches the displayed (current version) category" do
+    memory = Memory.create_with_content(@workspace, title: "Evolving", content: "b", category: "general")
+    memory.create_version!(category: "decision", content: "b2")
+
+    general = call_tool("list_memories", {workspace_id: @workspace.id.to_s, category: "general"})
+    decision = call_tool("list_memories", {workspace_id: @workspace.id.to_s, category: "decision"})
+
+    assert general["memories"].none? { |m| m["title"] == "Evolving" },
+      "should not match its stale root category"
+    assert general["memories"].all? { |m| m["category"] == "general" }
+    listed = decision["memories"].find { |m| m["title"] == "Evolving" }
+    assert_equal "decision", listed["category"]
+  end
+
+  test "list_memories rejects an invalid category" do
+    result = mcp(
+      rpc("tools/call", name: "list_memories",
+        arguments: {workspace_id: @workspace.id.to_s, category: "bogus"}),
+      token: @read_token.raw_token
+    )
+    assert result["result"]["isError"]
+    assert_match "Invalid category", result["result"]["content"].first["text"]
+  end
+
+  test "read_memories returns multiple bodies and reports missing ids" do
+    a = Memory.create_with_content(@workspace, title: "A", content: "Body A")
+    b = Memory.create_with_content(@workspace, title: "B", content: "Body B")
+
+    payload = call_tool("read_memories",
+      {memory_ids: [a.id.to_s, b.id.to_s, "999999"]})
+
+    titles = payload["memories"].map { |m| m["title"] }
+    assert_equal ["A", "B"], titles.sort
+    assert_equal ["Body A"], payload["memories"].select { |m| m["title"] == "A" }.map { |m| m["content"] }
+    assert_includes payload["missing"], "999999"
+  end
+
+  test "list_memory_links, link_memories, and unlink_memories round-trip" do
+    a = Memory.create_with_content(@workspace, title: "A", content: "b")
+    b = Memory.create_with_content(@workspace, title: "B", content: "b")
+
+    link = call_tool("link_memories", {memory_id: a.id.to_s, to_memory_id: b.id.to_s}, token: @full_token.raw_token)
+    assert link["linked"]
+
+    links = call_tool("list_memory_links", {memory_id: a.id.to_s})
+    assert_equal ["B"], links.map { |m| m["title"] }
+
+    unlink = call_tool("unlink_memories", {memory_id: a.id.to_s, to_memory_id: b.id.to_s}, token: @full_token.raw_token)
+    assert unlink["unlinked"]
+    assert_empty call_tool("list_memory_links", {memory_id: a.id.to_s})
+  end
+
+  test "link_memories is denied for a read_only token" do
+    a = Memory.create_with_content(@workspace, title: "A", content: "b")
+    b = Memory.create_with_content(@workspace, title: "B", content: "b")
+    result = mcp(
+      rpc("tools/call", name: "link_memories",
+        arguments: {memory_id: a.id.to_s, to_memory_id: b.id.to_s}),
+      token: @read_token.raw_token
+    )
+    assert_equal(-32_001, result["error"]["code"])
+  end
+
+  test "workspace_stats returns category counts and totals" do
+    Memory.create_with_content(@workspace, title: "S1", content: "b", category: "decision")
+    Memory.create_with_content(@workspace, title: "S2", content: "b", category: "decision", tags: ["alpha"])
+
+    stats = call_tool("workspace_stats", {workspace_id: @workspace.id.to_s})
+
+    assert_operator stats["counts_by_category"]["decision"], :>=, 2
+    assert_equal Memory::CATEGORIES.sort, stats["counts_by_category"].keys.sort
+    assert_operator stats["total_memories"], :>=, 2
+    assert stats["top_tags"].any? { |t| t["tag"] == "alpha" }
+  end
+
+  test "suggest_merge_candidates clusters near-duplicate memories" do
+    Memory.create_with_content(@workspace, title: "Deploy runbook", content: "b", tags: ["ops"])
+    Memory.create_with_content(@workspace, title: "Deploy runbook", content: "b", tags: ["ops"])
+
+    clusters = call_tool("suggest_merge_candidates", {workspace_id: @workspace.id.to_s})
+
+    assert clusters.any? { |c| c["memories"].map { |m| m["title"] }.include?("Deploy runbook") }
+    cluster = clusters.find { |c| c["memories"].any? { |m| m["title"] == "Deploy runbook" } }
+    assert_operator cluster["score"], :>=, 0.5
   end
 
   test "update_memory changes category and tags in place without a new version" do
@@ -234,5 +339,12 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   def mcp(payload, token:)
     post "/mcp", params: payload.to_json, headers: auth_headers(token).merge(json_headers)
     JSON.parse(response.body)
+  end
+
+  # Calls a tool and returns its parsed JSON result (the value tools return),
+  # not the JSON-RPC envelope. Defaults to the read-only token.
+  def call_tool(name, arguments, token: @read_token.raw_token)
+    result = mcp(rpc("tools/call", name: name, arguments: arguments), token: token)
+    JSON.parse(result["result"]["content"].first["text"])
   end
 end

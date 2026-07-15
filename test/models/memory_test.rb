@@ -22,6 +22,19 @@ class MemoryTest < ActiveSupport::TestCase
     assert_equal parent.id, version.parent_memory_id
   end
 
+  test "create_version! syncs the root category to the new version's category" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Cat", content: "b", category: "general")
+    memory.create_version!(category: "decision", content: "b2")
+    assert_equal "decision", memory.reload.category,
+      "root category should track the current version so filters and display agree"
+  end
+
+  test "create_version! leaves root category untouched when version inherits it" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Cat", content: "b", category: "preference")
+    memory.create_version!(content: "b2")
+    assert_equal "preference", memory.reload.category
+  end
+
   test "consolidate_versions! collapses to single version" do
     parent = memories(:versioned_parent)
     parent.create_version!(content: "v2")
