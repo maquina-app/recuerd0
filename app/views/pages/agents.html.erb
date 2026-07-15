@@ -41,7 +41,8 @@
     <div class="sidebar-group">
       <div class="sidebar-heading">Integrations</div>
       <a href="#claude-code-plugin" class="sidebar-link" data-section="claude-code-plugin" data-action="click->marketing-sidebar#closeSidebar">Claude Code Plugin</a>
-      <a href="#auto-save-hooks" class="sidebar-link" data-section="auto-save-hooks" data-action="click->marketing-sidebar#closeSidebar">Auto-Save Hooks</a>
+      <a href="#proactive-capture" class="sidebar-link" data-section="proactive-capture" data-action="click->marketing-sidebar#closeSidebar">Proactive Capture</a>
+      <a href="#workspace-routing" class="sidebar-link" data-section="workspace-routing" data-action="click->marketing-sidebar#closeSidebar">Workspace Routing</a>
       <a href="#other-tools" class="sidebar-link" data-section="other-tools" data-action="click->marketing-sidebar#closeSidebar">Other Tools</a>
     </div>
     <div class="sidebar-group">
@@ -257,7 +258,7 @@ recuerd0 version create --workspace 1 42 \
       <div class="endpoint" id="claude-code-plugin">
         <div class="endpoint-head">
           <h3>Claude Code Plugin</h3>
-          <p>Native integration for Claude Code. Save sessions, search, and manage workspaces without leaving the agent.</p>
+          <p>Native integration for Claude Code, published on the maquina marketplace. It installs the <code>remember</code> skill — a model-invoked skill that captures, searches, versions, and organizes memories from inside the conversation.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">install</span><%= render "pages/code_copy" %></div>
@@ -265,40 +266,43 @@ recuerd0 version create --workspace 1 42 \
 /plugin install recuerd0@maquina</code></div>
         </div>
         <p class="doc-note">
-          The plugin provides slash commands for saving session knowledge, searching memories, and workspace management — all within the Claude Code conversation flow.
+          The skill runs on demand — ask it to save a session, search your memories, or import a context file — and it also watches the conversation and captures decisions and discoveries as they happen. Every save routes to the right workspace and reports back in one line, so nothing lands without your knowledge.
         </p>
       </div>
 
-      <%# — Auto-Save Hooks — %>
-      <div class="endpoint" id="auto-save-hooks">
+      <%# — Proactive Capture — %>
+      <div class="endpoint" id="proactive-capture">
         <div class="endpoint-head">
-          <h3>Auto-Save Hooks</h3>
-          <p>The plugin registers two Claude Code lifecycle hooks that capture session state automatically. No manual commands, no forgetting to save.</p>
+          <h3>Proactive capture</h3>
+          <p>The skill watches for capture-worthy moments and saves them without being asked — but only when the knowledge is worth keeping. You stay in control: every save is announced, and cross-workspace links are never created without your confirmation.</p>
         </div>
 
         <div class="table-scroll"><table class="op-table">
-          <thead><tr><th>Hook</th><th>When it fires</th><th>What it does</th></tr></thead>
+          <thead><tr><th>Signal</th><th>What gets captured</th></tr></thead>
           <tbody>
-            <tr>
-              <td><code>Stop</code></td>
-              <td>After each assistant turn, at most once every 15 minutes</td>
-              <td>Checkpoint memory tagged <code>claude-code,auto-save,stop</code></td>
-            </tr>
-            <tr>
-              <td><code>PreCompact</code></td>
-              <td>Right before Claude Code compresses the conversation</td>
-              <td>Emergency snapshot tagged <code>claude-code,auto-save,precompact</code></td>
-            </tr>
+            <tr><td>A decision was made</td><td>Architecture choice, library pick, or tradeoff with stated reasoning</td></tr>
+            <tr><td>A non-obvious bug was diagnosed</td><td>The root cause, once it's understood — not just the symptom</td></tr>
+            <tr><td>You stated a strong preference</td><td>"Always do X", "never do Y", "from now on…"</td></tr>
+            <tr><td>A breakthrough discovery</td><td>A pattern, library quirk, workaround, or gotcha worth remembering</td></tr>
+            <tr><td>End of a focused session</td><td>A curated summary before the context shifts</td></tr>
           </tbody>
         </table></div>
 
         <p class="doc-note">
-          Both hooks capture the last 200 lines of the session transcript, build a titled Markdown memory, and save it to the configured workspace via the recuerd0 CLI. The title includes an ISO timestamp and session ID. The source is always <code>claude-code-session</code>, so you can filter auto-saved memories out of manual queries.
+          Before saving, the skill applies a gate: it only persists knowledge that <em>wouldn't be obvious from reading the code</em>, contradicts a sane default, or cost real time to find. Chitchat, work in progress, and anything already in your <code>CLAUDE.md</code> are skipped. When it does save, it first searches for an existing memory on the topic and adds a new version instead of writing a duplicate.
         </p>
 
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Nothing is captured silently. Each save produces a single line — <code>✓ Saved to workspace rails-app (id 1) as "Auth strategy" [decision] (id 42) [versioned]</code> — so you always know what landed and where.</span>
+        </div>
+      </div>
+
+      <%# — Workspace Routing — %>
+      <div class="endpoint" id="workspace-routing">
         <div class="endpoint-head">
           <h3>Workspace routing</h3>
-          <p>Drop a <code>.recuerd0.yaml</code> at each project root and every session started in that directory lands in the right workspace.</p>
+          <p>Drop a <code>.recuerd0.yaml</code> at each project root and every memory saved from that directory lands in the right workspace — no manual <code>--workspace</code> flag.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">project-root/.recuerd0.yaml</span><%= render "pages/code_copy" %></div>
@@ -307,42 +311,12 @@ recuerd0 version create --workspace 1 42 \
 
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
-          <span>Hooks stay silent if the <code>recuerd0</code> CLI is missing, no account is configured, or no workspace is resolvable. A fresh install with no config produces zero activity — nothing is ever captured without your setup.</span>
+          <span>Without project-local config, the skill resolves the workspace by matching your project directory or git remote against your workspace list — and creates a new one only when nothing matches, always naming it in the save notice so you can correct it.</span>
         </div>
-
-        <div class="endpoint-head">
-          <h3>Tuning</h3>
-        </div>
-        <div class="table-scroll"><table class="op-table">
-          <thead><tr><th>Env var</th><th>Default</th><th>Purpose</th></tr></thead>
-          <tbody>
-            <tr><td><code>RECUERD0_HOOK_DISABLE</code></td><td>unset</td><td>Set to <code>1</code> to disable both hooks entirely</td></tr>
-            <tr><td><code>RECUERD0_STOP_INTERVAL_MINUTES</code></td><td><code>15</code></td><td>Minimum minutes between Stop saves</td></tr>
-            <tr><td><code>RECUERD0_HOOK_TAIL_LINES</code></td><td><code>200</code></td><td>Transcript lines captured per save</td></tr>
-          </tbody>
-        </table></div>
-
-        <div class="endpoint-head">
-          <h3>Turning it off</h3>
-          <p>Four ways to stop auto-saving, from least invasive to most.</p>
-        </div>
-        <div class="table-scroll"><table class="op-table">
-          <thead><tr><th>Scope</th><th>How</th></tr></thead>
-          <tbody>
-            <tr><td>Current shell</td><td><code>export RECUERD0_HOOK_DISABLE=1</code> before launching Claude Code</td></tr>
-            <tr><td>Single project</td><td>Remove the project's <code>.recuerd0.yaml</code> and don't set <code>RECUERD0_WORKSPACE</code></td></tr>
-            <tr><td>Just one hook</td><td>Edit <code>${CLAUDE_PLUGIN_ROOT}/hooks/hooks.json</code> and delete the <code>Stop</code> or <code>PreCompact</code> block</td></tr>
-            <tr><td>Permanently</td><td><code>/plugin uninstall recuerd0@maquina</code></td></tr>
-          </tbody>
-        </table></div>
-
-        <p class="doc-note">
-          Failures (bad credentials, offline, rate limit) never interrupt your session — the hooks always exit cleanly and log a one-line entry to <code>~/.recuerd0/hook-errors.log</code>.
-        </p>
 
         <div class="endpoint-head">
           <h3>Reading efficiently</h3>
-          <p>Agents can also read efficiently — grep first to find the matching line, then fetch only the surrounding window. Avoids loading the full body of long transcripts and docs.</p>
+          <p>The skill reads memories the same way it searches — grep first to find the matching line, then fetch only the surrounding window. That avoids loading the full body of long transcripts and docs.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
