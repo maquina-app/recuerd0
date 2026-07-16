@@ -18,7 +18,7 @@ class McpController < ApplicationController
   SUPPORTED_PROTOCOL_VERSIONS = %w[2025-06-18 2025-03-26 2024-11-05].freeze
   LATEST_PROTOCOL_VERSION = SUPPORTED_PROTOCOL_VERSIONS.first
 
-  WRITE_TOOLS = %w[create_memory update_memory create_version].freeze
+  WRITE_TOOLS = %w[create_memory update_memory create_version link_memories unlink_memories].freeze
 
   # Tools that create a new record whose `source` we stamp with the calling app.
   SOURCE_STAMPED_TOOLS = %w[create_memory create_version].freeze

@@ -290,6 +290,70 @@ Returns the updated workspace object with `archived: false`.
 
 ---
 
+### Get Workspace Stats
+
+Returns an aggregate rollup for a workspace, computed server-side, without shipping memory bodies. Use this instead of paging the full memory list when you only need counts or trends. JSON-only endpoint.
+
+```
+GET /workspaces/:workspace_id/stats.json
+```
+
+**Response** `200 OK`
+
+```json
+{
+  "workspace": { "id": 1, "name": "Engineering", "url": "https://…/workspaces/1" },
+  "total_memories": 495,
+  "total_versions": 631,
+  "total_links": 42,
+  "counts_by_category": { "decision": 120, "discovery": 88, "preference": 15, "general": 272 },
+  "top_tags": [ { "tag": "api", "count": 37 }, { "tag": "design", "count": 21 } ],
+  "memories_by_week": { "2026-18": 12, "2026-19": 9 },
+  "generated_at": "2026-07-15T12:00:00Z"
+}
+```
+
+- `total_memories` counts current memories (latest versions); `total_versions` counts every version row.
+- `counts_by_category` always includes all four categories (zero-filled). Counts reflect each memory's **current version** category.
+- `memories_by_week` is keyed by ISO `year-week` of creation.
+
+---
+
+### Get Merge Candidates
+
+Returns clusters of likely-duplicate memories, scored by shared tags and title similarity. **Read-only suggestions** — merging remains a manual action; this endpoint only proposes clusters. JSON-only endpoint.
+
+```
+GET /workspaces/:workspace_id/merge_candidates.json
+```
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| min_score | number | Similarity threshold `0`–`1` (default `0.5`). Higher = stricter |
+
+**Response** `200 OK`
+
+```json
+{
+  "workspace": { "id": 1, "name": "Engineering", "url": "https://…/workspaces/1" },
+  "candidates": [
+    {
+      "score": 0.82,
+      "reasons": ["similar title", "shared tags"],
+      "memories": [
+        { "id": 12, "title": "Deploy runbook", "category": "general", "tags": ["ops"], "source": "manual", "version": 1, "updated_at": "…", "url": "…" },
+        { "id": 47, "title": "Deploy runbook", "category": "general", "tags": ["ops"], "source": "Claude", "version": 2, "updated_at": "…", "url": "…" }
+      ]
+    }
+  ],
+  "generated_at": "2026-07-15T12:00:00Z"
+}
+```
+
+---
+
 ## Memories
 
 ### Memory Categories
@@ -373,6 +437,7 @@ GET /memories.json
 | page | integer | Page number (default: 1) |
 | per_page | integer | Items per page (1-100, default: 25) |
 | workspace_id | integer | Filter to a specific workspace |
+| ids | string | Comma-separated memory IDs. Batch-fetches exactly those memories (still account-scoped and paginated) |
 | title | string | Glob pattern for title matching. `*` matches any characters, `?` matches a single character |
 | tags | string | Comma-separated tag list. Returns memories containing ALL specified tags |
 | source | string | Exact match on source field |
@@ -386,6 +451,7 @@ GET /memories.json
 GET /memories.json?title=*architecture*
 GET /memories.json?tags=api,design&sort=title&direction=asc
 GET /memories.json?workspace_id=1&source=manual
+GET /memories.json?ids=12,34,56
 ```
 
 **Response**
@@ -605,6 +671,18 @@ DELETE /workspaces/:workspace_id/memories/:id.json
 
 ---
 
+### List Pinned Memories
+
+Returns the current user's pinned memories across all workspaces, paginated. Requires `read_only` or `full_access` token.
+
+```
+GET /memories/pinned.json
+```
+
+**Response** `200 OK` — an array of memory objects (same shape as List Memories), with standard pagination headers.
+
+---
+
 ## Memory Links
 
 Cross-workspace "see also" connections between two memories within the same account. Links are **undirected** and **unlabeled** — they're just a set-style relationship. Internally a link is stored once with a normalized order (smaller memory id in `from_memory_id`), but callers don't need to care: querying or deleting works from either side.
@@ -682,6 +760,30 @@ DELETE /workspaces/:workspace_id/memories/:memory_id/links/:id.json
 ---
 
 ## Memory Versions
+
+### List Versions
+
+Lists every version of a memory, oldest to newest. Requires `read_only` or `full_access` token.
+
+```
+GET /workspaces/:workspace_id/memories/:memory_id/versions.json
+```
+
+**Response** `200 OK` — an array of memory objects (same shape as List Memories), one per version.
+
+---
+
+### Get Version
+
+Returns a single version with its content.
+
+```
+GET /workspaces/:workspace_id/memories/:memory_id/versions/:id.json
+```
+
+**Response** `200 OK` — a memory object with its `content` (same shape as Get Memory).
+
+---
 
 ### Create Version
 
