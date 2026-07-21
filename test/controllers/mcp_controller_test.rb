@@ -75,6 +75,15 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal Mcp::ToolDefinitions::CATEGORIES, update_props["category"]["enum"]
   end
 
+  test "tools/list advertises omitted field and blank overwrite update semantics" do
+    result = mcp(rpc("tools/list"), token: @read_token.raw_token)
+    update_tool = result["result"]["tools"].find { |tool| tool["name"] == "update_memory" }
+
+    assert_includes update_tool["description"], "Omitted fields remain unchanged"
+    assert_includes update_tool["description"], "blank content cannot overwrite a non-empty body"
+    assert_includes update_tool["description"], "use create_version to preserve history"
+  end
+
   test "list_workspaces returns the account's workspaces" do
     result = mcp(rpc("tools/call", name: "list_workspaces"), token: @read_token.raw_token)
     payload = JSON.parse(result["result"]["content"].first["text"])
@@ -269,6 +278,37 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     memory.reload
     assert_equal "preference", memory.category
     assert_equal ["edited"], memory.tags
+  end
+
+  test "update_memory preserves multiline content when content is omitted" do
+    body = "# Exact Markdown\n\n- one\n- two\n\nTrailing line\n"
+    memory = Memory.create_with_content(@workspace, title: "Keep body", content: body)
+
+    result = mcp(
+      rpc("tools/call", name: "update_memory",
+        arguments: {memory_id: memory.id.to_s, tags: ["edited"]}),
+      token: @full_token.raw_token
+    )
+
+    assert_not result.dig("result", "isError")
+    assert_equal ["edited"], memory.reload.tags
+    assert_equal body, memory.content.body.content
+  end
+
+  test "update_memory surfaces blank content overwrite as a tool error" do
+    memory = Memory.create_with_content(@workspace, title: "Before", content: "Existing body")
+
+    result = mcp(
+      rpc("tools/call", name: "update_memory",
+        arguments: {memory_id: memory.id.to_s, title: "After", content: ""}),
+      token: @full_token.raw_token
+    )
+
+    assert result.dig("result", "isError")
+    assert_includes result.dig("result", "content", 0, "text"),
+      I18n.t("activerecord.errors.models.memory.attributes.content.blank_overwrite")
+    assert_equal "Before", memory.reload.title
+    assert_equal "Existing body", memory.content.body.content
   end
 
   test "create_version appends a new version and read_memory returns its content" do

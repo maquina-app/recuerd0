@@ -69,7 +69,14 @@ class Memory < ApplicationRecord
     transaction do
       update!(attributes.slice(:title, :tags, :source, :category))
 
-      content_body = attributes[:content] || ""
+      next unless attributes.key?(:content)
+
+      content_body = attributes[:content].to_s
+      if content_body.blank? && content&.body&.content.present?
+        errors.add(:content, :blank_overwrite)
+        raise ActiveRecord::RecordInvalid, self
+      end
+
       if content
         content.update!(body: content_body)
       else
