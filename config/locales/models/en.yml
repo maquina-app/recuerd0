@@ -13,6 +13,8 @@ en:
           attributes:
             title:
               too_long: "Title is too long (maximum is %{count} characters)."
+            content:
+              blank_overwrite: "can't be blank when overwriting existing content."
         pin:
           attributes:
             position:

@@ -85,6 +85,34 @@ class ApiMemoriesTest < ActionDispatch::IntegrationTest
     assert_equal "Updated content", json["content"]["body"]
   end
 
+  test "metadata-only update preserves multiline content" do
+    body = "# Exact Markdown\n\n- one\n- two\n\nTrailing line\n"
+    memory = Memory.create_with_content(@workspace, title: "Keep body", content: body)
+
+    patch workspace_memory_url(@workspace, memory, format: :json),
+      params: {memory: {tags: ["updated"]}},
+      headers: auth_headers(@full_access_token)
+
+    assert_response :success
+    assert_equal ["updated"], memory.reload.tags
+    assert_equal body, memory.content.body.content
+  end
+
+  test "blank content update returns 422 and rolls back sibling fields" do
+    memory = Memory.create_with_content(@workspace, title: "Before", content: "Existing body")
+
+    patch workspace_memory_url(@workspace, memory, format: :json),
+      params: {memory: {title: "After", content: ""}},
+      headers: auth_headers(@full_access_token)
+
+    assert_response :unprocessable_entity
+    json = JSON.parse(response.body)
+    assert_equal [I18n.t("activerecord.errors.models.memory.attributes.content.blank_overwrite")],
+      json.dig("error", "details", "content")
+    assert_equal "Before", memory.reload.title
+    assert_equal "Existing body", memory.content.body.content
+  end
+
   test "update memory requires full_access token" do
     patch workspace_memory_url(@workspace, @memory, format: :json),
       params: {memory: {title: "Should Not Update"}},

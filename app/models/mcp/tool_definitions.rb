@@ -115,7 +115,8 @@ module Mcp
       {
         name: "update_memory",
         description: "Update an existing memory in place (title, content, category, " \
-          "or tags). Does not create a new version — use create_version to preserve history.",
+          "or tags). Omitted fields remain unchanged, and blank content cannot overwrite " \
+          "a non-empty body. Does not create a new version — use create_version to preserve history.",
         annotations: {readOnlyHint: false, destructiveHint: false},
         inputSchema: {
           type: "object",

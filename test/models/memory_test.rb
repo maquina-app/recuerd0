@@ -15,6 +15,56 @@ class MemoryTest < ActiveSupport::TestCase
     assert_equal "New body", memory.content.body.content
   end
 
+  test "update_with_content preserves content when it is omitted" do
+    body = "# Heading\n\n- first\n- second\n\n```ruby\nputs :exact\n```\n"
+    memory = Memory.create_with_content(workspaces(:one), title: "Before", content: body, tags: ["old"])
+
+    memory.update_with_content(tags: ["new"])
+
+    assert_empty memory.errors
+    assert_equal ["new"], memory.reload.tags
+    assert_equal body, memory.content.body.content
+  end
+
+  test "update_with_content rejects blank overwrite and rolls back metadata" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Before", content: "Existing body")
+
+    memory.update_with_content(title: "After", content: " \n")
+
+    assert memory.errors.of_kind?(:content, :blank_overwrite)
+    assert_equal "Before", memory.reload.title
+    assert_equal "Existing body", memory.content.body.content
+  end
+
+  test "update_with_content accepts blank content when the body is already blank" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Before", content: "")
+
+    memory.update_with_content(title: "After", content: "")
+
+    assert_empty memory.errors
+    assert_equal "After", memory.reload.title
+    assert_equal "", memory.content.body.content
+  end
+
+  test "update_with_content accepts blank content when the content record is missing" do
+    memory = workspaces(:one).memories.create!(title: "Before")
+
+    memory.update_with_content(title: "After", content: "")
+
+    assert_empty memory.errors
+    assert_equal "After", memory.reload.title
+    assert_equal "", memory.content.body.content
+  end
+
+  test "update_with_content still replaces content with a nonblank body" do
+    memory = Memory.create_with_content(workspaces(:one), title: "Before", content: "Old body")
+
+    memory.update_with_content(content: "# New body\n")
+
+    assert_empty memory.errors
+    assert_equal "# New body\n", memory.reload.content.body.content
+  end
+
   test "create_version! creates child linked to parent" do
     parent = memories(:versioned_parent)
     version = parent.create_version!(content: "Version 2 content")
