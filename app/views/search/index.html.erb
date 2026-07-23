@@ -30,7 +30,7 @@
             <%= icon_for(:folders, class: "w-3 h-3 inline") %>
             <%= link_to memory.workspace.name, workspace_path(memory.workspace), class: "hover:underline" %>
           </p>
-          <%= render "memories/memory", memory: memory, workspace: memory.workspace, show_pinned: true %>
+          <%= render "memories/memory", memory: memory, workspace: memory.workspace %>
         </div>
       <% end %>
     </div>

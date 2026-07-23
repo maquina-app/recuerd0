@@ -92,6 +92,9 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     get workspace_url(@workspace)
     assert_response :success
     assert_equal "cards", @controller.view_assigns["memory_view"]
+    assert_equal "updated", @controller.view_assigns["memory_sort"]
+    assert_select "a.seg-item", text: "Relevance", count: 0
+    assert_select "a.seg-item[data-state='on']", text: "Updated"
   end
 
   test "show with view=compact sets the recuerd0_memory_view cookie" do
@@ -134,12 +137,14 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     get workspace_url(@workspace, sort: "title")
     assert_response :success
     assert_equal "title", @controller.view_assigns["memory_sort"]
+    assert_equal "title", @controller.view_assigns["memory_sort_param"]
   end
 
-  test "show sort defaults to nil for invalid value" do
+  test "show invalid sort resolves to updated without a query" do
     get workspace_url(@workspace, sort: "bogus")
     assert_response :success
-    assert_nil @controller.view_assigns["memory_sort"]
+    assert_equal "updated", @controller.view_assigns["memory_sort"]
+    assert_nil @controller.view_assigns["memory_sort_param"]
   end
 
   test "show filters memories by q query" do
@@ -153,6 +158,66 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_includes memories, match
     assert_equal 1, memories.size
     assert_equal "UniqueQueryTermXYZ", @controller.view_assigns["memory_query"]
+    assert_equal "relevance", @controller.view_assigns["memory_sort"]
+    assert_select "a.seg-item[data-state='on']", text: "Relevance"
+  end
+
+  test "show uses relevance and an exact-tag hint for short queries" do
+    match = Memory.create_with_content(@workspace, title: "Short tag", content: "body", tags: ["Go"])
+
+    get workspace_url(@workspace, q: "go")
+
+    assert_response :success
+    assert_equal [match], @controller.view_assigns["memories"].to_a
+    assert_equal "relevance", @controller.view_assigns["memory_sort"]
+    assert_select "a.seg-item[data-state='on']", text: "Relevance"
+    assert_select "p", text: "Queries under 3 characters search exact tags only."
+  end
+
+  test "show omits the short-query hint for longer searches" do
+    Memory.create_with_content(@workspace, title: "Long query term", content: "body")
+
+    get workspace_url(@workspace, q: "query")
+
+    assert_response :success
+    assert_select "p", text: "Queries under 3 characters search exact tags only.", count: 0
+  end
+
+  test "show preserves an explicit sort while editing a query" do
+    Memory.create_with_content(@workspace, title: "Sorted search term", content: "body")
+
+    get workspace_url(@workspace, q: "search term", sort: "title")
+
+    assert_response :success
+    assert_equal "title", @controller.view_assigns["memory_sort"]
+    assert_select "form input[name='sort'][value='title']", count: 1
+    assert_select "a.seg-item[data-state='on']", text: "Title"
+  end
+
+  test "clearing relevance resolves to updated and hides relevance control" do
+    get workspace_url(@workspace, q: " ", sort: "relevance")
+
+    assert_response :success
+    assert_equal "", @controller.view_assigns["memory_query"]
+    assert_equal "updated", @controller.view_assigns["memory_sort"]
+    assert_select "a.seg-item", text: "Relevance", count: 0
+    assert_select "a.seg-item[data-state='on']", text: "Updated"
+  end
+
+  test "search renders the ranked page as one flat stream with real pin badges" do
+    workspace = accounts(:one).workspaces.create!(name: "Flat Search")
+    fts = Memory.create_with_content(workspace, title: "Release notes", content: "body")
+    pinned_tag = Memory.create_with_content(workspace,
+      title: "Pinned tag result", content: "body", tags: ["release notes"])
+    pinned_tag.pin!(@user)
+    pinned_tag.update_column(:updated_at, 1.hour.from_now)
+
+    get workspace_url(workspace, q: "release notes")
+
+    assert_response :success
+    assert_operator response.body.index(fts.title), :<, response.body.index(pinned_tag.title)
+    assert_select ".ws-group-label", count: 0
+    assert_select ".memory-card .inline-flex.text-primary[title='Pinned']", count: 1
   end
 
   test "show redirects to archived path for archived workspace" do

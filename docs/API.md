@@ -841,9 +841,18 @@ POST /workspaces/:workspace_id/memories/:memory_id/versions.json
 
 ## Search
 
-### Search Memories
+recuerd0 intentionally has two search contracts:
 
-Full-text search across all memories in active workspaces. Supports FTS5 query operators for advanced search patterns. Requires `read_only` or `full_access` token.
+- [REST `GET /search.json`](#rest-get-searchjson-raw-fts5) exposes raw FTS5 syntax
+  for API clients.
+- [MCP and workspace search](#mcp-and-workspace-search-safe-phrases-and-exact-tags)
+  uses safe phrase matching plus exact tags for agents and the UI.
+
+### REST: `GET /search.json` (raw FTS5)
+
+Full-text search across all memories in active workspaces. This endpoint passes the
+query through as raw FTS5 syntax, requires at least three characters, and does not
+union tag matches. It requires a `read_only` or `full_access` token.
 
 ```
 GET /search.json?q=<query>
@@ -959,7 +968,14 @@ When `mode=grep`, each result includes `matches` (line-level matches with contex
 GET /search.json?q=architecture&mode=grep&context=2
 GET /search.json?q=meeting AND notes&mode=grep&before=0&after=3
 GET /search.json?q=title:design&workspace_id=1
+GET /search.json?q=release notes
 ```
+
+In the last example, `release notes` is a raw multi-term FTS5 query. By contrast,
+[MCP and workspace search](#mcp-and-workspace-search-safe-phrases-and-exact-tags)
+treats the same input as the exact phrase `release notes` or the exact tag
+`release notes`. The paths differ by design: raw power for API clients, safe
+defaults for agents and the UI.
 
 **Headers**
 
@@ -1002,6 +1018,34 @@ Invalid FTS5 syntax:
   }
 }
 ```
+
+### MCP and workspace search (safe phrases and exact tags)
+
+The MCP `list_memories.query` argument and the search field within a workspace
+share one search and ordering contract:
+
+- Whitespace is trimmed once. Blank queries return the ordinary unfiltered listing.
+- Queries of three or more characters are phrase-wrapped before FTS searches
+  memory titles and bodies, neutralizing FTS5 operators and special syntax.
+- Tags use case-insensitive whole-tag equality. Partial tags and wildcard
+  characters do not broaden the match.
+- FTS matches come first by rank. A memory that also has the exact tag appears
+  once in the FTS group.
+- Tag-only matches follow by `updated_at DESC`. Stable memory-ID tie-breakers make
+  pagination deterministic.
+- Queries of one or two characters skip FTS and search exact tags only, ordered
+  by recency.
+
+For example, `release notes` matches that exact title/body phrase or a tag whose
+complete value is `release notes`; it is not interpreted as raw FTS5 syntax.
+
+Sort defaults are query-aware. With a query, omitted or invalid `sort` defaults
+to `relevance`; without a query it defaults to `updated`. Explicit `updated`,
+`created`, or `title` always wins. Explicit `relevance` preserves the search
+order when a query is present and resolves to `updated` without one.
+
+See [the raw REST search contract](#rest-get-searchjson-raw-fts5) when FTS5
+operators, grep output, or a cross-workspace API search are needed.
 
 ---
 

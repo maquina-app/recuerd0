@@ -773,7 +773,7 @@
       </div>
 
       <div class="endpoint" id="search">
-        <div class="endpoint-head"><h3>Search Memories</h3><p>Full-text search across all memories in active workspaces. Supports FTS5 query operators and a grep mode for line-level matching.</p></div>
+        <div class="endpoint-head"><h3>REST Search Memories</h3><p>Full-text search across all memories in active workspaces. This REST endpoint accepts raw FTS5 query operators, requires at least three characters, and does not union tag matches.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/search.json?q=<span class="param">&lt;query&gt;</span></span></div>
         <div class="param-table-label">Parameters</div>
         <div class="table-scroll"><table class="param-table">
@@ -803,6 +803,10 @@
             <tr><td>Grouping</td><td><code>(meeting OR standup) AND notes</code></td><td>Parentheses for precedence</td></tr>
           </tbody>
         </table></div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span><code>release notes</code> is a raw multi-term FTS5 query here. <a href="/mcp#memory-search">MCP and workspace search</a> treat the same input as an exact phrase or exact tag. The paths differ by design: raw power for API clients, safe defaults for agents and the UI.</span>
+        </div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">snippet mode response (default)</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><code>{

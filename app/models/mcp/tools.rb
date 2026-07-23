@@ -33,11 +33,13 @@ module Mcp
       validate_category!(args["category"])
       limit = clamp_limit(args["limit"])
       offset = [args["offset"].to_i, 0].max
+      query = Memory.normalize_search_query(args["query"])
 
       memories = workspace.memories.latest_versions
-      memories = memories.search(args["query"]) if args["query"].present?
+      memories = memories.search(query) if query.present?
       memories = memories.by_category(args["category"]) if args["category"].present?
-      memories = memories.ordered_by(args["sort"])
+      sort = Memory.resolve_sort(args["sort"], query: query)
+      memories = memories.ordered_by(sort)
 
       total_count = memories.count
       page = memories.offset(offset).limit(limit)

@@ -63,4 +63,36 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_no_match "<script>alert(1)</script>", response.body
   end
+
+  test "global search cards show a pin badge only for a genuinely pinned memory" do
+    sign_in_as(@user)
+    memory = Memory.create_with_content(workspaces(:one),
+      title: "Unique unpinned global result", content: "body")
+
+    get search_url, params: {q: "Unique unpinned"}
+    assert_response :success
+    assert_select ".memory-card .inline-flex.text-primary[title='Pinned']", count: 0
+
+    memory.pin!(@user)
+    get search_url, params: {q: "Unique unpinned"}
+    assert_response :success
+    assert_select ".memory-card .inline-flex.text-primary[title='Pinned']", count: 1
+  end
+
+  test "global search keeps FTS rank ahead of recency" do
+    sign_in_as(@user)
+    workspace = accounts(:one).workspaces.create!(name: "Global Rank")
+    stronger = Memory.create_with_content(workspace,
+      title: "Global rank",
+      content: (["globalrankneedle"] * 20).join(" "))
+    weaker = Memory.create_with_content(workspace,
+      title: "Newer global rank", content: "globalrankneedle")
+    stronger.update_column(:updated_at, 2.days.ago)
+    weaker.update_column(:updated_at, 1.hour.from_now)
+
+    get search_url, params: {q: "globalrankneedle"}
+
+    assert_response :success
+    assert_operator response.body.index(stronger.title), :<, response.body.index(weaker.title)
+  end
 end

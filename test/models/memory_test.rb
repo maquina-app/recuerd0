@@ -258,7 +258,7 @@ class MemoryTest < ActiveSupport::TestCase
     assert_empty Memory.full_search("Deletable").to_a
   end
 
-  # search scope (LIKE-based filtering for toolbar)
+  # Workspace/MCP search
 
   test "search matches by title" do
     memory = Memory.create_with_content(workspaces(:one), title: "Kubernetes Migration", content: "body")
@@ -281,9 +281,129 @@ class MemoryTest < ActiveSupport::TestCase
     assert_equal all_count, Memory.search(nil).count
   end
 
-  test "search escapes LIKE wildcards" do
-    plain = Memory.create_with_content(workspaces(:one), title: "Plain title", content: "body")
-    assert_not_includes workspaces(:one).memories.search("%"), plain
+  test "search ranks FTS matches ahead of newer tag-only matches and deduplicates dual matches" do
+    ws = accounts(:one).workspaces.create!(name: "Ranked Search")
+    fts = Memory.create_with_content(ws, title: "Release notes", content: "body")
+    dual = Memory.create_with_content(ws,
+      title: "Release notes archive", content: "body", tags: ["release notes"])
+    tag_only = Memory.create_with_content(ws,
+      title: "Unrelated title", content: "body", tags: ["release notes"])
+    tag_only.update_column(:updated_at, 1.hour.from_now)
+
+    results = ws.memories.latest_versions.search("release notes").to_a
+
+    assert_equal [fts.id, dual.id].sort, results.first(2).map(&:id).sort
+    assert_equal tag_only, results.last
+    assert_equal 1, results.count { |memory| memory == dual }
+  end
+
+  test "search rank is not replaced by updated_at recency" do
+    ws = accounts(:one).workspaces.create!(name: "FTS Rank")
+    stronger = Memory.create_with_content(ws,
+      title: "Rank candidate",
+      content: (["rankneedle"] * 20).join(" "))
+    weaker = Memory.create_with_content(ws,
+      title: "Newer rank candidate",
+      content: "rankneedle")
+    stronger.update_column(:updated_at, 2.days.ago)
+    weaker.update_column(:updated_at, 1.hour.from_now)
+
+    before_touch = ws.memories.search("rankneedle").pluck(:id)
+    weaker.update_column(:updated_at, 2.hours.from_now)
+    after_touch = ws.memories.search("rankneedle").pluck(:id)
+
+    assert_equal stronger.id, before_touch.first
+    assert_equal before_touch, after_touch
+  end
+
+  test "search orders tag-only matches by recency with an id tie-breaker" do
+    ws = accounts(:one).workspaces.create!(name: "Tag Recency")
+    older = Memory.create_with_content(ws, title: "Older", content: "body", tags: ["release notes"])
+    first_tie = Memory.create_with_content(ws, title: "First tie", content: "body", tags: ["release notes"])
+    second_tie = Memory.create_with_content(ws, title: "Second tie", content: "body", tags: ["release notes"])
+    older.update_column(:updated_at, 2.days.ago)
+    tied_at = 1.day.ago
+    first_tie.update_column(:updated_at, tied_at)
+    second_tie.update_column(:updated_at, tied_at)
+
+    results = ws.memories.search("release notes").to_a
+
+    assert_equal [second_tie, first_tie, older], results
+  end
+
+  test "search matches tags by case-insensitive whole-tag equality" do
+    ws = accounts(:one).workspaces.create!(name: "Exact Tags")
+    exact = Memory.create_with_content(ws, title: "Exact", content: "body", tags: ["Infrastructure"])
+    partial = Memory.create_with_content(ws, title: "Partial", content: "body", tags: ["infrastructure-team"])
+
+    results = ws.memories.search("infrastructure").to_a
+
+    assert_includes results, exact
+    assert_not_includes results, partial
+    assert_empty ws.memories.search("infra").to_a
+  end
+
+  test "search treats tag wildcard characters literally" do
+    ws = accounts(:one).workspaces.create!(name: "Literal Tags")
+    literal = Memory.create_with_content(ws, title: "Literal", content: "body", tags: ["%"])
+    plain = Memory.create_with_content(ws, title: "Plain", content: "body", tags: ["ordinary"])
+
+    results = ws.memories.search("%").to_a
+
+    assert_equal [literal], results
+    assert_not_includes results, plain
+  end
+
+  test "search matches a multi-word tag exactly" do
+    ws = accounts(:one).workspaces.create!(name: "Multiword Tags")
+    exact = Memory.create_with_content(ws, title: "Exact", content: "body", tags: ["release notes"])
+    partial = Memory.create_with_content(ws, title: "Partial", content: "body", tags: ["release notes draft"])
+
+    results = ws.memories.search("release notes").to_a
+
+    assert_includes results, exact
+    assert_not_includes results, partial
+  end
+
+  test "one and two character searches use exact tags only" do
+    ws = accounts(:one).workspaces.create!(name: "Short Tags")
+    fts_only = Memory.create_with_content(ws, title: "Go language", content: "body")
+    tag_match = Memory.create_with_content(ws, title: "Short tag", content: "body", tags: ["GO"])
+
+    results = ws.memories.search("go").to_a
+
+    assert_equal [tag_match], results
+    assert_not_includes results, fts_only
+  end
+
+  test "search uses memory id to break equal FTS rank ties" do
+    ws = accounts(:one).workspaces.create!(name: "FTS Ties")
+    first = Memory.create_with_content(ws, title: "Tie needle", content: "identical")
+    second = Memory.create_with_content(ws, title: "Tie needle", content: "identical")
+
+    assert_equal [second, first], ws.memories.search("Tie needle").to_a
+  end
+
+  test "resolve_sort covers explicit, default, invalid, and relevance cases" do
+    expected = {
+      [nil, "query"] => "relevance",
+      ["bogus", "query"] => "relevance",
+      ["relevance", "query"] => "relevance",
+      ["updated", "query"] => "updated",
+      ["created", "query"] => "created",
+      ["title", "query"] => "title",
+      [nil, ""] => "updated",
+      ["bogus", ""] => "updated",
+      ["relevance", ""] => "updated",
+      ["updated", ""] => "updated",
+      ["created", ""] => "created",
+      ["title", ""] => "title"
+    }
+
+    expected.each do |(sort, query), resolved|
+      assert_equal resolved, Memory.resolve_sort(sort, query: query),
+        "expected #{sort.inspect} with #{query.inspect} to resolve to #{resolved}"
+    end
   end
 
   # ordered_by scope
@@ -307,13 +427,31 @@ class MemoryTest < ActiveSupport::TestCase
     assert_equal [second, first], ordered
   end
 
-  test "ordered_by default sorts by updated_at desc" do
+  test "ordered_by updated sorts by updated_at desc" do
     ws = accounts(:one).workspaces.create!(name: "Ordering C")
     older = Memory.create_with_content(ws, title: "Older", content: "b")
     newer = Memory.create_with_content(ws, title: "Newer", content: "b")
     older.update_column(:updated_at, 2.days.ago)
     newer.update_column(:updated_at, 1.minute.ago)
-    ordered = ws.memories.latest_versions.ordered_by(nil).to_a
+    ordered = ws.memories.latest_versions.ordered_by("updated").to_a
     assert_equal [newer, older], ordered
+  end
+
+  test "ordered_by relevance preserves the search relation order" do
+    ws = accounts(:one).workspaces.create!(name: "Ordering Relevance")
+    fts = Memory.create_with_content(ws, title: "Release notes", content: "body")
+    tag = Memory.create_with_content(ws, title: "Other", content: "body", tags: ["release notes"])
+    tag.update_column(:updated_at, 1.hour.from_now)
+
+    ordered = ws.memories.search("release notes")
+      .ordered_by(Memory.resolve_sort(nil, query: "release notes"))
+      .to_a
+
+    assert_equal [fts, tag], ordered
+  end
+
+  test "ordered_by rejects unresolved values" do
+    assert_raises(ArgumentError) { Memory.ordered_by(nil).load }
+    assert_raises(ArgumentError) { Memory.ordered_by("bogus").load }
   end
 end

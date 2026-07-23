@@ -27,7 +27,7 @@ module WorkspacesHelper
 
   # Current memory filter params, with overrides, for building toolbar/pagination links.
   def memory_filter_params(overrides = {})
-    {category: @category, sort: @memory_sort, q: @memory_query.presence, view: @memory_view}
+    {category: @category, sort: @memory_sort_param, q: @memory_query.presence, view: @memory_view}
       .merge(overrides).compact
   end
 

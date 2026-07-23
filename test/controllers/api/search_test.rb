@@ -221,6 +221,32 @@ class ApiSearchTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "REST search treats multi-word input as a raw FTS5 query" do
+    memory = Memory.create_with_content(workspaces(:one),
+      title: "Release planning notes", content: "body")
+
+    get search_url(format: :json),
+      params: {q: "release notes"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_includes json["results"].map { |result| result["id"] }, memory.id
+  end
+
+  test "REST search does not union exact tag matches" do
+    memory = Memory.create_with_content(workspaces(:one),
+      title: "Unrelated title", content: "body", tags: ["restonlytag"])
+
+    get search_url(format: :json),
+      params: {q: "restonlytag"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_not_includes json["results"].map { |result| result["id"] }, memory.id
+  end
+
   # Grep mode tests
   test "grep mode returns matches instead of snippet" do
     get search_url(format: :json),
