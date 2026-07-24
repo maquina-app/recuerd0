@@ -11,12 +11,12 @@ module Archivable
 
   # Archive the record
   def archive
-    update_column(:archived_at, Time.current)
+    update_attribute(:archived_at, Time.current)
   end
 
   # Unarchive the record
   def unarchive
-    update_column(:archived_at, nil)
+    update_attribute(:archived_at, nil)
   end
 
   # Check if the record is archived

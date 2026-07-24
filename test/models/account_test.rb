@@ -32,13 +32,27 @@ class AccountTest < ActiveSupport::TestCase
     assert_respond_to account, :deleted?
   end
 
-  test "soft_delete sets deleted_at" do
+  test "soft_delete and restore update timestamp and deletion state" do
     account = accounts(:one)
-    assert_nil account.deleted_at
+    original_updated_at = account.updated_at
 
-    account.soft_delete
+    travel 1.second do
+      assert account.soft_delete
+    end
+
     account.reload
     assert account.deleted?
+    assert_operator account.updated_at, :>, original_updated_at
+
+    deleted_updated_at = account.updated_at
+
+    travel 2.seconds do
+      account.restore
+    end
+
+    account.reload
+    assert_not account.deleted?
+    assert_operator account.updated_at, :>, deleted_updated_at
   end
 
   # create_with_user sets first user as admin

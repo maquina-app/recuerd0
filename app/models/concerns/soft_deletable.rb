@@ -10,12 +10,12 @@ module SoftDeletable
 
   # Soft delete the record
   def soft_delete
-    update_column(:deleted_at, Time.current)
+    update_attribute(:deleted_at, Time.current)
   end
 
   # Restore a soft deleted record
   def restore
-    update_column(:deleted_at, nil)
+    update_attribute(:deleted_at, nil)
     after_restore if respond_to?(:after_restore, true)
   end
 

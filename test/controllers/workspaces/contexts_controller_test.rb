@@ -5,6 +5,7 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
     @user = users(:one)
     @workspace = workspaces(:one)
     @memory = memories(:one)
+    @full_access_token = "test_full_token_456"
     @read_only_token = "test_read_token_123"
   end
 
@@ -175,5 +176,26 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
       headers: auth_headers(@read_only_token).merge("If-None-Match" => etag)
 
     assert_response :not_modified
+  end
+
+  test "returns fresh archived body after archive with previous ETag" do
+    get workspace_context_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_equal "active", JSON.parse(response.body).dig("workspace", "state")
+    etag = response.headers["ETag"]
+    assert etag.present?
+
+    post archive_workspace_url(@workspace, format: :json),
+      headers: auth_headers(@full_access_token)
+
+    assert_response :success
+
+    get workspace_context_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token).merge("If-None-Match" => etag)
+
+    assert_response :success
+    assert_equal "archived", JSON.parse(response.body).dig("workspace", "state")
   end
 end

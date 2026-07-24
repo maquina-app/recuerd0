@@ -29,16 +29,74 @@ class WorkspaceTest < ActiveSupport::TestCase
     assert_equal :deleted, workspaces(:deleted).status
   end
 
-  test "soft_delete sets deleted_at" do
+  test "archive bumps updated_at" do
     workspace = workspaces(:one)
-    workspace.soft_delete
-    assert workspace.deleted_at.present?
+    previous_updated_at = workspace.updated_at
+
+    travel 1.second do
+      assert workspace.archive
+    end
+
+    assert_operator workspace.reload.updated_at, :>, previous_updated_at
   end
 
-  test "restore clears deleted_at" do
+  test "archive destroys workspace pins for every user but not memory pins" do
+    workspace = workspaces(:one)
+    workspace.pin!(users(:member))
+
+    assert_difference -> { workspace.pins.count }, -2 do
+      workspace.archive
+    end
+
+    assert pins(:memory_pin).reload.persisted?
+  end
+
+  test "soft_delete destroys workspace pins for every user but not memory pins" do
+    workspace = workspaces(:one)
+    workspace.pin!(users(:member))
+
+    assert_difference -> { workspace.pins.count }, -2 do
+      workspace.soft_delete
+    end
+
+    assert workspace.deleted?
+    assert pins(:memory_pin).reload.persisted?
+  end
+
+  test "unarchive bumps updated_at" do
+    workspace = workspaces(:archived)
+    previous_updated_at = workspace.updated_at
+
+    travel 1.second do
+      assert workspace.unarchive
+    end
+
+    assert_operator workspace.reload.updated_at, :>, previous_updated_at
+    assert_not workspace.archived?
+  end
+
+  test "restore bumps updated_at" do
     workspace = workspaces(:deleted)
+    previous_updated_at = workspace.updated_at
+
+    travel 1.second do
+      workspace.restore
+    end
+
+    assert_operator workspace.reload.updated_at, :>, previous_updated_at
+    assert_not workspace.deleted?
+  end
+
+  test "restore of archived and deleted workspace ends active and unarchived" do
+    workspace = workspaces(:one)
+    workspace.archive
+    workspace.soft_delete
+
     workspace.restore
-    assert_nil workspace.deleted_at
+
+    assert workspace.reload.active?
+    assert_not workspace.archived?
+    assert_not workspace.deleted?
   end
 
   test "search finds by name" do
