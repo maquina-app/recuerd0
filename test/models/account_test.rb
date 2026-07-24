@@ -174,6 +174,10 @@ class AccountTest < ActiveSupport::TestCase
       "Why this shape"
     ],
       workspace.memories.order(:id).pluck(:title)
+
+    default_listing = workspace.memories.latest_versions
+      .ordered_by(Memory.resolve_sort(nil, query: nil))
+    assert_equal "_MAP", default_listing.first.title
   end
 
   test "seed_start_here_workspace memories have content" do
