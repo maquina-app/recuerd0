@@ -39,17 +39,23 @@
         autocomplete="off"
       >
       <% if @category.present? %><input type="hidden" name="category" value="<%= @category %>"><% end %>
-      <% if @memory_sort.present? %><input type="hidden" name="sort" value="<%= @memory_sort %>"><% end %>
+      <% if @memory_sort_param.present? %><input type="hidden" name="sort" value="<%= @memory_sort_param %>"><% end %>
       <% if @memory_view.present? %><input type="hidden" name="view" value="<%= @memory_view %>"><% end %>
     <% end %>
 
     <div class="flex items-center gap-2">
       <%# Sort segmented control %>
       <div class="seg" role="group" aria-label="<%= t("workspaces.show.toolbar.sort_label") %>">
-        <%= link_to t("workspaces.show.toolbar.sort_updated"), workspace_show_path(workspace, **memory_filter_params(sort: nil)),
+        <% if @memory_query.present? %>
+          <%= link_to t("workspaces.show.toolbar.sort_relevance"), workspace_show_path(workspace, **memory_filter_params(sort: "relevance")),
+                class: "seg-item",
+                data: { state: (@memory_sort == "relevance" ? "on" : "off") },
+                "aria-current": (@memory_sort == "relevance" ? "true" : nil) %>
+        <% end %>
+        <%= link_to t("workspaces.show.toolbar.sort_updated"), workspace_show_path(workspace, **memory_filter_params(sort: "updated")),
               class: "seg-item",
-              data: { state: (@memory_sort.blank? ? "on" : "off") },
-              "aria-current": (@memory_sort.blank? ? "true" : nil) %>
+              data: { state: (@memory_sort == "updated" ? "on" : "off") },
+              "aria-current": (@memory_sort == "updated" ? "true" : nil) %>
         <%= link_to t("workspaces.show.toolbar.sort_created"), workspace_show_path(workspace, **memory_filter_params(sort: "created")),
               class: "seg-item",
               data: { state: (@memory_sort == "created" ? "on" : "off") },
@@ -81,4 +87,8 @@
       </div>
     </div>
   </div>
+
+  <% if @memory_query.present? && @memory_query.length < Searchable::MIN_QUERY_LENGTH %>
+    <p class="text-xs text-muted-foreground"><%= t("workspaces.show.toolbar.short_query_hint") %></p>
+  <% end %>
 </div>

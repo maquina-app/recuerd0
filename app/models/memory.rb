@@ -24,25 +24,70 @@ class Memory < ApplicationRecord
   scope :versions_of, ->(memory) { where(parent_memory_id: memory.id) }
   scope :by_category, ->(cat) { where(category: cat) if cat.present? && CATEGORIES.include?(cat) }
 
-  # Within-workspace memory filter. Reuses the canonical FTS index
-  # (Searchable#full_search covers title + content body and is agnostic to how
-  # content is stored/rendered — content is markdown indexed via update_search_index),
-  # plus a tags LIKE fallback (tags live on the memories table, not in the index).
+  SEARCH_SORTS = %w[relevance updated created title].freeze
+
+  # Within-workspace and MCP search. Long-enough queries combine the safe,
+  # phrase-wrapped FTS relation with exact tag equality. The derived FTS relation
+  # keeps rank available to the outer, already-scoped Memory relation.
   scope :search, ->(query) {
-    q = query.to_s.strip
+    q = normalize_search_query(query)
     return all if q.blank?
 
-    where(id: full_search(q).reselect(:id))
-      .or(where("memories.tags LIKE ?", "%#{sanitize_sql_like(q)}%"))
+    exact_tag = sanitize_sql_array([
+      "EXISTS (" \
+        "SELECT 1 FROM json_each(memories.tags) AS memory_tags " \
+        "WHERE memory_tags.value = ? COLLATE NOCASE" \
+      ")",
+      q
+    ])
+
+    if q.length < Searchable::MIN_QUERY_LENGTH
+      where(exact_tag).reorder(updated_at: :desc, id: :desc)
+    else
+      fts_matches = unscoped
+        .full_search(q)
+        .reorder(nil)
+        .select("memories.id AS memory_id", "memories_search.rank AS rank")
+
+      joins(
+        "LEFT JOIN (#{fts_matches.to_sql}) AS memory_search_matches " \
+        "ON memory_search_matches.memory_id = memories.id"
+      )
+        .where("memory_search_matches.memory_id IS NOT NULL OR #{exact_tag}")
+        .reorder(
+          Arel.sql("CASE WHEN memory_search_matches.memory_id IS NULL THEN 1 ELSE 0 END ASC"),
+          Arel.sql("memory_search_matches.rank ASC"),
+          Arel.sql(
+            "CASE WHEN memory_search_matches.memory_id IS NULL THEN memories.updated_at END DESC"
+          ),
+          Arel.sql("memories.id DESC")
+        )
+    end
   }
 
   scope :ordered_by, ->(sort) {
     case sort
-    when "created" then order(created_at: :desc)
-    when "title" then order(Arel.sql("LOWER(memories.title) ASC"))
-    else order(updated_at: :desc)
+    when "relevance" then all
+    when "updated" then reorder(updated_at: :desc, id: :desc)
+    when "created" then reorder(created_at: :desc, id: :desc)
+    when "title" then reorder(Arel.sql("LOWER(memories.title) ASC"), id: :asc)
+    else raise ArgumentError, "sort must be resolved before ordering"
     end
   }
+
+  def self.normalize_search_query(query)
+    query.to_s.strip
+  end
+
+  def self.resolve_sort(requested_sort, query:)
+    normalized_query = normalize_search_query(query)
+    requested = requested_sort.to_s
+
+    return requested if %w[updated created title].include?(requested)
+    return normalized_query.present? ? "relevance" : "updated" if requested == "relevance"
+
+    normalized_query.present? ? "relevance" : "updated"
+  end
 
   # Validations
   validates :title, length: {maximum: 255}

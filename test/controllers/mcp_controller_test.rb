@@ -75,6 +75,23 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal Mcp::ToolDefinitions::CATEGORIES, update_props["category"]["enum"]
   end
 
+  test "tools/list advertises relevance sort and the complete search contract" do
+    result = mcp(rpc("tools/list"), token: @read_token.raw_token)
+    tool = result["result"]["tools"].find { |candidate| candidate["name"] == "list_memories" }
+    properties = tool["inputSchema"]["properties"]
+
+    assert_equal %w[relevance updated created title], properties["sort"]["enum"]
+    assert_includes properties["sort"]["description"], "Defaults to relevance when query is present"
+    assert_includes properties["query"]["description"], "safe exact FTS phrase"
+    assert_includes properties["query"]["description"], "case-insensitive whole-tag equality"
+    assert_includes properties["query"]["description"],
+      "Matching is substring-level (trigram tokenizer)"
+    assert_includes properties["query"]["description"], "`rank` matches `ranking`"
+    assert_includes properties["query"]["description"], "1–2 characters"
+    assert_includes tool["description"], "FTS matches come first by relevance"
+    assert_includes tool["description"], "tag-only matches by recency"
+  end
+
   test "tools/list advertises omitted field and blank overwrite update semantics" do
     result = mcp(rpc("tools/list"), token: @read_token.raw_token)
     update_tool = result["result"]["tools"].find { |tool| tool["name"] == "update_memory" }
@@ -173,6 +190,70 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_operator first["total_count"], :==, second["total_count"]
     overlap = first["memories"].map { |m| m["id"] } & second["memories"].map { |m| m["id"] }
     assert_empty overlap, "pages should not overlap"
+  end
+
+  test "list_memories defaults to relevance with a query and permits explicit overrides" do
+    workspace = @account.workspaces.create!(name: "MCP Search Sort")
+    fts = Memory.create_with_content(workspace, title: "Release notes", content: "body")
+    tag = Memory.create_with_content(workspace,
+      title: "Newest tag", content: "body", tags: ["release notes"])
+    fts.update_column(:updated_at, 2.days.ago)
+    tag.update_column(:updated_at, 1.hour.from_now)
+
+    relevant = call_tool("list_memories",
+      {workspace_id: workspace.id.to_s, query: " release notes "})
+    updated = call_tool("list_memories",
+      {workspace_id: workspace.id.to_s, query: "release notes", sort: "updated"})
+
+    assert_equal [fts.id.to_s, tag.id.to_s], relevant["memories"].map { |memory| memory["id"] }
+    assert_equal [tag.id.to_s, fts.id.to_s], updated["memories"].map { |memory| memory["id"] }
+  end
+
+  test "list_memories applies explicit non-relevance sorts and resolves relevance without a query" do
+    workspace = @account.workspaces.create!(name: "MCP Explicit Sorts")
+    zebra = Memory.create_with_content(workspace, title: "Zebra", content: "body")
+    alpha = Memory.create_with_content(workspace, title: "Alpha", content: "body")
+    zebra.update_columns(created_at: 2.days.ago, updated_at: 1.hour.from_now)
+    alpha.update_columns(created_at: 1.day.ago, updated_at: 2.days.ago)
+
+    title = call_tool("list_memories", {workspace_id: workspace.id.to_s, sort: "title"})
+    created = call_tool("list_memories", {workspace_id: workspace.id.to_s, sort: "created"})
+    relevance = call_tool("list_memories", {workspace_id: workspace.id.to_s, sort: "relevance"})
+
+    assert_equal [alpha.id.to_s, zebra.id.to_s], title["memories"].map { |memory| memory["id"] }
+    assert_equal [alpha.id.to_s, zebra.id.to_s], created["memories"].map { |memory| memory["id"] }
+    assert_equal [zebra.id.to_s, alpha.id.to_s], relevance["memories"].map { |memory| memory["id"] }
+  end
+
+  test "list_memories accepts short exact-tag queries without invoking FTS" do
+    workspace = @account.workspaces.create!(name: "MCP Short Search")
+    tag = Memory.create_with_content(workspace, title: "Tagged", content: "body", tags: ["Go"])
+    Memory.create_with_content(workspace, title: "Go title only", content: "body")
+
+    payload = call_tool("list_memories", {workspace_id: workspace.id.to_s, query: "go"})
+
+    assert_equal 1, payload["total_count"]
+    assert_equal [tag.id.to_s], payload["memories"].map { |memory| memory["id"] }
+  end
+
+  test "list_memories relevance pagination is stable with tied tag-only matches" do
+    workspace = @account.workspaces.create!(name: "MCP Stable Search")
+    memories = 3.times.map do |index|
+      Memory.create_with_content(workspace,
+        title: "Tag #{index}", content: "body", tags: ["go"])
+    end
+    tied_at = 1.day.ago
+    memories.each { |memory| memory.update_column(:updated_at, tied_at) }
+
+    first = call_tool("list_memories",
+      {workspace_id: workspace.id.to_s, query: "go", limit: 2, offset: 0})
+    second = call_tool("list_memories",
+      {workspace_id: workspace.id.to_s, query: "go", limit: 2, offset: first["next_offset"]})
+
+    assert_equal 3, first["total_count"]
+    assert_equal first["total_count"], second["total_count"]
+    assert_equal memories.sort_by { |memory| -memory.id }.map { |memory| memory.id.to_s },
+      first["memories"].map { |memory| memory["id"] } + second["memories"].map { |memory| memory["id"] }
   end
 
   test "list_memories category filter matches the displayed (current version) category" do

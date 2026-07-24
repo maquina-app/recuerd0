@@ -197,7 +197,7 @@
             <thead><tr><th>Tool</th><th>Type</th><th>What it does</th></tr></thead>
             <tbody>
               <tr><td><code>list_workspaces</code></td><td>read</td><td>List the workspaces in your account</td></tr>
-              <tr><td><code>list_memories</code></td><td>read</td><td>List memories in a workspace; optional FTS5 <code>query</code> and <code>category</code> filter</td></tr>
+              <tr><td><code>list_memories</code></td><td>read</td><td>List memories in a workspace; optional safe phrase/exact-tag <code>query</code>, <code>category</code>, and query-aware <code>sort</code></td></tr>
               <tr><td><code>read_memory</code></td><td>read</td><td>Read the full content of one memory</td></tr>
               <tr><td><code>create_memory</code></td><td>write</td><td>Create a memory in a workspace, with optional <code>tags</code></td></tr>
               <tr><td><code>update_memory</code></td><td>write</td><td>Update a memory in place — title, content, category, or tags</td></tr>
@@ -222,6 +222,20 @@
   }
 }</code></div>
         </div>
+      </div>
+
+      <div class="endpoint" id="memory-search">
+        <div class="endpoint-head">
+          <h3>Memory search</h3>
+          <p><code>list_memories.query</code> uses the same safe search contract as the workspace UI. Queries of three or more characters search an exact phrase across title and body, plus case-insensitive whole-tag equality. Matching is substring-level (trigram tokenizer): a phrase can match inside longer words — <code>rank</code> matches <code>ranking</code>. FTS hits come first by rank, dual FTS/tag hits appear once, and tag-only hits follow by recency with stable ID tie-breakers. Queries under three characters skip FTS and search exact tags only.</p>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span><code>release notes</code> means the exact phrase or the exact tag here. The REST <a href="/api-docs#search"><code>GET /search.json</code></a> endpoint treats it as a raw multi-term FTS5 query. This difference is intentional: safe defaults for agents and the UI, raw power for API clients.</span>
+        </div>
+        <p class="doc-note">
+          Sort defaults are query-aware: omitted or invalid <code>sort</code> uses <code>relevance</code> with a query and <code>updated</code> without one. Explicit <code>updated</code>, <code>created</code>, or <code>title</code> overrides relevance. <code>relevance</code> without a query resolves to <code>updated</code>.
+        </p>
       </div>
 
       <%# ===== SCOPES ===== %>

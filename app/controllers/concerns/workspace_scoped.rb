@@ -18,9 +18,9 @@ module WorkspaceScoped
 
   def load_workspace_memories
     @memory_view = resolve_memory_view_mode
-    @memory_sort = params[:sort].presence_in(%w[created title]) # nil => "updated" default
     @category = params[:category].presence_in(Memory::CATEGORIES)
-    @memory_query = params[:q].to_s.strip
+    @memory_query = Memory.normalize_search_query(params[:q])
+    @memory_sort_param = params[:sort].presence_in(Memory::SEARCH_SORTS)
 
     base = @workspace.memories.latest_versions.includes(:content, :pins, child_versions: :content)
     @category_counts = base.group(:category).count
@@ -28,6 +28,7 @@ module WorkspaceScoped
 
     scope = base.by_category(@category)
     scope = scope.search(@memory_query) if @memory_query.present?
+    @memory_sort = Memory.resolve_sort(@memory_sort_param, query: @memory_query)
     scope = scope.ordered_by(@memory_sort)
 
     @pagy, @memories = pagy(scope, items: 10)

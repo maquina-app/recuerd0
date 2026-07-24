@@ -1,10 +1,11 @@
-<%# locals: (workspace:, pinned_memories:, regular_memories:, pagy:) %>
+<%# locals: (workspace:, memories:, pinned_memories:, regular_memories:, pagy:) %>
 <%
   has_results = pinned_memories.any? || regular_memories.any?
   filter_active = @category.present? || @memory_query.present?
+  search_active = @memory_query.present?
   compact = (@memory_view == "compact")
   # archived/deleted workspaces suppress pinned indicators → fold into "All"
-  show_pinned_group = workspace.active? && pinned_memories.any?
+  show_pinned_group = !search_active && workspace.active? && pinned_memories.any?
 
   pagination_helper = if workspace.archived?
     :archived_workspace_path
@@ -17,7 +18,21 @@
 
 <% if has_results %>
   <div class="space-y-6">
-    <% if show_pinned_group %>
+    <% if search_active %>
+      <section>
+        <% if compact %>
+          <div class="divide-y divide-border rounded-lg border">
+            <%= render partial: "memories/memory_row", collection: memories, as: :memory, locals: { workspace: workspace } %>
+          </div>
+        <% else %>
+          <div class="grid gap-4 lg:grid-cols-2">
+            <%= render partial: "memories/memory", collection: memories, as: :memory, locals: { workspace: workspace } %>
+          </div>
+        <% end %>
+      </section>
+    <% end %>
+
+    <% if !search_active && show_pinned_group %>
       <section>
         <div class="mb-2 flex items-center gap-2 px-0.5">
           <span class="text-primary"><%= icon_for(:pin, class: "size-3") %></span>
@@ -36,7 +51,7 @@
     <% end %>
 
     <% all_items = show_pinned_group ? regular_memories : (pinned_memories + regular_memories) %>
-    <% if all_items.any? %>
+    <% if !search_active && all_items.any? %>
       <section>
         <div class="mb-2 px-0.5">
           <span class="ws-group-label"><%= t("workspaces.show.group_all") %></span>

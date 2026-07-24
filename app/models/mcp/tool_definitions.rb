@@ -13,8 +13,11 @@ module Mcp
       },
       {
         name: "list_memories",
-        description: "List memories within a workspace. Supports optional FTS5 query " \
-          "filtering and category filtering. Returns a paginated envelope: " \
+        description: "List memories within a workspace. Search safely phrase-wraps queries " \
+          "for FTS across title and body and also matches case-insensitive whole tags. " \
+          "FTS matches come first by relevance, followed by tag-only matches by recency; " \
+          "a memory matching both appears once as an FTS match. Queries under 3 characters " \
+          "search exact tags only. Returns a paginated envelope: " \
           "{memories, total_count, has_more, next_offset}. Pass `offset: next_offset` " \
           "to fetch the following page. Defaults to 50 per page (max 200).",
         annotations: {readOnlyHint: true, destructiveHint: false},
@@ -22,10 +25,19 @@ module Mcp
           type: "object",
           properties: {
             workspace_id: {type: "string", description: "Workspace ID"},
-            query: {type: "string", description: "Optional FTS5 search query"},
+            query: {
+              type: "string",
+              description: "Optional search query. At 3+ characters it is a safe exact FTS " \
+                "phrase across title/body, unioned with case-insensitive whole-tag equality. " \
+                "Matching is substring-level (trigram tokenizer): a phrase can match inside " \
+                "longer words — `rank` matches `ranking`. " \
+                "FTS hits rank first, dual hits are deduplicated, and tag-only hits follow by " \
+                "recency. At 1–2 characters, only exact tags are searched."
+            },
             category: {type: "string", enum: CATEGORIES, description: "Filter by memory category"},
-            sort: {type: "string", enum: %w[updated created title],
-                   description: "Sort order (default: updated, newest first)"},
+            sort: {type: "string", enum: Memory::SEARCH_SORTS,
+                   description: "Sort order. Defaults to relevance when query is present and " \
+                     "updated otherwise. Relevance without a query resolves to updated."},
             limit: {type: "integer", description: "Page size, 1–200 (default 50)"},
             offset: {type: "integer", description: "Rows to skip (default 0)"}
           },
