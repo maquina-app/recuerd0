@@ -84,6 +84,9 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_includes properties["sort"]["description"], "Defaults to relevance when query is present"
     assert_includes properties["query"]["description"], "safe exact FTS phrase"
     assert_includes properties["query"]["description"], "case-insensitive whole-tag equality"
+    assert_includes properties["query"]["description"],
+      "Matching is substring-level (trigram tokenizer)"
+    assert_includes properties["query"]["description"], "`rank` matches `ranking`"
     assert_includes properties["query"]["description"], "1–2 characters"
     assert_includes tool["description"], "FTS matches come first by relevance"
     assert_includes tool["description"], "tag-only matches by recency"

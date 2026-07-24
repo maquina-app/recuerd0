@@ -40,6 +40,8 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#memory-search h3", text: "Memory search"
     assert_includes response.body, "case-insensitive whole-tag equality"
+    assert_includes response.body, "Matching is substring-level (trigram tokenizer)"
+    assert_includes response.body, "<code>rank</code> matches <code>ranking</code>"
     assert_includes response.body, "Queries under three characters"
     assert_includes response.body, "relevance"
     assert_select "a[href='/api-docs#search']"

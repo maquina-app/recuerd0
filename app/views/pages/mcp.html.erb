@@ -227,7 +227,7 @@
       <div class="endpoint" id="memory-search">
         <div class="endpoint-head">
           <h3>Memory search</h3>
-          <p><code>list_memories.query</code> uses the same safe search contract as the workspace UI. Queries of three or more characters search an exact phrase across title and body, plus case-insensitive whole-tag equality. FTS hits come first by rank, dual FTS/tag hits appear once, and tag-only hits follow by recency with stable ID tie-breakers. Queries under three characters skip FTS and search exact tags only.</p>
+          <p><code>list_memories.query</code> uses the same safe search contract as the workspace UI. Queries of three or more characters search an exact phrase across title and body, plus case-insensitive whole-tag equality. Matching is substring-level (trigram tokenizer): a phrase can match inside longer words — <code>rank</code> matches <code>ranking</code>. FTS hits come first by rank, dual FTS/tag hits appear once, and tag-only hits follow by recency with stable ID tie-breakers. Queries under three characters skip FTS and search exact tags only.</p>
         </div>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>

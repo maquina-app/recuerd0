@@ -1027,6 +1027,8 @@ share one search and ordering contract:
 - Whitespace is trimmed once. Blank queries return the ordinary unfiltered listing.
 - Queries of three or more characters are phrase-wrapped before FTS searches
   memory titles and bodies, neutralizing FTS5 operators and special syntax.
+- Matching is substring-level (trigram tokenizer): a phrase can match inside
+  longer words — `rank` matches `ranking`.
 - Tags use case-insensitive whole-tag equality. Partial tags and wildcard
   characters do not broaden the match.
 - FTS matches come first by rank. A memory that also has the exact tag appears

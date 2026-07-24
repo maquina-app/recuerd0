@@ -29,6 +29,8 @@ module Mcp
               type: "string",
               description: "Optional search query. At 3+ characters it is a safe exact FTS " \
                 "phrase across title/body, unioned with case-insensitive whole-tag equality. " \
+                "Matching is substring-level (trigram tokenizer): a phrase can match inside " \
+                "longer words — `rank` matches `ranking`. " \
                 "FTS hits rank first, dual hits are deduplicated, and tag-only hits follow by " \
                 "recency. At 1–2 characters, only exact tags are searched."
             },
