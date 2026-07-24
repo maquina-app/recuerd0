@@ -181,6 +181,27 @@ class ApiWorkspacesTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "show returns fresh archived body after archive with previous ETag" do
+    get workspace_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_not JSON.parse(response.body)["archived"]
+    etag = response.headers["ETag"]
+    assert etag.present?
+
+    post archive_workspace_url(@workspace, format: :json),
+      headers: auth_headers(@full_access_token)
+
+    assert_response :success
+
+    get workspace_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token).merge("If-None-Match" => etag)
+
+    assert_response :success
+    assert JSON.parse(response.body)["archived"]
+  end
+
   test "index sets Cache-Control header" do
     get workspaces_url(format: :json),
       headers: auth_headers(@read_only_token)
