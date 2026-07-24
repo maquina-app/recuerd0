@@ -99,7 +99,11 @@ module Mcp
     end
 
     def update_memory(account, args = {})
-      memory = find_memory(account, args["memory_id"])
+      memory = find_memory_for_update(account, args["memory_id"]).resolve_current_version
+      unless memory.current_version?
+        raise ToolError,
+          I18n.t("activerecord.errors.models.memory.attributes.base.historical_version_immutable")
+      end
 
       attributes = {}
       attributes[:title] = args["title"] if args["title"].present?
@@ -113,6 +117,7 @@ module Mcp
       memory.update_with_content(attributes)
       raise ToolError, memory.errors.full_messages.to_sentence if memory.errors.any?
 
+      memory.root_memory.touch
       memory_json(memory.reload)
     end
 
@@ -286,5 +291,13 @@ module Mcp
         raise(ToolError, "Memory not found")
     end
     private_class_method :find_memory
+
+    def find_memory_for_update(account, memory_id)
+      Memory.joins(:workspace)
+        .where(workspaces: {account_id: account.id})
+        .find_by(id: memory_id) ||
+        raise(ToolError, "Memory not found")
+    end
+    private_class_method :find_memory_for_update
   end
 end

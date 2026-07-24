@@ -1,6 +1,9 @@
 require "test_helper"
 
 class McpControllerTest < ActionDispatch::IntegrationTest
+  HISTORICAL_VERSION_ERROR =
+    "historical versions are immutable — update the current version or create a new version"
+
   setup do
     @user = users(:one)
     @account = @user.account
@@ -359,6 +362,162 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     memory.reload
     assert_equal "preference", memory.category
     assert_equal ["edited"], memory.tags
+  end
+
+  test "update_memory with a root id targets current and remains visible through read and list" do
+    workspace = @account.workspaces.create!(name: "MCP Root Update")
+    original_body = "# Version one\n\nKeep these bytes.\n"
+    root = Memory.create_with_content(workspace,
+      title: "Version one", content: original_body, tags: ["v1"])
+    current = root.create_version!(
+      title: "Version two", content: "Replace me", tags: ["v2"]
+    )
+    payload = nil
+
+    assert_no_difference -> { root.all_versions.count } do
+      result = mcp(
+        rpc("tools/call", name: "update_memory",
+          arguments: {
+            memory_id: root.id.to_s,
+            title: "Updated current",
+            content: "# Updated\n\nCurrent body.\n",
+            tags: ["current", "edited"]
+          }),
+        token: @full_token.raw_token
+      )
+      assert_not result.dig("result", "isError")
+      payload = JSON.parse(result.dig("result", "content", 0, "text"))
+    end
+
+    assert_equal root.id.to_s, payload["id"]
+    assert_equal "Updated current", payload["title"]
+    assert_equal ["current", "edited"], payload["tags"]
+
+    current.reload
+    assert_equal "Updated current", current.title
+    assert_equal "# Updated\n\nCurrent body.\n", current.content.body.content
+    assert_equal ["current", "edited"], current.tags
+    assert_equal "Version one", root.reload.title
+    assert_equal ["v1"], root.tags
+    assert_equal original_body.bytes, root.content.body.content.bytes
+
+    read = call_tool("read_memory", {memory_id: root.id.to_s})
+    assert_equal root.id.to_s, read["id"]
+    assert_equal "Updated current", read["title"]
+    assert_equal "# Updated\n\nCurrent body.\n", read["content"]
+
+    listed = call_tool("list_memories",
+      {workspace_id: workspace.id.to_s})["memories"].find { |memory| memory["id"] == root.id.to_s }
+    assert_equal "Updated current", listed["title"]
+    assert_equal ["current", "edited"], listed["tags"]
+  end
+
+  test "update_memory rejects a historical child before validation without touching the root" do
+    workspace = @account.workspaces.create!(name: "MCP Immutable History")
+    root = Memory.create_with_content(workspace,
+      title: "Version one", content: "First body", tags: ["v1"], category: "general")
+    historical = root.create_version!(
+      title: "Version two", content: "Second body", tags: ["v2"], category: "discovery"
+    )
+    current = root.create_version!(
+      title: "Version three", content: "Third body", tags: ["v3"], category: "decision"
+    )
+    root.update_column(:updated_at, 2.days.ago)
+    root_updated_at = root.reload.updated_at
+    result = nil
+
+    assert_no_difference -> { root.all_versions.count } do
+      result = mcp(
+        rpc("tools/call", name: "update_memory",
+          arguments: {
+            memory_id: historical.id.to_s,
+            title: "Corrupted",
+            content: "Corrupted body",
+            tags: ["corrupted"],
+            category: "not-a-category"
+          }),
+        token: @full_token.raw_token
+      )
+    end
+
+    assert result.dig("result", "isError")
+    assert_equal HISTORICAL_VERSION_ERROR, result.dig("result", "content", 0, "text")
+
+    historical.reload
+    assert_equal "Version two", historical.title
+    assert_equal "Second body", historical.content.body.content
+    assert_equal ["v2"], historical.tags
+    assert_equal "discovery", historical.category
+
+    current.reload
+    assert_equal "Version three", current.title
+    assert_equal "Third body", current.content.body.content
+    assert_equal ["v3"], current.tags
+    assert_equal "decision", current.category
+
+    root.reload
+    assert_equal "Version one", root.title
+    assert_equal "First body", root.content.body.content
+    assert_equal root_updated_at, root.updated_at
+  end
+
+  test "update_memory accepts a current child id and moves its root first in updated order" do
+    workspace = @account.workspaces.create!(name: "MCP Current Child Update")
+    root = Memory.create_with_content(workspace, title: "Version one", content: "First")
+    current = root.create_version!(title: "Version two", content: "Second")
+    other = Memory.create_with_content(workspace, title: "Other memory", content: "Other")
+    root.update_column(:updated_at, 2.days.ago)
+    other.update_column(:updated_at, 1.day.ago)
+    root_updated_at = root.reload.updated_at
+    payload = nil
+
+    travel_to 1.hour.from_now do
+      result = mcp(
+        rpc("tools/call", name: "update_memory",
+          arguments: {memory_id: current.id.to_s, title: "Direct current update"}),
+        token: @full_token.raw_token
+      )
+      assert_not result.dig("result", "isError")
+      payload = JSON.parse(result.dig("result", "content", 0, "text"))
+    end
+
+    assert_equal root.id.to_s, payload["id"]
+    assert_equal "Direct current update", payload["title"]
+    assert_operator root.reload.updated_at, :>, root_updated_at
+
+    listed = call_tool("list_memories",
+      {workspace_id: workspace.id.to_s, sort: "updated"})
+    assert_equal root.id.to_s, listed["memories"].first["id"]
+    assert_equal "Direct current update", listed["memories"].first["title"]
+  end
+
+  test "update_memory root id blank guard checks current body and touches nothing" do
+    workspace = @account.workspaces.create!(name: "MCP Current Blank Guard")
+    root = Memory.create_with_content(workspace, title: "Blank v1", content: "")
+    current = root.create_version!(title: "Nonblank v2", content: "Existing current body")
+    root.update_column(:updated_at, 2.days.ago)
+    current.update_column(:updated_at, 1.day.ago)
+    root_updated_at = root.reload.updated_at
+    current_updated_at = current.reload.updated_at
+
+    assert_no_difference -> { root.all_versions.count } do
+      result = mcp(
+        rpc("tools/call", name: "update_memory",
+          arguments: {memory_id: root.id.to_s, title: "Must roll back", content: ""}),
+        token: @full_token.raw_token
+      )
+
+      assert result.dig("result", "isError")
+      assert_includes result.dig("result", "content", 0, "text"),
+        I18n.t("activerecord.errors.models.memory.attributes.content.blank_overwrite")
+    end
+
+    assert_equal "Blank v1", root.reload.title
+    assert_equal "", root.content.body.content
+    assert_equal root_updated_at, root.updated_at
+    assert_equal "Nonblank v2", current.reload.title
+    assert_equal "Existing current body", current.content.body.content
+    assert_equal current_updated_at, current.updated_at
   end
 
   test "update_memory preserves multiline content when content is omitted" do
