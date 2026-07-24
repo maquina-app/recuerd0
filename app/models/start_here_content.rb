@@ -259,6 +259,98 @@ module StartHereContent
 
         See the full agents guide at `/agents` for detailed workflows and examples.
       MARKDOWN
+    },
+    {
+      title: "_MAP",
+      tags: ["getting-started", "map"],
+      pinned: true,
+      content: <<~MARKDOWN
+        # _MAP
+
+        Read this first, every session — you or your AI tool. One line per entry, each written the way you'd actually ask for it.
+
+        ## Start here
+        - **Why recuerd0** — what this tool is and the problem it solves
+        - **Quick Manual** — accounts, workspaces, day-to-day use
+        - **The API** · **The CLI** · **The Agent** — connect your tools
+
+        ## Your project (replace these as you go)
+        - **Continuation Brief** — where things stand and what's next. Read second.
+        - **Hub — Project Conventions** — an example hub. Rename it, or delete it.
+        - **_INDEX — Decisions** — one line per decision you lock.
+        - **Why this shape** — the 60-second explanation of this structure. Delete once it's yours.
+
+        Keep the map flat until ~20 memories; past that, group clusters behind hub memories. Write every line in the words you'd ask with — "where do the images live", not only "storage architecture" — so cold sessions can route themselves.
+      MARKDOWN
+    },
+    {
+      title: "Continuation Brief",
+      tags: ["getting-started", "continuation"],
+      pinned: false,
+      content: <<~MARKDOWN
+        # Continuation Brief
+
+        The first thing a new session reads after the map. Keep it short; rewrite it at the end of each working session, and save it as a new version — the version history becomes your session log.
+
+        ## State
+
+        Where the work stands right now. Two or three sentences.
+
+        ## Open
+
+        Questions or threads you deliberately left unresolved.
+
+        ## Next session
+
+        The first thing to pick up next time.
+      MARKDOWN
+    },
+    {
+      title: "_INDEX — Decisions",
+      tags: ["getting-started", "index"],
+      pinned: false,
+      content: <<~MARKDOWN
+        # _INDEX — Decisions
+
+        One line per locked decision, so any of them is two hops from the map. Number them D001, D002, … and give each its own memory: what you chose, why, and what you rejected. Decisions don't get edited later — a changed mind is a new decision that points back.
+
+        | ID | Title |
+        |---|---|
+        |  |  |
+      MARKDOWN
+    },
+    {
+      title: "Hub — Project Conventions",
+      tags: ["getting-started", "hub"],
+      pinned: false,
+      content: <<~MARKDOWN
+        # Hub — Project Conventions
+
+        An example hub. A hub is a routing table, not an essay: one line of judgment per entry, pointing at the memory that holds the detail. Replace these lines with your own, or delete the hub — you won't need hubs until the map gets crowded.
+
+        - **Naming and structure** — how files, branches, and modules are named; where new code goes
+        - **Architecture notes** — the boundaries that aren't obvious from the code, and why they're there
+        - **Setup and environments** — how to run it locally, what the environments are, where secrets live (not the secrets themselves)
+      MARKDOWN
+    },
+    {
+      title: "Why this shape",
+      tags: ["getting-started", "overview"],
+      pinned: false,
+      content: <<~MARKDOWN
+        # Why this shape
+
+        Every session — yours or your AI tool's — starts cold. This skeleton is the fastest way from cold to working:
+
+        - **The map** is the front door. One read orients a session; every memory stays reachable within two hops.
+        - **The brief** carries state between sessions, versioned so history is the log.
+        - **The index** keeps locked decisions one line — and one hop — away.
+        - **Hubs** come later, when the map gets crowded.
+
+        Search here is keyword search: fast and literal, best for exact names and identifiers. The map is how a session finds things described in its own words — which is why its lines are written the way you'd ask.
+
+        None of this is required. Delete any of it; a blank workspace is a fine workspace. The stance is curation over accumulation: a few memories you trust beat a pile you don't. Full reasoning: docs/blueprint.md in the recuerd0 repository.
+      MARKDOWN
     }
   ].freeze
 end

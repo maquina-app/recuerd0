@@ -153,15 +153,26 @@ class AccountTest < ActiveSupport::TestCase
     assert workspace.present?, "Expected 'Start Here' workspace to exist"
   end
 
-  test "seed_start_here_workspace creates five memories" do
+  test "seed_start_here_workspace creates ten memories" do
     account = accounts(:one)
     user = users(:one)
 
     account.seed_start_here_workspace(user)
 
     workspace = account.workspaces.find_by(name: "Start Here")
-    assert_equal 5, workspace.memories.count
-    assert_equal ["Why recuerd0", "Quick Manual", "The API", "The CLI", "The Agent"],
+    assert_equal 10, workspace.memories.count
+    assert_equal [
+      "Why recuerd0",
+      "Quick Manual",
+      "The API",
+      "The CLI",
+      "The Agent",
+      "_MAP",
+      "Continuation Brief",
+      "_INDEX — Decisions",
+      "Hub — Project Conventions",
+      "Why this shape"
+    ],
       workspace.memories.order(:id).pluck(:title)
   end
 
@@ -190,7 +201,7 @@ class AccountTest < ActiveSupport::TestCase
     end
   end
 
-  test "seed_start_here_workspace pins Why recuerd0 for user" do
+  test "seed_start_here_workspace pins Why recuerd0 and _MAP for user" do
     account = accounts(:one)
     user = users(:one)
 
@@ -199,9 +210,11 @@ class AccountTest < ActiveSupport::TestCase
     workspace = account.workspaces.find_by(name: "Start Here")
     why_memory = workspace.memories.find_by(title: "Why recuerd0")
     assert why_memory.pinned_by?(user), "Expected 'Why recuerd0' to be pinned for user"
+    map_memory = workspace.memories.find_by(title: "_MAP")
+    assert map_memory.pinned_by?(user), "Expected '_MAP' to be pinned for user"
 
     # Other memories should not be pinned
-    workspace.memories.where.not(title: "Why recuerd0").each do |memory|
+    workspace.memories.where.not(title: ["Why recuerd0", "_MAP"]).each do |memory|
       assert_not memory.pinned_by?(user), "Expected '#{memory.title}' NOT to be pinned"
     end
   end
@@ -216,7 +229,7 @@ class AccountTest < ActiveSupport::TestCase
     assert user.persisted?
     workspace = user.account.workspaces.find_by(name: "Start Here")
     assert workspace.present?, "Expected 'Start Here' workspace on new account"
-    assert_equal 5, workspace.memories.count
+    assert_equal 10, workspace.memories.count
   end
 
   # Anonymize users test
