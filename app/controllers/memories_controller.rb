@@ -72,9 +72,16 @@ class MemoriesController < ApplicationController
   end
 
   def update
-    @memory.update_with_content(memory_params)
+    @memory = @memory.resolve_current_version
+
+    if @memory.current_version?
+      @memory.update_with_content(memory_params)
+    else
+      @memory.errors.add(:base, :historical_version_immutable)
+    end
 
     if @memory.errors.empty?
+      @memory.root_memory.touch
       track_event("memory.update", resource: @memory)
       respond_to do |format|
         format.html { redirect_to [@workspace, @memory], notice: t(".updated") }

@@ -11,6 +11,8 @@ en:
               too_long: "Description is too long (maximum is %{count} characters)."
         memory:
           attributes:
+            base:
+              historical_version_immutable: "historical versions are immutable — update the current version or create a new version"
             title:
               too_long: "Title is too long (maximum is %{count} characters)."
             content:

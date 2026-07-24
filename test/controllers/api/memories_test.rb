@@ -1,6 +1,9 @@
 require "test_helper"
 
 class ApiMemoriesTest < ActionDispatch::IntegrationTest
+  HISTORICAL_VERSION_ERROR =
+    "historical versions are immutable — update the current version or create a new version"
+
   setup do
     @workspace = workspaces(:one)
     @memory = memories(:one)
@@ -83,6 +86,157 @@ class ApiMemoriesTest < ActionDispatch::IntegrationTest
     json = JSON.parse(response.body)
     assert_equal "Updated Title", json["title"]
     assert_equal "Updated content", json["content"]["body"]
+  end
+
+  test "root id update targets the current version and remains visible through reads" do
+    workspace = @workspace.account.workspaces.create!(name: "Root Update")
+    original_body = "# Version one\n\nKeep these bytes.\n"
+    root = Memory.create_with_content(workspace,
+      title: "Version one", content: original_body, tags: ["v1"])
+    current = root.create_version!(
+      title: "Version two", content: "Replace me", tags: ["v2"]
+    )
+
+    assert_no_difference -> { root.all_versions.count } do
+      patch workspace_memory_url(workspace, root, format: :json),
+        params: {
+          memory: {
+            title: "Updated current",
+            content: "# Updated\n\nCurrent body.\n",
+            tags: ["current", "edited"]
+          }
+        },
+        headers: auth_headers(@full_access_token)
+    end
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal current.id, json["id"]
+    assert_equal "Updated current", json["title"]
+    assert_equal "# Updated\n\nCurrent body.\n", json["content"]["body"]
+    assert_equal ["current", "edited"], json["tags"]
+
+    current.reload
+    assert_equal "Updated current", current.title
+    assert_equal "# Updated\n\nCurrent body.\n", current.content.body.content
+    assert_equal ["current", "edited"], current.tags
+    assert_equal "Version one", root.reload.title
+    assert_equal ["v1"], root.tags
+    assert_equal original_body.bytes, root.content.body.content.bytes
+
+    get workspace_memory_url(workspace, root, format: :json),
+      headers: auth_headers(@read_only_token)
+    assert_response :success
+    shown = JSON.parse(response.body)
+    assert_equal "Updated current", shown["title"]
+    assert_equal "# Updated\n\nCurrent body.\n", shown["content"]["body"]
+
+    get workspace_memories_url(workspace, format: :json),
+      headers: auth_headers(@read_only_token)
+    assert_response :success
+    listed = JSON.parse(response.body).find { |memory| memory["id"] == current.id }
+    assert_equal "Updated current", listed["title"]
+    assert_equal ["current", "edited"], listed["tags"]
+  end
+
+  test "historical child update is rejected without changing data or touching the root" do
+    workspace = @workspace.account.workspaces.create!(name: "Immutable History")
+    root = Memory.create_with_content(workspace,
+      title: "Version one", content: "First body", tags: ["v1"], category: "general")
+    historical = root.create_version!(
+      title: "Version two", content: "Second body", tags: ["v2"], category: "discovery"
+    )
+    current = root.create_version!(
+      title: "Version three", content: "Third body", tags: ["v3"], category: "decision"
+    )
+    root.update_column(:updated_at, 2.days.ago)
+    root_updated_at = root.reload.updated_at
+
+    assert_no_difference -> { root.all_versions.count } do
+      patch workspace_memory_url(workspace, historical, format: :json),
+        params: {
+          memory: {
+            title: "Corrupted",
+            content: "Corrupted body",
+            tags: ["corrupted"],
+            category: "preference"
+          }
+        },
+        headers: auth_headers(@full_access_token)
+    end
+
+    assert_response :unprocessable_entity
+    json = JSON.parse(response.body)
+    assert_equal "VALIDATION_ERROR", json.dig("error", "code")
+    assert_equal HISTORICAL_VERSION_ERROR, json.dig("error", "message")
+    assert_equal [HISTORICAL_VERSION_ERROR], json.dig("error", "details", "base")
+
+    historical.reload
+    assert_equal "Version two", historical.title
+    assert_equal "Second body", historical.content.body.content
+    assert_equal ["v2"], historical.tags
+    assert_equal "discovery", historical.category
+
+    current.reload
+    assert_equal "Version three", current.title
+    assert_equal "Third body", current.content.body.content
+    assert_equal ["v3"], current.tags
+    assert_equal "decision", current.category
+
+    root.reload
+    assert_equal "Version one", root.title
+    assert_equal "First body", root.content.body.content
+    assert_equal root_updated_at, root.updated_at
+  end
+
+  test "current child update touches the root and moves it first in updated order" do
+    workspace = @workspace.account.workspaces.create!(name: "Current Child Update")
+    root = Memory.create_with_content(workspace, title: "Version one", content: "First")
+    current = root.create_version!(title: "Version two", content: "Second")
+    other = Memory.create_with_content(workspace, title: "Other memory", content: "Other")
+    root.update_column(:updated_at, 2.days.ago)
+    other.update_column(:updated_at, 1.day.ago)
+    root_updated_at = root.reload.updated_at
+
+    travel_to 1.hour.from_now do
+      patch workspace_memory_url(workspace, current, format: :json),
+        params: {memory: {title: "Direct current update"}},
+        headers: auth_headers(@full_access_token)
+    end
+
+    assert_response :success
+    assert_equal "Direct current update", JSON.parse(response.body)["title"]
+    assert_operator root.reload.updated_at, :>, root_updated_at
+
+    get workspace_memories_url(workspace, format: :json),
+      params: {sort: "updated_at", direction: "desc"},
+      headers: auth_headers(@read_only_token)
+    assert_response :success
+    assert_equal current.id, JSON.parse(response.body).first["id"]
+  end
+
+  test "root id blank overwrite checks the non-empty current body and touches nothing" do
+    workspace = @workspace.account.workspaces.create!(name: "Current Blank Guard")
+    root = Memory.create_with_content(workspace, title: "Blank v1", content: "")
+    current = root.create_version!(title: "Nonblank v2", content: "Existing current body")
+    root.update_column(:updated_at, 2.days.ago)
+    current.update_column(:updated_at, 1.day.ago)
+    root_updated_at = root.reload.updated_at
+    current_updated_at = current.reload.updated_at
+
+    assert_no_difference -> { root.all_versions.count } do
+      patch workspace_memory_url(workspace, root, format: :json),
+        params: {memory: {title: "Must roll back", content: ""}},
+        headers: auth_headers(@full_access_token)
+    end
+
+    assert_response :unprocessable_entity
+    assert_equal "Blank v1", root.reload.title
+    assert_equal "", root.content.body.content
+    assert_equal root_updated_at, root.updated_at
+    assert_equal "Nonblank v2", current.reload.title
+    assert_equal "Existing current body", current.content.body.content
+    assert_equal current_updated_at, current.updated_at
   end
 
   test "metadata-only update preserves multiline content" do
