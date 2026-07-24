@@ -24,6 +24,15 @@ class Memory < ApplicationRecord
   scope :versions_of, ->(memory) { where(parent_memory_id: memory.id) }
   scope :by_category, ->(cat) { where(category: cat) if cat.present? && CATEGORIES.include?(cat) }
 
+  # Exact, case-sensitive tag match. Mirrors the API's proven predicate from
+  # MemoryFilterable#apply_tags_filter (deliberately case-sensitive — unlike the
+  # search scope's COLLATE NOCASE tag equality). Uses a bound placeholder, so
+  # the tag string is never interpolated into SQL.
+  scope :by_tag, ->(tag) {
+    next all if tag.blank?
+    where("EXISTS (SELECT 1 FROM json_each(memories.tags) WHERE json_each.value = ?)", tag)
+  }
+
   SEARCH_SORTS = %w[relevance updated created title].freeze
 
   # Within-workspace and MCP search. Long-enough queries combine the safe,
@@ -129,6 +138,7 @@ class Memory < ApplicationRecord
       end
     end
     sync_root_category!
+    sync_root_tags!
 
     self
   rescue ActiveRecord::RecordInvalid
@@ -197,6 +207,7 @@ class Memory < ApplicationRecord
       new_version.create_content!(body: attributes[:content] || content&.body&.content.to_s)
     end
     new_version.sync_root_category!
+    new_version.sync_root_tags!
 
     new_version
   rescue ActiveRecord::RecordInvalid
@@ -212,6 +223,17 @@ class Memory < ApplicationRecord
     root = root_memory
     current_category = root.current_version.category
     root.update_column(:category, current_category) if root.category != current_category
+  end
+
+  # Keep the root row's tags in sync with the current (latest) version's.
+  # The workspace list scopes latest_versions (root rows) but cards display the
+  # current version's tags; without this the by_tag filter reads the root's stale
+  # tags and would miss a versioned memory whose displayed tag differs. Mirrors
+  # sync_root_category! and is called at the same sites.
+  def sync_root_tags!
+    root = root_memory
+    current_tags = root.current_version.tags
+    root.update_column(:tags, current_tags) if root.tags != current_tags
   end
 
   # Human-readable version label
