@@ -87,5 +87,7 @@ class Account < ApplicationRecord
 
       memory.pin!(user) if memory_data[:pinned]
     end
+
+    workspace.memories.find_by!(title: "_MAP").touch
   end
 end
