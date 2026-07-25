@@ -58,6 +58,8 @@ Rails.application.routes.draw do
     resources :access_tokens, only: %i[create destroy], controller: "profile/access_tokens"
   end
 
+  post "onboarding/dismiss", to: "onboarding#dismiss", as: :onboarding_dismiss
+
   # Invitations (public — available in both modes for team member invites)
   resources :invitations, only: %i[show create], param: :token
 

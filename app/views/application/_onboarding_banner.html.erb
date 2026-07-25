@@ -1,0 +1,115 @@
+<%# locals: () %>
+<% token_created = onboarding_token_created? %>
+<% cli_connected = onboarding_cli_connected? %>
+<% first_content = onboarding_first_content? %>
+
+<%= render "components/card", css_classes: "mb-5", data: { onboarding_banner: true } do %>
+  <%= render "components/card/header", layout: :row do %>
+    <%= render "components/card/title", text: "Get your AI tools reading from this workspace" %>
+    <%= button_to "Dismiss",
+        onboarding_dismiss_path,
+        method: :post,
+        form: { class: "shrink-0" },
+        data: { component: "button", variant: "ghost", size: "sm" } %>
+  <% end %>
+
+  <%= render "components/card/content" do %>
+    <ol class="space-y-4">
+      <li
+        class="flex items-start gap-3"
+        data-onboarding-step="1"
+        data-state="<%= token_created ? "complete" : "incomplete" %>"
+      >
+        <% if token_created %>
+          <span
+            class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            data-onboarding-indicator
+            aria-hidden="true"
+          >
+            <%= icon_for(:check, class: "size-3.5") %>
+          </span>
+        <% else %>
+          <span
+            class="size-5 shrink-0 rounded-full border border-border bg-muted"
+            data-onboarding-indicator
+            aria-hidden="true"
+          ></span>
+        <% end %>
+        <div class="min-w-0">
+          <p class="text-sm font-medium">1. Create an access token</p>
+          <p class="mt-1 text-sm text-muted-foreground">
+            <%= link_to "Access Tokens", profile_path(anchor: "access-tokens"), class: "text-primary underline underline-offset-2" %>
+            — full access if your tools will write.
+          </p>
+        </div>
+      </li>
+
+      <li
+        class="flex items-start gap-3"
+        data-onboarding-step="2"
+        data-state="<%= cli_connected ? "complete" : "incomplete" %>"
+      >
+        <% if cli_connected %>
+          <span
+            class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            data-onboarding-indicator
+            aria-hidden="true"
+          >
+            <%= icon_for(:check, class: "size-3.5") %>
+          </span>
+        <% else %>
+          <span
+            class="size-5 shrink-0 rounded-full border border-border bg-muted"
+            data-onboarding-indicator
+            aria-hidden="true"
+          ></span>
+        <% end %>
+        <div class="min-w-0">
+          <p class="text-sm font-medium">2. Install the CLI and connect</p>
+          <p class="mt-1 text-sm text-muted-foreground">
+            <code>brew install maquina-app/tap/recuerd0</code>, then <code>recuerd0 account add</code>
+          </p>
+        </div>
+      </li>
+
+      <li
+        class="flex items-start gap-3"
+        data-onboarding-step="3"
+        data-state="<%= first_content ? "complete" : "incomplete" %>"
+      >
+        <% if first_content %>
+          <span
+            class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            data-onboarding-indicator
+            aria-hidden="true"
+          >
+            <%= icon_for(:check, class: "size-3.5") %>
+          </span>
+        <% else %>
+          <span
+            class="size-5 shrink-0 rounded-full border border-border bg-muted"
+            data-onboarding-indicator
+            aria-hidden="true"
+          ></span>
+        <% end %>
+        <div class="min-w-0">
+          <p class="text-sm font-medium">3. Import what you already have</p>
+          <p class="mt-1 text-sm text-muted-foreground">
+            <code>recuerd0 import propose &lt;path&gt;</code>, review the plan it writes, then <code>recuerd0 import commit</code>
+          </p>
+        </div>
+      </li>
+
+      <li class="pl-8" data-onboarding-step="4">
+        <p class="text-sm font-medium">4. Give your agent the skill</p>
+        <p class="mt-1 text-sm text-muted-foreground">
+          <code>recuerd0 skills install</code>, or the Claude Code plugin.
+        </p>
+      </li>
+    </ol>
+  <% end %>
+
+  <%= render "components/card/footer" do %>
+    <%= link_to "Full walkthrough", start_path, class: "text-sm font-medium text-primary underline underline-offset-2" %>
+  <% end %>
+<% end %>

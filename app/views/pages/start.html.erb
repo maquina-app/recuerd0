@@ -29,7 +29,7 @@
 
         <div class="endpoint-head">
           <h3>1. Create a token</h3>
-          <p>In the web app, open <strong>Access Tokens</strong>, create a token — full access if your tools will write, read only if you only want to serve context — and copy it when it appears. It will not be shown again.</p>
+          <p>In the web app, open <strong><%= link_to "Access Tokens", profile_path(anchor: "access-tokens") %></strong>, create a token — full access if your tools will write, read only if you only want to serve context — and copy it when it appears. It will not be shown again.</p>
         </div>
 
         <div class="endpoint-head">
@@ -124,6 +124,12 @@ recuerd0 import commit import.plan.yaml --yes --pretty</code></div>
           <h3>D001 — the first decision</h3>
           <p>A real decision in the full format — what was chosen, why, what was rejected — and the reason this workspace starts flat.</p>
         </div>
+
+        <div class="endpoint-head">
+          <h3>When it grows</h3>
+          <p>A hub is a routing-table memory for crowded territory: one line of judgment per entry, each pointing at the memory with the detail. It earns its place around twenty memories, when clusters start crowding the map — create the hub, move the cluster's map lines into it, and leave a single line on the map pointing there. The seeded D001 is the worked example of making, and recording, the call not to have one yet:</p>
+        </div>
+
         <div class="code-block">
           <div class="code-head"><span class="code-label">flat map → hub, later</span></div>
           <div class="code-body"><code>Today the map is flat:

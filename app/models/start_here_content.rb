@@ -9,14 +9,7 @@ module StartHereContent
 
         Read this first, every session — you or your AI tool. One line per entry, written the way you'd actually ask for it.
 
-        ## Start here
-
-        1. **Create an access token** — Access Tokens in the sidebar. Pick full access if your tools will write.
-        2. **Install the CLI and connect** — `brew install maquina-app/tap/recuerd0`, then `recuerd0 account add`.
-        3. **Import what you already have** — `recuerd0 import propose <path>`, review the plan it writes, then `recuerd0 import commit`.
-        4. **Give your agent the skill** — `recuerd0 skills install`, or the Claude Code plugin.
-
-        The full walkthrough, including connecting over MCP: __BASE_URL__/start
+        The full walkthrough — CLI, import, skills, MCP: __BASE_URL__/start
 
         ## Your workspace
 
@@ -43,8 +36,8 @@ module StartHereContent
 
         ## Open
 
-        - Import existing notes — step 3 on the map.
-        - Give your agent the skill — step 4 on the map.
+        - Import existing notes — the walkthrough covers it: __BASE_URL__/start
+        - Give your agent the skill — `recuerd0 skills install`
 
         ## Next session
 

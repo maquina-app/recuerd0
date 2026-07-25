@@ -30,6 +30,24 @@ class OnboardingMailerTest < ActionMailer::TestCase
     assert_match "API token", email.text_part.body.to_s
   end
 
+  test "api_token links both parts to Profile Access Tokens" do
+    user = users(:member)
+    email = OnboardingMailer.api_token(user)
+    html = email.html_part.body.to_s
+    text = email.text_part.body.to_s
+    access_tokens_url = Rails.application.routes.url_helpers.profile_url(
+      host: "example.com",
+      anchor: "access-tokens"
+    )
+
+    assert_includes html, "Profile → Access Tokens"
+    assert_includes text, "Profile → Access Tokens"
+    assert_includes html, access_tokens_url
+    assert_includes text, access_tokens_url
+    assert_not_includes html, "Settings → Access Tokens"
+    assert_not_includes text, "Settings → Access Tokens"
+  end
+
   test "api_token skipped when user already has tokens" do
     user = users(:one) # has access_tokens in fixtures
     email = OnboardingMailer.api_token(user)

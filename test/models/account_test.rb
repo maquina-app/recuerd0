@@ -186,6 +186,7 @@ class AccountTest < ActiveSupport::TestCase
     map_memory = workspace.memories.find_by!(title: "_MAP")
     assert_includes map_memory.content.body.content, "https://example.com/start"
     assert_not_includes map_memory.content.body.content, "recuerd0.ai"
+    assert_not_includes map_memory.content.body.content, "Create an access token"
 
     decision_memory = workspace.memories.find_by!(
       title: "D001 — Keep this workspace flat until ~20 memories"

@@ -1,5 +1,5 @@
 <%# locals: (user:, access_tokens:) %>
-<%= render "components/card" do %>
+<%= render "components/card", id: "access-tokens" do %>
   <%= render "components/card/header" do %>
     <%= render "components/card/title", text: t("profiles.access_tokens.title") %>
     <%= render "components/card/description", text: t("profiles.access_tokens.description") %>

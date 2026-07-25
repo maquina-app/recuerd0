@@ -104,6 +104,10 @@
     </div>
   </div>
 
+  <% if @workspace.active? && show_onboarding_banner? %>
+    <%= render "application/onboarding_banner" %>
+  <% end %>
+
   <%# ===== STATE BANNERS ===== %>
   <% if @workspace.archived? %>
     <%= render "components/alert", variant: :default, icon: :archive, css_classes: "mb-5" do %>

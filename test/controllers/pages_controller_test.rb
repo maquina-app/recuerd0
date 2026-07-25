@@ -25,8 +25,11 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "workspace context endpoint"
     assert_includes response.body, "./.claude/skills"
     assert_select "#shape h3", text: "D001 — the first decision"
+    assert_select "#shape h3", text: "When it grows"
+    assert_select "#shape p", text: /A hub is a routing-table memory for crowded territory/
     assert_includes response.body, "Hub — Payments"
 
+    assert_select "#path a[href='#{profile_path(anchor: "access-tokens")}']", text: "Access Tokens"
     assert_select "#doors a[href='#{cli_path}']"
     assert_select "#doors a[href='#{mcp_path}']"
     assert_select "#shape a[href='https://github.com/maquina-app/recuerd0/blob/main/docs/blueprint.md']"

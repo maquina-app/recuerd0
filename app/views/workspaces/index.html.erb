@@ -21,6 +21,10 @@
     <% end %>
   </div>
 
+  <% if show_onboarding_banner? %>
+    <%= render "application/onboarding_banner" %>
+  <% end %>
+
   <% if @workspaces.any? %>
     <%# Toolbar: sort & view segmented controls (search lives in the sidebar header) %>
     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
