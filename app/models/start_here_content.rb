@@ -7,23 +7,25 @@ module StartHereContent
       content: <<~MARKDOWN
         # _MAP
 
+        Read this first, every session — you or your AI tool. One line per entry, written the way you'd actually ask for it.
+
         ## Start here
 
-        1. **Create a personal access token** — in the web app, open **Access Tokens**, choose **Full access**, and copy it when it appears.
-        2. **Install and connect the CLI** — one account command makes every CLI workflow available.
-        3. **Import what you already know** — propose a plan, review it, then commit it.
-        4. **Connect your AI tools** — install the skill, use the Claude Code plugin, or connect over MCP.
+        1. **Create an access token** — Access Tokens in the sidebar. Pick full access if your tools will write.
+        2. **Install the CLI and connect** — `brew install maquina-app/tap/recuerd0`, then `recuerd0 account add`.
+        3. **Import what you already have** — `recuerd0 import propose <path>`, review the plan it writes, then `recuerd0 import commit`.
+        4. **Give your agent the skill** — `recuerd0 skills install`, or the Claude Code plugin.
 
-        Full walkthrough: https://recuerd0.ai/start
+        The full walkthrough, including connecting over MCP: https://recuerd0.ai/start
 
         ## Your workspace
 
-        - **Continuation Brief** — where things stand and what's next. Read second.
+        - **Continuation Brief** — where things stand and what's next. Read it second; rewrite it as a new version when a session ends.
         - **_INDEX — Decisions** — one line per decision you lock.
 
         ## Why this shape
 
-        Every session — yours or your AI tool's — starts cold. The map is the front door: one read orients the session and keeps every memory reachable within two hops. The brief carries state between sessions, versioned so history becomes the log. The index keeps locked decisions one line — and one hop — away. Keep the map flat until ~20 memories; past that, group clusters behind hub memories. Write every line in the words you'd ask with — "where do the images live", not only "storage architecture" — so cold sessions can route themselves.
+        The map is the front door: one read orients a cold session, and every memory stays reachable within two hops. The brief carries state between sessions — its version history becomes your log. The index keeps locked decisions one hop away. Keep the map flat until around twenty memories; past that, group clusters behind hub memories. Search is keyword search, fast and literal, so write map lines and titles the way you'd ask for them. None of this is required — delete anything; a blank workspace is a fine workspace. Full reasoning: https://recuerd0.ai/start or docs/blueprint.md in the repository.
       MARKDOWN
     },
     {
