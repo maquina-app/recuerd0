@@ -14,6 +14,23 @@ The stance throughout is convention over configuration. The skeleton carries you
 
 **Hubs** are routing tables for crowded territory: one line of judgment per entry, pointing at the memory with the detail. Hubs are not seeded — you grow into them. You don't need them on day one. Keep the map flat until around twenty memories; when a cluster forms, promote it behind a hub and give the map one line pointing there.
 
+The move, illustrated:
+
+```
+Today the map is flat:
+- Payments retry logic — #12
+- Payments webhook quirks — #15
+- Payments provider limits — #18
+
+Past ~20 memories, those lines collapse into one:
+- Payments — routing in Hub — Payments (#22)
+
+And the hub is just a routing table — one line of judgment per entry:
+- Why retries drop large jobs — #12
+- Which webhook events lie — #15
+- Provider limits that bit us — #18
+```
+
 ## Finding things
 
 Search in recuerd0 is keyword search — fast and literal. It is at its best with exact names and identifiers: a decision number, a function name, a phrase you know is in the text. It is not the tool for questions phrased in your own words; the map is. That division of labor is deliberate: the map encodes the judgment that keyword search doesn't have, and writing map lines in asking-vocabulary is what makes it pay off. Semantic search is on the roadmap as an opt-in addition; the map-first habit will still be the backbone when it lands.

@@ -16,7 +16,7 @@ module StartHereContent
         3. **Import what you already have** — `recuerd0 import propose <path>`, review the plan it writes, then `recuerd0 import commit`.
         4. **Give your agent the skill** — `recuerd0 skills install`, or the Claude Code plugin.
 
-        The full walkthrough, including connecting over MCP: https://recuerd0.ai/start
+        The full walkthrough, including connecting over MCP: __BASE_URL__/start
 
         ## Your workspace
 
@@ -25,7 +25,7 @@ module StartHereContent
 
         ## Why this shape
 
-        The map is the front door: one read orients a cold session, and every memory stays reachable within two hops. The brief carries state between sessions — its version history becomes your log. The index keeps locked decisions one hop away. Keep the map flat until around twenty memories; past that, group clusters behind hub memories. Search is keyword search, fast and literal, so write map lines and titles the way you'd ask for them. None of this is required — delete anything; a blank workspace is a fine workspace. Full reasoning: https://recuerd0.ai/start or docs/blueprint.md in the repository.
+        The map is the front door: one read orients a cold session, and every memory stays reachable within two hops. The brief carries state between sessions — its version history becomes your log. The index keeps locked decisions one hop away. Keep the map flat until around twenty memories; past that, group clusters behind hub memories. Search is keyword search, fast and literal, so write map lines and titles the way you'd ask for them. None of this is required — delete anything; a blank workspace is a fine workspace. Full reasoning: __BASE_URL__/start or docs/blueprint.md in the repository.
       MARKDOWN
     },
     {
@@ -39,15 +39,16 @@ module StartHereContent
 
         ## State
 
-        Where the work stands right now. Two or three sentences.
+        Fresh workspace. The starter shape is in place: the map, this brief, the decisions index, and the first decision (D001).
 
         ## Open
 
-        Questions or threads you deliberately left unresolved.
+        - Import existing notes — step 3 on the map.
+        - Give your agent the skill — step 4 on the map.
 
         ## Next session
 
-        The first thing to pick up next time.
+        Read the map, then pick up the first open item above.
       MARKDOWN
     },
     {
@@ -61,7 +62,40 @@ module StartHereContent
 
         | ID | Title |
         |---|---|
-        |  |  |
+        | D001 | Keep this workspace flat until ~20 memories |
+      MARKDOWN
+    },
+    {
+      title: "D001 — Keep this workspace flat until ~20 memories",
+      tags: ["getting-started", "d001"],
+      category: "decision",
+      pinned: false,
+      content: <<~MARKDOWN
+        # D001 — Keep this workspace flat until ~20 memories
+
+        **Chose:** No hubs yet. Every memory gets its own line on the map, written the way you'd ask for it.
+
+        **Why:** A map you can read in one pass beats structure you have to navigate. Hubs earn their place when the map gets crowded — around twenty memories — not before.
+
+        **Rejected:** Seeding an example hub. A hub that routes to nothing breaks the rule that every line points at a real memory; a hub that routes to filler is volume for its own sake.
+
+        **What this defers, illustrated.** Today the map is flat:
+
+        - Payments retry logic — #12
+        - Payments webhook quirks — #15
+        - Payments provider limits — #18
+
+        Past ~20 memories, those lines collapse into one:
+
+        - Payments — routing in Hub — Payments (#22)
+
+        And the hub is just a routing table — one line of judgment per entry:
+
+        - Why retries drop large jobs — #12
+        - Which webhook events lie — #15
+        - Provider limits that bit us — #18
+
+        When a real cluster forms here, promote it the same way: create the hub, move the lines, leave one line on the map. A changed mind about this decision is a new decision — D002 — that points back here.
       MARKDOWN
     }
   ].freeze

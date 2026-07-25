@@ -16,11 +16,15 @@
       <%= link_to "CLI", cli_path, class: "header-link" %>
       <%= link_to "Agents", agents_path, class: "header-link" %>
       <%= link_to "MCP", mcp_path, class: "header-link" %>
-      <%= link_to "Pricing", pricing_path, class: "header-link" %>
+      <% if Rails.application.config.multi_tenant %>
+        <%= link_to "Pricing", pricing_path, class: "header-link" %>
+      <% end %>
       <% if authenticated? %>
         <%= link_to "Go to App \u2192", workspaces_path, class: "header-cta" %>
-      <% else %>
+      <% elsif Rails.application.config.multi_tenant %>
         <%= link_to "Get Started", new_registration_path, class: "header-cta" %>
+      <% else %>
+        <%= link_to "Sign In", new_session_path, class: "header-cta" %>
       <% end %>
     </div>
   </div>

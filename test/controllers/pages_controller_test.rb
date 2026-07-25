@@ -24,6 +24,8 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "propose → review → commit"
     assert_includes response.body, "workspace context endpoint"
     assert_includes response.body, "./.claude/skills"
+    assert_select "#shape h3", text: "D001 — the first decision"
+    assert_includes response.body, "Hub — Payments"
 
     assert_select "#doors a[href='#{cli_path}']"
     assert_select "#doors a[href='#{mcp_path}']"
@@ -31,6 +33,22 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".code-block[data-controller='clipboard']", count: 4
     assert_select ".code-block button[data-action='clipboard#copy']", count: 4
     assert_select ".code-block code[data-clipboard-target='source']", count: 4
+  end
+
+  test "GET start renders without hosted-service links in single-tenant mode" do
+    original_multi_tenant = Rails.application.config.multi_tenant
+    Rails.application.config.multi_tenant = false
+
+    get start_url
+
+    assert_response :success
+    assert_select "a[href='#{pricing_path}']", count: 0
+    assert_select "a[href='#{terms_path}']", count: 0
+    assert_select "a[href='#{privacy_path}']", count: 0
+    assert_select "a[href='#{license_path}']", count: 0
+    assert_select "a[href='#{new_registration_path}']", count: 0
+  ensure
+    Rails.application.config.multi_tenant = original_multi_tenant
   end
 
   test "marketing navigation lists Getting Started before API Docs" do
@@ -59,7 +77,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
     first_link = references.at_css("[data-sidebar-part='menu-item']:first-child a")
     assert_equal "Getting Started", first_link.at_css("span").text.strip
-    assert_equal "https://recuerd0.ai/start", first_link["href"]
+    assert_equal start_path, first_link["href"]
     assert_equal "_blank", first_link["target"]
     assert first_link.at_css("svg"), "Expected Getting Started to render an icon"
     assert_includes first_link.to_html, "M4.5 16.5"

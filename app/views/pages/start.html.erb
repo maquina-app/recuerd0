@@ -29,7 +29,7 @@
 
         <div class="endpoint-head">
           <h3>1. Create a token</h3>
-          <p>In the web app, open <strong>Access Tokens</strong>, create a full-access personal token, and copy it when it appears. It will not be shown again.</p>
+          <p>In the web app, open <strong>Access Tokens</strong>, create a token — full access if your tools will write, read only if you only want to serve context — and copy it when it appears. It will not be shown again.</p>
         </div>
 
         <div class="endpoint-head">
@@ -102,7 +102,7 @@ recuerd0 import commit import.plan.yaml --yes --pretty</code></div>
       <div class="api-section" id="shape">
         <div class="resource-header">
           <h2>What you start with</h2>
-          <p>Every new account includes a <strong>Start Here</strong> workspace with three memories in a deliberate reading order.</p>
+          <p>Every new account includes a <strong>Start Here</strong> workspace with four memories in a deliberate reading order.</p>
         </div>
 
         <div class="endpoint-head">
@@ -119,6 +119,28 @@ recuerd0 import commit import.plan.yaml --yes --pretty</code></div>
           <h3>_INDEX — Decisions</h3>
           <p>One line per locked decision, each pointing to the memory that records what you chose and why.</p>
         </div>
+
+        <div class="endpoint-head">
+          <h3>D001 — the first decision</h3>
+          <p>A real decision in the full format — what was chosen, why, what was rejected — and the reason this workspace starts flat.</p>
+        </div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">flat map → hub, later</span></div>
+          <div class="code-body"><code>Today the map is flat:
+- Payments retry logic — #12
+- Payments webhook quirks — #15
+- Payments provider limits — #18
+
+Past ~20 memories, those lines collapse into one:
+- Payments — routing in Hub — Payments (#22)
+
+And the hub is just a routing table — one line of judgment per entry:
+- Why retries drop large jobs — #12
+- Which webhook events lie — #15
+- Provider limits that bit us — #18</code></div>
+        </div>
+
+        <p class="doc-note">None of this is enforced — rename it, trim it, or delete any of it; a blank workspace is a fine workspace.</p>
 
         <p class="doc-note">
           Read the full reasoning in the

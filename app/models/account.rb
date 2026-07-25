@@ -81,8 +81,9 @@ class Account < ApplicationRecord
     StartHereContent::MEMORIES.each do |memory_data|
       memory = Memory.create_with_content(workspace,
         title: memory_data[:title],
-        content: memory_data[:content],
+        content: memory_data[:content].gsub("__BASE_URL__", Rails.application.config.x.app_base_url),
         tags: memory_data[:tags],
+        category: memory_data[:category],
         source: "system")
 
       memory.pin!(user) if memory_data[:pinned]

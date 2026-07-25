@@ -44,7 +44,7 @@
     <%= render "components/sidebar/menu_item" do %>
       <%= render "components/sidebar/menu_button",
           title: "Getting Started",
-          url: "https://recuerd0.ai/start",
+          url: start_path,
           icon_name: :rocket,
           target: "_blank" %>
     <% end %>
@@ -52,7 +52,7 @@
     <%= render "components/sidebar/menu_item" do %>
       <%= render "components/sidebar/menu_button",
           title: "API Docs",
-          url: "https://recuerd0.ai/api-docs",
+          url: api_docs_path,
           icon_name: :file_text,
           target: "_blank" %>
     <% end %>
@@ -60,7 +60,7 @@
     <%= render "components/sidebar/menu_item" do %>
       <%= render "components/sidebar/menu_button",
           title: "CLI",
-          url: "https://recuerd0.ai/cli",
+          url: cli_path,
           icon_name: :gallery_vertical_end,
           target: "_blank" %>
     <% end %>
@@ -68,7 +68,7 @@
     <%= render "components/sidebar/menu_item" do %>
       <%= render "components/sidebar/menu_button",
           title: "Agents",
-          url: "https://recuerd0.ai/agents",
+          url: agents_path,
           icon_name: :brain,
           target: "_blank" %>
     <% end %>
@@ -76,7 +76,7 @@
     <%= render "components/sidebar/menu_item" do %>
       <%= render "components/sidebar/menu_button",
           title: "MCP",
-          url: "https://recuerd0.ai/mcp",
+          url: mcp_path,
           icon_name: :plug,
           target: "_blank" %>
     <% end %>
