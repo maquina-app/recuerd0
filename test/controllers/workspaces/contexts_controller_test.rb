@@ -39,6 +39,24 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
     assert json["generated_at"].present?
   end
 
+  test "fresh account context contains only the map and continuation brief" do
+    user = Account.create_with_user(
+      email_address: "fresh-context@example.com",
+      password: "password123",
+      password_confirmation: "password123"
+    )
+    workspace = user.account.workspaces.find_by!(name: "Start Here")
+    token = user.access_tokens.create!(permission: "read_only")
+
+    get workspace_context_url(workspace, format: :json),
+      headers: auth_headers(token.raw_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal ["_MAP", "Continuation Brief"].sort,
+      json["pinned_memories"].map { |memory| memory["title"] }.sort
+  end
+
   test "returns 200 for archived workspace with empty pinned" do
     archived = workspaces(:archived)
 

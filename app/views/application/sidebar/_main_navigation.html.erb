@@ -43,6 +43,14 @@
   <%= render "components/sidebar/menu" do %>
     <%= render "components/sidebar/menu_item" do %>
       <%= render "components/sidebar/menu_button",
+          title: "Getting Started",
+          url: "https://recuerd0.ai/start",
+          icon_name: :rocket,
+          target: "_blank" %>
+    <% end %>
+
+    <%= render "components/sidebar/menu_item" do %>
+      <%= render "components/sidebar/menu_button",
           title: "API Docs",
           url: "https://recuerd0.ai/api-docs",
           icon_name: :file_text,

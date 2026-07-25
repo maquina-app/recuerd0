@@ -1,6 +1,62 @@
 require "test_helper"
 
 class PagesControllerTest < ActionDispatch::IntegrationTest
+  test "GET start renders the getting started guide without authentication" do
+    get start_url
+
+    assert_response :success
+    assert_select "body.marketing"
+    assert_select "title", text: "Getting Started"
+    assert_select ".doc-header .header-section", text: "Getting Started"
+    assert_select "h1", text: "Getting Started"
+
+    assert_select ".doc-sidebar a[href='#path'][data-section='path']", text: "The path"
+    assert_select ".doc-sidebar a[href='#doors'][data-section='doors']", text: "Choose a door"
+    assert_select ".doc-sidebar a[href='#shape'][data-section='shape']", text: "Why this shape"
+    assert_select "#path h2", text: "The path"
+    assert_select "#doors h2", text: "Choose a door"
+    assert_select "#shape h2", text: "Why this shape"
+
+    assert_select "#doors a[href='#{cli_path}']"
+    assert_select "#doors a[href='#{mcp_path}']"
+    assert_select "#shape a[href='https://github.com/maquina-app/recuerd0/blob/main/docs/blueprint.md']"
+    assert_select ".code-block[data-controller='clipboard']", count: 4
+    assert_select ".code-block button[data-action='clipboard#copy']", count: 4
+    assert_select ".code-block code[data-clipboard-target='source']", count: 4
+  end
+
+  test "marketing navigation lists Getting Started before API Docs" do
+    get pricing_url
+
+    assert_response :success
+    assert_select ".nav-links" do
+      links = css_select("a").map { |link| [link.text.strip, link["href"]] }
+      assert_operator links.index(["Getting Started", start_path]), :<, links.index(["API Docs", api_docs_path])
+    end
+    assert_select ".nav-overlay-links" do
+      links = css_select("a").map { |link| [link.text.strip, link["href"]] }
+      assert_operator links.index(["Getting Started", start_path]), :<, links.index(["API Docs", api_docs_path])
+    end
+  end
+
+  test "authenticated application navigation leads References with Getting Started and a rocket" do
+    sign_in_as(users(:one))
+    get workspaces_url
+
+    assert_response :success
+    references = css_select("[data-sidebar-part='group']").find do |group|
+      group.at_css("[data-sidebar-part='group-label']")&.text&.strip == "References"
+    end
+    assert references, "Expected a References sidebar group"
+
+    first_link = references.at_css("[data-sidebar-part='menu-item']:first-child a")
+    assert_equal "Getting Started", first_link.at_css("span").text.strip
+    assert_equal "https://recuerd0.ai/start", first_link["href"]
+    assert_equal "_blank", first_link["target"]
+    assert first_link.at_css("svg"), "Expected Getting Started to render an icon"
+    assert_includes first_link.to_html, "M4.5 16.5"
+  end
+
   test "GET terms renders terms of service without authentication" do
     get terms_url
     assert_response :success
@@ -45,5 +101,23 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Queries under three characters"
     assert_includes response.body, "relevance"
     assert_select "a[href='/api-docs#search']"
+  end
+
+  test "GET CLI docs includes the skills command" do
+    get cli_url
+
+    assert_response :success
+    assert_select ".doc-sidebar a[href='#cmd-skills']", text: "skills"
+    assert_select "#cmd-skills h3", text: "skills"
+    assert_select "#cmd-skills code", text: "recuerd0 skills install"
+    assert_select "#cmd-skills code", text: "recuerd0 skills install --force"
+  end
+
+  test "GET agents docs links to the CLI skills alternative" do
+    get agents_url
+
+    assert_response :success
+    assert_select "#claude-code-plugin a[href='#{cli_path}']", text: "CLI"
+    assert_select "#claude-code-plugin code", text: "recuerd0 skills install"
   end
 end

@@ -29,6 +29,7 @@ Rails.application.routes.draw do
     resource :registration, only: %i[new create]
 
     # Marketing / legal pages
+    get "start", to: "pages#start", as: :start
     get "api-docs", to: "pages#api_docs", as: :api_docs
     get "cli", to: "pages#cli", as: :cli
     get "agents", to: "pages#agents", as: :agents

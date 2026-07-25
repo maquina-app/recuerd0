@@ -37,6 +37,7 @@
       <a href="#cmd-version" class="sidebar-link" data-section="cmd-version" data-action="click->marketing-sidebar#closeSidebar">version</a>
       <a href="#cli-memory-links" class="sidebar-link" data-section="cli-memory-links" data-action="click->marketing-sidebar#closeSidebar">Memory Links</a>
       <a href="#cmd-search" class="sidebar-link" data-section="cmd-search" data-action="click->marketing-sidebar#closeSidebar">search</a>
+      <a href="#cmd-skills" class="sidebar-link" data-section="cmd-skills" data-action="click->marketing-sidebar#closeSidebar">skills</a>
     </div>
     <div class="sidebar-group">
       <div class="sidebar-heading">Reference</div>
@@ -440,6 +441,25 @@ recuerd0 search "deploy" --workspace 3
 <span class="cc"># Column filter</span>
 recuerd0 search "title:architecture"</code></div>
         </div>
+      </div>
+
+      <%# — skills — %>
+      <div class="endpoint" id="cmd-skills">
+        <div class="endpoint-head">
+          <h3>skills</h3>
+          <p>Install the bundled recuerd0 skill for supported AI coding agents detected on your machine. Existing copies are left untouched unless you explicitly replace them.</p>
+        </div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">install</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 skills install</code></div>
+        </div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">replace existing copies</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 skills install --force</code></div>
+        </div>
+        <p class="doc-note">
+          Run the command again after upgrading the CLI to install the latest bundled skill. Use <code>--force</code> only when you want to overwrite an existing installed copy.
+        </p>
       </div>
 
       <div class="section-divider"></div>
