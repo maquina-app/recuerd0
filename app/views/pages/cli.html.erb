@@ -447,19 +447,19 @@ recuerd0 search "title:architecture"</code></div>
       <div class="endpoint" id="cmd-skills">
         <div class="endpoint-head">
           <h3>skills</h3>
-          <p>Install the bundled recuerd0 skill for supported AI coding agents detected on your machine. Existing copies are left untouched unless you explicitly replace them.</p>
+          <p>Copy the bundled recuerd0 skill to <code>./.claude/skills</code> by default. Use <code>--global</code> for <code>~/.claude/skills</code>, <code>--target &lt;directory&gt;</code> for any directory, and <code>--force</code> to overwrite an existing copy.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
-          <div class="code-head"><span class="code-label">install</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">recuerd0 skills install</code></div>
+          <div class="code-head"><span class="code-label">usage</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 skills install [--global] [--target &lt;directory&gt;] [--force]</code></div>
         </div>
         <div class="code-block" data-controller="clipboard">
-          <div class="code-head"><span class="code-label">replace existing copies</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">recuerd0 skills install --force</code></div>
+          <div class="code-head"><span class="code-label">examples</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 skills install
+recuerd0 skills install --global
+recuerd0 skills install --target ./.cursor/skills
+recuerd0 skills install --force</code></div>
         </div>
-        <p class="doc-note">
-          Run the command again after upgrading the CLI to install the latest bundled skill. Use <code>--force</code> only when you want to overwrite an existing installed copy.
-        </p>
       </div>
 
       <div class="section-divider"></div>

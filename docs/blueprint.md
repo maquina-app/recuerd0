@@ -1,6 +1,6 @@
 # The workspace blueprint
 
-Every new recuerd0 account starts with a Start Here workspace that is already shaped: a map, a continuation brief, and a decisions index. This page is the reasoning behind that shape — what each piece is for, when to grow past it, and how to leave it behind entirely.
+Every new recuerd0 account starts with a Start Here workspace that is already shaped: a map that doubles as the getting-started checklist, a continuation brief, and a decisions index. This page is the reasoning behind that shape — what each piece is for, when to grow past it, and how to leave it behind entirely.
 
 The stance throughout is convention over configuration. The skeleton carries you fast at the start; nothing about it is enforced, and every piece of it can be deleted.
 
@@ -12,7 +12,7 @@ The stance throughout is convention over configuration. The skeleton carries you
 
 **_INDEX — Decisions** holds one line per locked decision, numbered D001, D002, and so on. Each decision gets its own memory: what you chose, why, what you rejected. Decisions don't get edited afterward — a changed mind is a new decision that points back at the old one. The index means any decision is two hops from the map.
 
-**Hubs** are routing tables for crowded territory: one line of judgment per entry, pointing at the memory with the detail. Hubs are not seeded — you grow into them. Keep the map flat until around twenty memories; when a cluster forms, promote it behind a hub and give the map one line pointing there.
+**Hubs** are routing tables for crowded territory: one line of judgment per entry, pointing at the memory with the detail. Hubs are not seeded — you grow into them. You don't need them on day one. Keep the map flat until around twenty memories; when a cluster forms, promote it behind a hub and give the map one line pointing there.
 
 ## Finding things
 

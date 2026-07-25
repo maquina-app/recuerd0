@@ -1,5 +1,5 @@
 <% content_for :title, "Getting Started" %>
-<% content_for :description, "Start using recuerd0 with your AI tools: connect through the portable agent skill, Claude Code plugin, or MCP, then grow the three-memory starter shape." %>
+<% content_for :description, "Go from zero to working with recuerd0: create a token, connect the CLI, import knowledge, install the agent skill, or connect over MCP." %>
 <% content_for :canonical_url, "https://recuerd0.ai/start" %>
 
 <div data-controller="marketing-sidebar">
@@ -8,9 +8,9 @@
   <aside class="doc-sidebar" data-marketing-sidebar-target="sidebar">
     <div class="sidebar-group">
       <div class="sidebar-heading">Getting Started</div>
-      <a href="#path" class="sidebar-link active" data-section="path" data-action="click->marketing-sidebar#closeSidebar">The path</a>
-      <a href="#doors" class="sidebar-link" data-section="doors" data-action="click->marketing-sidebar#closeSidebar">Choose a door</a>
-      <a href="#shape" class="sidebar-link" data-section="shape" data-action="click->marketing-sidebar#closeSidebar">Why this shape</a>
+      <a href="#path" class="sidebar-link active" data-section="path" data-action="click->marketing-sidebar#closeSidebar">From zero to working</a>
+      <a href="#doors" class="sidebar-link" data-section="doors" data-action="click->marketing-sidebar#closeSidebar">Three doors, one knowledge base</a>
+      <a href="#shape" class="sidebar-link" data-section="shape" data-action="click->marketing-sidebar#closeSidebar">What you start with</a>
     </div>
   </aside>
 
@@ -18,59 +18,48 @@
     <div class="doc-content">
       <div class="page-header">
         <h1>Getting Started</h1>
-        <p>Start with the three memories already waiting for you, connect the AI tools you use, and let the structure grow only when your work asks for it.</p>
+        <p>Five steps take you from a new account to a working knowledge base your tools can use.</p>
       </div>
 
       <div class="api-section" id="path">
         <div class="resource-header">
-          <h2>The path</h2>
-          <p>A new account opens with a <strong>Start Here</strong> workspace and three memories in a deliberate reading order.</p>
+          <h2>From zero to working</h2>
+          <p>Set up access, bring in what matters, and give your tools a way through the same front door.</p>
         </div>
 
         <div class="endpoint-head">
-          <h3>1. Read the map</h3>
-          <p><code>_MAP</code> is the front door. Read it first in every session and add one plain-language line whenever you add a memory.</p>
+          <h3>1. Create a token</h3>
+          <p>In the web app, open <strong>Access Tokens</strong>, create a full-access personal token, and copy it when it appears. It will not be shown again.</p>
         </div>
 
         <div class="endpoint-head">
-          <h3>2. Carry the work forward</h3>
-          <p><code>Continuation Brief</code> is the second read. Rewrite it at the end of a working session with the current state, open threads, and the next thing to do.</p>
-        </div>
-
-        <div class="endpoint-head">
-          <h3>3. Keep decisions reachable</h3>
-          <p><code>_INDEX — Decisions</code> holds one line per locked decision. Give the full decision its own memory and point to it from the index.</p>
-        </div>
-      </div>
-
-      <div class="section-divider"></div>
-
-      <div class="api-section" id="doors">
-        <div class="resource-header">
-          <h2>Choose a door</h2>
-          <p>Connect through the portable agent skill, the native Claude Code plugin, or MCP. They all reach the same memories.</p>
-        </div>
-
-        <div class="endpoint-head">
-          <h3>Portable agent skill</h3>
-          <p>Install the <%= link_to "recuerd0 CLI", cli_path %>, add an account with a personal access token, then install the skill for the agents detected on your machine.</p>
+          <h3>2. Install and connect the CLI</h3>
+          <p>Install the <%= link_to "recuerd0 CLI", cli_path %> with Homebrew, then add your account using the token you just created.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
-          <div class="code-head"><span class="code-label">install the CLI</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">curl -fsSL https://github.com/maquina-app/recuerd0-cli/releases/latest/download/install.sh | sh</code></div>
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">brew install maquina-app/tap/recuerd0
+recuerd0 account add personal --api-url https://your-server.com --token YOUR_TOKEN</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>3. Import what you already know</h3>
+          <p>Import is propose → review → commit. Propose writes <code>import.plan.yaml</code> without touching the server; review that plan before you approve any writes.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
-          <div class="code-head"><span class="code-label">connect your account</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">recuerd0 account add personal --api-url https://recuerd0.ai --token YOUR_TOKEN</code></div>
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 import propose ./vault --workspace 12 --pretty
+<span class="cc"># Review import.plan.yaml, then commit the plan you approved</span>
+recuerd0 import commit import.plan.yaml --yes --pretty</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>4. Install the skill</h3>
+          <p><code>recuerd0 skills install</code> copies the bundled skill to <code>./.claude/skills</code> by default. Use <code>--global</code> for <code>~/.claude/skills</code>, <code>--target &lt;directory&gt;</code> for any directory, and <code>--force</code> to overwrite an existing copy.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
-          <div class="code-head"><span class="code-label">install the skill</span><%= render "pages/code_copy" %></div>
+          <div class="code-head"><span class="code-label">CLI</span><%= render "pages/code_copy" %></div>
           <div class="code-body"><code data-clipboard-target="source">recuerd0 skills install</code></div>
-        </div>
-
-        <div class="endpoint-head">
-          <h3>Claude Code plugin</h3>
-          <p>Claude Code can install the same memory workflow directly from the maquina marketplace.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">Claude Code</span><%= render "pages/code_copy" %></div>
@@ -79,8 +68,32 @@
         </div>
 
         <div class="endpoint-head">
+          <h3>5. Connect over MCP</h3>
+          <p>Claude Desktop, Claude.ai, and other MCP clients can use the <%= link_to "remote MCP server", mcp_path %> with browser-based authorization. The workspace context endpoint returns the pinned map and continuation brief as a compact wake-up snapshot.</p>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="api-section" id="doors">
+        <div class="resource-header">
+          <h2>Three doors, one knowledge base</h2>
+          <p>Choose the surface that fits the work. Every door reaches the same workspaces, memories, versions, and search.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Web</h3>
+          <p>Write, edit, pin, organize, and review memories in the browser.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>CLI + API</h3>
+          <p>Use the <%= link_to "CLI", cli_path %> for terminal workflows and the API for scripts and automation.</p>
+        </div>
+
+        <div class="endpoint-head">
           <h3>MCP</h3>
-          <p>For Claude Desktop, Claude.ai, and other MCP clients, use the <%= link_to "remote MCP server", mcp_path %>. Authorization happens in the browser, so there is no personal token to paste into the client.</p>
+          <p>Use <%= link_to "MCP", mcp_path %> when an AI client should search, read, and write memories during the conversation.</p>
         </div>
       </div>
 
@@ -88,13 +101,24 @@
 
       <div class="api-section" id="shape">
         <div class="resource-header">
-          <h2>Why this shape</h2>
-          <p>Every session starts cold. The map orients it, the brief carries live state, and the index keeps durable decisions within two hops.</p>
+          <h2>What you start with</h2>
+          <p>Every new account includes a <strong>Start Here</strong> workspace with three memories in a deliberate reading order.</p>
         </div>
 
-        <p class="doc-note">
-          Keep the map flat until it gets crowded. Hubs are not seeded — you grow into them when a real cluster appears. Nothing about the starter workspace is enforced: rename it, trim it, or replace it with a shape that works better for you.
-        </p>
+        <div class="endpoint-head">
+          <h3>_MAP</h3>
+          <p>The front door and getting-started checklist. Read it first, then keep every memory reachable within two hops.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Continuation Brief</h3>
+          <p>The second read: current state, open threads, and the first thing to pick up next session.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>_INDEX — Decisions</h3>
+          <p>One line per locked decision, each pointing to the memory that records what you chose and why.</p>
+        </div>
 
         <p class="doc-note">
           Read the full reasoning in the

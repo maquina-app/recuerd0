@@ -7,16 +7,23 @@ module StartHereContent
       content: <<~MARKDOWN
         # _MAP
 
-        Read this first, every session — you or your AI tool. One line per entry, each written the way you'd actually ask for it.
-
         ## Start here
+
+        1. **Create a personal access token** — in the web app, open **Access Tokens**, choose **Full access**, and copy it when it appears.
+        2. **Install and connect the CLI** — one account command makes every CLI workflow available.
+        3. **Import what you already know** — propose a plan, review it, then commit it.
+        4. **Connect your AI tools** — install the skill, use the Claude Code plugin, or connect over MCP.
+
+        Full walkthrough: https://recuerd0.ai/start
+
+        ## Your workspace
+
         - **Continuation Brief** — where things stand and what's next. Read second.
         - **_INDEX — Decisions** — one line per decision you lock.
 
-        ## Learn the system
-        - **Getting Started** — the path, the doors into recuerd0, and why this shape works: https://recuerd0.ai/start
+        ## Why this shape
 
-        Keep the map flat until ~20 memories; past that, group clusters behind hub memories. Write every line in the words you'd ask with — "where do the images live", not only "storage architecture" — so cold sessions can route themselves.
+        Every session — yours or your AI tool's — starts cold. The map is the front door: one read orients the session and keeps every memory reachable within two hops. The brief carries state between sessions, versioned so history becomes the log. The index keeps locked decisions one line — and one hop — away. Keep the map flat until ~20 memories; past that, group clusters behind hub memories. Write every line in the words you'd ask with — "where do the images live", not only "storage architecture" — so cold sessions can route themselves.
       MARKDOWN
     },
     {

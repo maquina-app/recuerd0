@@ -10,12 +10,20 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".doc-header .header-section", text: "Getting Started"
     assert_select "h1", text: "Getting Started"
 
-    assert_select ".doc-sidebar a[href='#path'][data-section='path']", text: "The path"
-    assert_select ".doc-sidebar a[href='#doors'][data-section='doors']", text: "Choose a door"
-    assert_select ".doc-sidebar a[href='#shape'][data-section='shape']", text: "Why this shape"
-    assert_select "#path h2", text: "The path"
-    assert_select "#doors h2", text: "Choose a door"
-    assert_select "#shape h2", text: "Why this shape"
+    assert_select ".doc-sidebar a[href='#path'][data-section='path']", text: "From zero to working"
+    assert_select ".doc-sidebar a[href='#doors'][data-section='doors']", text: "Three doors, one knowledge base"
+    assert_select ".doc-sidebar a[href='#shape'][data-section='shape']", text: "What you start with"
+    assert_select "#path h2", text: "From zero to working"
+    assert_select "#doors h2", text: "Three doors, one knowledge base"
+    assert_select "#shape h2", text: "What you start with"
+    assert_select "#path h3", text: "1. Create a token"
+    assert_select "#path h3", text: "2. Install and connect the CLI"
+    assert_select "#path h3", text: "3. Import what you already know"
+    assert_select "#path h3", text: "4. Install the skill"
+    assert_select "#path h3", text: "5. Connect over MCP"
+    assert_includes response.body, "propose → review → commit"
+    assert_includes response.body, "workspace context endpoint"
+    assert_includes response.body, "./.claude/skills"
 
     assert_select "#doors a[href='#{cli_path}']"
     assert_select "#doors a[href='#{mcp_path}']"
@@ -109,15 +117,19 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".doc-sidebar a[href='#cmd-skills']", text: "skills"
     assert_select "#cmd-skills h3", text: "skills"
-    assert_select "#cmd-skills code", text: "recuerd0 skills install"
-    assert_select "#cmd-skills code", text: "recuerd0 skills install --force"
+    assert_select "#cmd-skills code", text: /recuerd0 skills install/
+    assert_select "#cmd-skills code", text: /--global/
+    assert_select "#cmd-skills code", text: /--target/
+    assert_select "#cmd-skills code", text: /--force/
   end
 
   test "GET agents docs links to the CLI skills alternative" do
     get agents_url
 
     assert_response :success
-    assert_select "#claude-code-plugin a[href='#{cli_path}']", text: "CLI"
+    assert_select "#claude-code-plugin a[href='#{cli_path}']", text: "CLI page"
     assert_select "#claude-code-plugin code", text: "recuerd0 skills install"
+    assert_includes response.body, "drops the same skill into"
+    assert_includes response.body, "./.claude/skills"
   end
 end
