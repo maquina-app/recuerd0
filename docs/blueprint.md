@@ -1,6 +1,6 @@
 # The workspace blueprint
 
-Every new recuerd0 account starts with a Start Here workspace that is already shaped: a map that doubles as the getting-started checklist, a continuation brief, and a decisions index. This page is the reasoning behind that shape — what each piece is for, when to grow past it, and how to leave it behind entirely.
+Every new recuerd0 account starts with **My Workspace**, already shaped around four memories: _MAP, Continuation Brief, _INDEX — Decisions, and D001 — the first decision. This page is the reasoning behind that shape — what each piece is for, when to grow past it, and how to leave it behind entirely.
 
 The stance throughout is convention over configuration. The skeleton carries you fast at the start; nothing about it is enforced, and every piece of it can be deleted.
 

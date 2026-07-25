@@ -11,7 +11,7 @@ class Account < ApplicationRecord
 
   # Creates an account with a user in a single transaction.
   # The first user is always an admin.
-  # Seeds a "Start Here" workspace with onboarding memories.
+  # Seeds a "My Workspace" workspace with onboarding memories.
   # Returns the user on success, or an invalid user object on failure.
   def self.create_with_user(email_address:, password:, password_confirmation:)
     transaction do
@@ -76,7 +76,7 @@ class Account < ApplicationRecord
   end
 
   def seed_start_here_workspace(user)
-    workspace = workspaces.create!(name: "Start Here")
+    workspace = workspaces.create!(name: "My Workspace")
 
     StartHereContent::MEMORIES.each do |memory_data|
       memory = Memory.create_with_content(workspace,

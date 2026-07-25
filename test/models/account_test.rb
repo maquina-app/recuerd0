@@ -157,14 +157,14 @@ class AccountTest < ActiveSupport::TestCase
   end
 
   # seed_start_here_workspace tests
-  test "seed_start_here_workspace creates Start Here workspace" do
+  test "seed_start_here_workspace creates My Workspace" do
     account = accounts(:one)
     user = users(:one)
 
     account.seed_start_here_workspace(user)
 
-    workspace = account.workspaces.find_by(name: "Start Here")
-    assert workspace.present?, "Expected 'Start Here' workspace to exist"
+    workspace = account.workspaces.find_by(name: "My Workspace")
+    assert workspace.present?, "Expected 'My Workspace' to exist"
   end
 
   test "seed_start_here_workspace creates four memories in boot order" do
@@ -173,7 +173,7 @@ class AccountTest < ActiveSupport::TestCase
 
     account.seed_start_here_workspace(user)
 
-    workspace = account.workspaces.find_by(name: "Start Here")
+    workspace = account.workspaces.find_by(name: "My Workspace")
     assert_equal 4, workspace.memories.count
     assert_equal [
       "_MAP",
@@ -204,7 +204,7 @@ class AccountTest < ActiveSupport::TestCase
 
     account.seed_start_here_workspace(user)
 
-    workspace = account.workspaces.find_by(name: "Start Here")
+    workspace = account.workspaces.find_by(name: "My Workspace")
     workspace.memories.each do |memory|
       assert memory.content.present?, "Expected memory '#{memory.title}' to have content"
       assert memory.content.body.content.present?, "Expected memory '#{memory.title}' to have non-empty body"
@@ -217,7 +217,7 @@ class AccountTest < ActiveSupport::TestCase
 
     account.seed_start_here_workspace(user)
 
-    workspace = account.workspaces.find_by(name: "Start Here")
+    workspace = account.workspaces.find_by(name: "My Workspace")
     workspace.memories.each do |memory|
       assert_equal "system", memory.source, "Expected memory '#{memory.title}' source to be 'system'"
     end
@@ -229,7 +229,7 @@ class AccountTest < ActiveSupport::TestCase
 
     account.seed_start_here_workspace(user)
 
-    workspace = account.workspaces.find_by(name: "Start Here")
+    workspace = account.workspaces.find_by(name: "My Workspace")
     map_memory = workspace.memories.find_by(title: "_MAP")
     assert map_memory.pinned_by?(user), "Expected '_MAP' to be pinned for user"
     brief_memory = workspace.memories.find_by(title: "Continuation Brief")
@@ -242,7 +242,7 @@ class AccountTest < ActiveSupport::TestCase
     assert_not decision_memory.pinned_by?(user), "Expected 'D001' NOT to be pinned"
   end
 
-  test "create_with_user seeds Start Here workspace" do
+  test "create_with_user seeds My Workspace" do
     user = Account.create_with_user(
       email_address: "starhere@test.com",
       password: "password123",
@@ -250,8 +250,8 @@ class AccountTest < ActiveSupport::TestCase
     )
 
     assert user.persisted?
-    workspace = user.account.workspaces.find_by(name: "Start Here")
-    assert workspace.present?, "Expected 'Start Here' workspace on new account"
+    workspace = user.account.workspaces.find_by(name: "My Workspace")
+    assert workspace.present?, "Expected 'My Workspace' on new account"
     assert_equal 4, workspace.memories.count
   end
 

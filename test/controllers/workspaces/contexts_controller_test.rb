@@ -45,7 +45,7 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
       password: "password123",
       password_confirmation: "password123"
     )
-    workspace = user.account.workspaces.find_by!(name: "Start Here")
+    workspace = user.account.workspaces.find_by!(name: "My Workspace")
     token = user.access_tokens.create!(permission: "read_only")
 
     get workspace_context_url(workspace, format: :json),

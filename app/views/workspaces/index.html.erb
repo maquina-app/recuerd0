@@ -8,6 +8,10 @@
 <% end %>
 
 <div class="mx-auto max-w-5xl">
+  <% if show_onboarding_banner? %>
+    <%= render "application/onboarding_banner" %>
+  <% end %>
+
   <%# Header %>
   <div class="mb-6 flex items-center justify-between gap-4">
     <div class="flex items-baseline gap-2.5">
@@ -20,10 +24,6 @@
       <%= t("workspaces.index.new_workspace") %>
     <% end %>
   </div>
-
-  <% if show_onboarding_banner? %>
-    <%= render "application/onboarding_banner" %>
-  <% end %>
 
   <% if @workspaces.any? %>
     <%# Toolbar: sort & view segmented controls (search lives in the sidebar header) %>

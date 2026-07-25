@@ -68,7 +68,7 @@ class FirstRunControllerTest < ActionDispatch::IntegrationTest
     assert cookies[:session_id].present?
   end
 
-  test "POST create seeds Start Here workspace" do
+  test "POST create seeds My Workspace" do
     delete_all_accounts
 
     post first_run_url, params: {
@@ -80,8 +80,8 @@ class FirstRunControllerTest < ActionDispatch::IntegrationTest
     }
 
     user = User.find_by(email_address: "admin@example.com")
-    workspace = user.account.workspaces.find_by(name: "Start Here")
-    assert workspace.present?, "Expected 'Start Here' workspace after first run"
+    workspace = user.account.workspaces.find_by(name: "My Workspace")
+    assert workspace.present?, "Expected 'My Workspace' after first run"
   end
 
   test "POST create with invalid params re-renders form" do

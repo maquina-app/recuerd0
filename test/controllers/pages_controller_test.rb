@@ -16,6 +16,9 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#path h2", text: "From zero to working"
     assert_select "#doors h2", text: "Three doors, one knowledge base"
     assert_select "#shape h2", text: "What you start with"
+    assert_select "#shape .resource-header p",
+      text: "Every new account includes My Workspace with four memories in a deliberate reading order: " \
+        "_MAP, Continuation Brief, _INDEX — Decisions, and D001 — the first decision."
     assert_select "#path h3", text: "1. Create a token"
     assert_select "#path h3", text: "2. Install and connect the CLI"
     assert_select "#path h3", text: "3. Import what you already know"

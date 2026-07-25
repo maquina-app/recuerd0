@@ -13,6 +13,10 @@
 <% filter_active = @category.present? || @memory_query.present? %>
 
 <div class="mx-auto max-w-5xl">
+  <% if @workspace.active? && show_onboarding_banner? %>
+    <%= render "application/onboarding_banner" %>
+  <% end %>
+
   <%# ===== HEADER ===== %>
   <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div class="flex min-w-0 items-start gap-3.5">
@@ -103,10 +107,6 @@
       <% end %>
     </div>
   </div>
-
-  <% if @workspace.active? && show_onboarding_banner? %>
-    <%= render "application/onboarding_banner" %>
-  <% end %>
 
   <%# ===== STATE BANNERS ===== %>
   <% if @workspace.archived? %>
