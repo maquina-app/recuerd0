@@ -38,6 +38,8 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_banner_progress(completed: 1, active_step: 2)
+    assert_select "[data-onboarding-step='2'][data-expanded='true'] p",
+      text: "One account command makes every CLI workflow available."
     assert_only_commands(
       "brew install maquina-app/tap/recuerd0",
       "recuerd0 account add"
@@ -152,6 +154,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
   test "dismissal persists for the current user across reloads and sessions" do
     post onboarding_dismiss_url
 
+    assert_response :see_other
     assert_redirected_to workspaces_path
     assert_in_delta Time.current, @user.reload.onboarding_dismissed_at, 1.second
 
@@ -215,14 +218,20 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       assert_select "[data-onboarding-step='4'] p.text-muted-foreground",
         text: "4. Give your agent the skill"
       assert_select "a[href='#{profile_path(anchor: "access-tokens")}']", text: "Access Tokens"
-      assert_select "a[href='#{start_path}']", text: "Full walkthrough"
+      assert_select "a[href='#{start_path}'].text-primary.underline.underline-offset-2",
+        text: "Full walkthrough"
       assert_select "code", count: 0
     end
 
     banner = css_select(BANNER_SELECTOR).first
+    walkthrough = banner.at_css("a[href='#{start_path}']")
+
     assert_equal "section", banner.name
+    assert_includes banner["class"].split, "mb-4"
+    assert_not_includes banner["class"].split, "mb-6"
     assert_no_match(/\b(?:bg-|border|rounded|shadow)/, banner["class"].to_s)
     assert_select "#{BANNER_SELECTOR} [data-card-part]", count: 0
+    assert_equal "text-primary underline underline-offset-2", walkthrough["class"]
   end
 
   def assert_banner_progress(completed:, active_step:)
@@ -248,6 +257,13 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
         )
       end
     end
+
+    banner = css_select(BANNER_SELECTOR).first
+    header = banner.element_children.first
+    left_group, right_group = header.element_children
+
+    assert_not_includes left_group.text, "#{completed}/4 completed"
+    assert_includes right_group.text, "#{completed}/4 completed"
   end
 
   def assert_only_commands(*commands)

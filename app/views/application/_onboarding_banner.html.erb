@@ -13,18 +13,20 @@ else
   4
 end %>
 
-<section class="mb-6" data-onboarding-banner="true">
+<section class="mb-4" data-onboarding-banner="true">
   <div class="mb-4 flex items-center justify-between gap-4">
-    <div class="flex items-baseline gap-2.5">
+    <div>
       <p class="font-mono text-[12px] font-medium">Getting started</p>
-      <p class="text-[13px] text-muted-foreground"><%= completed_count %>/4 completed</p>
     </div>
 
-    <%= button_to "Dismiss",
-      onboarding_dismiss_path,
-      method: :post,
-      form: {class: "shrink-0"},
-      class: "text-[13px] text-muted-foreground hover:text-foreground" %>
+    <div class="flex items-center gap-3">
+      <p class="text-[13px] text-muted-foreground"><%= completed_count %>/4 completed</p>
+      <%= button_to "Dismiss",
+        onboarding_dismiss_path,
+        method: :post,
+        form: {class: "shrink-0"},
+        class: "text-[13px] text-muted-foreground hover:text-foreground" %>
+    </div>
   </div>
 
   <ol class="space-y-3.5">
@@ -87,6 +89,9 @@ end %>
         <p class="text-sm <%= active_step == 2 ? "font-medium text-foreground" : "text-muted-foreground" %>">2. Install the CLI and connect</p>
         <% if active_step == 2 %>
           <p class="mt-1 text-sm text-muted-foreground">
+            One account command makes every CLI workflow available.
+          </p>
+          <p class="mt-2 text-sm text-muted-foreground">
             <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">brew install maquina-app/tap/recuerd0</code>,
             then
             <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 account add</code>
@@ -153,6 +158,6 @@ end %>
   </ol>
 
   <div class="mt-4 ml-[30px]">
-    <%= link_to "Full walkthrough", start_path, class: "text-[13px] text-muted-foreground underline underline-offset-2 hover:text-foreground" %>
+    <%= link_to "Full walkthrough", start_path, class: "text-primary underline underline-offset-2" %>
   </div>
 </section>
