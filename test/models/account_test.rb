@@ -223,23 +223,81 @@ class AccountTest < ActiveSupport::TestCase
     end
   end
 
-  test "seed_start_here_workspace pins exactly the map and continuation brief for user" do
+  test "seed_start_here_workspace persists and pins the seed-defined defaults in creation order" do
     account = accounts(:one)
     user = users(:one)
 
     account.seed_start_here_workspace(user)
 
     workspace = account.workspaces.find_by(name: "My Workspace")
-    map_memory = workspace.memories.find_by(title: "_MAP")
-    assert map_memory.pinned_by?(user), "Expected '_MAP' to be pinned for user"
-    brief_memory = workspace.memories.find_by(title: "Continuation Brief")
-    assert brief_memory.pinned_by?(user), "Expected 'Continuation Brief' to be pinned for user"
-    index_memory = workspace.memories.find_by(title: "_INDEX — Decisions")
-    assert_not index_memory.pinned_by?(user), "Expected '_INDEX — Decisions' NOT to be pinned"
-    decision_memory = workspace.memories.find_by(
-      title: "D001 — Keep this workspace flat until ~20 memories"
+    seeded = workspace.memories.order(:id).to_a
+    expected_defaults = StartHereContent::MEMORIES.map { |entry| entry[:pinned] }
+
+    assert_equal expected_defaults, seeded.map(&:default_pinned?)
+    assert_equal seeded.zip(expected_defaults).filter_map { |memory, pinned| memory.id if pinned },
+      user.pins.for_memories
+        .where(pinnable_id: workspace.memories.select(:id))
+        .order(:pinnable_id)
+        .pluck(:pinnable_id)
+  end
+
+  test "ordinary memories are not default pinned" do
+    memory = Memory.create_with_content(
+      workspaces(:one),
+      title: "Ordinary",
+      content: "Not an account default"
     )
-    assert_not decision_memory.pinned_by?(user), "Expected 'D001' NOT to be pinned"
+
+    assert_not memory.default_pinned?
+  end
+
+  test "new teammates receive active account defaults once and duplicate pins are skipped" do
+    account = Account.create!(name: "Team defaults")
+    creator = account.users.create!(
+      email_address: "default-creator@example.com",
+      password: "password",
+      role: "admin"
+    )
+    account.seed_start_here_workspace(creator)
+    defaults = account.workspaces.first.memories.where(default_pinned: true).order(:id).to_a
+    archived_workspace = account.workspaces.create!(
+      name: "Archived defaults",
+      archived_at: Time.current
+    )
+    archived_default = Memory.create_with_content(
+      archived_workspace,
+      title: "Inactive default",
+      content: "Do not pin",
+      default_pinned: true
+    )
+
+    teammate = account.users.create!(
+      email_address: "default-teammate@example.com",
+      password: "password",
+      role: "member"
+    )
+
+    assert_equal defaults.map(&:id),
+      teammate.pins.for_memories.order(:pinnable_id).pluck(:pinnable_id)
+    assert_not teammate.pins.exists?(pinnable: archived_default)
+    assert_no_difference -> { teammate.pins.count } do
+      teammate.send(:pin_account_defaults)
+    end
+  end
+
+  test "creating a user in an unseeded account does not raise or create pins" do
+    account = Account.create!(name: "Blank account")
+
+    user = assert_nothing_raised do
+      account.users.create!(
+        email_address: "blank-account@example.com",
+        password: "password",
+        role: "admin"
+      )
+    end
+
+    assert_predicate user, :persisted?
+    assert_empty user.pins
   end
 
   test "create_with_user seeds My Workspace" do

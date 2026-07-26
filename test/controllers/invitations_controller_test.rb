@@ -24,6 +24,16 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create registers user under invited account" do
+    workspace = @account.workspaces.create!(name: "Invitation defaults")
+    defaults = 2.times.map do |index|
+      Memory.create_with_content(
+        workspace,
+        title: "Default #{index}",
+        content: "Body #{index}",
+        default_pinned: true
+      )
+    end
+
     assert_difference("@account.users.count") do
       post invitations_url, params: {
         token: @token,
@@ -39,6 +49,8 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil new_user
     assert_equal @account, new_user.account
     assert new_user.member?
+    assert_equal defaults.map(&:id),
+      new_user.pins.for_memories.order(:pinnable_id).pluck(:pinnable_id)
     assert_redirected_to workspaces_path
   end
 

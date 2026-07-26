@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_25_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_26_000000) do
   create_table "access_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
@@ -133,6 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_000000) do
   create_table "memories", force: :cascade do |t|
     t.string "category", default: "general", null: false
     t.datetime "created_at", null: false
+    t.boolean "default_pinned", default: false, null: false
     t.integer "parent_memory_id"
     t.string "source"
     t.text "tags"
@@ -144,6 +145,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_000000) do
     t.index ["parent_memory_id", "version"], name: "index_memories_on_parent_memory_id_and_version"
     t.index ["parent_memory_id"], name: "index_memories_on_parent_memory_id"
     t.index ["version"], name: "index_memories_on_version"
+    t.index ["workspace_id", "default_pinned"], name: "index_memories_on_workspace_id_and_default_pinned"
     t.index ["workspace_id"], name: "index_memories_on_workspace_id"
   end
 

@@ -140,6 +140,13 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "release notes"
     assert_includes response.body, "raw multi-term FTS5 query"
     assert_select "a[href='/mcp#memory-search']"
+    assert_includes response.body,
+      "When the requesting user has no pinned memories in the workspace, the endpoint returns " \
+        "the most recently updated memories instead of an empty list; context_source reports " \
+        "pins or recent."
+    assert_select "#get-workspace-context", text: /pinned_memories.*deprecated/m
+    assert_select "#get-workspace-context", text: /stats\.returned_pinned.*deprecated/m
+    assert_select "#get-workspace-context", text: /stable root memory IDs/
   end
 
   test "GET MCP docs renders the safe phrase and exact-tag search contract" do
@@ -153,6 +160,20 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Queries under three characters"
     assert_includes response.body, "relevance"
     assert_select "a[href='/api-docs#search']"
+
+    rows = css_select("#tools tbody tr")
+    assert_equal 13, rows.size
+    names = rows.map { |row| row.at_css("td:first-child").text.strip }
+    assert_equal Mcp::ToolDefinitions::NAMES.sort, names.sort
+    types = rows.map { |row| row.css("td")[1].text.strip }
+    assert_equal 8, types.count("read")
+    assert_equal 5, types.count("write")
+    assert_not_includes response.body.downcase, "six tools"
+
+    permissions = css_select("#scopes .doc-note").first.text
+    McpController::WRITE_TOOLS.each do |tool|
+      assert_includes permissions, tool
+    end
   end
 
   test "GET CLI docs includes the skills command" do

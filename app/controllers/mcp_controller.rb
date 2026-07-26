@@ -78,7 +78,12 @@ class McpController < ApplicationController
     # never whatever a client might pass. Stamped only on record creation.
     arguments["source"] = mcp_client_name if SOURCE_STAMPED_TOOLS.include?(name)
 
-    value = Mcp::Tools.public_send(name, @mcp_account, arguments)
+    value = Mcp::Tools.public_send(
+      name,
+      @mcp_account,
+      arguments,
+      user: @current_oauth_token.user
+    )
     jsonrpc_result(content: [{type: "text", text: value.to_json}])
   rescue Mcp::ToolError => e
     jsonrpc_result(content: [{type: "text", text: e.message}], isError: true)

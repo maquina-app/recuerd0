@@ -58,12 +58,26 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   test "tools/list returns every defined tool" do
     result = mcp(rpc("tools/list"), token: @read_token.raw_token)
     names = result["result"]["tools"].map { |t| t["name"] }
+    assert_equal 13, names.size
+    assert_equal "workspace_context", names.first
     assert_equal Mcp::ToolDefinitions::NAMES.sort, names.sort
     assert_includes names, "create_version"
     assert_includes names, "read_memories"
     assert_includes names, "link_memories"
     assert_includes names, "workspace_stats"
     assert_includes names, "suggest_merge_candidates"
+  end
+
+  test "tools/list appends the write mechanics descriptions" do
+    result = mcp(rpc("tools/list"), token: @read_token.raw_token)
+    tools = result["result"]["tools"].index_by { |tool| tool["name"] }
+
+    assert_includes tools["create_memory"]["description"],
+      "Mechanics: creates a new root memory at version 1."
+    assert_includes tools["update_memory"]["description"],
+      "Mechanics: edits the current version in place and does not add a history entry."
+    assert_includes tools["create_version"]["description"],
+      "Mechanics: appends a new current version and leaves earlier versions intact."
   end
 
   test "tools/list advertises tags and category inputs on write tools" do
@@ -108,6 +122,135 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     result = mcp(rpc("tools/call", name: "list_workspaces"), token: @read_token.raw_token)
     payload = JSON.parse(result["result"]["content"].first["text"])
     assert_includes payload.map { |w| w["name"] }, @workspace.name
+  end
+
+  test "workspace_context returns pinned current-version bodies through read_only access" do
+    workspace = @account.workspaces.create!(name: "MCP pinned context")
+    root = Memory.create_with_content(
+      workspace,
+      title: "Version one",
+      content: "First body",
+      category: "general"
+    )
+    root.create_version!(
+      title: "Version two",
+      content: "Second body",
+      category: "discovery"
+    )
+    current = root.create_version!(
+      title: "Version three",
+      content: "Third body",
+      category: "decision",
+      tags: ["latest"],
+      source: "manual"
+    )
+    root.pin!(@user)
+
+    payload = call_tool("workspace_context", {workspace_id: workspace.id.to_s})
+
+    assert_equal %w[context_source generated_at memories stats workspace], payload.keys.sort
+    assert_equal "pins", payload["context_source"]
+    assert_equal 1, payload.dig("stats", "total_pinned")
+    assert_equal 1, payload.dig("stats", "returned")
+    assert Time.iso8601(payload["generated_at"])
+
+    memory = payload["memories"].sole
+    assert_equal root.id.to_s, memory["id"]
+    assert_equal current.title, memory["title"]
+    assert_equal current.content.body.content, memory["body"]
+    assert_equal current.category, memory["category"]
+    assert_equal current.tags, memory["tags"]
+    assert_equal current.version, memory["version"]
+    assert_equal false, memory["body_truncated"]
+    assert_empty memory.keys & %w[url links_count pinned_at pinned_memories]
+  end
+
+  test "workspace_context falls back to recent roots and supports body options and clamping" do
+    workspace = @account.workspaces.create!(name: "MCP recent context")
+    older = Memory.create_with_content(workspace, title: "Older", content: "old")
+    newer_body = "x" * 300
+    newer = Memory.create_with_content(workspace, title: "Newer", content: newer_body)
+    older.update_column(:updated_at, 2.days.ago)
+    newer.update_column(:updated_at, 1.day.ago)
+
+    payload = call_tool(
+      "workspace_context",
+      {
+        workspace_id: workspace.id.to_s,
+        limit: 1,
+        max_body_chars: 1
+      }
+    )
+
+    assert_equal "recent", payload["context_source"]
+    assert_equal 0, payload.dig("stats", "total_pinned")
+    assert_equal [newer.id.to_s], payload["memories"].map { |memory| memory["id"] }
+    assert_equal 100, payload["memories"].first["body"].length
+    assert_equal true, payload["memories"].first["body_truncated"]
+
+    without_body = call_tool(
+      "workspace_context",
+      {workspace_id: workspace.id.to_s, include_body: false}
+    )
+    assert without_body["memories"].none? { |memory| memory.key?("body") }
+    assert without_body["memories"].none? { |memory| memory.key?("body_truncated") }
+  end
+
+  test "workspace_context validates category and account-scopes active workspaces" do
+    invalid = mcp(
+      rpc(
+        "tools/call",
+        name: "workspace_context",
+        arguments: {workspace_id: @workspace.id.to_s, category: "bogus"}
+      ),
+      token: @read_token.raw_token
+    )
+    assert invalid.dig("result", "isError")
+    assert_match "Invalid category", invalid.dig("result", "content", 0, "text")
+
+    foreign = mcp(
+      rpc(
+        "tools/call",
+        name: "workspace_context",
+        arguments: {workspace_id: workspaces(:two).id.to_s}
+      ),
+      token: @read_token.raw_token
+    )
+    assert foreign.dig("result", "isError")
+    assert_equal "Workspace not found", foreign.dig("result", "content", 0, "text")
+  end
+
+  test "workspace_context root id matches list and updates directly with REST parity" do
+    workspace = @account.workspaces.create!(name: "MCP parity")
+    root = Memory.create_with_content(workspace, title: "V1", content: "Body v1")
+    root.create_version!(title: "V2", content: "Body v2")
+    current = root.create_version!(title: "V3", content: "Body v3", tags: ["v3"])
+    root.pin!(@user)
+
+    context = call_tool("workspace_context", {workspace_id: workspace.id.to_s})
+    mcp_memory = context["memories"].sole
+    listed = call_tool("list_memories", {workspace_id: workspace.id.to_s})
+      .fetch("memories")
+      .sole
+
+    get workspace_context_url(workspace, format: :json),
+      headers: auth_headers(@read_token.raw_token)
+    assert_response :success
+    rest_memory = JSON.parse(response.body)["memories"].sole
+
+    assert_equal root.id.to_s, mcp_memory["id"]
+    assert_equal listed["id"], mcp_memory["id"]
+    assert_equal current.title, mcp_memory["title"]
+    assert_equal rest_memory.values_at("title", "body"),
+      mcp_memory.values_at("title", "body")
+
+    updated = call_tool(
+      "update_memory",
+      {memory_id: mcp_memory["id"], title: "Updated through context ID"},
+      token: @full_token.raw_token
+    )
+    assert_equal root.id.to_s, updated["id"]
+    assert_equal "Updated through context ID", current.reload.title
   end
 
   test "create_memory is denied for a read_only token" do

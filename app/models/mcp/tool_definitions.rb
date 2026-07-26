@@ -6,6 +6,28 @@ module Mcp
 
     ALL = [
       {
+        name: "workspace_context",
+        description: "Load a compact wake-up snapshot for a workspace. Returns the current " \
+          "user's category-matching pinned memories when any exist, or the most recently " \
+          "updated memories otherwise. Display fields and optional bodies come from each " \
+          "memory's current version while IDs remain stable root-memory IDs.",
+        annotations: {readOnlyHint: true, destructiveHint: false},
+        inputSchema: {
+          type: "object",
+          properties: {
+            workspace_id: {type: "string", description: "Workspace ID"},
+            limit: {type: "integer", description: "Maximum memories to return, 1–50 (default 10)"},
+            include_body: {type: "boolean", description: "Include memory bodies (default true)"},
+            max_body_chars: {
+              type: "integer",
+              description: "Maximum body characters per memory, 100–5000 (default 500)"
+            },
+            category: {type: "string", enum: CATEGORIES, description: "Filter by memory category"}
+          },
+          required: ["workspace_id"]
+        }
+      },
+      {
         name: "list_workspaces",
         description: "List all workspaces belonging to the authenticated user.",
         annotations: {readOnlyHint: true, destructiveHint: false},
@@ -109,7 +131,8 @@ module Mcp
       {
         name: "create_memory",
         description: "Create a new memory in a workspace. The calling application " \
-          "is recorded automatically as the memory's source.",
+          "is recorded automatically as the memory's source. Mechanics: creates a new " \
+          "root memory at version 1.",
         annotations: {readOnlyHint: false, destructiveHint: false},
         inputSchema: {
           type: "object",
@@ -128,7 +151,8 @@ module Mcp
         name: "update_memory",
         description: "Update an existing memory in place (title, content, category, " \
           "or tags). Omitted fields remain unchanged, and blank content cannot overwrite " \
-          "a non-empty body. Does not create a new version — use create_version to preserve history.",
+          "a non-empty body. Does not create a new version — use create_version to preserve history. " \
+          "Mechanics: edits the current version in place and does not add a history entry.",
         annotations: {readOnlyHint: false, destructiveHint: false},
         inputSchema: {
           type: "object",
@@ -147,7 +171,8 @@ module Mcp
         name: "create_version",
         description: "Append a new immutable version to an existing memory, " \
           "preserving prior versions as history. Any omitted field inherits its " \
-          "value from the latest version.",
+          "value from the latest version. Mechanics: appends a new current version and " \
+          "leaves earlier versions intact.",
         annotations: {readOnlyHint: false, destructiveHint: false},
         inputSchema: {
           type: "object",

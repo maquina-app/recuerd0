@@ -8,16 +8,33 @@ class Workspaces::ContextsController < ApplicationController
     @include_body = to_bool(params[:include_body], default: true)
     @max_body_chars = clamp_int(params[:max_body_chars], default: 500, min: 100, max: 5000)
 
-    pinned_scope = Current.user.pinned_memories
-      .where(workspace: @workspace)
-      .includes(:content, :pins, :workspace)
-      .by_category(params[:category])
+    result = Workspaces::ContextResolver.call(
+      workspace: @workspace,
+      user: Current.user,
+      limit: @limit,
+      category: params[:category]
+    )
+    @memories = result[:memories]
+    @context_source = result[:source]
+    @total_pinned = result[:total_pinned]
 
-    @total_pinned = pinned_scope.count
-    @pinned_memories = pinned_scope.limit(@limit).to_a
-
-    latest = [@workspace.updated_at, @pinned_memories.map(&:updated_at).compact.max].compact.max
-    stale?(etag: [@workspace, @pinned_memories, @limit, @include_body, @max_body_chars], last_modified: latest)
+    memory_timestamps = @memories.flat_map do |memory|
+      [memory.updated_at, memory.resolve_current_version.updated_at]
+    end
+    latest = [@workspace.updated_at, *memory_timestamps].compact.max
+    stale?(
+      etag: [
+        @workspace,
+        @memories,
+        @context_source,
+        @total_pinned,
+        params[:category],
+        @limit,
+        @include_body,
+        @max_body_chars
+      ],
+      last_modified: latest
+    )
   end
 
   private

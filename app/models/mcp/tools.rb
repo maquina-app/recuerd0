@@ -5,16 +5,9 @@ module Mcp
   module Tools
     module_function
 
-    def list_workspaces(account, _args = {})
+    def list_workspaces(account, _args = {}, user: nil)
       account.workspaces.active.ordered.map do |workspace|
-        {
-          id: workspace.id.to_s,
-          name: workspace.name,
-          description: workspace.description,
-          memories_count: workspace.memories_count,
-          created_at: workspace.created_at.iso8601,
-          updated_at: workspace.updated_at.iso8601
-        }
+        workspace_json(workspace)
       end
     end
 
@@ -28,7 +21,54 @@ module Mcp
     # Cap on ids accepted by read_memories in one call, to bound response size.
     BATCH_READ_LIMIT = 50
 
-    def list_memories(account, args = {})
+    def workspace_context(account, args = {}, user: nil)
+      workspace = find_workspace(account, args["workspace_id"])
+      validate_category!(args["category"])
+      limit = clamp_int(args["limit"], default: 10, min: 1, max: 50)
+      max_body_chars = clamp_int(
+        args["max_body_chars"],
+        default: 500,
+        min: 100,
+        max: 5000
+      )
+      include_body = args.key?("include_body") ?
+        ActiveModel::Type::Boolean.new.cast(args["include_body"]) :
+        true
+
+      result = Workspaces::ContextResolver.call(
+        workspace: workspace,
+        user: user,
+        limit: limit,
+        category: args["category"]
+      )
+
+      memories = result[:memories].map do |root|
+        current = root.resolve_current_version
+        payload = memory_json(current)
+
+        if include_body
+          body = current.content&.body&.content.to_s
+          payload[:body] = body.truncate(max_body_chars, omission: "…")
+          payload[:body_truncated] = body.length > max_body_chars
+        end
+
+        payload
+      end
+
+      {
+        workspace: workspace_json(workspace),
+        memories: memories,
+        context_source: result[:source],
+        stats: {
+          total_memories: workspace.memories_count,
+          total_pinned: result[:total_pinned],
+          returned: memories.size
+        },
+        generated_at: Time.current.utc.iso8601
+      }
+    end
+
+    def list_memories(account, args = {}, user: nil)
       workspace = find_workspace(account, args["workspace_id"])
       validate_category!(args["category"])
       limit = clamp_limit(args["limit"])
@@ -52,7 +92,7 @@ module Mcp
       }
     end
 
-    def read_memory(account, args = {})
+    def read_memory(account, args = {}, user: nil)
       memory = find_memory(account, args["memory_id"]).resolve_current_version
 
       memory_json(memory).merge(content: memory.content&.body&.content.to_s)
@@ -61,7 +101,7 @@ module Mcp
     # Batch counterpart to read_memory: fetch several memories (with content) in a
     # single call. Unknown/foreign ids are reported in `missing` rather than failing
     # the whole call, so a caller verifying a set of candidates gets partial results.
-    def read_memories(account, args = {})
+    def read_memories(account, args = {}, user: nil)
       ids = Array(args["memory_ids"]).map(&:to_s).reject(&:blank?).first(BATCH_READ_LIMIT)
 
       found = Memory.joins(:workspace)
@@ -80,7 +120,7 @@ module Mcp
       {memories: memories, missing: ids - found.keys}
     end
 
-    def create_memory(account, args = {})
+    def create_memory(account, args = {}, user: nil)
       workspace = find_workspace(account, args["workspace_id"])
       validate_category!(args["category"])
       category = args["category"].presence || Memory::DEFAULT_CATEGORY
@@ -98,7 +138,7 @@ module Mcp
       memory_json(memory)
     end
 
-    def update_memory(account, args = {})
+    def update_memory(account, args = {}, user: nil)
       memory = find_memory_for_update(account, args["memory_id"]).resolve_current_version
       unless memory.current_version?
         raise ToolError,
@@ -123,7 +163,7 @@ module Mcp
 
     # Appends a new immutable version to an existing memory (vs. update_memory,
     # which overwrites in place). Omitted fields inherit from the latest version.
-    def create_version(account, args = {})
+    def create_version(account, args = {}, user: nil)
       memory = find_memory(account, args["memory_id"])
       validate_category!(args["category"])
       category = args["category"].presence
@@ -143,7 +183,7 @@ module Mcp
     # Cross-workspace "see also" links between memories in the same account.
     # Links are undirected and unlabeled — MemoryLink#normalize_order canonicalizes
     # the pair, so link_memories(a, b) and link_memories(b, a) are the same link.
-    def list_memory_links(account, args = {})
+    def list_memory_links(account, args = {}, user: nil)
       memory = find_memory(account, args["memory_id"])
 
       memory.linked_memories.latest_versions.map do |linked|
@@ -151,7 +191,7 @@ module Mcp
       end
     end
 
-    def link_memories(account, args = {})
+    def link_memories(account, args = {}, user: nil)
       memory = find_memory(account, args["memory_id"])
       other = find_memory(account, args["to_memory_id"])
       raise ToolError, "Cannot link a memory to itself" if memory.id == other.id
@@ -162,7 +202,7 @@ module Mcp
       {linked: true, memory_id: memory.id.to_s, to_memory_id: other.id.to_s}
     end
 
-    def unlink_memories(account, args = {})
+    def unlink_memories(account, args = {}, user: nil)
       memory = find_memory(account, args["memory_id"])
       other = find_memory(account, args["to_memory_id"])
 
@@ -179,7 +219,7 @@ module Mcp
     # Aggregate rollup for a workspace, computed server-side so callers can get
     # counts and trends without paging the full memory list (which is what hit the
     # truncation ceiling that motivated the envelope on list_memories).
-    def workspace_stats(account, args = {})
+    def workspace_stats(account, args = {}, user: nil)
       workspace = find_workspace(account, args["workspace_id"])
       roots = workspace.memories.latest_versions
 
@@ -202,7 +242,7 @@ module Mcp
 
     # Read-only clustering of likely-duplicate memories (by shared tags + title
     # similarity). Suggestions only — merging stays a human decision.
-    def suggest_merge_candidates(account, args = {})
+    def suggest_merge_candidates(account, args = {}, user: nil)
       workspace = find_workspace(account, args["workspace_id"])
       min_score = args["min_score"].presence&.to_f
 
@@ -232,6 +272,18 @@ module Mcp
     end
     private_class_method :memory_json
 
+    def workspace_json(workspace)
+      {
+        id: workspace.id.to_s,
+        name: workspace.name,
+        description: workspace.description,
+        memories_count: workspace.memories_count,
+        created_at: workspace.created_at.iso8601,
+        updated_at: workspace.updated_at.iso8601
+      }
+    end
+    private_class_method :workspace_json
+
     def normalize_tags(value)
       Array(value).map { |tag| tag.to_s.strip }.reject(&:blank?)
     end
@@ -254,6 +306,16 @@ module Mcp
       [limit, LIST_MAX_LIMIT].min
     end
     private_class_method :clamp_limit
+
+    def clamp_int(value, default:, min:, max:)
+      integer = begin
+        Integer(value)
+      rescue
+        default
+      end
+      integer.clamp(min, max)
+    end
+    private_class_method :clamp_int
 
     # Tag frequency across a relation of memories, most common first. Reads tags
     # in Ruby because they're a serialized JSON array, not a queryable column.

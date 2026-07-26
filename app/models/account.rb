@@ -84,7 +84,8 @@ class Account < ApplicationRecord
         content: memory_data[:content].gsub("__BASE_URL__", Rails.application.config.x.app_base_url),
         tags: memory_data[:tags],
         category: memory_data[:category],
-        source: "system")
+        source: "system",
+        default_pinned: memory_data[:pinned])
 
       memory.pin!(user) if memory_data[:pinned]
     end
