@@ -101,6 +101,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get workspaces_url
 
     assert_select BANNER_SELECTOR, count: 0
+    assert_select "[data-onboarding-divider]", count: 0
   end
 
   test "a non-system root in an inactive workspace of the same account hides the banner" do
@@ -115,6 +116,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get workspaces_url
 
     assert_select BANNER_SELECTOR, count: 0
+    assert_select "[data-onboarding-divider]", count: 0
   end
 
   test "editing or versioning a seeded system root does not hide the banner" do
@@ -161,6 +163,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get workspaces_url
 
     assert_select BANNER_SELECTOR, count: 0
+    assert_select "[data-onboarding-divider]", count: 0
 
     fresh_session = open_session
     fresh_session.post session_url,
@@ -169,6 +172,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     fresh_session.assert_response :success
     fresh_session.assert_select BANNER_SELECTOR, count: 0
+    fresh_session.assert_select "[data-onboarding-divider]", count: 0
   end
 
   test "dismissal is per-user" do
@@ -204,7 +208,10 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_banner_progress(completed: 0, active_step: 1)
 
     assert_select BANNER_SELECTOR, count: 1 do
-      assert_select "p.font-mono", text: "Getting started"
+      assert_select(
+        "p.font-mono.text-\\[12px\\].font-medium.uppercase.tracking-wider.text-muted-foreground",
+        text: "Getting started"
+      )
       assert_select "form[action='#{onboarding_dismiss_path}'] button.text-muted-foreground", text: "Dismiss"
       assert_select "[data-onboarding-step]", count: 4
       assert_select "[data-onboarding-indicator]", count: 4
@@ -220,25 +227,28 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       assert_select "a[href='#{profile_path(anchor: "access-tokens")}']", text: "Access Tokens"
       assert_select "a[href='#{start_path}'].text-primary.underline.underline-offset-2",
         text: "Full walkthrough"
+      assert_select "[data-onboarding-divider]", count: 1
       assert_select "code", count: 0
     end
 
     banner = css_select(BANNER_SELECTOR).first
     walkthrough = banner.at_css("a[href='#{start_path}']")
+    dismiss_form = banner.at_css("form[action='#{onboarding_dismiss_path}']")
 
     assert_equal "section", banner.name
     assert_includes banner["class"].split, "mb-4"
     assert_not_includes banner["class"].split, "mb-6"
     assert_no_match(/\b(?:bg-|border|rounded|shadow)/, banner["class"].to_s)
     assert_select "#{BANNER_SELECTOR} [data-card-part]", count: 0
-    assert_equal "text-primary underline underline-offset-2", walkthrough["class"]
+    assert_equal "text-[13px] text-primary underline underline-offset-2", walkthrough["class"]
+    assert_equal "contents", dismiss_form["class"]
   end
 
   def assert_banner_progress(completed:, active_step:)
     assert_select BANNER_SELECTOR, count: 1 do
       assert_select "p", text: "#{completed}/4 completed"
-      assert_select "[data-expanded='true']", count: 1
-      assert_select "[data-onboarding-step='#{active_step}'][data-expanded='true']", count: 1
+      assert_select "li[data-expanded='true']", count: 1
+      assert_select "li[data-onboarding-step='#{active_step}'][data-expanded='true']", count: 1
       assert_select "[data-state='complete']", count: completed
       assert_select "[data-state='incomplete']", count: 3 - completed
 
@@ -261,9 +271,42 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     banner = css_select(BANNER_SELECTOR).first
     header = banner.element_children.first
     left_group, right_group = header.element_children
+    steps = banner.css("[data-onboarding-step]")
+    active_row = banner.at_css("[data-onboarding-step='#{active_step}']")
+    collapsed_rows = steps.reject { |step| step == active_row }
+    title_row, body = active_row.element_children
+    complete_indicators = banner.css("[data-onboarding-indicator]").select { |indicator| indicator.at_css("svg") }
+    incomplete_indicators = banner.css("[data-onboarding-indicator]").reject { |indicator| indicator.at_css("svg") }
 
     assert_not_includes left_group.text, "#{completed}/4 completed"
     assert_includes right_group.text, "#{completed}/4 completed"
+    assert_equal "flex shrink-0 items-center gap-4 text-[13px]", right_group["class"]
+    assert_equal "space-y-1", banner.at_css("ol")["class"]
+    assert_equal "my-1 rounded-[10px] border border-border bg-muted/40 px-3 py-2.5", active_row["class"]
+    assert_equal "flex items-center gap-3", title_row["class"]
+    assert_equal "mt-1.5 ml-[30px]", body["class"]
+    body.css("p").each do |paragraph|
+      assert_includes paragraph["class"].split, "text-[13px]"
+    end
+    collapsed_rows.each do |row|
+      assert_equal "flex items-center gap-3 px-3 py-1.5", row["class"]
+    end
+    assert_equal completed, complete_indicators.size
+    complete_indicators.each do |indicator|
+      assert_equal(
+        "flex size-[18px] shrink-0 items-center justify-center rounded-full " \
+          "bg-primary text-primary-foreground",
+        indicator["class"]
+      )
+    end
+    assert_equal 4 - completed, incomplete_indicators.size
+    incomplete_indicators.each do |indicator|
+      assert_equal(
+        "size-[18px] shrink-0 rounded-full border-[1.5px] border-dashed " \
+          "border-muted-foreground/50",
+        indicator["class"]
+      )
+    end
   end
 
   def assert_only_commands(*commands)

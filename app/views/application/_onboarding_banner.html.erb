@@ -16,148 +16,162 @@ end %>
 <section class="mb-4" data-onboarding-banner="true">
   <div class="mb-4 flex items-center justify-between gap-4">
     <div>
-      <p class="font-mono text-[12px] font-medium">Getting started</p>
+      <p class="font-mono text-[12px] font-medium uppercase tracking-wider text-muted-foreground">Getting started</p>
     </div>
 
-    <div class="flex items-center gap-3">
-      <p class="text-[13px] text-muted-foreground"><%= completed_count %>/4 completed</p>
+    <div class="flex shrink-0 items-center gap-4 text-[13px]">
+      <p class="text-muted-foreground"><%= completed_count %>/4 completed</p>
       <%= button_to "Dismiss",
         onboarding_dismiss_path,
         method: :post,
-        form: {class: "shrink-0"},
+        form: {class: "contents"},
         class: "text-[13px] text-muted-foreground hover:text-foreground" %>
     </div>
   </div>
 
-  <ol class="space-y-3.5">
+  <ol class="space-y-1">
+    <% step_expanded = active_step == 1 %>
     <li
-      class="flex items-start gap-3"
+      class="<%= step_expanded ? "my-1 rounded-[10px] border border-border bg-muted/40 px-3 py-2.5" : "flex items-center gap-3 px-3 py-1.5" %>"
       data-onboarding-step="1"
       data-state="<%= token_created ? "complete" : "incomplete" %>"
-      <% if active_step == 1 %>data-expanded="true"<% end %>
+      <% if step_expanded %>data-expanded="true"<% end %>
     >
-      <% if token_created %>
-        <span
-          class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-          data-onboarding-indicator
-          aria-hidden="true"
-        >
-          <%= icon_for(:check, class: "size-3") %>
-        </span>
-      <% else %>
-        <span
-          class="size-[18px] shrink-0 rounded-full border border-border"
-          data-onboarding-indicator
-          aria-hidden="true"
-        ></span>
-      <% end %>
+      <% if step_expanded %><div class="flex items-center gap-3"><% end %>
+        <% if token_created %>
+          <span
+            class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            data-onboarding-indicator
+            aria-hidden="true"
+          >
+            <%= icon_for(:check, class: "size-3") %>
+          </span>
+        <% else %>
+          <span
+            class="size-[18px] shrink-0 rounded-full border-[1.5px] border-dashed border-muted-foreground/50"
+            data-onboarding-indicator
+            aria-hidden="true"
+          ></span>
+        <% end %>
+        <p class="<%= step_expanded ? "text-sm font-medium text-foreground" : "text-sm text-muted-foreground" %>">1. Create an access token</p>
+      <% if step_expanded %></div><% end %>
 
-      <div class="min-w-0">
-        <p class="text-sm <%= active_step == 1 ? "font-medium text-foreground" : "text-muted-foreground" %>">1. Create an access token</p>
-        <% if active_step == 1 %>
-          <p class="mt-1 text-sm text-muted-foreground">
+      <% if step_expanded %>
+        <div class="mt-1.5 ml-[30px]">
+          <p class="text-[13px] text-muted-foreground">
             <%= link_to "Access Tokens", profile_path(anchor: "access-tokens"), class: "text-primary underline underline-offset-2" %>
             — full access if your tools will write.
           </p>
-        <% end %>
-      </div>
+        </div>
+      <% end %>
     </li>
 
+    <% step_expanded = active_step == 2 %>
     <li
-      class="flex items-start gap-3"
+      class="<%= step_expanded ? "my-1 rounded-[10px] border border-border bg-muted/40 px-3 py-2.5" : "flex items-center gap-3 px-3 py-1.5" %>"
       data-onboarding-step="2"
       data-state="<%= cli_connected ? "complete" : "incomplete" %>"
-      <% if active_step == 2 %>data-expanded="true"<% end %>
+      <% if step_expanded %>data-expanded="true"<% end %>
     >
-      <% if cli_connected %>
-        <span
-          class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-          data-onboarding-indicator
-          aria-hidden="true"
-        >
-          <%= icon_for(:check, class: "size-3") %>
-        </span>
-      <% else %>
-        <span
-          class="size-[18px] shrink-0 rounded-full border border-border"
-          data-onboarding-indicator
-          aria-hidden="true"
-        ></span>
-      <% end %>
+      <% if step_expanded %><div class="flex items-center gap-3"><% end %>
+        <% if cli_connected %>
+          <span
+            class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            data-onboarding-indicator
+            aria-hidden="true"
+          >
+            <%= icon_for(:check, class: "size-3") %>
+          </span>
+        <% else %>
+          <span
+            class="size-[18px] shrink-0 rounded-full border-[1.5px] border-dashed border-muted-foreground/50"
+            data-onboarding-indicator
+            aria-hidden="true"
+          ></span>
+        <% end %>
+        <p class="<%= step_expanded ? "text-sm font-medium text-foreground" : "text-sm text-muted-foreground" %>">2. Install the CLI and connect</p>
+      <% if step_expanded %></div><% end %>
 
-      <div class="min-w-0">
-        <p class="text-sm <%= active_step == 2 ? "font-medium text-foreground" : "text-muted-foreground" %>">2. Install the CLI and connect</p>
-        <% if active_step == 2 %>
-          <p class="mt-1 text-sm text-muted-foreground">
+      <% if step_expanded %>
+        <div class="mt-1.5 ml-[30px]">
+          <p class="text-[13px] text-muted-foreground">
             One account command makes every CLI workflow available.
           </p>
-          <p class="mt-2 text-sm text-muted-foreground">
+          <p class="mt-2 text-[13px] text-muted-foreground">
             <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">brew install maquina-app/tap/recuerd0</code>,
             then
             <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 account add</code>
           </p>
-        <% end %>
-      </div>
+        </div>
+      <% end %>
     </li>
 
+    <% step_expanded = active_step == 3 %>
     <li
-      class="flex items-start gap-3"
+      class="<%= step_expanded ? "my-1 rounded-[10px] border border-border bg-muted/40 px-3 py-2.5" : "flex items-center gap-3 px-3 py-1.5" %>"
       data-onboarding-step="3"
       data-state="<%= first_content ? "complete" : "incomplete" %>"
-      <% if active_step == 3 %>data-expanded="true"<% end %>
+      <% if step_expanded %>data-expanded="true"<% end %>
     >
-      <% if first_content %>
-        <span
-          class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-          data-onboarding-indicator
-          aria-hidden="true"
-        >
-          <%= icon_for(:check, class: "size-3") %>
-        </span>
-      <% else %>
-        <span
-          class="size-[18px] shrink-0 rounded-full border border-border"
-          data-onboarding-indicator
-          aria-hidden="true"
-        ></span>
-      <% end %>
+      <% if step_expanded %><div class="flex items-center gap-3"><% end %>
+        <% if first_content %>
+          <span
+            class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            data-onboarding-indicator
+            aria-hidden="true"
+          >
+            <%= icon_for(:check, class: "size-3") %>
+          </span>
+        <% else %>
+          <span
+            class="size-[18px] shrink-0 rounded-full border-[1.5px] border-dashed border-muted-foreground/50"
+            data-onboarding-indicator
+            aria-hidden="true"
+          ></span>
+        <% end %>
+        <p class="<%= step_expanded ? "text-sm font-medium text-foreground" : "text-sm text-muted-foreground" %>">3. Import what you already have</p>
+      <% if step_expanded %></div><% end %>
 
-      <div class="min-w-0">
-        <p class="text-sm <%= active_step == 3 ? "font-medium text-foreground" : "text-muted-foreground" %>">3. Import what you already have</p>
-        <% if active_step == 3 %>
-          <p class="mt-1 text-sm text-muted-foreground">
+      <% if step_expanded %>
+        <div class="mt-1.5 ml-[30px]">
+          <p class="text-[13px] text-muted-foreground">
             <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 import propose &lt;path&gt;</code>,
             review the plan it writes, then
             <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 import commit</code>
           </p>
-        <% end %>
-      </div>
+        </div>
+      <% end %>
     </li>
 
+    <% step_expanded = active_step == 4 %>
     <li
-      class="flex items-start gap-3"
+      class="<%= step_expanded ? "my-1 rounded-[10px] border border-border bg-muted/40 px-3 py-2.5" : "flex items-center gap-3 px-3 py-1.5" %>"
       data-onboarding-step="4"
-      <% if active_step == 4 %>data-expanded="true"<% end %>
+      <% if step_expanded %>data-expanded="true"<% end %>
     >
-      <span
-        class="size-[18px] shrink-0 rounded-full border border-border"
-        data-onboarding-indicator
-        aria-hidden="true"
-      ></span>
+      <% if step_expanded %><div class="flex items-center gap-3"><% end %>
+        <span
+          class="size-[18px] shrink-0 rounded-full border-[1.5px] border-dashed border-muted-foreground/50"
+          data-onboarding-indicator
+          aria-hidden="true"
+        ></span>
+        <p class="<%= step_expanded ? "text-sm font-medium text-foreground" : "text-sm text-muted-foreground" %>">4. Give your agent the skill</p>
+      <% if step_expanded %></div><% end %>
 
-      <div class="min-w-0">
-        <p class="text-sm <%= active_step == 4 ? "font-medium text-foreground" : "text-muted-foreground" %>">4. Give your agent the skill</p>
-        <% if active_step == 4 %>
-          <p class="mt-1 text-sm text-muted-foreground">
+      <% if step_expanded %>
+        <div class="mt-1.5 ml-[30px]">
+          <p class="text-[13px] text-muted-foreground">
             <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 skills install</code>,
             or the Claude Code plugin.
           </p>
-        <% end %>
-      </div>
+        </div>
+      <% end %>
     </li>
   </ol>
 
-  <div class="mt-4 ml-[30px]">
-    <%= link_to "Full walkthrough", start_path, class: "text-primary underline underline-offset-2" %>
+  <div class="mt-2.5 px-3">
+    <%= link_to "Full walkthrough", start_path, class: "text-[13px] text-primary underline underline-offset-2" %>
   </div>
+
+  <div class="mt-4 border-t border-border" data-onboarding-divider></div>
 </section>
