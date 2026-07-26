@@ -9,6 +9,7 @@ class Workspaces::ContextResolverTest < ActiveSupport::TestCase
       role: "admin"
     )
     @workspace = @account.workspaces.create!(name: "Resolver workspace")
+    @workspace.memories.find_by!(title: WorkspaceStarter::TITLE).destroy!
   end
 
   test "returns category-matching pins in the existing per-user order and counts before limiting" do

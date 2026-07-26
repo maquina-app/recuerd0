@@ -445,6 +445,7 @@ class MemoryTest < ActiveSupport::TestCase
 
   test "ordered_by title alphabetizes case-insensitively" do
     ws = accounts(:one).workspaces.create!(name: "Ordering A")
+    ws.memories.find_by!(title: WorkspaceStarter::TITLE).destroy!
     Memory.create_with_content(ws, title: "banana", content: "b")
     Memory.create_with_content(ws, title: "Apple", content: "b")
     Memory.create_with_content(ws, title: "cherry", content: "b")
@@ -454,6 +455,7 @@ class MemoryTest < ActiveSupport::TestCase
 
   test "ordered_by created sorts by created_at desc" do
     ws = accounts(:one).workspaces.create!(name: "Ordering B")
+    ws.memories.find_by!(title: WorkspaceStarter::TITLE).destroy!
     first = Memory.create_with_content(ws, title: "First", content: "b")
     first.update_column(:created_at, 2.days.ago)
     second = Memory.create_with_content(ws, title: "Second", content: "b")
@@ -464,6 +466,7 @@ class MemoryTest < ActiveSupport::TestCase
 
   test "ordered_by updated sorts by updated_at desc" do
     ws = accounts(:one).workspaces.create!(name: "Ordering C")
+    ws.memories.find_by!(title: WorkspaceStarter::TITLE).destroy!
     older = Memory.create_with_content(ws, title: "Older", content: "b")
     newer = Memory.create_with_content(ws, title: "Newer", content: "b")
     older.update_column(:updated_at, 2.days.ago)

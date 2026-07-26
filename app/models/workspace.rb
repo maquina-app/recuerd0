@@ -11,6 +11,7 @@ class Workspace < ApplicationRecord
   validates :description, length: {maximum: 500}, allow_blank: true
 
   # Callbacks to unpin when archiving or soft deleting
+  after_create :create_starter_map
   after_update :unpin_if_inactive, if: -> { saved_change_to_archived_at? || saved_change_to_deleted_at? }
 
   # Scopes
@@ -71,6 +72,16 @@ class Workspace < ApplicationRecord
   end
 
   private
+
+  def create_starter_map
+    attributes = WorkspaceStarter.attributes(
+      base_url: Rails.application.config.x.app_base_url
+    )
+    memory = memories.create!(
+      attributes.except(:content).merge(source: "system", default_pinned: true)
+    )
+    memory.create_content!(body: attributes[:content])
+  end
 
   # Unpin from all users when workspace becomes inactive
   def unpin_if_inactive

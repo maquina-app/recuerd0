@@ -25,6 +25,7 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
 
   test "create registers user under invited account" do
     workspace = @account.workspaces.create!(name: "Invitation defaults")
+    starter_map = workspace.memories.find_by!(title: WorkspaceStarter::TITLE)
     defaults = 2.times.map do |index|
       Memory.create_with_content(
         workspace,
@@ -49,7 +50,7 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil new_user
     assert_equal @account, new_user.account
     assert new_user.member?
-    assert_equal defaults.map(&:id),
+    assert_equal [starter_map.id, *defaults.map(&:id)],
       new_user.pins.for_memories.order(:pinnable_id).pluck(:pinnable_id)
     assert_redirected_to workspaces_path
   end

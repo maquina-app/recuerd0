@@ -77,8 +77,11 @@ class Account < ApplicationRecord
 
   def seed_start_here_workspace(user)
     workspace = workspaces.create!(name: "My Workspace")
+    map_data, *remaining_memories = StartHereContent::MEMORIES
+    map = workspace.memories.find_by!(title: WorkspaceStarter::TITLE)
+    map.pin!(user)
 
-    StartHereContent::MEMORIES.each do |memory_data|
+    remaining_memories.each do |memory_data|
       memory = Memory.create_with_content(workspace,
         title: memory_data[:title],
         content: memory_data[:content].gsub("__BASE_URL__", Rails.application.config.x.app_base_url),
@@ -90,6 +93,11 @@ class Account < ApplicationRecord
       memory.pin!(user) if memory_data[:pinned]
     end
 
-    workspace.memories.find_by!(title: "_MAP").touch
+    map.update_with_content(
+      content: map_data[:content].gsub("__BASE_URL__", Rails.application.config.x.app_base_url)
+    )
+    raise ActiveRecord::RecordInvalid, map if map.errors.any?
+
+    map.touch
   end
 end

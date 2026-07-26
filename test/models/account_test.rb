@@ -184,18 +184,17 @@ class AccountTest < ActiveSupport::TestCase
       workspace.memories.order(:id).pluck(:title)
 
     map_memory = workspace.memories.find_by!(title: "_MAP")
-    assert_includes map_memory.content.body.content, <<~MARKDOWN.strip
-      ## How this workspace is kept
-
-      - Read this map before adding anything, so you know what is already here.
-      - Every memory gets one line in the table below, with a short note on what it covers.
-      - Before creating a memory, check whether one already covers the same ground. Update or version that one instead of adding a duplicate.
-      - Titles state what the memory answers, not the topic it is about.
-      - Link memories that belong together.
-
-      These are this workspace's conventions, not the product's. Edit them to match how your team works, or delete this memory if you would rather not work this way.
-    MARKDOWN
-    assert_includes map_memory.content.body.content, "https://example.com/start"
+    assert_equal 1, workspace.memories.where(
+      title: WorkspaceStarter::TITLE,
+      parent_memory_id: nil
+    ).count
+    assert_equal WorkspaceStarter.content(
+      base_url: "https://example.com",
+      routing_bullets: StartHereContent::MAP_ROUTING_BULLETS
+    ), map_memory.content.body.content
+    StartHereContent::MAP_ROUTING_BULLETS.each do |routing_bullet|
+      assert_includes map_memory.content.body.content, routing_bullet
+    end
     assert_not_includes map_memory.content.body.content, "recuerd0.ai"
     assert_not_includes map_memory.content.body.content, "Create an access token"
 
@@ -248,7 +247,7 @@ class AccountTest < ActiveSupport::TestCase
     assert_equal seeded.zip(expected_defaults).filter_map { |memory, pinned| memory.id if pinned },
       user.pins.for_memories
         .where(pinnable_id: workspace.memories.select(:id))
-        .order(:pinnable_id)
+        .order(:position)
         .pluck(:pinnable_id)
   end
 

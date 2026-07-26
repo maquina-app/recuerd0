@@ -151,6 +151,12 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     get mcp_url
 
     assert_response :success
+    assert_select ".doc-sidebar a[href='#mcp-skill']", text: "MCP skill"
+    assert_select "#mcp-skill h2", text: "MCP skill"
+    assert_select "#mcp-skill p",
+      text: "MCP clients do not have the CLI installer, so download the MCP skill and add it to your client."
+    assert_select "#mcp-skill a[href='#{recuerd0_mcp_skill_path}']",
+      text: "download the MCP skill"
     assert_select "#memory-search h3", text: "Memory search"
     assert_includes response.body, "case-insensitive whole-tag equality"
     assert_includes response.body, "Matching is substring-level (trigram tokenizer)"

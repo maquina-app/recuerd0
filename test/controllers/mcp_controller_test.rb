@@ -63,7 +63,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
   test "tools/list returns every defined tool" do
     result = mcp(rpc("tools/list"), token: @read_token.raw_token)
-    names = result["result"]["tools"].map { |t| t["name"] }
+    tools = result["result"]["tools"]
+    names = tools.map { |t| t["name"] }
     assert_equal 13, names.size
     assert_equal "workspace_context", names.first
     assert_equal Mcp::ToolDefinitions::NAMES.sort, names.sort
@@ -72,6 +73,11 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_includes names, "link_memories"
     assert_includes names, "workspace_stats"
     assert_includes names, "suggest_merge_candidates"
+    workspace_context = tools.find { |tool| tool["name"] == "workspace_context" }
+    assert workspace_context["description"].end_with?(
+      "Call this before searching or writing, so later work is informed by what the " \
+        "workspace already holds and does not duplicate it."
+    )
   end
 
   test "tools/list appends the write mechanics descriptions" do
@@ -131,7 +137,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "workspace_context returns pinned current-version bodies through read_only access" do
-    workspace = @account.workspaces.create!(name: "MCP pinned context")
+    workspace = create_workspace_without_starter_map("MCP pinned context")
     root = Memory.create_with_content(
       workspace,
       title: "Version one",
@@ -172,7 +178,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "workspace_context falls back to recent roots and supports body options and clamping" do
-    workspace = @account.workspaces.create!(name: "MCP recent context")
+    workspace = create_workspace_without_starter_map("MCP recent context")
     older = Memory.create_with_content(workspace, title: "Older", content: "old")
     newer_body = "x" * 300
     newer = Memory.create_with_content(workspace, title: "Newer", content: newer_body)
@@ -227,7 +233,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "workspace_context root id matches list and updates directly with REST parity" do
-    workspace = @account.workspaces.create!(name: "MCP parity")
+    workspace = create_workspace_without_starter_map("MCP parity")
     root = Memory.create_with_content(workspace, title: "V1", content: "Body v1")
     root.create_version!(title: "V2", content: "Body v2")
     current = root.create_version!(title: "V3", content: "Body v3", tags: ["v3"])
@@ -345,7 +351,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_memories defaults to relevance with a query and permits explicit overrides" do
-    workspace = @account.workspaces.create!(name: "MCP Search Sort")
+    workspace = create_workspace_without_starter_map("MCP Search Sort")
     fts = Memory.create_with_content(workspace, title: "Release notes", content: "body")
     tag = Memory.create_with_content(workspace,
       title: "Newest tag", content: "body", tags: ["release notes"])
@@ -362,7 +368,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_memories applies explicit non-relevance sorts and resolves relevance without a query" do
-    workspace = @account.workspaces.create!(name: "MCP Explicit Sorts")
+    workspace = create_workspace_without_starter_map("MCP Explicit Sorts")
     zebra = Memory.create_with_content(workspace, title: "Zebra", content: "body")
     alpha = Memory.create_with_content(workspace, title: "Alpha", content: "body")
     zebra.update_columns(created_at: 2.days.ago, updated_at: 1.hour.from_now)
@@ -378,7 +384,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_memories updated sort reflects version creation" do
-    workspace = @account.workspaces.create!(name: "MCP Version Sort")
+    workspace = create_workspace_without_starter_map("MCP Version Sort")
     versioned = Memory.create_with_content(workspace, title: "Versioned", content: "v1")
     other = Memory.create_with_content(workspace, title: "Other", content: "body")
     versioned.update_column(:updated_at, 2.days.ago)
@@ -399,7 +405,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_memories accepts short exact-tag queries without invoking FTS" do
-    workspace = @account.workspaces.create!(name: "MCP Short Search")
+    workspace = create_workspace_without_starter_map("MCP Short Search")
     tag = Memory.create_with_content(workspace, title: "Tagged", content: "body", tags: ["Go"])
     Memory.create_with_content(workspace, title: "Go title only", content: "body")
 
@@ -410,7 +416,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_memories relevance pagination is stable with tied tag-only matches" do
-    workspace = @account.workspaces.create!(name: "MCP Stable Search")
+    workspace = create_workspace_without_starter_map("MCP Stable Search")
     memories = 3.times.map do |index|
       Memory.create_with_content(workspace,
         title: "Tag #{index}", content: "body", tags: ["go"])
@@ -535,7 +541,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_memory with a root id targets current and remains visible through read and list" do
-    workspace = @account.workspaces.create!(name: "MCP Root Update")
+    workspace = create_workspace_without_starter_map("MCP Root Update")
     original_body = "# Version one\n\nKeep these bytes.\n"
     root = Memory.create_with_content(workspace,
       title: "Version one", content: original_body, tags: ["v1"])
@@ -583,7 +589,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_memory rejects a historical child before validation without touching the root" do
-    workspace = @account.workspaces.create!(name: "MCP Immutable History")
+    workspace = create_workspace_without_starter_map("MCP Immutable History")
     root = Memory.create_with_content(workspace,
       title: "Version one", content: "First body", tags: ["v1"], category: "general")
     historical = root.create_version!(
@@ -632,7 +638,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_memory accepts a current child id and moves its root first in updated order" do
-    workspace = @account.workspaces.create!(name: "MCP Current Child Update")
+    workspace = create_workspace_without_starter_map("MCP Current Child Update")
     root = Memory.create_with_content(workspace, title: "Version one", content: "First")
     current = root.create_version!(title: "Version two", content: "Second")
     other = Memory.create_with_content(workspace, title: "Other memory", content: "Other")
@@ -662,7 +668,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_memory root id blank guard checks current body and touches nothing" do
-    workspace = @account.workspaces.create!(name: "MCP Current Blank Guard")
+    workspace = create_workspace_without_starter_map("MCP Current Blank Guard")
     root = Memory.create_with_content(workspace, title: "Blank v1", content: "")
     current = root.create_version!(title: "Nonblank v2", content: "Existing current body")
     root.update_column(:updated_at, 2.days.ago)
@@ -765,6 +771,12 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def create_workspace_without_starter_map(name)
+    @account.workspaces.create!(name: name).tap do |workspace|
+      workspace.memories.find_by!(title: WorkspaceStarter::TITLE).destroy!
+    end
+  end
 
   def oauth_token(permission:, scope:, expires_at: 1.hour.from_now)
     @user.access_tokens.create!(

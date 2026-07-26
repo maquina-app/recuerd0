@@ -224,6 +224,7 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
 
   test "falls back to recent roots with null pinned_at and zero pinned stats" do
     workspace = @user.account.workspaces.create!(name: "Recent fallback")
+    workspace.memories.find_by!(title: WorkspaceStarter::TITLE).destroy!
     older = Memory.create_with_content(workspace, title: "Older", content: "Old body")
     newer = Memory.create_with_content(workspace, title: "Newer", content: "New body")
     older.update_column(:updated_at, 2.days.ago)

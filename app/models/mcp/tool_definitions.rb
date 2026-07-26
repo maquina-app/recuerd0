@@ -8,10 +8,11 @@ module Mcp
       {
         name: "workspace_context",
         description: "Wake up a session on a workspace. Returns the workspace, a small set of " \
-          "orienting memories, and counts. Call this before searching or writing, so later work " \
-          "is informed by what the workspace already holds and does not duplicate it. Returns " \
+          "orienting memories, and counts. Returns " \
           "the caller's pinned memories when they have any, and the most recently updated " \
-          "memories otherwise; `context_source` says which.",
+          "memories otherwise; `context_source` says which. Call this before searching or " \
+          "writing, so later work is informed by what the workspace already holds and does " \
+          "not duplicate it.",
         annotations: {readOnlyHint: true, destructiveHint: false},
         inputSchema: {
           type: "object",
