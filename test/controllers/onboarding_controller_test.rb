@@ -284,7 +284,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_equal "space-y-1", banner.at_css("ol")["class"]
     assert_equal "my-1 rounded-[10px] border border-border bg-muted/40 px-3 py-2.5", active_row["class"]
     assert_equal "flex items-center gap-3", title_row["class"]
-    assert_equal "mt-1.5 ml-[30px]", body["class"]
+    assert_equal "mt-1.5 ml-[26px]", body["class"]
     body.css("p").each do |paragraph|
       assert_includes paragraph["class"].split, "text-[13px]"
     end
@@ -294,7 +294,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_equal completed, complete_indicators.size
     complete_indicators.each do |indicator|
       assert_equal(
-        "flex size-[18px] shrink-0 items-center justify-center rounded-full " \
+        "flex size-[14px] shrink-0 items-center justify-center rounded-full " \
           "bg-primary text-primary-foreground",
         indicator["class"]
       )
@@ -302,7 +302,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_equal 4 - completed, incomplete_indicators.size
     incomplete_indicators.each do |indicator|
       assert_equal(
-        "size-[18px] shrink-0 rounded-full border-[1.5px] border-dashed " \
+        "size-[14px] shrink-0 rounded-full border-[1.5px] border-dashed " \
           "border-muted-foreground/50",
         indicator["class"]
       )
