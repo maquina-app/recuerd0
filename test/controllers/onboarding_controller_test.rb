@@ -42,7 +42,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       text: "One account command makes every CLI workflow available."
     assert_only_commands(
       "brew install maquina-app/tap/recuerd0",
-      "recuerd0 account add personal --api-url https://example.com --token <token>"
+      "recuerd0 account add personal --token <token>"
     )
   end
 
