@@ -176,14 +176,14 @@ class AccountTest < ActiveSupport::TestCase
     workspace = account.workspaces.find_by(name: "My Workspace")
     assert_equal 4, workspace.memories.count
     assert_equal [
-      "_MAP",
+      WorkspaceStarter::TITLE,
       "Continuation Brief",
-      "_INDEX — Decisions",
+      "Index — decisions",
       "D001 — Keep this workspace flat until ~20 memories"
     ],
       workspace.memories.order(:id).pluck(:title)
 
-    map_memory = workspace.memories.find_by!(title: "_MAP")
+    map_memory = workspace.memories.order(:id).first
     assert_equal 1, workspace.memories.where(
       title: WorkspaceStarter::TITLE,
       parent_memory_id: nil
@@ -205,7 +205,7 @@ class AccountTest < ActiveSupport::TestCase
 
     default_listing = workspace.memories.latest_versions
       .ordered_by(Memory.resolve_sort(nil, query: nil))
-    assert_equal "_MAP", default_listing.first.title
+    assert_equal WorkspaceStarter::TITLE, default_listing.first.title
   end
 
   test "seed_start_here_workspace memories have content" do

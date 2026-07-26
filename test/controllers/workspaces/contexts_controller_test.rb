@@ -56,7 +56,7 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     json = JSON.parse(response.body)
-    assert_equal ["_MAP", "Continuation Brief"].sort,
+    assert_equal [WorkspaceStarter::TITLE, "Continuation Brief"].sort,
       json["memories"].map { |memory| memory["title"] }.sort
     assert_equal "pins", json["context_source"]
   end

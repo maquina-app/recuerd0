@@ -18,7 +18,10 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#shape h2", text: "What you start with"
     assert_select "#shape .resource-header p",
       text: "Every new account includes My Workspace with four memories in a deliberate reading order: " \
-        "_MAP, Continuation Brief, _INDEX — Decisions, and D001 — the first decision."
+        "Map — how this workspace is kept, Continuation Brief, Index — decisions, " \
+        "and D001 — the first decision."
+    assert_select "#shape h3", text: "Map — how this workspace is kept"
+    assert_select "#shape h3", text: "Index — decisions"
     assert_select "#path h3", text: "1. Create a token"
     assert_select "#path h3", text: "2. Install and connect the CLI"
     assert_select "#path h3", text: "3. Import what you already know"
@@ -36,6 +39,8 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#shape h3", text: "When it grows"
     assert_select "#shape p", text: /A hub is a routing-table memory for crowded territory/
     assert_includes response.body, "Hub — Payments"
+    assert_not_includes response.body, ["_", "MAP"].join
+    assert_not_includes response.body, ["_", "INDEX"].join
 
     assert_select "#path a[href='#{profile_path(anchor: "access-tokens")}']", text: "Access Tokens"
     assert_select "#doors a[href='#{cli_path}']"

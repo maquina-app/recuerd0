@@ -78,7 +78,7 @@ class Account < ApplicationRecord
   def seed_start_here_workspace(user)
     workspace = workspaces.create!(name: "My Workspace")
     map_data, *remaining_memories = StartHereContent::MEMORIES
-    map = workspace.memories.find_by!(title: WorkspaceStarter::TITLE)
+    map = workspace.starter_map
     map.pin!(user)
 
     remaining_memories.each do |memory_data|

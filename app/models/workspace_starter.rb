@@ -1,8 +1,8 @@
 module WorkspaceStarter
-  TITLE = "_MAP"
+  TITLE = "Map — how this workspace is kept"
   TAGS = ["getting-started", "map"].freeze
   BODY = <<~MARKDOWN.freeze
-    # _MAP
+    # Map — how this workspace is kept
 
     Read this first, every session — you or your AI tool. One line per entry, written the way you'd actually ask for it.
 
@@ -22,7 +22,7 @@ module WorkspaceStarter
 
     ## Why this shape
 
-    The map is the front door: one read orients a cold session, and every memory stays reachable within two hops. The brief carries state between sessions — its version history becomes your log. The index keeps locked decisions one hop away. Keep the map flat until around twenty memories; past that, group clusters behind hub memories. Search is keyword search, fast and literal, so write map lines and titles the way you'd ask for them. None of this is required — delete anything; a blank workspace is a fine workspace. Full reasoning: __BASE_URL__/start or docs/blueprint.md in the repository.
+    The map is the front door: one read orients a cold session, and every memory stays reachable within two hops. The brief carries state between sessions — its version history becomes your log. Index — decisions keeps locked decisions one hop away. Keep the map flat until around twenty memories; past that, group clusters behind hub memories. Search is keyword search, fast and literal, so write map lines and titles the way you'd ask for them. None of this is required — delete anything; a blank workspace is a fine workspace. Full reasoning: __BASE_URL__/start or docs/blueprint.md in the repository.
   MARKDOWN
 
   def self.attributes(base_url:, routing_bullets: [])

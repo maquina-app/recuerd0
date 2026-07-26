@@ -1,7 +1,7 @@
 module StartHereContent
   MAP_ROUTING_BULLETS = [
     "- **Continuation Brief** — where things stand and what's next. Read it second; rewrite it as a new version when a session ends.",
-    "- **_INDEX — Decisions** — one line per decision you lock."
+    "- **Index — decisions** — one line per decision you lock."
   ].freeze
 
   MEMORIES = [
@@ -33,11 +33,11 @@ module StartHereContent
       MARKDOWN
     },
     {
-      title: "_INDEX — Decisions",
+      title: "Index — decisions",
       tags: ["getting-started", "index"],
       pinned: false,
       content: <<~MARKDOWN
-        # _INDEX — Decisions
+        # Index — decisions
 
         One line per locked decision, so any of them is two hops from the map. Number them D001, D002, … and give each its own memory: what you chose, why, and what you rejected. Decisions don't get edited later — a changed mind is a new decision that points back.
 

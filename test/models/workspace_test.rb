@@ -6,6 +6,7 @@ class WorkspaceTest < ActiveSupport::TestCase
 
     assert_equal 1, workspace.memories.count
     map = workspace.memories.sole
+    assert_equal map, workspace.starter_map
     assert_equal WorkspaceStarter::TITLE, map.title
     assert_equal WorkspaceStarter::TAGS, map.tags
     assert_equal "system", map.source

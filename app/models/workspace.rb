@@ -5,6 +5,7 @@ class Workspace < ApplicationRecord
 
   belongs_to :account
   has_many :memories, dependent: :destroy
+  attr_reader :starter_map
 
   # Validations
   validates :name, presence: true, length: {maximum: 100}
@@ -77,10 +78,10 @@ class Workspace < ApplicationRecord
     attributes = WorkspaceStarter.attributes(
       base_url: Rails.application.config.x.app_base_url
     )
-    memory = memories.create!(
+    @starter_map = memories.create!(
       attributes.except(:content).merge(source: "system", default_pinned: true)
     )
-    memory.create_content!(body: attributes[:content])
+    starter_map.create_content!(body: attributes[:content])
   end
 
   # Unpin from all users when workspace becomes inactive

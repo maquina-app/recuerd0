@@ -1,16 +1,16 @@
 # The workspace blueprint
 
-Every new recuerd0 account starts with **My Workspace**, already shaped around four memories: _MAP, Continuation Brief, _INDEX — Decisions, and D001 — the first decision. This page is the reasoning behind that shape — what each piece is for, when to grow past it, and how to leave it behind entirely.
+Every new recuerd0 account starts with **My Workspace**, already shaped around four memories: Map — how this workspace is kept, Continuation Brief, Index — decisions, and D001 — the first decision. This page is the reasoning behind that shape — what each piece is for, when to grow past it, and how to leave it behind entirely.
 
 The stance throughout is convention over configuration. The skeleton carries you fast at the start; nothing about it is enforced, and every piece of it can be deleted.
 
 ## The shape
 
-**_MAP** is the front door. A session — yours or an AI tool's — reads it first and knows where everything lives. Two rules make a map work: every memory stays reachable within two hops of it, and every line is written in the words someone would actually ask with. "Where do the images live" routes a cold session; "storage architecture" alone may not. When you add a memory, add its line.
+**Map — how this workspace is kept** is the front door. A session — yours or an AI tool's — reads it first and knows where everything lives. Two rules make a map work: every memory stays reachable within two hops of it, and every line is written in the words someone would actually ask with. "Where do the images live" routes a cold session; "storage architecture" alone may not. When you add a memory, add its line.
 
 **Continuation Brief** carries state between sessions: where things stand, what's open, what to pick up next. Rewrite it when a session ends and save it as a new version — the version history becomes your session log without any extra ceremony.
 
-**_INDEX — Decisions** holds one line per locked decision, numbered D001, D002, and so on. Each decision gets its own memory: what you chose, why, what you rejected. Decisions don't get edited afterward — a changed mind is a new decision that points back at the old one. The index means any decision is two hops from the map.
+**Index — decisions** holds one line per locked decision, numbered D001, D002, and so on. Each decision gets its own memory: what you chose, why, what you rejected. Decisions don't get edited afterward — a changed mind is a new decision that points back at the old one. The index means any decision is two hops from the map.
 
 **Hubs** are routing tables for crowded territory: one line of judgment per entry, pointing at the memory with the detail. Hubs are not seeded — you grow into them. You don't need them on day one. Keep the map flat until around twenty memories; when a cluster forms, promote it behind a hub and give the map one line pointing there.
 

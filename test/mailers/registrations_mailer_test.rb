@@ -28,7 +28,10 @@ class RegistrationsMailerTest < ActionMailer::TestCase
     assert_includes body, "Getting Started guide"
     assert_includes body, workspace_url
     assert_includes body, "Open My Workspace"
+    seeded_titles.each { |title| assert_includes body, title }
     assert_not_includes body, ["five onboarding", "memories"].join(" ")
+    assert_not_includes body, ["_", "MAP"].join
+    assert_not_includes body, ["_", "INDEX"].join
   end
 
   test "welcome email text contains key information" do
@@ -41,6 +44,20 @@ class RegistrationsMailerTest < ActionMailer::TestCase
     assert_includes body, start_url
     assert_includes body, "Getting Started: #{start_url}"
     assert_match "never share it, sell it", body
+    seeded_titles.each { |title| assert_includes body, title }
     assert_not_includes body, ["five onboarding", "memories"].join(" ")
+    assert_not_includes body, ["_", "MAP"].join
+    assert_not_includes body, ["_", "INDEX"].join
+  end
+
+  private
+
+  def seeded_titles
+    [
+      "Map — how this workspace is kept",
+      "Continuation Brief",
+      "Index — decisions",
+      "D001"
+    ]
   end
 end
