@@ -44,11 +44,12 @@ recuerd0 account add personal --api-url https://your-server.com --token YOUR_TOK
 
         <div class="endpoint-head">
           <h3>3. Import what you already know</h3>
-          <p>Import is propose → review → commit. Propose writes <code>import.plan.yaml</code> without touching the server; review that plan before you approve any writes.</p>
+          <p>Import is propose → review → commit. Propose writes <code>import.plan.yaml</code> without touching the server; review that plan before you approve any writes. Run <code>recuerd0 workspace list</code> to find the workspace ID.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">recuerd0 import propose ./vault --workspace 12 --pretty
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 workspace list
+recuerd0 import propose ./vault --workspace 12 --pretty
 <span class="cc"># Review import.plan.yaml, then commit the plan you approved</span>
 recuerd0 import commit import.plan.yaml --yes --pretty</code></div>
         </div>

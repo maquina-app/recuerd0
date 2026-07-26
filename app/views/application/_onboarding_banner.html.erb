@@ -48,7 +48,7 @@ end %>
           </span>
         <% else %>
           <span
-            class="size-[14px] shrink-0 rounded-full border-[1.5px] border-dashed border-muted-foreground/50"
+            class="onboarding-indicator-ring size-[14px] shrink-0 rounded-full"
             data-onboarding-indicator
             aria-hidden="true"
           ></span>
@@ -84,7 +84,7 @@ end %>
           </span>
         <% else %>
           <span
-            class="size-[14px] shrink-0 rounded-full border-[1.5px] border-dashed border-muted-foreground/50"
+            class="onboarding-indicator-ring size-[14px] shrink-0 rounded-full"
             data-onboarding-indicator
             aria-hidden="true"
           ></span>
@@ -100,7 +100,7 @@ end %>
           <p class="mt-2 text-[13px] text-muted-foreground">
             <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">brew install maquina-app/tap/recuerd0</code>,
             then
-            <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 account add</code>
+            <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 account add personal --api-url <%= Rails.application.config.x.app_base_url %> --token &lt;token&gt;</code>
           </p>
         </div>
       <% end %>
@@ -124,7 +124,7 @@ end %>
           </span>
         <% else %>
           <span
-            class="size-[14px] shrink-0 rounded-full border-[1.5px] border-dashed border-muted-foreground/50"
+            class="onboarding-indicator-ring size-[14px] shrink-0 rounded-full"
             data-onboarding-indicator
             aria-hidden="true"
           ></span>
@@ -135,9 +135,14 @@ end %>
       <% if step_expanded %>
         <div class="mt-1.5 ml-[26px]">
           <p class="text-[13px] text-muted-foreground">
-            <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 import propose &lt;path&gt;</code>,
+            Find the workspace ID, propose an import, review the generated plan, then commit it.
+          </p>
+          <p class="mt-2 text-[13px] text-muted-foreground">
+            <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 workspace list</code>,
+            then
+            <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 import propose &lt;path&gt; --workspace &lt;id&gt;</code>,
             review the plan it writes, then
-            <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 import commit</code>
+            <code class="rounded bg-muted px-1.5 py-0.5 font-mono text-[12px]">recuerd0 import commit import.plan.yaml --yes</code>
           </p>
         </div>
       <% end %>
@@ -151,7 +156,7 @@ end %>
     >
       <% if step_expanded %><div class="flex items-center gap-3"><% end %>
         <span
-          class="size-[14px] shrink-0 rounded-full border-[1.5px] border-dashed border-muted-foreground/50"
+          class="onboarding-indicator-ring size-[14px] shrink-0 rounded-full"
           data-onboarding-indicator
           aria-hidden="true"
         ></span>

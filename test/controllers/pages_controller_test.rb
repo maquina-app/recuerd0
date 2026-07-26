@@ -25,6 +25,10 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#path h3", text: "4. Install the skill"
     assert_select "#path h3", text: "5. Connect over MCP"
     assert_includes response.body, "propose → review → commit"
+    assert_select "#path .endpoint-head", text: /3\. Import what you already know/ do
+      assert_select "p",
+        text: /Run recuerd0 workspace list to find the workspace ID\./
+    end
     assert_includes response.body, "workspace context endpoint"
     assert_includes response.body, "./.claude/skills"
     assert_select "#shape h3", text: "D001 — the first decision"
@@ -39,6 +43,20 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".code-block[data-controller='clipboard']", count: 4
     assert_select ".code-block button[data-action='clipboard#copy']", count: 4
     assert_select ".code-block code[data-clipboard-target='source']", count: 4
+
+    import_heading = css_select("#path .endpoint-head").find do |heading|
+      heading.at_css("h3")&.text&.strip == "3. Import what you already know"
+    end
+    import_commands = import_heading.next_element.at_css("code[data-clipboard-target='source']").text.lines.map(&:strip)
+    assert_equal(
+      [
+        "recuerd0 workspace list",
+        "recuerd0 import propose ./vault --workspace 12 --pretty",
+        "# Review import.plan.yaml, then commit the plan you approved",
+        "recuerd0 import commit import.plan.yaml --yes --pretty"
+      ],
+      import_commands
+    )
   end
 
   test "GET start renders without hosted-service links in single-tenant mode" do
@@ -147,6 +165,18 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#cmd-skills code", text: /--force/
   end
 
+  test "GET CLI docs uses the account select command" do
+    get cli_url
+
+    assert_response :success
+    assert_select "#cmd-account code", text: /recuerd0 account select <name>/
+    assert_select "#cmd-account tr" do
+      assert_select "td:first-child code", text: "select"
+      assert_select "td:nth-child(2)", text: "Set the active account."
+    end
+    assert_not_includes css_select("#cmd-account").first.text, "account default"
+  end
+
   test "GET agents docs links to the CLI skills alternative" do
     get agents_url
 
@@ -155,5 +185,8 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#claude-code-plugin code", text: "recuerd0 skills install"
     assert_includes response.body, "drops the same skill into"
     assert_includes response.body, "./.claude/skills"
+    assert_select "#claude-code-plugin p",
+      text: /It installs the recuerd0 skill — a model-invoked skill/
+    assert_not_includes response.body, "It installs the <code>remember</code> skill"
   end
 end

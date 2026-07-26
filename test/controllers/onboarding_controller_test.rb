@@ -42,7 +42,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       text: "One account command makes every CLI workflow available."
     assert_only_commands(
       "brew install maquina-app/tap/recuerd0",
-      "recuerd0 account add"
+      "recuerd0 account add personal --api-url https://example.com --token <token>"
     )
   end
 
@@ -54,9 +54,15 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_banner_progress(completed: 2, active_step: 3)
+    assert_select "[data-onboarding-step='3'][data-expanded='true'] p",
+      text: "Find the workspace ID, propose an import, review the generated plan, then commit it."
+    assert_select "[data-onboarding-step='3'][data-expanded='true'] p.mt-2",
+      text: "recuerd0 workspace list, then recuerd0 import propose <path> --workspace <id>, " \
+        "review the plan it writes, then recuerd0 import commit import.plan.yaml --yes"
     assert_only_commands(
-      "recuerd0 import propose <path>",
-      "recuerd0 import commit"
+      "recuerd0 workspace list",
+      "recuerd0 import propose <path> --workspace <id>",
+      "recuerd0 import commit import.plan.yaml --yes"
     )
   end
 
@@ -302,8 +308,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_equal 4 - completed, incomplete_indicators.size
     incomplete_indicators.each do |indicator|
       assert_equal(
-        "size-[14px] shrink-0 rounded-full border-[1.5px] border-dashed " \
-          "border-muted-foreground/50",
+        "onboarding-indicator-ring size-[14px] shrink-0 rounded-full",
         indicator["class"]
       )
     end
