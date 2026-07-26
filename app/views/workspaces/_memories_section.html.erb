@@ -1,7 +1,7 @@
 <%# locals: (workspace:, memories:, pinned_memories:, regular_memories:, pagy:) %>
 <%
   has_results = pinned_memories.any? || regular_memories.any?
-  filter_active = @category.present? || @memory_query.present?
+  filter_active = @category.present? || @memory_query.present? || @memory_tag.present?
   search_active = @memory_query.present?
   compact = (@memory_view == "compact")
   # archived/deleted workspaces suppress pinned indicators → fold into "All"

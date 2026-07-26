@@ -133,6 +133,74 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "decision", @controller.view_assigns["category"]
   end
 
+  test "show filters memories by tag" do
+    tagged = Memory.create_with_content(@workspace, title: "Tagged", content: "b", tags: ["onboarding"])
+    Memory.create_with_content(@workspace, title: "Other", content: "b", tags: ["billing"])
+
+    get workspace_url(@workspace, tag: "onboarding")
+    assert_response :success
+
+    memories = @controller.view_assigns["memories"].to_a
+    assert_equal [tagged], memories
+    assert_equal "onboarding", @controller.view_assigns["memory_tag"]
+  end
+
+  test "show tag filter is case-sensitive" do
+    Memory.create_with_content(@workspace, title: "Tagged", content: "b", tags: ["Onboarding"])
+
+    get workspace_url(@workspace, tag: "onboarding")
+    assert_response :success
+
+    assert_empty @controller.view_assigns["memories"].to_a
+  end
+
+  test "show drops category and query when a tag filter is active" do
+    tagged = Memory.create_with_content(@workspace, title: "Tagged decision", content: "b",
+      category: "decision", tags: ["onboarding"])
+    Memory.create_with_content(@workspace, title: "Other discovery", content: "b",
+      category: "discovery", tags: ["onboarding"])
+
+    get workspace_url(@workspace, tag: "onboarding", category: "decision", q: "Tagged decision")
+    assert_response :success
+
+    memories = @controller.view_assigns["memories"].to_a
+    assert_equal 2, memories.size
+    assert_includes memories, tagged
+    assert_nil @controller.view_assigns["category"]
+    assert_equal "", @controller.view_assigns["memory_query"]
+    assert_equal "onboarding", @controller.view_assigns["memory_tag"]
+  end
+
+  test "show renders a dismissible active tag chip" do
+    Memory.create_with_content(@workspace, title: "Tagged", content: "b", tags: ["onboarding"])
+
+    get workspace_url(@workspace, tag: "onboarding")
+    assert_response :success
+
+    assert_select "span.category-chip", text: /Tag: onboarding/
+    assert_select "a[aria-label='Clear tag filter']"
+  end
+
+  test "show renders clickable tag links on memory cards" do
+    Memory.create_with_content(@workspace, title: "Tagged", content: "b", tags: ["onboarding"])
+
+    get workspace_url(@workspace)
+    assert_response :success
+
+    assert_select "a.tag-badge[aria-label='Filter by tag: onboarding']"
+  end
+
+  test "show renders the tag chip even when the tag matches nothing" do
+    Memory.create_with_content(@workspace, title: "Untagged", content: "b")
+
+    get workspace_url(@workspace, tag: "nonexistent")
+    assert_response :success
+
+    assert_empty @controller.view_assigns["memories"].to_a
+    assert_select "span.category-chip", text: /Tag: nonexistent/
+    assert_select "a[aria-label='Clear tag filter']"
+  end
+
   test "show with sort=title responds 200 and sets memory_sort" do
     get workspace_url(@workspace, sort: "title")
     assert_response :success

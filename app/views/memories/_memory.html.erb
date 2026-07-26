@@ -76,10 +76,13 @@
     <% if display_version.tags.any? %>
       <div class="flex flex-wrap gap-1.5 pt-3">
         <% display_version.tags.each do |tag| %>
-          <span class="tag-badge">
+          <%= link_to workspace_show_path(workspace, tag: tag, view: @memory_view),
+                class: "tag-badge",
+                data: { turbo_action: "advance" },
+                "aria-label": t("workspaces.show.toolbar.tag_filter_aria", tag: tag) do %>
             <%= icon_for(:tag) %>
             <span class="tag-label"><%= tag %></span>
-          </span>
+          <% end %>
         <% end %>
       </div>
     <% end %>
