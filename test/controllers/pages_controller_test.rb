@@ -29,7 +29,8 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
       assert_select "p",
         text: /Run recuerd0 workspace list to find the workspace ID\./
     end
-    assert_includes response.body, "workspace context endpoint"
+    assert_includes response.body, "there is no token to copy"
+    assert_includes response.body, "available through the CLI and API today"
     assert_includes response.body, "./.claude/skills"
     assert_select "#path a[href='#{recuerd0_mcp_skill_path}']", text: "download the MCP skill"
     assert_select "#shape h3", text: "D001 — the first decision"
