@@ -44,9 +44,9 @@ class Workspaces::ContextResolverTest < ActiveSupport::TestCase
   test "without a user returns latest root versions by updated time" do
     older = create_memory(title: "Older")
     newer = create_memory(title: "Newer")
+    child = older.create_version!(title: "Older current", content: "v2")
     older.update_column(:updated_at, 2.days.ago)
     newer.update_column(:updated_at, 1.day.ago)
-    child = older.create_version!(title: "Older current", content: "v2")
 
     result = resolve(user: nil, limit: 2)
 
@@ -55,6 +55,33 @@ class Workspaces::ContextResolverTest < ActiveSupport::TestCase
     assert_equal [newer.id, older.id], result[:memories].map(&:id)
     assert_not_includes result[:memories].map(&:id), child.id
     assert result[:memories].all?(&:root_version?)
+  end
+
+  test "versioning a memory moves its root to the front of recent context" do
+    versioned = create_memory(title: "Versioned")
+    other = create_memory(title: "Other")
+    versioned.update_column(:updated_at, 2.days.ago)
+    other.update_column(:updated_at, 1.day.ago)
+
+    travel_to Time.current do
+      versioned.create_version!(title: "Versioned current", content: "v2")
+    end
+
+    result = resolve(user: nil, limit: 2)
+
+    assert_equal [versioned.id, other.id], result[:memories].map(&:id)
+  end
+
+  test "a pin on a child version surfaces the root memory" do
+    root = create_memory(title: "Root")
+    child = root.create_version!(title: "Child", content: "v2")
+    child.pin!(@user)
+
+    result = resolve
+
+    assert_equal "pins", result[:source]
+    assert_equal 1, result[:total_pinned]
+    assert_equal [root.id], result[:memories].map(&:id)
   end
 
   test "pins and recent branches preload child version content for resolution" do

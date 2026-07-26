@@ -7,10 +7,11 @@ module Mcp
     ALL = [
       {
         name: "workspace_context",
-        description: "Load a compact wake-up snapshot for a workspace. Returns the current " \
-          "user's category-matching pinned memories when any exist, or the most recently " \
-          "updated memories otherwise. Display fields and optional bodies come from each " \
-          "memory's current version while IDs remain stable root-memory IDs.",
+        description: "Wake up a session on a workspace. Returns the workspace, a small set of " \
+          "orienting memories, and counts. Call this before searching or writing, so later work " \
+          "is informed by what the workspace already holds and does not duplicate it. Returns " \
+          "the caller's pinned memories when they have any, and the most recently updated " \
+          "memories otherwise; `context_source` says which.",
         annotations: {readOnlyHint: true, destructiveHint: false},
         inputSchema: {
           type: "object",

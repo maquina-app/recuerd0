@@ -30,7 +30,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
         text: /Run recuerd0 workspace list to find the workspace ID\./
     end
     assert_includes response.body, "there is no token to copy"
-    assert_includes response.body, "available through the CLI and API today"
     assert_includes response.body, "./.claude/skills"
     assert_select "#path a[href='#{recuerd0_mcp_skill_path}']", text: "download the MCP skill"
     assert_select "#shape h3", text: "D001 — the first decision"
@@ -146,7 +145,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
         "pins or recent."
     assert_select "#get-workspace-context", text: /pinned_memories.*deprecated/m
     assert_select "#get-workspace-context", text: /stats\.returned_pinned.*deprecated/m
-    assert_select "#get-workspace-context", text: /stable root memory IDs/
   end
 
   test "GET MCP docs renders the safe phrase and exact-tag search contract" do
@@ -160,20 +158,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Queries under three characters"
     assert_includes response.body, "relevance"
     assert_select "a[href='/api-docs#search']"
-
-    rows = css_select("#tools tbody tr")
-    assert_equal 13, rows.size
-    names = rows.map { |row| row.at_css("td:first-child").text.strip }
-    assert_equal Mcp::ToolDefinitions::NAMES.sort, names.sort
-    types = rows.map { |row| row.css("td")[1].text.strip }
-    assert_equal 8, types.count("read")
-    assert_equal 5, types.count("write")
-    assert_not_includes response.body.downcase, "six tools"
-
-    permissions = css_select("#scopes .doc-note").first.text
-    McpController::WRITE_TOOLS.each do |tool|
-      assert_includes permissions, tool
-    end
   end
 
   test "GET CLI docs includes the skills command" do

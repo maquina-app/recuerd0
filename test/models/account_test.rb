@@ -184,6 +184,17 @@ class AccountTest < ActiveSupport::TestCase
       workspace.memories.order(:id).pluck(:title)
 
     map_memory = workspace.memories.find_by!(title: "_MAP")
+    assert_includes map_memory.content.body.content, <<~MARKDOWN.strip
+      ## How this workspace is kept
+
+      - Read this map before adding anything, so you know what is already here.
+      - Every memory gets one line in the table below, with a short note on what it covers.
+      - Before creating a memory, check whether one already covers the same ground. Update or version that one instead of adding a duplicate.
+      - Titles state what the memory answers, not the topic it is about.
+      - Link memories that belong together.
+
+      These are this workspace's conventions, not the product's. Edit them to match how your team works, or delete this memory if you would rather not work this way.
+    MARKDOWN
     assert_includes map_memory.content.body.content, "https://example.com/start"
     assert_not_includes map_memory.content.body.content, "recuerd0.ai"
     assert_not_includes map_memory.content.body.content, "Create an access token"

@@ -58,7 +58,10 @@ class McpController < ApplicationController
     jsonrpc_result(
       protocolVersion: version,
       capabilities: {tools: {}},
-      serverInfo: {name: "recuerd0", version: "1.0.0"}
+      serverInfo: {name: "recuerd0", version: "1.0.0"},
+      instructions: "Before writing to or searching a workspace, call workspace_context on it. " \
+        "Workspaces carry their own conventions, and the context response tells you what the " \
+        "workspace already holds so your work fits it and does not duplicate it."
     )
   end
 

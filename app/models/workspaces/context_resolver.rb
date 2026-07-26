@@ -20,17 +20,26 @@ module Workspaces
 
     def call
       if user
-        pinned_scope = workspace.memories
-          .latest_versions
+        pinned_root_ids = workspace.memories
           .joins(:pins)
           .where(pins: {user_id: user.id})
-          .by_category(category)
           .order(Arel.sql("pins.created_at DESC"))
+          .pluck(:id, :parent_memory_id)
+          .map { |id, parent_memory_id| parent_memory_id || id }
+          .uniq
 
-        total_pinned = pinned_scope.count
+        pinned_roots_by_id = workspace.memories
+          .latest_versions
+          .where(id: pinned_root_ids)
+          .by_category(category)
+          .includes(*PRELOADS)
+          .index_by(&:id)
+        pinned_roots = pinned_root_ids.filter_map { |id| pinned_roots_by_id[id] }
+
+        total_pinned = pinned_roots.size
         if total_pinned.positive?
           return {
-            memories: pinned_scope.includes(*PRELOADS).limit(limit).to_a,
+            memories: pinned_roots.first(limit),
             source: "pins",
             total_pinned: total_pinned
           }

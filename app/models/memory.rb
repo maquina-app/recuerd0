@@ -211,6 +211,7 @@ class Memory < ApplicationRecord
     transaction do
       new_version.save!
       new_version.create_content!(body: attributes[:content] || content&.body&.content.to_s)
+      root.touch
     end
     new_version.sync_root_category!
     new_version.sync_root_tags!

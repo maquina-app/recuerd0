@@ -35,6 +35,12 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal "2025-03-26", result["result"]["protocolVersion"]
+    assert_equal(
+      "Before writing to or searching a workspace, call workspace_context on it. " \
+        "Workspaces carry their own conventions, and the context response tells you what the " \
+        "workspace already holds so your work fits it and does not duplicate it.",
+      result["result"]["instructions"]
+    )
     assert response.headers["Mcp-Session-Id"].present?
   end
 
@@ -369,6 +375,27 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal [alpha.id.to_s, zebra.id.to_s], title["memories"].map { |memory| memory["id"] }
     assert_equal [alpha.id.to_s, zebra.id.to_s], created["memories"].map { |memory| memory["id"] }
     assert_equal [zebra.id.to_s, alpha.id.to_s], relevance["memories"].map { |memory| memory["id"] }
+  end
+
+  test "list_memories updated sort reflects version creation" do
+    workspace = @account.workspaces.create!(name: "MCP Version Sort")
+    versioned = Memory.create_with_content(workspace, title: "Versioned", content: "v1")
+    other = Memory.create_with_content(workspace, title: "Other", content: "body")
+    versioned.update_column(:updated_at, 2.days.ago)
+    other.update_column(:updated_at, 1.day.ago)
+
+    travel_to Time.current do
+      call_tool(
+        "create_version",
+        {memory_id: versioned.id.to_s, title: "Versioned current", content: "v2"},
+        token: @full_token.raw_token
+      )
+    end
+
+    listed = call_tool("list_memories", {workspace_id: workspace.id.to_s, sort: "updated"})
+
+    assert_equal [versioned.id.to_s, other.id.to_s],
+      listed["memories"].map { |memory| memory["id"] }
   end
 
   test "list_memories accepts short exact-tag queries without invoking FTS" do
