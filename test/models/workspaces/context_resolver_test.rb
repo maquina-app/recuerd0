@@ -85,6 +85,29 @@ class Workspaces::ContextResolverTest < ActiveSupport::TestCase
     assert_equal [root.id], result[:memories].map(&:id)
   end
 
+  test "a seeded workspace with fifteen pins keeps the map and brief in a limit ten context" do
+    @account.seed_start_here_workspace(@user)
+    seeded_workspace = @account.workspaces.find_by!(name: "My Workspace")
+
+    13.times do |index|
+      memory = Memory.create_with_content(
+        seeded_workspace,
+        title: "Pinned #{index + 1}",
+        content: "Pinned body #{index + 1}"
+      )
+      memory.pin!(@user)
+    end
+
+    result = resolve(workspace: seeded_workspace, limit: 10)
+    titles = result[:memories].map(&:title)
+
+    assert_equal "pins", result[:source]
+    assert_equal 15, result[:total_pinned]
+    assert_equal 10, result[:memories].size
+    assert_includes titles, WorkspaceStarter::TITLE
+    assert_includes titles, "Continuation Brief"
+  end
+
   test "pins and recent branches preload child version content for resolution" do
     pinned = create_memory(title: "Pinned")
     pinned_child = pinned.create_version!(title: "Pinned current", content: "pinned v2")
@@ -119,9 +142,9 @@ class Workspaces::ContextResolverTest < ActiveSupport::TestCase
     )
   end
 
-  def resolve(user: @user, limit: 10, category: nil)
+  def resolve(workspace: @workspace, user: @user, limit: 10, category: nil)
     Workspaces::ContextResolver.call(
-      workspace: @workspace,
+      workspace: workspace,
       user: user,
       limit: limit,
       category: category

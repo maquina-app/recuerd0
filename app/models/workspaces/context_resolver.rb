@@ -35,6 +35,8 @@ module Workspaces
           .includes(*PRELOADS)
           .index_by(&:id)
         pinned_roots = pinned_root_ids.filter_map { |id| pinned_roots_by_id[id] }
+        prioritized, rest = pinned_roots.partition(&:default_pinned)
+        pinned_roots = prioritized + rest
 
         total_pinned = pinned_roots.size
         if total_pinned.positive?
