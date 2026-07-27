@@ -22,7 +22,7 @@ module WorkspaceStarter
 
     ## Why this shape
 
-    The map is the front door: one read orients a cold session, and every memory stays reachable within two hops. Index — decisions keeps locked decisions one hop away. Keep the map flat until around twenty memories; past that, group clusters behind hub memories. None of this is required — delete anything; a blank workspace is a fine workspace. Full reasoning: __BASE_URL__/start or docs/blueprint.md in the repository.
+    The map is the front door: one read orients a cold session, and every memory stays reachable within two hops. Keep the map flat until around twenty memories; past that, group clusters behind hub memories. Search is keyword search, fast and literal, so write map lines and titles the way you'd ask for them. None of this is required — delete anything; a blank workspace is a fine workspace. Full reasoning: __BASE_URL__/start or docs/blueprint.md in the repository.
   MARKDOWN
 
   def self.attributes(base_url:, routing_bullets: [])
