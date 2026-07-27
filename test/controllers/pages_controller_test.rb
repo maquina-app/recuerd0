@@ -17,9 +17,13 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#doors h2", text: "Three doors, one knowledge base"
     assert_select "#shape h2", text: "What you start with"
     assert_select "#shape .resource-header p",
-      text: "Every new account includes My Workspace with four memories in a deliberate reading order: " \
-        "Map — how this workspace is kept, Continuation Brief, Index — decisions, " \
-        "and D001 — the first decision."
+      text: "Every new account includes My Workspace with four memories in a deliberate reading order:"
+    assert_equal [
+      "Map — how this workspace is kept",
+      "Continuation Brief",
+      "Index — decisions",
+      "D001 — the first decision"
+    ], css_select("#shape .resource-header ul li").map { |item| item.text.strip }
     assert_select "#shape h3", text: "Map — how this workspace is kept"
     assert_select "#shape h3", text: "Index — decisions"
     assert_select "#path h3", text: "1. Create a token"
@@ -35,6 +39,11 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "there is no token to copy"
     assert_includes response.body, "./.claude/skills"
     assert_select "#path a[href='#{recuerd0_mcp_skill_path}']", text: "download the MCP skill"
+    mcp_step = css_select("#path .endpoint-head").find do |heading|
+      heading.at_css("h3")&.text&.strip == "5. Connect over MCP"
+    end
+    assert_select mcp_step, "code", text: "Map — how this workspace is kept", count: 0
+    assert_includes mcp_step.at_css("p").text, "read Map — how this workspace is kept first"
     assert_select "#shape h3", text: "D001 — the first decision"
     assert_select "#shape h3", text: "When it grows"
     assert_select "#shape p", text: /A hub is a routing-table memory for crowded territory/

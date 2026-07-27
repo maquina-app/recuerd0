@@ -18,7 +18,7 @@ class RegistrationsMailerTest < ActionMailer::TestCase
   end
 
   test "welcome email HTML contains branded content" do
-    body = @email.html_part.body.to_s
+    body = @email.html_part.body.decoded
     start_url = Rails.application.routes.url_helpers.start_url(host: "example.com")
     workspace_url = Rails.application.routes.url_helpers.workspace_url(@workspace, host: "example.com")
 
@@ -28,14 +28,21 @@ class RegistrationsMailerTest < ActionMailer::TestCase
     assert_includes body, "Getting Started guide"
     assert_includes body, workspace_url
     assert_includes body, "Open My Workspace"
-    seeded_titles.each { |title| assert_includes body, title }
+    document = Nokogiri::HTML.fragment(body)
+    seeded_intro = document.css("p").find { |paragraph| paragraph.text.include?("four seeded memories") }
+    assert seeded_intro
+    assert_equal seeded_titles, seeded_intro.next_element.css("li").map { |item| item.text.strip }
+    assert_equal(
+      "The Getting Started guide takes you from zero to your first import in a few minutes.",
+      seeded_intro.next_element.next_element.text.strip
+    )
     assert_not_includes body, ["five onboarding", "memories"].join(" ")
     assert_not_includes body, ["_", "MAP"].join
     assert_not_includes body, ["_", "INDEX"].join
   end
 
   test "welcome email text contains key information" do
-    body = @email.text_part.body.to_s
+    body = @email.text_part.body.decoded
     start_url = Rails.application.routes.url_helpers.start_url(host: "example.com")
 
     assert_match "Welcome to recuerd0", body
@@ -44,7 +51,15 @@ class RegistrationsMailerTest < ActionMailer::TestCase
     assert_includes body, start_url
     assert_includes body, "Getting Started: #{start_url}"
     assert_match "never share it, sell it", body
-    seeded_titles.each { |title| assert_includes body, title }
+    lines = body.lines.map(&:chomp)
+    seeded_intro = lines.index("We created My Workspace for you with four seeded memories:")
+    assert seeded_intro
+    assert_equal seeded_titles, lines.slice(seeded_intro + 2, 4).map { |line| line.delete_prefix("- ") }
+    assert_equal "", lines.fetch(seeded_intro + 6)
+    assert_equal(
+      "The Getting Started guide takes you from zero to your first import in a few minutes.",
+      lines.fetch(seeded_intro + 7)
+    )
     assert_not_includes body, ["five onboarding", "memories"].join(" ")
     assert_not_includes body, ["_", "MAP"].join
     assert_not_includes body, ["_", "INDEX"].join
@@ -57,7 +72,7 @@ class RegistrationsMailerTest < ActionMailer::TestCase
       "Map — how this workspace is kept",
       "Continuation Brief",
       "Index — decisions",
-      "D001"
+      "D001 — the first decision"
     ]
   end
 end

@@ -16,6 +16,10 @@ class WorkspaceTest < ActiveSupport::TestCase
       base_url: Rails.application.config.x.app_base_url
     ), map.content.body.content
     assert_includes map.content.body.content, "## Your workspace\n\n## Why this shape"
+    assert_not_includes map.content.body.content,
+      "The brief carries state between sessions — its version history becomes your log."
+    assert_not_includes map.content.body.content,
+      "Search is keyword search, fast and literal, so write map lines and titles the way you'd ask for them."
     assert_not_includes map.content.body.content, StartHereContent::MAP_ROUTING_BULLETS.first
     assert_includes map.content.body.to_html, "How this workspace is kept"
     assert_not map.pinned_by?(users(:one))
