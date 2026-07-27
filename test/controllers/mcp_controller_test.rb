@@ -647,12 +647,13 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     root_updated_at = root.reload.updated_at
     payload = nil
 
-    travel_to 1.hour.from_now do
+    travel_to 30.minutes.from_now do
       result = mcp(
         rpc("tools/call", name: "update_memory",
           arguments: {memory_id: current.id.to_s, title: "Direct current update"}),
         token: @full_token.raw_token
       )
+      assert_response :success
       assert_not result.dig("result", "isError")
       payload = JSON.parse(result.dig("result", "content", 0, "text"))
     end
