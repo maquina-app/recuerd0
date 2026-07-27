@@ -45,7 +45,7 @@ gem "thruster", require: false
 gem "redcarpet", "~> 3.6"
 gem "rouge", "~> 4.5"
 gem "pagy", "~> 9.3"
-gem "maquina-components"
+gem "maquina-components", "~> 0.5.1"
 gem "rubyzip", "~> 3.0", require: "zip"
 
 group :development, :test do
