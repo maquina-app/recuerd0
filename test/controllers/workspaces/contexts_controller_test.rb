@@ -294,7 +294,9 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
       headers: auth_headers(@read_only_token)
 
     assert_response :success
-    memory = JSON.parse(response.body)["memories"].first
+    memories = JSON.parse(response.body)["memories"]
+    memory = memories.find { |entry| entry["id"] == root.id }
+    assert memory
     assert_equal root.id, memory["id"]
     assert_equal current.title, memory["title"]
     assert_equal current.content.body.content, memory["body"]

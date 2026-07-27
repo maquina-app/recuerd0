@@ -24,7 +24,19 @@ class WorkspaceTest < ActiveSupport::TestCase
       "Index — decisions keeps locked decisions one hop away."
     assert_not_includes map.content.body.content, StartHereContent::MAP_ROUTING_BULLETS.first
     assert_includes map.content.body.to_html, "How this workspace is kept"
-    assert_not map.pinned_by?(users(:one))
+    assert map.pinned_by?(users(:one))
+    assert map.pinned_by?(users(:member))
+    assert_not map.pinned_by?(users(:two))
+  end
+
+  test "creation does not pin an inactive workspace starter map" do
+    workspace = accounts(:one).workspaces.create!(
+      name: "Archived starter map",
+      archived_at: Time.current
+    )
+
+    assert_not workspace.starter_map.pinned_by?(users(:one))
+    assert_not workspace.starter_map.pinned_by?(users(:member))
   end
 
   test "requires name" do

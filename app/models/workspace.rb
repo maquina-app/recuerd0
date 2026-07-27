@@ -82,6 +82,8 @@ class Workspace < ApplicationRecord
       attributes.except(:content).merge(source: "system", default_pinned: true)
     )
     starter_map.create_content!(body: attributes[:content])
+
+    account.active_users.find_each { |user| starter_map.pin!(user) } if active?
   end
 
   # Unpin from all users when workspace becomes inactive

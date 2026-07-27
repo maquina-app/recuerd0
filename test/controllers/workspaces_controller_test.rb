@@ -319,6 +319,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
 
     map = workspace.memories.sole
     assert_equal WorkspaceStarter::TITLE, map.title
+    assert map.pinned_by?(@user)
 
     follow_redirect!
     assert_response :success
