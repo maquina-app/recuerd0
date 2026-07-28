@@ -65,11 +65,7 @@
               onboarding_menu_trigger: true
             } do %>
             <%= icon_for :rocket, class: "size-4" %>
-            <% if onboarding_completed_count < onboarding_total_steps %>
-              Getting started · <%= onboarding_completed_count %> of <%= onboarding_total_steps %>
-            <% else %>
-              Getting started
-            <% end %>
+            Finish setting up
           <% end %>
 
           <%= render "components/dropdown_menu/item", href: account_path do %>
