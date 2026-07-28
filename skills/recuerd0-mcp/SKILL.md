@@ -2,20 +2,32 @@
 
 Use these rules when working with a recuerd0 workspace through the MCP tools.
 
-## Start of session
+**Read `references/conventions.md` before writing anything.** It carries the workspace
+conventions — boot order, titling, decisions, map maintenance, hubs, and capture
+discipline. A workspace's own recorded conventions take precedence over both files.
 
-Call `workspace_context` on the workspace before searching or writing. It returns the workspace's orienting memories, including its map. Read the map before you add anything.
+## Operations
 
-## Conventions
+| Operation | Tool |
+|---|---|
+| load the workspace context | `workspace_context` |
+| search | `list_memories` with a query |
+| read a memory | `read_memory`, or `read_memories` for several at once |
+| create a memory | `create_memory` |
+| create a version | `create_version` |
+| update a memory | `update_memory` |
+| link memories | `link_memories` |
 
-A workspace's conventions are usually recorded in a memory whose title begins with "Map". Follow them. If a workspace has no conventions recorded, do not impose any.
+`read_memories` accepts an array — batch reads rather than fetching one at a time.
 
-## Writing
+## Surface notes
 
-- Before creating a memory, check whether one already covers the same ground. If a note supersedes an existing memory, use `create_version` on that memory rather than creating a second one.
-- Use `update_memory` to correct a memory, `create_version` when the earlier text should stay readable.
-- Titles are what search ranks first.
+Importing a folder of files is not available over MCP; it reads files from the machine and
+requires the CLI.
 
-## Searching
+Memory links connect memories across workspaces within the same account. Within a single
+workspace, use the map's routing lines instead. Links are undirected, unlabeled, and
+same-account only.
 
-Search matches substrings. One distinctive token or an exact phrase works; boolean operators do not. On a miss, try a different token rather than a broader query.
+Search matches substrings. One distinctive token or an exact phrase works; boolean
+operators do not. On a miss, try a different token rather than a broader query.
