@@ -16,8 +16,8 @@ them as a default the user has not chosen.
 
 At the start of a session, load the workspace context before searching or writing. Then:
 
-1. Read `Map — how this workspace is kept` first and `Continuation Brief` second.
-2. Treat the workspace description, map, brief, and other pinned memories as project
+1. Read the map first, then the continuation brief if the workspace has one.
+2. Treat the workspace description, map, any continuation brief, and other pinned memories as project
    context. Follow current decisions and preferences unless the repository proves they
    are stale.
 
@@ -27,7 +27,7 @@ If the workspace has no map, do not create one unprompted. Work from search, and
 
 ## Searching
 
-Use `Map — how this workspace is kept` as the front door. Follow its routes directly or
+Use the map as the front door. Follow its routes directly or
 through one hub when the question is phrased in the user's own words. The map supplies
 the judgment literal keyword search cannot.
 
@@ -58,24 +58,26 @@ a duplicate. Create a version for substantive title, body, tag, or category chan
 history remains visible. Reserve updating a memory for correcting an accidental write,
 not for evolving knowledge.
 
-Create a version of `Continuation Brief` at the end of each substantive session. Its
-version history is the session log.
+At the end of each substantive session, create a version of the workspace's continuation brief — or create one if the workspace does not have it yet. Its version history is the session log.
+When creating a continuation brief in a workspace that has none, add a routing line for it to the map in the same pass. Boot reads the brief through that line.
 
 ## Decisions
 
 Number locked decisions sequentially as D001, D002, and so on.
 
 Give each decision its own memory titled `D### — <decision>`. Record what was chosen, why,
-and what was rejected. Add one corresponding line to `Index — decisions` so every decision
-remains two hops from the map.
+and what was rejected. Add one corresponding line to `Index — decisions`, creating the
+index if the workspace does not have one yet, so every decision remains two hops from the
+map.
 
 Do not rewrite a decision when the choice changes. Create the next D-numbered decision,
 state which earlier decision it supersedes, and point back to it. Preserve the old
 rationale; if the old memory needs a forward pointer, add that marker as a new version
 rather than erasing its original state. Keep both entries in the decision index.
 
-Add every new decision to both the index and the map in the same pass. A decision absent
-from both is a decision the next session cannot see.
+Add every new decision to both the index and the map in the same pass. If the workspace
+has no decision index, create it and add its route to the map in that same pass. A decision
+absent from both is a decision the next session cannot see.
 
 ## Map maintenance
 
