@@ -3,6 +3,7 @@ require "application_system_test_case"
 class OnboardingDismissalTest < ApplicationSystemTestCase
   ALERT_SELECTOR = "[data-onboarding-banner='true']"
   DRAWER_SELECTOR = "#onboarding-drawer"
+  MENU_TRIGGER_SELECTOR = "[data-onboarding-menu-trigger='true']"
 
   setup do
     @user = Account.create_with_user(
@@ -16,6 +17,44 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
     fill_in "Email", with: @user.email_address
     fill_in "Password", with: "password"
     click_button "Sign in"
+  end
+
+  test "onboarding progresses from zero through completion and stays complete across reloads" do
+    assert_alert_state(
+      message: "Finish setting up — connect an agent so it can read and write here.",
+      agent: :incomplete,
+      content: :incomplete,
+      completed: 0
+    )
+    assert_menu_entry_present
+    assert_drawer_state(terminal: :incomplete, chat: :incomplete, content: :incomplete)
+
+    token = @user.access_tokens.create!(permission: "full_access")
+    token.touch_last_used!
+    refresh
+
+    assert_alert_state(
+      message: "Almost there — ask your agent to save its first memory.",
+      agent: :complete,
+      content: :incomplete,
+      completed: 1
+    )
+    assert_menu_entry_present
+    assert_drawer_state(terminal: :complete, chat: :incomplete, content: :incomplete)
+
+    Memory.create_with_content(
+      @workspace,
+      title: "First content",
+      content: "Body",
+      source: nil
+    )
+    refresh
+
+    assert_completed_manual_onboarding
+
+    refresh
+
+    assert_completed_manual_onboarding
   end
 
   test "alert opens the drawer and Terminal and Chat always keep one selection" do
@@ -120,7 +159,7 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
     assert_selector "[data-onboarding-panel='chat']", visible: true
   end
 
-  test "closing does not dismiss and dismissal leaves the menu trigger available" do
+  test "dismissal persists from zero through completion while the menu follows completion" do
     click_button "Show me how"
     find("[data-drawer-part='close']").click
 
@@ -132,6 +171,9 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
     assert_no_selector ALERT_SELECTOR
     assert_in_delta Time.current, @user.reload.onboarding_dismissed_at, 2.seconds
 
+    refresh
+
+    assert_no_selector ALERT_SELECTOR
     find("button[data-sidebar-part='menu-button']").click
     menu_item_background = page.evaluate_script <<~JAVASCRIPT
       getComputedStyle(
@@ -150,6 +192,20 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
     menu_item.click
 
     assert_selector "#{DRAWER_SELECTOR}[data-state='open']"
+
+    token = @user.access_tokens.create!(permission: "full_access")
+    token.touch_last_used!
+    Memory.create_with_content(
+      @workspace,
+      title: "First content after dismissal",
+      content: "Body",
+      source: "manual"
+    )
+    refresh
+
+    assert_no_selector ALERT_SELECTOR
+    assert_no_selector MENU_TRIGGER_SELECTOR, visible: :all
+    assert_drawer_state(terminal: :complete, chat: :incomplete, content: :complete)
   end
 
   test "drawer closes on Turbo morph refresh and navigation" do
@@ -206,9 +262,11 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
     end
   end
 
-  test "complete onboarding folds every item and presents the drawer as reference" do
-    token = @user.access_tokens.create!(permission: "full_access")
-    token.touch_last_used!
+  test "both connection paths and content fold every item and present the drawer as reference" do
+    manual_token = @user.access_tokens.create!(permission: "full_access")
+    oauth_token = create_oauth_token
+    manual_token.touch_last_used!
+    oauth_token.touch_last_used!
     Memory.create_with_content(
       @workspace,
       title: "First content",
@@ -219,17 +277,12 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
     visit workspaces_path
 
     assert_no_selector ALERT_SELECTOR
-    find("button[data-sidebar-part='menu-button']").click
-    click_button "Finish setting up"
-
-    assert_selector "#{DRAWER_SELECTOR}[data-state='open']"
-    assert_link "Full walkthrough", href: start_path
-    assert_selector "[data-onboarding-item]", count: 7, visible: :all
-    assert_selector "[data-onboarding-item][data-folded='true']", count: 7, visible: :all
-    assert_selector "[data-onboarding-item-body][hidden]", count: 7, visible: :all
-    assert_selector "[data-onboarding-item-toggle][aria-expanded='false']", count: 7, visible: :all
+    assert_no_selector MENU_TRIGGER_SELECTOR, visible: :all
+    assert_selector DRAWER_SELECTOR, visible: :all
+    assert_selector "a[href='#{start_path}']", text: "Full walkthrough", visible: :all
+    assert_drawer_state(terminal: :complete, chat: :complete, content: :complete)
     assert_selector "[data-onboarding-item][data-onboarding-kind='guidance'] [data-onboarding-marker='guidance']",
-      count: 3,
+      count: 4,
       visible: :all
     assert_no_selector "[data-onboarding-item][data-onboarding-kind='guidance'] [data-onboarding-marker='check']",
       visible: :all
@@ -299,5 +352,126 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
     assert_equal chat_metrics.fetch("blockClientWidth"), chat_metrics.fetch("blockScrollWidth")
     assert_equal "nowrap", chat_metrics.fetch("whiteSpace")
     assert_equal "auto", chat_metrics.fetch("overflowX")
+  end
+
+  private
+
+  def assert_alert_state(message:, agent:, content:, completed:)
+    assert_selector ALERT_SELECTOR
+    assert_selector "#{ALERT_SELECTOR} [data-onboarding-alert-row] > p",
+      exact_text: message
+    assert_selector(
+      "#{ALERT_SELECTOR} [data-onboarding-progress]" \
+        "[aria-label='#{completed} of 2 setup steps complete']"
+    )
+    assert_selector(
+      "#{ALERT_SELECTOR} [data-onboarding-pip='agent'][data-state='#{agent}']"
+    )
+    assert_selector(
+      "#{ALERT_SELECTOR} [data-onboarding-pip='content'][data-state='#{content}']"
+    )
+    assert_selector "#{ALERT_SELECTOR} [data-onboarding-progress] > span.whitespace-nowrap",
+      exact_text: "#{completed} of 2"
+  end
+
+  def assert_menu_entry_present
+    find("button[data-sidebar-part='menu-button']").click
+    assert_selector MENU_TRIGGER_SELECTOR, exact_text: "Finish setting up"
+    page.send_keys(:escape)
+    assert_no_selector MENU_TRIGGER_SELECTOR, visible: true
+  end
+
+  def assert_completed_manual_onboarding
+    assert_no_selector ALERT_SELECTOR
+    assert_no_selector MENU_TRIGGER_SELECTOR, visible: :all
+    assert_drawer_state(terminal: :complete, chat: :incomplete, content: :complete)
+  end
+
+  def assert_drawer_state(terminal:, chat:, content:)
+    onboarding_complete = content == :complete && [terminal, chat].include?(:complete)
+    folded_count = [terminal, chat].count(:complete)
+    folded_count += 2 if content == :complete
+    folded_count += 4 if onboarding_complete
+
+    assert_selector "[data-onboarding-item]", count: 8, visible: :all
+    assert_selector "[data-onboarding-item][data-folded='true']",
+      count: folded_count,
+      visible: :all
+    assert_selector "[data-onboarding-item][data-folded='false']",
+      count: 8 - folded_count,
+      visible: :all
+    assert_selector "[data-onboarding-item-body][hidden]",
+      count: folded_count,
+      visible: :all
+    assert_selector "[data-onboarding-item-toggle][aria-expanded='false']",
+      count: folded_count,
+      visible: :all
+
+    assert_tracked_item(panel: "terminal", step: 1, state: terminal)
+    assert_tracked_item(panel: "chat", step: 1, state: chat)
+    assert_tracked_item(panel: "terminal", step: 2, state: content)
+    assert_tracked_item(panel: "chat", step: 2, state: content)
+
+    guidance_state = onboarding_complete ? :complete : :incomplete
+    assert_selector(
+      "[data-onboarding-item][data-onboarding-kind='guidance']" \
+        "[data-folded='#{onboarding_complete}']",
+      count: 4,
+      visible: :all
+    )
+    assert_item_rendering(
+      "[data-onboarding-item][data-onboarding-kind='guidance']",
+      state: guidance_state,
+      count: 4
+    )
+  end
+
+  def assert_tracked_item(panel:, step:, state:)
+    selector = "[data-onboarding-panel='#{panel}'] " \
+      "[data-onboarding-item][data-onboarding-step='#{step}']"
+    marker = (state == :complete) ? "check" : "number"
+
+    assert_selector "#{selector}[data-folded='#{state == :complete}']",
+      count: 1,
+      visible: :all
+    assert_selector "#{selector} [data-onboarding-marker='#{marker}']",
+      count: 1,
+      visible: :all
+    assert_item_rendering(selector, state:, count: 1)
+  end
+
+  def assert_item_rendering(selector, state:, count:)
+    if state == :complete
+      assert_selector "#{selector} [data-onboarding-item-title].font-medium.text-muted-foreground",
+        count:,
+        visible: :all
+      assert_selector "#{selector} [data-onboarding-item-toggle][aria-expanded='false']",
+        count:,
+        visible: :all
+      assert_selector "#{selector} [data-onboarding-item-body][hidden]",
+        count:,
+        visible: :all
+    else
+      assert_selector "#{selector} [data-onboarding-item-title].font-semibold",
+        count:,
+        visible: :all
+      assert_no_selector "#{selector} [data-onboarding-item-toggle]",
+        visible: :all
+      assert_selector "#{selector} [data-onboarding-item-body]:not([hidden])",
+        count:,
+        visible: :all
+    end
+  end
+
+  def create_oauth_token
+    client = OauthClient.create!(
+      client_name: "Onboarding system client",
+      redirect_uris: ["https://example.com/callback"].to_json
+    )
+    @user.access_tokens.create!(
+      permission: "read_only",
+      oauth_client: client,
+      expires_at: 1.hour.from_now
+    )
   end
 end

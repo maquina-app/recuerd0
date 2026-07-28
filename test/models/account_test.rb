@@ -195,8 +195,10 @@ class AccountTest < ActiveSupport::TestCase
     StartHereContent::MAP_ROUTING_BULLETS.each do |routing_bullet|
       assert_includes map_memory.content.body.content, routing_bullet
     end
+    assert_equal map_memory, workspace.memories.order(updated_at: :desc).first
     assert_not_includes map_memory.content.body.content, "recuerd0.ai"
     assert_not_includes map_memory.content.body.content, "Create an access token"
+    assert_not_includes map_memory.content.body.content, "Link memories that belong together."
 
     decision_memory = workspace.memories.find_by!(
       title: "D001 — Keep this workspace flat until ~20 memories"

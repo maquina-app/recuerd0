@@ -12,7 +12,6 @@ module WorkspaceStarter
     - Every memory gets one line in the table below, with a short note on what it covers.
     - Before creating a memory, check whether one already covers the same ground. Update or version that one instead of adding a duplicate.
     - Titles state what the memory answers, not the topic it is about.
-    - Link memories that belong together.
 
     These are this workspace's conventions, not the product's. Edit them to match how your team works, or delete this memory if you would rather not work this way.
 

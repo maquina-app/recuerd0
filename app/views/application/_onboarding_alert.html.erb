@@ -13,10 +13,10 @@
     data-onboarding-alert-row
   >
     <p class="min-w-0 flex-1 text-[13.5px] text-muted-foreground">
-      <% if completed_count.zero? %>
-        <strong class="font-semibold text-foreground">Finish setting up</strong> — connect an agent so it can read and write here.
-      <% else %>
+      <% if agent_connected %>
         <strong class="font-semibold text-foreground">Almost there</strong> — ask your agent to save its first memory.
+      <% else %>
+        <strong class="font-semibold text-foreground">Finish setting up</strong> — connect an agent so it can read and write here.
       <% end %>
     </p>
 

@@ -7,6 +7,22 @@ module OnboardingHelper
       .exists?
   end
 
+  def onboarding_terminal_connected?
+    return @onboarding_terminal_connected if defined?(@onboarding_terminal_connected)
+
+    @onboarding_terminal_connected = Current.user.access_tokens.manual
+      .where.not(last_used_at: nil)
+      .exists?
+  end
+
+  def onboarding_chat_connected?
+    return @onboarding_chat_connected if defined?(@onboarding_chat_connected)
+
+    @onboarding_chat_connected = Current.user.access_tokens.oauth
+      .where.not(last_used_at: nil)
+      .exists?
+  end
+
   def onboarding_first_content?
     return @onboarding_first_content if defined?(@onboarding_first_content)
 
