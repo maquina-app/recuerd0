@@ -75,3 +75,5 @@ TODO*
 /docs/hotwire-patterns.md
 /docs/technical-guide.md
 /docs/ui-patterns.md
+
+.playwright-mcp/
