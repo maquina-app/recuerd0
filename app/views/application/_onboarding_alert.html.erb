@@ -6,47 +6,63 @@
 <%= render "components/alert",
   variant: :default,
   icon: :info,
-  css_classes: "mb-4",
+  css_classes: "mb-8 !px-3.5 !py-[11px]",
   data: { onboarding_banner: true } do %>
   <div
     class="flex flex-wrap items-center gap-x-3 gap-y-2"
     data-onboarding-alert-row
   >
-    <p class="min-w-0 flex-1 text-sm">
-      Finish setting up — connect an agent so it can read and write here.
+    <p class="min-w-0 flex-1 text-[13.5px] text-muted-foreground">
+      <% if completed_count.zero? %>
+        <strong class="font-semibold text-foreground">Finish setting up</strong> — connect an agent so it can read and write here.
+      <% else %>
+        <strong class="font-semibold text-foreground">Almost there</strong> — ask your agent to save its first memory.
+      <% end %>
     </p>
 
-    <div
-      class="flex shrink-0 items-center gap-1.5"
-      data-onboarding-progress
-      aria-label="<%= completed_count %> of <%= onboarding_total_steps %> setup steps complete"
-    >
-      <span
-        class="size-2 rounded-full <%= agent_connected ? "bg-primary" : "bg-border" %>"
-        data-onboarding-pip="agent"
-        data-state="<%= agent_connected ? "complete" : "incomplete" %>"
-        role="img"
-        aria-label="Agent connected: <%= agent_connected ? "complete" : "incomplete" %>"
-      ></span>
-      <span
-        class="size-2 rounded-full <%= first_content ? "bg-primary" : "bg-border" %>"
-        data-onboarding-pip="content"
-        data-state="<%= first_content ? "complete" : "incomplete" %>"
-        role="img"
-        aria-label="First content: <%= first_content ? "complete" : "incomplete" %>"
-      ></span>
+    <div class="flex shrink-0 items-center gap-2">
+      <div
+        class="flex items-center gap-2"
+        data-onboarding-progress
+        aria-label="<%= completed_count %> of <%= onboarding_total_steps %> setup steps complete"
+      >
+        <span class="flex gap-[3px]" aria-hidden="true">
+          <span
+            class="h-1 w-[22px] rounded-full <%= agent_connected ? "bg-primary" : "bg-border" %>"
+            data-onboarding-pip="agent"
+            data-state="<%= agent_connected ? "complete" : "incomplete" %>"
+          ></span>
+          <span
+            class="h-1 w-[22px] rounded-full <%= first_content ? "bg-primary" : "bg-border" %>"
+            data-onboarding-pip="content"
+            data-state="<%= first_content ? "complete" : "incomplete" %>"
+          ></span>
+        </span>
+        <span class="whitespace-nowrap font-mono text-[11.5px] font-medium leading-none tracking-[0.04em] text-muted-foreground">
+          <%= completed_count %> of <%= onboarding_total_steps %>
+        </span>
+      </div>
+
+      <%= render "components/separator",
+        orientation: :vertical,
+        css_classes: "!mx-1" %>
+
+      <div class="flex items-center gap-1">
+        <%= render "components/drawer/trigger",
+          variant: :outline,
+          size: :sm,
+          css_classes: "shrink-0",
+          data: { variant: "outline", size: "sm" } do %>
+          Show me how
+        <% end %>
+
+        <%= button_to "Dismiss",
+          onboarding_dismiss_path,
+          method: :post,
+          form: {class: "contents"},
+          data: {component: "button", variant: "ghost", size: "sm"},
+          class: "!text-muted-foreground" %>
+      </div>
     </div>
-
-    <%= render "components/drawer/trigger",
-      css_classes: "shrink-0 text-[13px] font-medium text-primary hover:underline",
-      data: { variant: "link", size: "sm" } do %>
-      Show me how
-    <% end %>
-
-    <%= button_to "Dismiss",
-      onboarding_dismiss_path,
-      method: :post,
-      form: {class: "contents"},
-      class: "text-[13px] text-muted-foreground hover:text-foreground" %>
   </div>
 <% end %>

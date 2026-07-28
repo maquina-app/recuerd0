@@ -218,6 +218,35 @@
   resize: none;
 }
 
+/* Onboarding alert actions are one line tall; offset the shared top-aligned icon
+   so it sits optically centered against the row. */
+[data-onboarding-banner="true"] > svg:first-child {
+  margin-top: 0.5rem;
+}
+
+/* The dropdown focuses its first item when opened. Keep the onboarding item
+   neutral in that resting state, while preserving the shared hover highlight. */
+[data-onboarding-menu-trigger="true"]:focus:not(:hover) {
+  background-color: transparent;
+  color: inherit;
+}
+
+/* Keep long onboarding commands on one line while making overflow unobtrusive. */
+.onboarding-command-scroll {
+  scrollbar-color: var(--muted-foreground) transparent;
+  scrollbar-width: thin;
+}
+.onboarding-command-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.onboarding-command-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.onboarding-command-scroll::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 9999px;
+}
+
 /* Category segmented control backed by native radios: mirror the data-state="on"
    styling when the wrapped radio is checked, plus a focus-visible ring. */
 .seg-item:has(> input[type="radio"]:checked) {

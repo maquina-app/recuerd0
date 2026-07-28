@@ -31,9 +31,24 @@ export default class extends Controller {
     })
   }
 
-  scopeCookie(event) {
-    document.cookie =
-      `recuerd0_onboarding_drawer_state=${event.detail.open}; path=/; SameSite=Lax`
+  toggleItem(event) {
+    const toggle = event.currentTarget
+    const item = toggle.closest("[data-onboarding-item]")
+    const body = item?.querySelector("[data-onboarding-item-body]")
+    const title = item?.querySelector("[data-onboarding-item-title]")
+
+    if (!item || !body || !title) return
+
+    const expanding = body.hidden
+    const folded = !expanding
+
+    body.hidden = folded
+    item.dataset.folded = folded
+    toggle.setAttribute("aria-expanded", expanding)
+    toggle.textContent = expanding ? "Hide" : "Show"
+    title.classList.toggle("font-medium", folded)
+    title.classList.toggle("text-muted-foreground", folded)
+    title.classList.toggle("font-semibold", !folded)
   }
 
   showPanel(value) {
