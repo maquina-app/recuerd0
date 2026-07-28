@@ -57,15 +57,17 @@
         <%= render "components/dropdown_menu/separator" %>
 
         <%= render "components/dropdown_menu/group" do %>
-          <%= render "components/dropdown_menu/item",
-            data: {
-              controller: "drawer-trigger",
-              action: "click->drawer-trigger#triggerClick",
-              drawer_trigger_drawer_outlet: "[data-outlet='drawer']",
-              onboarding_menu_trigger: true
-            } do %>
-            <%= icon_for :rocket, class: "size-4" %>
-            Finish setting up
+          <% if onboarding_completed_count < onboarding_total_steps %>
+            <%= render "components/dropdown_menu/item",
+              data: {
+                controller: "drawer-trigger",
+                action: "click->drawer-trigger#triggerClick",
+                drawer_trigger_drawer_outlet: "[data-outlet='drawer']",
+                onboarding_menu_trigger: true
+              } do %>
+              <%= icon_for :rocket, class: "size-4" %>
+              Finish setting up
+            <% end %>
           <% end %>
 
           <%= render "components/dropdown_menu/item", href: account_path do %>

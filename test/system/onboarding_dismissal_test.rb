@@ -219,17 +219,15 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
     visit workspaces_path
 
     assert_no_selector ALERT_SELECTOR
-    find("button[data-sidebar-part='menu-button']").click
-    click_button "Finish setting up"
-
-    assert_selector "#{DRAWER_SELECTOR}[data-state='open']"
-    assert_link "Full walkthrough", href: start_path
-    assert_selector "[data-onboarding-item]", count: 7, visible: :all
-    assert_selector "[data-onboarding-item][data-folded='true']", count: 7, visible: :all
-    assert_selector "[data-onboarding-item-body][hidden]", count: 7, visible: :all
-    assert_selector "[data-onboarding-item-toggle][aria-expanded='false']", count: 7, visible: :all
+    assert_no_selector "[data-onboarding-menu-trigger='true']", visible: :all
+    assert_selector DRAWER_SELECTOR, visible: :all
+    assert_selector "a[href='#{start_path}']", text: "Full walkthrough", visible: :all
+    assert_selector "[data-onboarding-item]", count: 8, visible: :all
+    assert_selector "[data-onboarding-item][data-folded='true']", count: 8, visible: :all
+    assert_selector "[data-onboarding-item-body][hidden]", count: 8, visible: :all
+    assert_selector "[data-onboarding-item-toggle][aria-expanded='false']", count: 8, visible: :all
     assert_selector "[data-onboarding-item][data-onboarding-kind='guidance'] [data-onboarding-marker='guidance']",
-      count: 3,
+      count: 4,
       visible: :all
     assert_no_selector "[data-onboarding-item][data-onboarding-kind='guidance'] [data-onboarding-marker='check']",
       visible: :all

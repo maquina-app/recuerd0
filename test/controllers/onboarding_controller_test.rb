@@ -42,6 +42,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get workspaces_url
 
     assert_alert_progress(agent: :complete, content: :incomplete, completed: 1)
+    assert_connection_markers(terminal: :complete, chat: :incomplete)
     assert_alert_message(
       title: "Almost there",
       text: "Almost there — ask your agent to save its first memory."
@@ -64,6 +65,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get workspaces_url
 
     assert_alert_progress(agent: :complete, content: :incomplete, completed: 1)
+    assert_connection_markers(terminal: :incomplete, chat: :complete)
   end
 
   test "account content does not complete the current user's agent signal" do
@@ -88,7 +90,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_menu_label "Finish setting up"
   end
 
-  test "both completed signals hide only the alert" do
+  test "both completed signals hide the alert and menu trigger but keep the drawer mounted" do
     token = @user.access_tokens.create!(permission: "full_access")
     token.touch_last_used!
     Memory.create_with_content(
@@ -102,7 +104,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_select ALERT_SELECTOR, count: 0
     assert_global_drawer
-    assert_menu_label "Finish setting up"
+    assert_select MENU_TRIGGER_SELECTOR, count: 0
   end
 
   test "dismissal hides only the alert and persists for the current user" do
@@ -164,8 +166,8 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_equal [
       "brew install maquina-app/tap/recuerd0",
       "recuerd0 account add personal --token <token>",
-      "recuerd0 skills install",
       "recuerd0 workspace list",
+      "recuerd0 skills install",
       "recuerd0 import propose <path> --workspace <id>",
       "recuerd0 import commit import.plan.yaml"
     ], commands
@@ -179,7 +181,54 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
           text: "Access Tokens"
       end
       assert_select "a[data-component='button']", text: "Create access token", count: 0
+      assert_select "[data-onboarding-command] code", text: "recuerd0 workspace list", count: 1
+      assert_select "p", text: "Confirms the connection.", count: 1
     end
+    terminal_connect_body = css_select("#onboarding-terminal-connect-body").first
+    terminal_connect_commands = terminal_connect_body
+      .css("[data-onboarding-command] code")
+      .map { |command| command.text.strip }
+    assert_equal [
+      "brew install maquina-app/tap/recuerd0",
+      "recuerd0 account add personal --token <token>",
+      "recuerd0 workspace list"
+    ], terminal_connect_commands
+    assert_equal "Confirms the connection.", terminal_connect_body.element_children[-2].text.squish
+    assert_equal "recuerd0 workspace list",
+      terminal_connect_body.element_children[-1].at_css("code").text.strip
+
+    terminal_import_body = css_select("#onboarding-terminal-import-body").first
+    terminal_import_commands = terminal_import_body
+      .css("[data-onboarding-command] code")
+      .map { |command| command.text.strip }
+    assert_equal [
+      "recuerd0 import propose <path> --workspace <id>",
+      "recuerd0 import commit import.plan.yaml"
+    ], terminal_import_commands
+    assert_not_includes terminal_import_body.text, "recuerd0 workspace list"
+
+    terminal_items = css_select("[data-onboarding-panel='terminal'] > [data-onboarding-item]")
+    terminal_titles = terminal_items.map do |item|
+      item.at_css("[data-onboarding-item-title]").text.squish
+    end
+    assert_equal [
+      "Install and connect",
+      "Give your agent the skill",
+      "Import existing notes",
+      "Have your agent organise the import",
+      "Add your first memory"
+    ], terminal_titles
+    organise_item = terminal_items[3]
+    assert_equal "guidance", organise_item["data-onboarding-kind"]
+    assert_equal "•", organise_item.at_css("[data-onboarding-marker='guidance']").text.squish
+    assert_equal(
+      'Ask your agent: "I just imported notes into workspace <id>. Do the post-import pass." ' \
+        "It will cluster the memories, fix weak titles, and propose hubs for review.",
+      organise_item.at_css("[data-onboarding-item-body] p").text.squish
+    )
+    assert_empty organise_item.css("[data-onboarding-optional]")
+    assert_empty organise_item.css("[data-onboarding-command]")
+
     assert_select "[data-onboarding-panel='terminal'] p",
       text: "Propose, read the plan, then commit.",
       count: 1
@@ -197,13 +246,14 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       assert_select "p", text: "Browser sign-in — no token to copy."
       assert_select "p", text: "Teaches your agent how to read, write and search here."
       assert_select "p", text: "Ask your agent to save something here."
+      assert_select "[data-onboarding-item-title]", text: "Have your agent organise the import", count: 0
       assert_select "p",
         text: "Importing a folder of notes needs the Terminal — it reads files from your machine.",
         count: 0
     end
 
     {
-      "terminal" => 2,
+      "terminal" => 3,
       "chat" => 1
     }.each do |panel, guidance_count|
       assert_select "[data-onboarding-panel='#{panel}']" do
@@ -214,7 +264,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     end
 
     guidance_markers = css_select("[data-onboarding-marker='guidance']")
-    assert_equal 3, guidance_markers.size
+    assert_equal 4, guidance_markers.size
     guidance_markers.each do |marker|
       assert_includes marker["class"], "text-[#C9C9C6]"
       assert_not_includes marker["class"], "rounded-full"
@@ -224,6 +274,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-onboarding-optional][data-component='badge'][data-variant='outline']",
       text: "optional",
       count: 1
+    assert_select "[data-onboarding-item]", count: 8
     assert_select "[data-drawer-part='header']" do
       assert_select "p", text: "Getting started", count: 1
       assert_select "h2", text: "Connect your agent", count: 1
@@ -276,6 +327,20 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select ALERT_SELECTOR, count: 1 do
       assert_select "p", text: text, count: 1 do
         assert_select "strong", text: title, count: 1
+      end
+    end
+  end
+
+  def assert_connection_markers(terminal:, chat:)
+    {terminal: terminal, chat: chat}.each do |panel, state|
+      expected_marker = (state == :complete) ? "check" : "number"
+      unexpected_marker = (state == :complete) ? "number" : "check"
+
+      assert_select(
+        "[data-onboarding-panel='#{panel}'] [data-onboarding-item][data-onboarding-step='1']"
+      ) do
+        assert_select "[data-onboarding-marker='#{expected_marker}']", count: 1
+        assert_select "[data-onboarding-marker='#{unexpected_marker}']", count: 0
       end
     end
   end

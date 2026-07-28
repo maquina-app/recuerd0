@@ -1,5 +1,7 @@
 <%# locals: () %>
 <% agent_connected = onboarding_agent_connected? %>
+<% terminal_connected = onboarding_terminal_connected? %>
+<% chat_connected = onboarding_chat_connected? %>
 <% first_content = onboarding_first_content? %>
 <% onboarding_complete = agent_connected && first_content %>
 
@@ -72,7 +74,7 @@
           data-folded="<%= agent_connected %>"
         >
           <div class="flex items-center gap-[9px]">
-            <% if agent_connected %>
+            <% if terminal_connected %>
               <span
                 class="grid size-[19px] shrink-0 place-items-center rounded-full border border-primary bg-primary text-primary-foreground"
                 data-onboarding-marker="check"
@@ -118,6 +120,10 @@
             </p>
             <%= render "application/onboarding_command", command: "brew install maquina-app/tap/recuerd0" %>
             <%= render "application/onboarding_command", command: "recuerd0 account add personal --token <token>" %>
+            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
+              Confirms the connection.
+            </p>
+            <%= render "application/onboarding_command", command: "recuerd0 workspace list" %>
           </div>
         </div>
 
@@ -212,9 +218,50 @@
             <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
               Propose, read the plan, then commit.
             </p>
-            <%= render "application/onboarding_command", command: "recuerd0 workspace list" %>
             <%= render "application/onboarding_command", command: "recuerd0 import propose <path> --workspace <id>" %>
             <%= render "application/onboarding_command", command: "recuerd0 import commit import.plan.yaml" %>
+          </div>
+        </div>
+
+        <div
+          class="mb-3.5"
+          data-onboarding-item
+          data-onboarding-kind="guidance"
+          data-folded="<%= onboarding_complete %>"
+        >
+          <div class="flex items-center gap-[9px]">
+            <span
+              class="flex size-[19px] shrink-0 items-center justify-center text-[15px] leading-none text-[#C9C9C6]"
+              data-onboarding-marker="guidance"
+              aria-hidden="true"
+            >•</span>
+            <h3
+              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= onboarding_complete ? "font-medium text-muted-foreground" : "font-semibold" %>"
+              data-onboarding-item-title
+            >Have your agent organise the import</h3>
+            <% if onboarding_complete %>
+              <button
+                type="button"
+                class="!h-auto !px-1 !py-0 text-[11.5px] !text-muted-foreground hover:!text-foreground"
+                data-component="button"
+                data-variant="ghost"
+                data-size="sm"
+                data-action="onboarding-drawer#toggleItem"
+                data-onboarding-item-toggle
+                aria-expanded="false"
+                aria-controls="onboarding-terminal-organise-import-body"
+              >Show</button>
+            <% end %>
+          </div>
+          <div
+            id="onboarding-terminal-organise-import-body"
+            class="pt-2 pl-7"
+            data-onboarding-item-body
+            <%= "hidden" if onboarding_complete %>
+          >
+            <p class="text-xs leading-[1.5] text-muted-foreground">
+              Ask your agent: "I just imported notes into workspace &lt;id&gt;. Do the post-import pass." It will cluster the memories, fix weak titles, and propose hubs for review.
+            </p>
           </div>
         </div>
 
@@ -283,7 +330,7 @@
           data-folded="<%= agent_connected %>"
         >
           <div class="flex items-center gap-[9px]">
-            <% if agent_connected %>
+            <% if chat_connected %>
               <span
                 class="grid size-[19px] shrink-0 place-items-center rounded-full border border-primary bg-primary text-primary-foreground"
                 data-onboarding-marker="check"
