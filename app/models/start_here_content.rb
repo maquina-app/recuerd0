@@ -1,26 +1,14 @@
 module StartHereContent
+  MAP_ROUTING_BULLETS = [
+    "- **Continuation Brief** — where things stand and what's next. Read it second; rewrite it as a new version when a session ends.",
+    "- **Index — decisions** — one line per decision you lock."
+  ].freeze
+
   MEMORIES = [
-    {
-      title: "_MAP",
-      tags: ["getting-started", "map"],
-      pinned: true,
-      content: <<~MARKDOWN
-        # _MAP
-
-        Read this first, every session — you or your AI tool. One line per entry, written the way you'd actually ask for it.
-
-        The full walkthrough — CLI, import, skills, MCP: __BASE_URL__/start
-
-        ## Your workspace
-
-        - **Continuation Brief** — where things stand and what's next. Read it second; rewrite it as a new version when a session ends.
-        - **_INDEX — Decisions** — one line per decision you lock.
-
-        ## Why this shape
-
-        The map is the front door: one read orients a cold session, and every memory stays reachable within two hops. The brief carries state between sessions — its version history becomes your log. The index keeps locked decisions one hop away. Keep the map flat until around twenty memories; past that, group clusters behind hub memories. Search is keyword search, fast and literal, so write map lines and titles the way you'd ask for them. None of this is required — delete anything; a blank workspace is a fine workspace. Full reasoning: __BASE_URL__/start or docs/blueprint.md in the repository.
-      MARKDOWN
-    },
+    WorkspaceStarter.attributes(
+      base_url: "__BASE_URL__",
+      routing_bullets: MAP_ROUTING_BULLETS
+    ).merge(pinned: true),
     {
       title: "Continuation Brief",
       tags: ["getting-started", "continuation"],
@@ -45,11 +33,11 @@ module StartHereContent
       MARKDOWN
     },
     {
-      title: "_INDEX — Decisions",
+      title: "Index — decisions",
       tags: ["getting-started", "index"],
       pinned: false,
       content: <<~MARKDOWN
-        # _INDEX — Decisions
+        # Index — decisions
 
         One line per locked decision, so any of them is two hops from the map. Number them D001, D002, … and give each its own memory: what you chose, why, and what you rejected. Decisions don't get edited later — a changed mind is a new decision that points back.
 

@@ -7,6 +7,7 @@ class Workspaces::ExportsControllerTest < ActionDispatch::IntegrationTest
       name: "Exportable",
       description: "Everything in one JSON document"
     )
+    @workspace.memories.find_by!(title: WorkspaceStarter::TITLE).destroy!
     @read_only_token = "test_read_token_123"
   end
 

@@ -107,7 +107,9 @@ class Memory < ApplicationRecord
   before_validation :set_version, on: :create
 
   def self.create_with_content(workspace, attributes)
-    memory = workspace.memories.build(attributes.slice(:title, :tags, :source, :category).compact)
+    memory = workspace.memories.build(
+      attributes.slice(:title, :tags, :source, :category, :default_pinned).compact
+    )
 
     transaction do
       memory.save!
@@ -175,7 +177,11 @@ class Memory < ApplicationRecord
   # Returns the latest (highest version number) version of this memory
   def current_version
     if root_version?
-      child_versions.order(version: :desc).first || self
+      if child_versions.loaded?
+        child_versions.max_by(&:version) || self
+      else
+        child_versions.order(version: :desc).first || self
+      end
     else
       root_memory.current_version
     end
@@ -205,6 +211,7 @@ class Memory < ApplicationRecord
     transaction do
       new_version.save!
       new_version.create_content!(body: attributes[:content] || content&.body&.content.to_s)
+      root.touch
     end
     new_version.sync_root_category!
     new_version.sync_root_tags!

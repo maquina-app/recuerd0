@@ -213,16 +213,16 @@
       </div>
 
       <div class="endpoint" id="get-workspace-context">
-        <div class="endpoint-head"><h3>Get Workspace Context</h3><p>Returns a compact "wake-up" snapshot of a workspace for AI agents — workspace metadata, the current user's pinned memories scoped to the workspace, and stats. Supports HTTP caching via ETag.</p></div>
+        <div class="endpoint-head"><h3>Get Workspace Context</h3><p>Returns a compact "wake-up" snapshot of a workspace for AI agents — workspace metadata, a small set of orienting memories, and stats. When the requesting user has no pinned memories in the workspace, the endpoint returns the most recently updated memories instead of an empty list; context_source reports pins or recent. Supports HTTP caching via ETag.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:id</span>/context.json</span></div>
         <div class="param-table-label">Query Parameters</div>
         <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td>10</td><td>Maximum pinned memories to return (1–50).</td></tr>
-            <tr><td><span class="param-name">include_body</span></td><td><span class="param-type">boolean</span></td><td>true</td><td>Whether to include each pinned memory's body content.</td></tr>
+            <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td>10</td><td>Maximum memories to return (1–50).</td></tr>
+            <tr><td><span class="param-name">include_body</span></td><td><span class="param-type">boolean</span></td><td>true</td><td>Whether to include each memory's body content.</td></tr>
             <tr><td><span class="param-name">max_body_chars</span></td><td><span class="param-type">integer</span></td><td>500</td><td>Maximum characters of body to return per memory (100–5000). Longer bodies are truncated.</td></tr>
-            <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td></td><td>Filter pinned memories to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
+            <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td></td><td>Filter memories to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">
@@ -237,7 +237,7 @@
     <span class="ck">"updated_at"</span>: <span class="cs">"2026-04-01T12:00:00Z"</span>,
     <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>
   },
-  <span class="ck">"pinned_memories"</span>: [
+  <span class="ck">"memories"</span>: [
     {
       <span class="ck">"id"</span>: <span class="cn">17</span>,
       <span class="ck">"title"</span>: <span class="cs">"Architecture Notes"</span>,
@@ -252,14 +252,19 @@
       <span class="ck">"links_count"</span>: <span class="cn">3</span>
     }
   ],
+  <span class="ck">"context_source"</span>: <span class="cs">"pins"</span>,
   <span class="ck">"stats"</span>: {
     <span class="ck">"total_memories"</span>: <span class="cn">42</span>,
     <span class="ck">"total_pinned"</span>: <span class="cn">3</span>,
+    <span class="ck">"returned"</span>: <span class="cn">1</span>,
     <span class="ck">"returned_pinned"</span>: <span class="cn">1</span>
   },
   <span class="ck">"generated_at"</span>: <span class="cs">"2026-04-06T10:00:00Z"</span>
 }</code></div>
         </div>
+        <p class="doc-note">
+          The <code>pinned_memories</code> array and <code>stats.returned_pinned</code> remain as deprecated aliases of <code>memories</code> and <code>stats.returned</code>.
+        </p>
       </div>
 
       <div class="endpoint" id="create-workspace">

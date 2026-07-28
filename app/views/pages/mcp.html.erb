@@ -30,6 +30,7 @@
       <div class="sidebar-heading">Getting started</div>
       <a href="#supported-clients" class="sidebar-link" data-section="supported-clients" data-action="click->marketing-sidebar#closeSidebar">Supported clients</a>
       <a href="#connect-claude-desktop" class="sidebar-link" data-section="connect-claude-desktop" data-action="click->marketing-sidebar#closeSidebar">Connect Claude Desktop</a>
+      <a href="#mcp-skill" class="sidebar-link" data-section="mcp-skill" data-action="click->marketing-sidebar#closeSidebar">MCP skill</a>
     </div>
     <div class="sidebar-group">
       <div class="sidebar-heading">How it works</div>
@@ -130,6 +131,14 @@
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>You need to be signed in to recuerd0 in the same browser — the consent screen approves access on behalf of your account.</span>
+        </div>
+      </div>
+
+      <%# ===== MCP SKILL ===== %>
+      <div class="api-section" id="mcp-skill">
+        <div class="resource-header">
+          <h2>MCP skill</h2>
+          <p>MCP clients do not have the CLI installer, so <%= link_to "download the MCP skill", recuerd0_mcp_skill_path %> and add it to your client.</p>
         </div>
       </div>
 

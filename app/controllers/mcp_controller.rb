@@ -58,7 +58,10 @@ class McpController < ApplicationController
     jsonrpc_result(
       protocolVersion: version,
       capabilities: {tools: {}},
-      serverInfo: {name: "recuerd0", version: "1.0.0"}
+      serverInfo: {name: "recuerd0", version: "1.0.0"},
+      instructions: "Before writing to or searching a workspace, call workspace_context on it. " \
+        "Workspaces carry their own conventions, and the context response tells you what the " \
+        "workspace already holds so your work fits it and does not duplicate it."
     )
   end
 
@@ -78,7 +81,12 @@ class McpController < ApplicationController
     # never whatever a client might pass. Stamped only on record creation.
     arguments["source"] = mcp_client_name if SOURCE_STAMPED_TOOLS.include?(name)
 
-    value = Mcp::Tools.public_send(name, @mcp_account, arguments)
+    value = Mcp::Tools.public_send(
+      name,
+      @mcp_account,
+      arguments,
+      user: @current_oauth_token.user
+    )
     jsonrpc_result(content: [{type: "text", text: value.to_json}])
   rescue Mcp::ToolError => e
     jsonrpc_result(content: [{type: "text", text: e.message}], isError: true)

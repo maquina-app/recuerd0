@@ -70,7 +70,7 @@ recuerd0 import commit import.plan.yaml --yes --pretty</code></div>
 
         <div class="endpoint-head">
           <h3>5. Connect over MCP</h3>
-          <p>Claude Desktop, Claude.ai, and other MCP clients can use the <%= link_to "remote MCP server", mcp_path %> with browser-based authorization. The workspace context endpoint returns the pinned map and continuation brief as a compact wake-up snapshot. MCP clients do not include the CLI installer, so <%= link_to "download the MCP skill", recuerd0_mcp_skill_path %> and add it to your client.</p>
+          <p>Claude Desktop, Claude.ai, and other MCP clients can use the <%= link_to "remote MCP server", mcp_path %> with browser-based authorization, so there is no token to copy. MCP can list, search, read, and write memories; have your agent read Map — how this workspace is kept first so it picks up the workspace's shape before it writes. MCP clients do not include the CLI installer, so <%= link_to "download the MCP skill", recuerd0_mcp_skill_path %> and add it to your client.</p>
         </div>
       </div>
 
@@ -103,11 +103,17 @@ recuerd0 import commit import.plan.yaml --yes --pretty</code></div>
       <div class="api-section" id="shape">
         <div class="resource-header">
           <h2>What you start with</h2>
-          <p>Every new account includes <strong>My Workspace</strong> with four memories in a deliberate reading order: _MAP, Continuation Brief, _INDEX — Decisions, and D001 — the first decision.</p>
+          <p>Every new account includes <strong>My Workspace</strong> with four memories in a deliberate reading order:</p>
+          <ul>
+            <li>Map — how this workspace is kept</li>
+            <li>Continuation Brief</li>
+            <li>Index — decisions</li>
+            <li>D001 — the first decision</li>
+          </ul>
         </div>
 
         <div class="endpoint-head">
-          <h3>_MAP</h3>
+          <h3>Map — how this workspace is kept</h3>
           <p>The front door and getting-started checklist. Read it first, then keep every memory reachable within two hops.</p>
         </div>
 
@@ -117,7 +123,7 @@ recuerd0 import commit import.plan.yaml --yes --pretty</code></div>
         </div>
 
         <div class="endpoint-head">
-          <h3>_INDEX — Decisions</h3>
+          <h3>Index — decisions</h3>
           <p>One line per locked decision, each pointing to the memory that records what you chose and why.</p>
         </div>
 

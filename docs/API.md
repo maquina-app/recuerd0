@@ -118,7 +118,7 @@ GET /workspaces/:id.json
 
 ### Get Workspace Context
 
-Returns a compact "wake-up" snapshot of a workspace for AI agents to load in one call: workspace metadata, the current user's pinned memories scoped to the workspace, and stats. Supports HTTP caching via `ETag` / `If-None-Match`.
+Returns a compact "wake-up" snapshot of a workspace for AI agents to load in one call: workspace metadata, a small set of orienting memories, and stats. When the requesting user has no pinned memories in the workspace, the endpoint returns the most recently updated memories instead of an empty list; context_source reports pins or recent. Supports HTTP caching via `ETag` / `If-None-Match`.
 
 ```
 GET /workspaces/:id/context.json
@@ -128,10 +128,10 @@ GET /workspaces/:id/context.json
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
-| limit | integer | 10 | Maximum pinned memories to return (1–50). |
-| include_body | boolean | true | Whether to include each pinned memory's body content. |
+| limit | integer | 10 | Maximum memories to return (1–50). |
+| include_body | boolean | true | Whether to include each memory's body content. |
 | max_body_chars | integer | 500 | Maximum characters of body to return per memory (100–5000). Bodies longer than this are truncated with `…`. |
-| category | string | — | Filter pinned memories to a single category (`decision`, `discovery`, `preference`, `general`). |
+| category | string | — | Filter memories to a single category (`decision`, `discovery`, `preference`, `general`). |
 
 **Response** `200 OK`
 
@@ -146,7 +146,7 @@ GET /workspaces/:id/context.json
     "updated_at": "2026-04-01T12:00:00Z",
     "url": "https://recuerd0.ai/workspaces/1"
   },
-  "pinned_memories": [
+  "memories": [
     {
       "id": 17,
       "title": "Architecture Notes",
@@ -160,14 +160,18 @@ GET /workspaces/:id/context.json
       "body_truncated": true
     }
   ],
+  "context_source": "pins",
   "stats": {
     "total_memories": 42,
     "total_pinned": 3,
+    "returned": 1,
     "returned_pinned": 1
   },
   "generated_at": "2026-04-06T10:00:00Z"
 }
 ```
+
+The `pinned_memories` array and `stats.returned_pinned` remain as deprecated aliases of `memories` and `stats.returned`.
 
 Returns `404 NOT_FOUND` if the workspace is deleted or does not belong to the authenticated account.
 

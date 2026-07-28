@@ -17,8 +17,15 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#doors h2", text: "Three doors, one knowledge base"
     assert_select "#shape h2", text: "What you start with"
     assert_select "#shape .resource-header p",
-      text: "Every new account includes My Workspace with four memories in a deliberate reading order: " \
-        "_MAP, Continuation Brief, _INDEX — Decisions, and D001 — the first decision."
+      text: "Every new account includes My Workspace with four memories in a deliberate reading order:"
+    assert_equal [
+      "Map — how this workspace is kept",
+      "Continuation Brief",
+      "Index — decisions",
+      "D001 — the first decision"
+    ], css_select("#shape .resource-header ul li").map { |item| item.text.strip }
+    assert_select "#shape h3", text: "Map — how this workspace is kept"
+    assert_select "#shape h3", text: "Index — decisions"
     assert_select "#path h3", text: "1. Create a token"
     assert_select "#path h3", text: "2. Install and connect the CLI"
     assert_select "#path h3", text: "3. Import what you already know"
@@ -29,13 +36,20 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
       assert_select "p",
         text: /Run recuerd0 workspace list to find the workspace ID\./
     end
-    assert_includes response.body, "workspace context endpoint"
+    assert_includes response.body, "there is no token to copy"
     assert_includes response.body, "./.claude/skills"
     assert_select "#path a[href='#{recuerd0_mcp_skill_path}']", text: "download the MCP skill"
+    mcp_step = css_select("#path .endpoint-head").find do |heading|
+      heading.at_css("h3")&.text&.strip == "5. Connect over MCP"
+    end
+    assert_select mcp_step, "code", text: "Map — how this workspace is kept", count: 0
+    assert_includes mcp_step.at_css("p").text, "read Map — how this workspace is kept first"
     assert_select "#shape h3", text: "D001 — the first decision"
     assert_select "#shape h3", text: "When it grows"
     assert_select "#shape p", text: /A hub is a routing-table memory for crowded territory/
     assert_includes response.body, "Hub — Payments"
+    assert_not_includes response.body, ["_", "MAP"].join
+    assert_not_includes response.body, ["_", "INDEX"].join
 
     assert_select "#path a[href='#{profile_path(anchor: "access-tokens")}']", text: "Access Tokens"
     assert_select "#doors a[href='#{cli_path}']"
@@ -139,12 +153,24 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "release notes"
     assert_includes response.body, "raw multi-term FTS5 query"
     assert_select "a[href='/mcp#memory-search']"
+    assert_includes response.body,
+      "When the requesting user has no pinned memories in the workspace, the endpoint returns " \
+        "the most recently updated memories instead of an empty list; context_source reports " \
+        "pins or recent."
+    assert_select "#get-workspace-context", text: /pinned_memories.*deprecated/m
+    assert_select "#get-workspace-context", text: /stats\.returned_pinned.*deprecated/m
   end
 
   test "GET MCP docs renders the safe phrase and exact-tag search contract" do
     get mcp_url
 
     assert_response :success
+    assert_select ".doc-sidebar a[href='#mcp-skill']", text: "MCP skill"
+    assert_select "#mcp-skill h2", text: "MCP skill"
+    assert_select "#mcp-skill p",
+      text: "MCP clients do not have the CLI installer, so download the MCP skill and add it to your client."
+    assert_select "#mcp-skill a[href='#{recuerd0_mcp_skill_path}']",
+      text: "download the MCP skill"
     assert_select "#memory-search h3", text: "Memory search"
     assert_includes response.body, "case-insensitive whole-tag equality"
     assert_includes response.body, "Matching is substring-level (trigram tokenizer)"

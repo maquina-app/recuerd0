@@ -28,6 +28,8 @@ class User < ApplicationRecord
   validates :role, presence: true, inclusion: {in: ROLES}
   validates :name, length: {maximum: 80}, allow_blank: true
 
+  after_create :pin_account_defaults
+
   def admin?
     role == "admin"
   end
@@ -59,5 +61,19 @@ class User < ApplicationRecord
       new_position = new_order.index(pin.pinnable_id)
       pin.update!(position: new_position) if new_position
     end
+  end
+
+  private
+
+  def pin_account_defaults
+    Memory.joins(:workspace)
+      .where(default_pinned: true)
+      .where(workspaces: {
+        account_id: account_id,
+        archived_at: nil,
+        deleted_at: nil
+      })
+      .order(:id)
+      .each { |memory| memory.pin!(self) }
   end
 end

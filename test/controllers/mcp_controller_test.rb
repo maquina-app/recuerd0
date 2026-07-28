@@ -35,6 +35,12 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal "2025-03-26", result["result"]["protocolVersion"]
+    assert_equal(
+      "Before writing to or searching a workspace, call workspace_context on it. " \
+        "Workspaces carry their own conventions, and the context response tells you what the " \
+        "workspace already holds so your work fits it and does not duplicate it.",
+      result["result"]["instructions"]
+    )
     assert response.headers["Mcp-Session-Id"].present?
   end
 
@@ -57,13 +63,33 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
   test "tools/list returns every defined tool" do
     result = mcp(rpc("tools/list"), token: @read_token.raw_token)
-    names = result["result"]["tools"].map { |t| t["name"] }
+    tools = result["result"]["tools"]
+    names = tools.map { |t| t["name"] }
+    assert_equal 13, names.size
+    assert_equal "workspace_context", names.first
     assert_equal Mcp::ToolDefinitions::NAMES.sort, names.sort
     assert_includes names, "create_version"
     assert_includes names, "read_memories"
     assert_includes names, "link_memories"
     assert_includes names, "workspace_stats"
     assert_includes names, "suggest_merge_candidates"
+    workspace_context = tools.find { |tool| tool["name"] == "workspace_context" }
+    assert workspace_context["description"].end_with?(
+      "Call this before searching or writing, so later work is informed by what the " \
+        "workspace already holds and does not duplicate it."
+    )
+  end
+
+  test "tools/list appends the write mechanics descriptions" do
+    result = mcp(rpc("tools/list"), token: @read_token.raw_token)
+    tools = result["result"]["tools"].index_by { |tool| tool["name"] }
+
+    assert_includes tools["create_memory"]["description"],
+      "Mechanics: creates a new root memory at version 1."
+    assert_includes tools["update_memory"]["description"],
+      "Mechanics: edits the current version in place and does not add a history entry."
+    assert_includes tools["create_version"]["description"],
+      "Mechanics: appends a new current version and leaves earlier versions intact."
   end
 
   test "tools/list advertises tags and category inputs on write tools" do
@@ -108,6 +134,135 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     result = mcp(rpc("tools/call", name: "list_workspaces"), token: @read_token.raw_token)
     payload = JSON.parse(result["result"]["content"].first["text"])
     assert_includes payload.map { |w| w["name"] }, @workspace.name
+  end
+
+  test "workspace_context returns pinned current-version bodies through read_only access" do
+    workspace = create_workspace_without_starter_map("MCP pinned context")
+    root = Memory.create_with_content(
+      workspace,
+      title: "Version one",
+      content: "First body",
+      category: "general"
+    )
+    root.create_version!(
+      title: "Version two",
+      content: "Second body",
+      category: "discovery"
+    )
+    current = root.create_version!(
+      title: "Version three",
+      content: "Third body",
+      category: "decision",
+      tags: ["latest"],
+      source: "manual"
+    )
+    root.pin!(@user)
+
+    payload = call_tool("workspace_context", {workspace_id: workspace.id.to_s})
+
+    assert_equal %w[context_source generated_at memories stats workspace], payload.keys.sort
+    assert_equal "pins", payload["context_source"]
+    assert_equal 1, payload.dig("stats", "total_pinned")
+    assert_equal 1, payload.dig("stats", "returned")
+    assert Time.iso8601(payload["generated_at"])
+
+    memory = payload["memories"].sole
+    assert_equal root.id.to_s, memory["id"]
+    assert_equal current.title, memory["title"]
+    assert_equal current.content.body.content, memory["body"]
+    assert_equal current.category, memory["category"]
+    assert_equal current.tags, memory["tags"]
+    assert_equal current.version, memory["version"]
+    assert_equal false, memory["body_truncated"]
+    assert_empty memory.keys & %w[url links_count pinned_at pinned_memories]
+  end
+
+  test "workspace_context falls back to recent roots and supports body options and clamping" do
+    workspace = create_workspace_without_starter_map("MCP recent context")
+    older = Memory.create_with_content(workspace, title: "Older", content: "old")
+    newer_body = "x" * 300
+    newer = Memory.create_with_content(workspace, title: "Newer", content: newer_body)
+    older.update_column(:updated_at, 2.days.ago)
+    newer.update_column(:updated_at, 1.day.ago)
+
+    payload = call_tool(
+      "workspace_context",
+      {
+        workspace_id: workspace.id.to_s,
+        limit: 1,
+        max_body_chars: 1
+      }
+    )
+
+    assert_equal "recent", payload["context_source"]
+    assert_equal 0, payload.dig("stats", "total_pinned")
+    assert_equal [newer.id.to_s], payload["memories"].map { |memory| memory["id"] }
+    assert_equal 100, payload["memories"].first["body"].length
+    assert_equal true, payload["memories"].first["body_truncated"]
+
+    without_body = call_tool(
+      "workspace_context",
+      {workspace_id: workspace.id.to_s, include_body: false}
+    )
+    assert without_body["memories"].none? { |memory| memory.key?("body") }
+    assert without_body["memories"].none? { |memory| memory.key?("body_truncated") }
+  end
+
+  test "workspace_context validates category and account-scopes active workspaces" do
+    invalid = mcp(
+      rpc(
+        "tools/call",
+        name: "workspace_context",
+        arguments: {workspace_id: @workspace.id.to_s, category: "bogus"}
+      ),
+      token: @read_token.raw_token
+    )
+    assert invalid.dig("result", "isError")
+    assert_match "Invalid category", invalid.dig("result", "content", 0, "text")
+
+    foreign = mcp(
+      rpc(
+        "tools/call",
+        name: "workspace_context",
+        arguments: {workspace_id: workspaces(:two).id.to_s}
+      ),
+      token: @read_token.raw_token
+    )
+    assert foreign.dig("result", "isError")
+    assert_equal "Workspace not found", foreign.dig("result", "content", 0, "text")
+  end
+
+  test "workspace_context root id matches list and updates directly with REST parity" do
+    workspace = create_workspace_without_starter_map("MCP parity")
+    root = Memory.create_with_content(workspace, title: "V1", content: "Body v1")
+    root.create_version!(title: "V2", content: "Body v2")
+    current = root.create_version!(title: "V3", content: "Body v3", tags: ["v3"])
+    root.pin!(@user)
+
+    context = call_tool("workspace_context", {workspace_id: workspace.id.to_s})
+    mcp_memory = context["memories"].sole
+    listed = call_tool("list_memories", {workspace_id: workspace.id.to_s})
+      .fetch("memories")
+      .sole
+
+    get workspace_context_url(workspace, format: :json),
+      headers: auth_headers(@read_token.raw_token)
+    assert_response :success
+    rest_memory = JSON.parse(response.body)["memories"].sole
+
+    assert_equal root.id.to_s, mcp_memory["id"]
+    assert_equal listed["id"], mcp_memory["id"]
+    assert_equal current.title, mcp_memory["title"]
+    assert_equal rest_memory.values_at("title", "body"),
+      mcp_memory.values_at("title", "body")
+
+    updated = call_tool(
+      "update_memory",
+      {memory_id: mcp_memory["id"], title: "Updated through context ID"},
+      token: @full_token.raw_token
+    )
+    assert_equal root.id.to_s, updated["id"]
+    assert_equal "Updated through context ID", current.reload.title
   end
 
   test "create_memory is denied for a read_only token" do
@@ -196,7 +351,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_memories defaults to relevance with a query and permits explicit overrides" do
-    workspace = @account.workspaces.create!(name: "MCP Search Sort")
+    workspace = create_workspace_without_starter_map("MCP Search Sort")
     fts = Memory.create_with_content(workspace, title: "Release notes", content: "body")
     tag = Memory.create_with_content(workspace,
       title: "Newest tag", content: "body", tags: ["release notes"])
@@ -213,7 +368,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_memories applies explicit non-relevance sorts and resolves relevance without a query" do
-    workspace = @account.workspaces.create!(name: "MCP Explicit Sorts")
+    workspace = create_workspace_without_starter_map("MCP Explicit Sorts")
     zebra = Memory.create_with_content(workspace, title: "Zebra", content: "body")
     alpha = Memory.create_with_content(workspace, title: "Alpha", content: "body")
     zebra.update_columns(created_at: 2.days.ago, updated_at: 1.hour.from_now)
@@ -228,8 +383,29 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal [zebra.id.to_s, alpha.id.to_s], relevance["memories"].map { |memory| memory["id"] }
   end
 
+  test "list_memories updated sort reflects version creation" do
+    workspace = create_workspace_without_starter_map("MCP Version Sort")
+    versioned = Memory.create_with_content(workspace, title: "Versioned", content: "v1")
+    other = Memory.create_with_content(workspace, title: "Other", content: "body")
+    versioned.update_column(:updated_at, 2.days.ago)
+    other.update_column(:updated_at, 1.day.ago)
+
+    travel_to Time.current do
+      call_tool(
+        "create_version",
+        {memory_id: versioned.id.to_s, title: "Versioned current", content: "v2"},
+        token: @full_token.raw_token
+      )
+    end
+
+    listed = call_tool("list_memories", {workspace_id: workspace.id.to_s, sort: "updated"})
+
+    assert_equal [versioned.id.to_s, other.id.to_s],
+      listed["memories"].map { |memory| memory["id"] }
+  end
+
   test "list_memories accepts short exact-tag queries without invoking FTS" do
-    workspace = @account.workspaces.create!(name: "MCP Short Search")
+    workspace = create_workspace_without_starter_map("MCP Short Search")
     tag = Memory.create_with_content(workspace, title: "Tagged", content: "body", tags: ["Go"])
     Memory.create_with_content(workspace, title: "Go title only", content: "body")
 
@@ -240,7 +416,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_memories relevance pagination is stable with tied tag-only matches" do
-    workspace = @account.workspaces.create!(name: "MCP Stable Search")
+    workspace = create_workspace_without_starter_map("MCP Stable Search")
     memories = 3.times.map do |index|
       Memory.create_with_content(workspace,
         title: "Tag #{index}", content: "body", tags: ["go"])
@@ -365,7 +541,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_memory with a root id targets current and remains visible through read and list" do
-    workspace = @account.workspaces.create!(name: "MCP Root Update")
+    workspace = create_workspace_without_starter_map("MCP Root Update")
     original_body = "# Version one\n\nKeep these bytes.\n"
     root = Memory.create_with_content(workspace,
       title: "Version one", content: original_body, tags: ["v1"])
@@ -413,7 +589,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_memory rejects a historical child before validation without touching the root" do
-    workspace = @account.workspaces.create!(name: "MCP Immutable History")
+    workspace = create_workspace_without_starter_map("MCP Immutable History")
     root = Memory.create_with_content(workspace,
       title: "Version one", content: "First body", tags: ["v1"], category: "general")
     historical = root.create_version!(
@@ -462,7 +638,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_memory accepts a current child id and moves its root first in updated order" do
-    workspace = @account.workspaces.create!(name: "MCP Current Child Update")
+    workspace = create_workspace_without_starter_map("MCP Current Child Update")
     root = Memory.create_with_content(workspace, title: "Version one", content: "First")
     current = root.create_version!(title: "Version two", content: "Second")
     other = Memory.create_with_content(workspace, title: "Other memory", content: "Other")
@@ -471,12 +647,13 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     root_updated_at = root.reload.updated_at
     payload = nil
 
-    travel_to 1.hour.from_now do
+    travel_to 30.minutes.from_now do
       result = mcp(
         rpc("tools/call", name: "update_memory",
           arguments: {memory_id: current.id.to_s, title: "Direct current update"}),
         token: @full_token.raw_token
       )
+      assert_response :success
       assert_not result.dig("result", "isError")
       payload = JSON.parse(result.dig("result", "content", 0, "text"))
     end
@@ -492,7 +669,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update_memory root id blank guard checks current body and touches nothing" do
-    workspace = @account.workspaces.create!(name: "MCP Current Blank Guard")
+    workspace = create_workspace_without_starter_map("MCP Current Blank Guard")
     root = Memory.create_with_content(workspace, title: "Blank v1", content: "")
     current = root.create_version!(title: "Nonblank v2", content: "Existing current body")
     root.update_column(:updated_at, 2.days.ago)
@@ -595,6 +772,12 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def create_workspace_without_starter_map(name)
+    @account.workspaces.create!(name: name).tap do |workspace|
+      workspace.memories.find_by!(title: WorkspaceStarter::TITLE).destroy!
+    end
+  end
 
   def oauth_token(permission:, scope:, expires_at: 1.hour.from_now)
     @user.access_tokens.create!(

@@ -308,12 +308,23 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
   # -- create --
 
   test "should create workspace with valid params" do
-    assert_difference("Workspace.count") do
-      post workspaces_url, params: {workspace: {name: "New Workspace", description: "A description"}}
+    assert_difference ["Workspace.count", "Memory.count"], 1 do
+      post workspaces_url,
+        params: {workspace: {name: "New Workspace", description: "A description"}}
     end
 
-    assert_redirected_to workspace_url(Workspace.last)
+    workspace = Workspace.last
+    assert_redirected_to workspace_url(workspace)
     assert_equal I18n.t("workspaces.create.created"), flash[:notice]
+
+    map = workspace.memories.sole
+    assert_equal WorkspaceStarter::TITLE, map.title
+    assert map.pinned_by?(@user)
+
+    follow_redirect!
+    assert_response :success
+    assert_select ".mc-title a", text: WorkspaceStarter::TITLE
+    assert_includes response.body, "How this workspace is kept"
   end
 
   test "should not create workspace without name" do

@@ -1,6 +1,44 @@
 require "test_helper"
 
 class WorkspaceTest < ActiveSupport::TestCase
+  test "creation adds exactly one conventions-bearing starter map" do
+    workspace = accounts(:one).workspaces.create!(name: "Starter map")
+
+    assert_equal 1, workspace.memories.count
+    map = workspace.memories.sole
+    assert_equal map, workspace.starter_map
+    assert_equal WorkspaceStarter::TITLE, map.title
+    assert_equal WorkspaceStarter::TAGS, map.tags
+    assert_equal "system", map.source
+    assert_predicate map, :default_pinned?
+    assert_predicate map, :root_version?
+    assert_equal WorkspaceStarter.content(
+      base_url: Rails.application.config.x.app_base_url
+    ), map.content.body.content
+    assert_includes map.content.body.content, "## Your workspace\n\n## Why this shape"
+    assert_not_includes map.content.body.content,
+      "The brief carries state between sessions — its version history becomes your log."
+    assert_includes map.content.body.content,
+      "Search is keyword search, fast and literal, so write map lines and titles the way you'd ask for them."
+    assert_not_includes map.content.body.content,
+      "Index — decisions keeps locked decisions one hop away."
+    assert_not_includes map.content.body.content, StartHereContent::MAP_ROUTING_BULLETS.first
+    assert_includes map.content.body.to_html, "How this workspace is kept"
+    assert map.pinned_by?(users(:one))
+    assert map.pinned_by?(users(:member))
+    assert_not map.pinned_by?(users(:two))
+  end
+
+  test "creation does not pin an inactive workspace starter map" do
+    workspace = accounts(:one).workspaces.create!(
+      name: "Archived starter map",
+      archived_at: Time.current
+    )
+
+    assert_not workspace.starter_map.pinned_by?(users(:one))
+    assert_not workspace.starter_map.pinned_by?(users(:member))
+  end
+
   test "requires name" do
     workspace = Workspace.new(name: "", account: accounts(:one))
     assert_not workspace.valid?
@@ -180,9 +218,10 @@ class WorkspaceTest < ActiveSupport::TestCase
     assert_equal latest, workspace.last_activity
   end
 
-  test "last_activity returns created_at when no memories" do
-    workspace = accounts(:one).workspaces.create!(name: "Empty Workspace")
-    assert_equal workspace.created_at, workspace.last_activity
+  test "last_activity returns the starter map created_at for a new workspace" do
+    workspace = accounts(:one).workspaces.create!(name: "New Workspace")
+
+    assert_equal workspace.memories.sole.created_at, workspace.last_activity
   end
 
   test "last_activity returns a Time when loaded via select alias" do
