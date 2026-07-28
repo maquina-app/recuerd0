@@ -26,13 +26,15 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     ], css_select("#shape .resource-header ul li").map { |item| item.text.strip }
     assert_select "#shape h3", text: "Map — how this workspace is kept"
     assert_select "#shape h3", text: "Index — decisions"
-    assert_select "#path h3", text: "1. Create a token"
-    assert_select "#path h3", text: "2. Install and connect the CLI"
-    assert_select "#path h3", text: "3. Import what you already know"
-    assert_select "#path h3", text: "4. Install the skill"
-    assert_select "#path h3", text: "5. Connect over MCP"
+    assert_equal [
+      "1. Create a token",
+      "2. Install and connect the CLI",
+      "3. Install the skill",
+      "4. Import what you already know",
+      "5. Connect over MCP"
+    ], css_select("#path > .endpoint-head h3").map { |heading| heading.text.strip }
     assert_includes response.body, "propose → review → commit"
-    assert_select "#path .endpoint-head", text: /3\. Import what you already know/ do
+    assert_select "#path .endpoint-head", text: /4\. Import what you already know/ do
       assert_select "p",
         text: /Run recuerd0 workspace list to find the workspace ID\./
     end
@@ -60,17 +62,23 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".code-block code[data-clipboard-target='source']", count: 4
 
     import_heading = css_select("#path .endpoint-head").find do |heading|
-      heading.at_css("h3")&.text&.strip == "3. Import what you already know"
+      heading.at_css("h3")&.text&.strip == "4. Import what you already know"
     end
     import_commands = import_heading.next_element.at_css("code[data-clipboard-target='source']").text.lines.map(&:strip)
     assert_equal(
       [
         "recuerd0 workspace list",
         "recuerd0 import propose ./vault --workspace 12 --pretty",
-        "# Review import.plan.yaml, then commit the plan you approved",
-        "recuerd0 import commit import.plan.yaml --yes --pretty"
+        "# Review import.plan.yaml, then commit — it will prompt for confirmation",
+        "recuerd0 import commit import.plan.yaml --pretty"
       ],
       import_commands
+    )
+    assert_equal(
+      'Import leaves the memories unstructured. Ask your agent: "I just imported notes into ' \
+        'workspace <id>. Do the post-import pass." It will cluster the memories, fix weak titles, ' \
+        "and propose hubs for review.",
+      import_heading.next_element.next_element.text.squish
     )
   end
 

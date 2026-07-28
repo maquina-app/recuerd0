@@ -1,5 +1,5 @@
 <% content_for :title, "Getting Started" %>
-<% content_for :description, "Go from zero to working with recuerd0: create a token, connect the CLI, import knowledge, install the agent skill, or connect over MCP." %>
+<% content_for :description, "Go from zero to working with recuerd0: create a token, connect the CLI, install the agent skill, import knowledge, or connect over MCP." %>
 <% content_for :canonical_url, "https://recuerd0.ai/start" %>
 
 <div data-controller="marketing-sidebar">
@@ -43,20 +43,7 @@ recuerd0 account add personal --api-url https://your-server.com --token YOUR_TOK
         </div>
 
         <div class="endpoint-head">
-          <h3>3. Import what you already know</h3>
-          <p>Import is propose → review → commit. Propose writes <code>import.plan.yaml</code> without touching the server; review that plan before you approve any writes. Run <code>recuerd0 workspace list</code> to find the workspace ID.</p>
-        </div>
-        <div class="code-block" data-controller="clipboard">
-          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">recuerd0 workspace list
-recuerd0 import propose ./vault --workspace 12 --pretty
-<span class="cc"># Review import.plan.yaml, then commit — it will prompt for confirmation</span>
-recuerd0 import commit import.plan.yaml --pretty</code></div>
-        </div>
-        <p>Import leaves the memories unstructured. Ask your agent: "I just imported notes into workspace &lt;id&gt;. Do the post-import pass." It will cluster the memories, fix weak titles, and propose hubs for review.</p>
-
-        <div class="endpoint-head">
-          <h3>4. Install the skill</h3>
+          <h3>3. Install the skill</h3>
           <p><code>recuerd0 skills install</code> copies the bundled skill to <code>./.claude/skills</code> by default. Use <code>--global</code> for <code>~/.claude/skills</code>, <code>--target &lt;directory&gt;</code> for any directory, and <code>--force</code> to overwrite an existing copy.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
@@ -68,6 +55,19 @@ recuerd0 import commit import.plan.yaml --pretty</code></div>
           <div class="code-body"><code data-clipboard-target="source">/plugin marketplace add maquina-app/rails-claude-code
 /plugin install recuerd0@maquina</code></div>
         </div>
+
+        <div class="endpoint-head">
+          <h3>4. Import what you already know</h3>
+          <p>Import is propose → review → commit. Propose writes <code>import.plan.yaml</code> without touching the server; review that plan before you approve any writes. Run <code>recuerd0 workspace list</code> to find the workspace ID.</p>
+        </div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 workspace list
+recuerd0 import propose ./vault --workspace 12 --pretty
+<span class="cc"># Review import.plan.yaml, then commit — it will prompt for confirmation</span>
+recuerd0 import commit import.plan.yaml --pretty</code></div>
+        </div>
+        <p>Import leaves the memories unstructured. Ask your agent: "I just imported notes into workspace &lt;id&gt;. Do the post-import pass." It will cluster the memories, fix weak titles, and propose hubs for review.</p>
 
         <div class="endpoint-head">
           <h3>5. Connect over MCP</h3>
