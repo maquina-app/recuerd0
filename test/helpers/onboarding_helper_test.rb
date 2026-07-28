@@ -18,52 +18,43 @@ class OnboardingHelperTest < ActionView::TestCase
     Current.reset
   end
 
-  test "nothing is complete without a used token or user content" do
-    assert_not onboarding_agent_connected?
-    assert_not onboarding_terminal_connected?
-    assert_not onboarding_chat_connected?
-    assert_not onboarding_first_content?
-    assert_equal 0, onboarding_completed_count
-    assert_equal 2, onboarding_total_steps
-    assert show_onboarding_alert?
-  end
+  test "onboarding state matrix keeps connection paths, content, and dismissal independent" do
+    [false, true].repeated_permutation(4).each_with_index do |(manual, oauth, content, dismissed), index|
+      user = Account.create_with_user(
+        email_address: "onboarding-matrix-#{index}@example.com",
+        password: "password",
+        password_confirmation: "password"
+      )
+      workspace = user.account.workspaces.find_by!(name: "My Workspace")
+      manual_token = user.access_tokens.create!(permission: "full_access")
+      oauth_token = create_oauth_token(user:, suffix: index)
+      manual_token.touch_last_used! if manual
+      oauth_token.touch_last_used! if oauth
+      if content
+        Memory.create_with_content(
+          workspace,
+          title: "Matrix content",
+          content: "Body",
+          source: "manual"
+        )
+      end
+      user.update!(onboarding_dismissed_at: Time.current) if dismissed
 
-  test "unused manual and OAuth tokens do not connect either path" do
-    @user.access_tokens.create!(permission: "full_access")
-    create_oauth_token
+      Current.user = user
+      clear_onboarding_memoization
 
-    assert_not onboarding_agent_connected?
-    assert_not onboarding_terminal_connected?
-    assert_not onboarding_chat_connected?
-  end
+      label = "manual=#{manual}, oauth=#{oauth}, content=#{content}, dismissed=#{dismissed}"
+      agent_connected = manual || oauth
+      completed_count = [agent_connected, content].count(true)
 
-  test "a used manual token connects only the Terminal path and the aggregate" do
-    token = @user.access_tokens.create!(permission: "full_access")
-    token.touch_last_used!
-
-    assert onboarding_agent_connected?
-    assert onboarding_terminal_connected?
-    assert_not onboarding_chat_connected?
-  end
-
-  test "a used OAuth token connects only the Chat path and the aggregate" do
-    token = create_oauth_token
-    token.touch_last_used!
-
-    assert onboarding_agent_connected?
-    assert_not onboarding_terminal_connected?
-    assert onboarding_chat_connected?
-  end
-
-  test "used manual and OAuth tokens connect both paths and the aggregate" do
-    manual_token = @user.access_tokens.create!(permission: "full_access")
-    oauth_token = create_oauth_token
-    manual_token.touch_last_used!
-    oauth_token.touch_last_used!
-
-    assert onboarding_agent_connected?
-    assert onboarding_terminal_connected?
-    assert onboarding_chat_connected?
+      assert_equal agent_connected, onboarding_agent_connected?, label
+      assert_equal manual, onboarding_terminal_connected?, label
+      assert_equal oauth, onboarding_chat_connected?, label
+      assert_equal content, onboarding_first_content?, label
+      assert_equal completed_count, onboarding_completed_count, label
+      assert_equal 2, onboarding_total_steps, label
+      assert_equal(!dismissed && completed_count < 2, show_onboarding_alert?, label)
+    end
   end
 
   test "content is account-wide while agent connection is user-specific" do
@@ -86,26 +77,6 @@ class OnboardingHelperTest < ActionView::TestCase
     assert show_onboarding_alert?
   end
 
-  test "both signals complete onboarding" do
-    token = @user.access_tokens.create!(permission: "full_access")
-    token.touch_last_used!
-    Memory.create_with_content(
-      @workspace,
-      title: "User content",
-      content: "Body",
-      source: nil
-    )
-
-    assert_equal 2, onboarding_completed_count
-    assert_not show_onboarding_alert?
-  end
-
-  test "dismissal hides an incomplete alert" do
-    @user.update!(onboarding_dismissed_at: Time.current)
-
-    assert_not show_onboarding_alert?
-  end
-
   test "false predicate results are memoized" do
     assert_queries_count 4 do
       2.times do
@@ -119,15 +90,26 @@ class OnboardingHelperTest < ActionView::TestCase
 
   private
 
-  def create_oauth_token
+  def create_oauth_token(user: @user, suffix: "default")
     client = OauthClient.create!(
-      client_name: "Onboarding helper client",
+      client_name: "Onboarding helper client #{suffix}",
       redirect_uris: ["https://example.com/callback"].to_json
     )
-    @user.access_tokens.create!(
+    user.access_tokens.create!(
       permission: "read_only",
       oauth_client: client,
       expires_at: 1.hour.from_now
     )
+  end
+
+  def clear_onboarding_memoization
+    %i[
+      @onboarding_agent_connected
+      @onboarding_terminal_connected
+      @onboarding_chat_connected
+      @onboarding_first_content
+    ].each do |variable|
+      remove_instance_variable(variable) if instance_variable_defined?(variable)
+    end
   end
 end

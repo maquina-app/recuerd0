@@ -31,44 +31,41 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "#{ALERT_SELECTOR} ~ div h1", text: "My Workspace"
   end
 
-  test "unused and used manual tokens drive only the current user's agent signal" do
-    token = @user.access_tokens.create!(permission: "full_access")
+  test "unused tokens do not connect either path and a used manual token connects only Terminal" do
+    manual_token = @user.access_tokens.create!(permission: "full_access")
+    create_oauth_token
 
     get workspaces_url
 
-    assert_alert_progress(agent: :incomplete, content: :incomplete, completed: 0)
+    assert_onboarding_state(terminal: :incomplete, chat: :incomplete, content: :incomplete)
 
-    token.touch_last_used!
+    manual_token.touch_last_used!
     get workspaces_url
 
-    assert_alert_progress(agent: :complete, content: :incomplete, completed: 1)
-    assert_connection_markers(terminal: :complete, chat: :incomplete)
-    assert_alert_message(
-      title: "Almost there",
-      text: "Almost there — ask your agent to save its first memory."
-    )
-    assert_menu_label "Finish setting up"
+    assert_onboarding_state(terminal: :complete, chat: :incomplete, content: :incomplete)
   end
 
-  test "a used OAuth token connects the agent" do
-    client = OauthClient.create!(
-      client_name: "Onboarding request client",
-      redirect_uris: ["https://example.com/callback"].to_json
-    )
-    token = @user.access_tokens.create!(
-      permission: "read_only",
-      oauth_client: client,
-      expires_at: 1.hour.from_now
-    )
+  test "a used OAuth token connects only Chat" do
+    token = create_oauth_token
     token.touch_last_used!
 
     get workspaces_url
 
-    assert_alert_progress(agent: :complete, content: :incomplete, completed: 1)
-    assert_connection_markers(terminal: :incomplete, chat: :complete)
+    assert_onboarding_state(terminal: :incomplete, chat: :complete, content: :incomplete)
   end
 
-  test "account content does not complete the current user's agent signal" do
+  test "used manual and OAuth tokens connect both drawer paths" do
+    manual_token = @user.access_tokens.create!(permission: "full_access")
+    oauth_token = create_oauth_token
+    manual_token.touch_last_used!
+    oauth_token.touch_last_used!
+
+    get workspaces_url
+
+    assert_onboarding_state(terminal: :complete, chat: :complete, content: :incomplete)
+  end
+
+  test "teammate account content folds both content steps but does not connect either path" do
     Memory.create_with_content(
       @workspace,
       title: "Account content",
@@ -86,11 +83,10 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get workspaces_url
 
     assert_response :success
-    assert_alert_progress(agent: :incomplete, content: :complete, completed: 1)
-    assert_menu_label "Finish setting up"
+    assert_onboarding_state(terminal: :incomplete, chat: :incomplete, content: :complete)
   end
 
-  test "both completed signals hide the alert and menu trigger but keep the drawer mounted" do
+  test "manual connection and content complete onboarding while Chat stays expanded" do
     token = @user.access_tokens.create!(permission: "full_access")
     token.touch_last_used!
     Memory.create_with_content(
@@ -102,9 +98,24 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     get workspaces_url
 
-    assert_select ALERT_SELECTOR, count: 0
-    assert_global_drawer
-    assert_select MENU_TRIGGER_SELECTOR, count: 0
+    assert_onboarding_state(terminal: :complete, chat: :incomplete, content: :complete)
+  end
+
+  test "both connection types and content fold all eight drawer items" do
+    manual_token = @user.access_tokens.create!(permission: "full_access")
+    oauth_token = create_oauth_token
+    manual_token.touch_last_used!
+    oauth_token.touch_last_used!
+    Memory.create_with_content(
+      @workspace,
+      title: "First content",
+      content: "Body",
+      source: nil
+    )
+
+    get workspaces_url
+
+    assert_onboarding_state(terminal: :complete, chat: :complete, content: :complete)
   end
 
   test "dismissal hides only the alert and persists for the current user" do
@@ -118,6 +129,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_select ALERT_SELECTOR, count: 0
     assert_global_drawer
+    assert_drawer_state(terminal: :incomplete, chat: :incomplete, content: :incomplete)
     assert_menu_label "Finish setting up"
   end
 
@@ -308,7 +320,39 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     )
     assert_alert_progress(agent: :incomplete, content: :incomplete, completed: 0)
     assert_global_drawer
+    assert_drawer_state(terminal: :incomplete, chat: :incomplete, content: :incomplete)
     assert_menu_label "Finish setting up"
+  end
+
+  def assert_onboarding_state(terminal:, chat:, content:)
+    agent = terminal == :complete || chat == :complete
+    completed = [agent, content == :complete].count(true)
+
+    if completed < 2
+      assert_alert_progress(
+        agent: agent ? :complete : :incomplete,
+        content:,
+        completed:
+      )
+      if agent
+        assert_alert_message(
+          title: "Almost there",
+          text: "Almost there — ask your agent to save its first memory."
+        )
+      else
+        assert_alert_message(
+          title: "Finish setting up",
+          text: "Finish setting up — connect an agent so it can read and write here."
+        )
+      end
+      assert_menu_label "Finish setting up"
+    else
+      assert_select ALERT_SELECTOR, count: 0
+      assert_select MENU_TRIGGER_SELECTOR, count: 0
+    end
+
+    assert_global_drawer
+    assert_drawer_state(terminal:, chat:, content:)
   end
 
   def assert_alert_progress(agent:, content:, completed:)
@@ -331,17 +375,73 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  def assert_connection_markers(terminal:, chat:)
-    {terminal: terminal, chat: chat}.each do |panel, state|
-      expected_marker = (state == :complete) ? "check" : "number"
-      unexpected_marker = (state == :complete) ? "number" : "check"
+  def assert_drawer_state(terminal:, chat:, content:)
+    complete = content == :complete && [terminal, chat].include?(:complete)
+    folded_count = [terminal, chat].count(:complete)
+    folded_count += 2 if content == :complete
+    folded_count += 4 if complete
 
-      assert_select(
-        "[data-onboarding-panel='#{panel}'] [data-onboarding-item][data-onboarding-step='1']"
-      ) do
-        assert_select "[data-onboarding-marker='#{expected_marker}']", count: 1
-        assert_select "[data-onboarding-marker='#{unexpected_marker}']", count: 0
-      end
+    assert_select "[data-onboarding-item]", count: 8
+    assert_select "[data-onboarding-item][data-folded='true']", count: folded_count
+    assert_select "[data-onboarding-item][data-folded='false']", count: 8 - folded_count
+    assert_select "[data-onboarding-item-toggle][aria-expanded='false']", count: folded_count
+    assert_select "[data-onboarding-item-body][hidden]", count: folded_count
+
+    assert_onboarding_item(
+      "[data-onboarding-panel='terminal'] [data-onboarding-item][data-onboarding-step='1']",
+      folded: terminal == :complete,
+      marker: (terminal == :complete) ? "check" : "number"
+    )
+    assert_onboarding_item(
+      "[data-onboarding-panel='chat'] [data-onboarding-item][data-onboarding-step='1']",
+      folded: chat == :complete,
+      marker: (chat == :complete) ? "check" : "number"
+    )
+
+    %w[terminal chat].each do |panel|
+      assert_onboarding_item(
+        "[data-onboarding-panel='#{panel}'] [data-onboarding-item][data-onboarding-step='2']",
+        folded: content == :complete,
+        marker: (content == :complete) ? "check" : "number"
+      )
+    end
+
+    guidance_items = css_select(
+      "[data-onboarding-item][data-onboarding-kind='guidance']"
+    )
+    assert_equal 4, guidance_items.size
+    guidance_items.each do |item|
+      assert_onboarding_item_node(item, folded: complete, marker: "guidance")
+    end
+  end
+
+  def assert_onboarding_item(selector, folded:, marker:)
+    items = css_select(selector)
+    assert_equal 1, items.size, "expected one onboarding item for #{selector}"
+    assert_onboarding_item_node(items.first, folded:, marker:)
+  end
+
+  def assert_onboarding_item_node(item, folded:, marker:)
+    assert_equal folded.to_s, item["data-folded"]
+    assert_equal marker, item.at_css("[data-onboarding-marker]")["data-onboarding-marker"]
+
+    title_classes = item.at_css("[data-onboarding-item-title]")["class"].split
+    body = item.at_css("[data-onboarding-item-body]")
+    toggles = item.css("[data-onboarding-item-toggle]")
+
+    if folded
+      assert_includes title_classes, "font-medium"
+      assert_includes title_classes, "text-muted-foreground"
+      assert_not_includes title_classes, "font-semibold"
+      assert_equal 1, toggles.size
+      assert_equal "Show", toggles.first.text.squish
+      assert_equal "false", toggles.first["aria-expanded"]
+      assert body.attribute("hidden")
+    else
+      assert_includes title_classes, "font-semibold"
+      assert_not_includes title_classes, "font-medium"
+      assert_empty toggles
+      assert_nil body.attribute("hidden")
     end
   end
 
@@ -367,5 +467,17 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       trigger = css_select(MENU_TRIGGER_SELECTOR).first
       assert_equal text, trigger.text.squish
     end
+  end
+
+  def create_oauth_token
+    client = OauthClient.create!(
+      client_name: "Onboarding request client",
+      redirect_uris: ["https://example.com/callback"].to_json
+    )
+    @user.access_tokens.create!(
+      permission: "read_only",
+      oauth_client: client,
+      expires_at: 1.hour.from_now
+    )
   end
 end

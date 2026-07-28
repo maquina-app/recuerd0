@@ -71,7 +71,7 @@
           data-onboarding-item
           data-onboarding-kind="tracked"
           data-onboarding-step="1"
-          data-folded="<%= agent_connected %>"
+          data-folded="<%= terminal_connected %>"
         >
           <div class="flex items-center gap-[9px]">
             <% if terminal_connected %>
@@ -88,10 +88,10 @@
               >1</span>
             <% end %>
             <h3
-              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= agent_connected ? "font-medium text-muted-foreground" : "font-semibold" %>"
+              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= terminal_connected ? "font-medium text-muted-foreground" : "font-semibold" %>"
               data-onboarding-item-title
             >Install and connect</h3>
-            <% if agent_connected %>
+            <% if terminal_connected %>
               <button
                 type="button"
                 class="!h-auto !px-1 !py-0 text-[11.5px] !text-muted-foreground hover:!text-foreground"
@@ -109,7 +109,7 @@
             id="onboarding-terminal-connect-body"
             class="pt-2 pl-7"
             data-onboarding-item-body
-            <%= "hidden" if agent_connected %>
+            <%= "hidden" if terminal_connected %>
           >
             <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
               Create a full-access token in
@@ -327,7 +327,7 @@
           data-onboarding-item
           data-onboarding-kind="tracked"
           data-onboarding-step="1"
-          data-folded="<%= agent_connected %>"
+          data-folded="<%= chat_connected %>"
         >
           <div class="flex items-center gap-[9px]">
             <% if chat_connected %>
@@ -344,10 +344,10 @@
               >1</span>
             <% end %>
             <h3
-              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= agent_connected ? "font-medium text-muted-foreground" : "font-semibold" %>"
+              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= chat_connected ? "font-medium text-muted-foreground" : "font-semibold" %>"
               data-onboarding-item-title
             >Add the connector</h3>
-            <% if agent_connected %>
+            <% if chat_connected %>
               <button
                 type="button"
                 class="!h-auto !px-1 !py-0 text-[11.5px] !text-muted-foreground hover:!text-foreground"
@@ -365,7 +365,7 @@
             id="onboarding-chat-connect-body"
             class="pt-2 pl-7"
             data-onboarding-item-body
-            <%= "hidden" if agent_connected %>
+            <%= "hidden" if chat_connected %>
           >
             <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">Browser sign-in — no token to copy.</p>
             <%= render "application/onboarding_command", command: "https://recuerd0.ai/mcp" %>
