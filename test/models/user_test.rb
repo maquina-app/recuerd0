@@ -1,6 +1,10 @@
 require "test_helper"
 
 class UserTest < ActiveSupport::TestCase
+  test "has an onboarding dismissal timestamp" do
+    assert_respond_to users(:one), :onboarding_dismissed_at
+  end
+
   test "normalizes email to lowercase and stripped" do
     user = User.new(email_address: " FOO@BAR.COM ", password: "password")
     assert_equal "foo@bar.com", user.email_address

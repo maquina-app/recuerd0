@@ -8,6 +8,10 @@
 <% end %>
 
 <div class="mx-auto max-w-5xl">
+  <% if show_onboarding_alert? %>
+    <%= render "application/onboarding_alert" %>
+  <% end %>
+
   <%# Header %>
   <div class="mb-6 flex items-center justify-between gap-4">
     <div class="flex items-baseline gap-2.5">

@@ -30,6 +30,24 @@ class OnboardingMailerTest < ActionMailer::TestCase
     assert_match "API token", email.text_part.body.to_s
   end
 
+  test "api_token links both parts to Profile Access Tokens" do
+    user = users(:member)
+    email = OnboardingMailer.api_token(user)
+    html = email.html_part.body.to_s
+    text = email.text_part.body.to_s
+    access_tokens_url = Rails.application.routes.url_helpers.profile_url(
+      host: "example.com",
+      anchor: "access-tokens"
+    )
+
+    assert_includes html, "Profile → Access Tokens"
+    assert_includes text, "Profile → Access Tokens"
+    assert_includes html, access_tokens_url
+    assert_includes text, access_tokens_url
+    assert_not_includes html, "Settings → Access Tokens"
+    assert_not_includes text, "Settings → Access Tokens"
+  end
+
   test "api_token skipped when user already has tokens" do
     user = users(:one) # has access_tokens in fixtures
     email = OnboardingMailer.api_token(user)
@@ -100,9 +118,18 @@ class OnboardingMailerTest < ActionMailer::TestCase
     user = users(:two)
     user.access_tokens.destroy_all
     email = OnboardingMailer.check_in(user)
-    body = email.html_part.body.to_s
+    html = email.html_part.body.to_s
+    text = email.text_part.body.to_s
+    sentence = "When you're ready, the Getting Started guide takes you from zero to your first import in a few minutes."
+    start_url = Rails.application.routes.url_helpers.start_url(host: "example.com")
+    html_text = Nokogiri::HTML.fragment(html).text.squish
+
     # Account two has 1 workspace, 0 memories, no tokens → inactive path
-    assert_match "haven't had a chance", body
+    assert_includes html, "haven't had a chance"
+    assert_includes html_text, sentence
+    assert_includes html, start_url
+    assert_includes text, sentence
+    assert_not_includes text, start_url
   end
 
   test "check_in text contains help links" do
@@ -113,7 +140,7 @@ class OnboardingMailerTest < ActionMailer::TestCase
   # advanced_tips
 
   test "advanced_tips email has correct subject and recipients" do
-    user = users(:one) # has workspaces beyond "Start Here"
+    user = users(:one) # has workspaces beyond "My Workspace"
     email = OnboardingMailer.advanced_tips(user)
     assert_equal I18n.t("onboarding_mailer.advanced_tips.subject"), email.subject
     assert_equal [user.email_address], email.to
@@ -131,10 +158,10 @@ class OnboardingMailerTest < ActionMailer::TestCase
     assert_match "versioning", email.text_part.body.to_s
   end
 
-  test "advanced_tips skipped when user has only Start Here workspace" do
-    # User two has a single workspace "Personal" — rename it to simulate
+  test "advanced_tips skipped when user has only My Workspace" do
+    # User two has a single workspace "Personal" — rename it to simulate.
     workspace = @user.account.workspaces.active.first
-    workspace.update!(name: "Start Here")
+    workspace.update!(name: "My Workspace")
     email = OnboardingMailer.advanced_tips(@user)
     assert_nil email.to
   end

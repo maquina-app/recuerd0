@@ -16,6 +16,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@user)
     get profile_url
     assert_response :success
+    assert_select "[data-component='card']#access-tokens", count: 1
     assert_select "div.divide-y" # tokens list is present
   end
 

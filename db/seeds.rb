@@ -7,8 +7,8 @@ user = User.find_or_create_by!(email_address: "demo@recuerd0.com") do |u|
   u.role = "admin"
 end
 
-# Seed "Start Here" workspace (idempotent)
-unless account.workspaces.exists?(name: "Start Here")
+# Seed "My Workspace" workspace (idempotent)
+unless account.workspaces.exists?(name: "My Workspace")
   account.seed_start_here_workspace(user)
 end
 

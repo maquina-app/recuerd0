@@ -9,6 +9,9 @@ class PagesController < ApplicationController
   def privacy
   end
 
+  def start
+  end
+
   def api_docs
   end
 

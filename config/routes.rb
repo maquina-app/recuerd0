@@ -25,14 +25,18 @@ Rails.application.routes.draw do
   # doesn't collide with the `mcp` marketing page route (GET /mcp) below.
   post "/mcp", to: "mcp#call", as: :mcp_endpoint
 
+  # Product documentation
+  get "start", to: "pages#start", as: :start
+  get "api-docs", to: "pages#api_docs", as: :api_docs
+  get "cli", to: "pages#cli", as: :cli
+  get "agents", to: "pages#agents", as: :agents
+  get "mcp", to: "pages#mcp", as: :mcp
+  get "skills/recuerd0-mcp/SKILL.md", to: "skills#recuerd0_mcp", as: :recuerd0_mcp_skill
+
   if Rails.application.config.multi_tenant
     resource :registration, only: %i[new create]
 
-    # Marketing / legal pages
-    get "api-docs", to: "pages#api_docs", as: :api_docs
-    get "cli", to: "pages#cli", as: :cli
-    get "agents", to: "pages#agents", as: :agents
-    get "mcp", to: "pages#mcp", as: :mcp
+    # Marketing / legal pages for the hosted service
     get "pricing", to: "pages#pricing", as: :pricing
     get "terms", to: "pages#terms", as: :terms
     get "privacy", to: "pages#privacy", as: :privacy
@@ -54,6 +58,8 @@ Rails.application.routes.draw do
     resource :password, only: %i[update], controller: "profile/passwords"
     resources :access_tokens, only: %i[create destroy], controller: "profile/access_tokens"
   end
+
+  post "onboarding/dismiss", to: "onboarding#dismiss", as: :onboarding_dismiss
 
   # Invitations (public — available in both modes for team member invites)
   resources :invitations, only: %i[show create], param: :token

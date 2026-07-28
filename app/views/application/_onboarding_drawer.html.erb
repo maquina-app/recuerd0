@@ -1,0 +1,426 @@
+<%# locals: () %>
+<% agent_connected = onboarding_agent_connected? %>
+<% first_content = onboarding_first_content? %>
+<% onboarding_complete = agent_connected && first_content %>
+
+<%= render "components/drawer/provider",
+  id: "onboarding-drawer-provider",
+  default_open: false,
+  cookie_name: "recuerd0_onboarding_drawer_state",
+  data: {
+    controller: "onboarding-drawer",
+    action: "toggle-group:change->onboarding-drawer#selectionChanged",
+    drawer_cookie_max_age_value: 0,
+    onboarding_drawer_toggle_group_outlet: "#onboarding-connection-methods"
+  } do %>
+  <%= render "components/drawer",
+    id: "onboarding-drawer",
+    state: :closed,
+    side: :right,
+    aria_label: "Connect your agent",
+    css_classes: "[&_[data-drawer-part=backdrop]]:!fixed [&_[data-drawer-part=backdrop]]:!inset-0 [&_[data-drawer-part=backdrop]]:!z-[60] [&_[data-drawer-part=panel]]:!z-[70] [&_[data-drawer-part=panel]]:!w-[480px] [&_[data-drawer-part=panel]]:!max-w-full" do %>
+    <%= render "components/drawer/header",
+      show_close: false,
+      css_classes: "!items-start !px-[18px] !py-[15px]" do %>
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Getting started</p>
+          <h2 class="mt-1 font-display text-[17px] font-semibold tracking-[-0.01em]">Connect your agent</h2>
+          <p class="mt-1 text-[12.5px] leading-5">
+            <%= link_to "Full walkthrough",
+              start_path,
+              class: "font-medium text-primary underline underline-offset-2" %>
+          </p>
+        </div>
+        <%= render "components/drawer/close",
+          css_classes: "btn btn-ghost btn-icon-sm",
+          aria: {label: "Close onboarding drawer"} do %><% end %>
+      </div>
+    <% end %>
+
+    <%= render "components/drawer/content",
+      css_classes: "!gap-0 !overflow-y-auto !px-[18px] !py-[15px]" do %>
+      <%= render "components/toggle_group",
+        id: "onboarding-connection-methods",
+        type: :single,
+        variant: :default,
+        size: :sm,
+        value: :terminal,
+        css_classes: "mb-4 w-full !gap-[3px] !rounded-lg bg-muted !p-[3px]" do %>
+        <%= render "components/toggle_group/item",
+          value: :terminal,
+          pressed: true,
+          css_classes: "h-7 flex-1 !rounded-md px-2 text-[12.5px] data-[state=on]:!bg-background data-[state=on]:shadow-sm" do %>
+          Terminal
+        <% end %>
+        <%= render "components/toggle_group/item",
+          value: :chat,
+          css_classes: "h-7 flex-1 !rounded-md px-2 text-[12.5px] data-[state=on]:!bg-background data-[state=on]:shadow-sm" do %>
+          Chat
+        <% end %>
+      <% end %>
+
+      <section
+        data-onboarding-drawer-target="terminalPanel"
+        data-onboarding-panel="terminal"
+      >
+        <div
+          class="mb-3.5"
+          data-onboarding-item
+          data-onboarding-kind="tracked"
+          data-onboarding-step="1"
+          data-folded="<%= agent_connected %>"
+        >
+          <div class="flex items-center gap-[9px]">
+            <% if agent_connected %>
+              <span
+                class="grid size-[19px] shrink-0 place-items-center rounded-full border border-primary bg-primary text-primary-foreground"
+                data-onboarding-marker="check"
+                aria-label="Install and connect complete"
+              ><%= icon_for(:check, class: "size-3") %></span>
+            <% else %>
+              <span
+                class="grid size-[19px] shrink-0 place-items-center rounded-full border border-border bg-muted font-mono text-[10px] font-semibold text-muted-foreground"
+                data-onboarding-marker="number"
+                aria-hidden="true"
+              >1</span>
+            <% end %>
+            <h3
+              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= agent_connected ? "font-medium text-muted-foreground" : "font-semibold" %>"
+              data-onboarding-item-title
+            >Install and connect</h3>
+            <% if agent_connected %>
+              <button
+                type="button"
+                class="!h-auto !px-1 !py-0 text-[11.5px] !text-muted-foreground hover:!text-foreground"
+                data-component="button"
+                data-variant="ghost"
+                data-size="sm"
+                data-action="onboarding-drawer#toggleItem"
+                data-onboarding-item-toggle
+                aria-expanded="false"
+                aria-controls="onboarding-terminal-connect-body"
+              >Show</button>
+            <% end %>
+          </div>
+          <div
+            id="onboarding-terminal-connect-body"
+            class="pt-2 pl-7"
+            data-onboarding-item-body
+            <%= "hidden" if agent_connected %>
+          >
+            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
+              Create a full-access token in
+              <%= link_to "Access Tokens",
+                profile_path(anchor: "access-tokens"),
+                class: "text-primary underline underline-offset-2" %>
+              first.
+            </p>
+            <%= render "application/onboarding_command", command: "brew install maquina-app/tap/recuerd0" %>
+            <%= render "application/onboarding_command", command: "recuerd0 account add personal --token <token>" %>
+          </div>
+        </div>
+
+        <div
+          class="mb-3.5"
+          data-onboarding-item
+          data-onboarding-kind="guidance"
+          data-folded="<%= onboarding_complete %>"
+        >
+          <div class="flex items-center gap-[9px]">
+            <span
+              class="flex size-[19px] shrink-0 items-center justify-center text-[15px] leading-none text-[#C9C9C6]"
+              data-onboarding-marker="guidance"
+              aria-hidden="true"
+            >•</span>
+            <h3
+              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= onboarding_complete ? "font-medium text-muted-foreground" : "font-semibold" %>"
+              data-onboarding-item-title
+            >Give your agent the skill</h3>
+            <% if onboarding_complete %>
+              <button
+                type="button"
+                class="!h-auto !px-1 !py-0 text-[11.5px] !text-muted-foreground hover:!text-foreground"
+                data-component="button"
+                data-variant="ghost"
+                data-size="sm"
+                data-action="onboarding-drawer#toggleItem"
+                data-onboarding-item-toggle
+                aria-expanded="false"
+                aria-controls="onboarding-terminal-skill-body"
+              >Show</button>
+            <% end %>
+          </div>
+          <div
+            id="onboarding-terminal-skill-body"
+            class="pt-2 pl-7"
+            data-onboarding-item-body
+            <%= "hidden" if onboarding_complete %>
+          >
+            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
+              Teaches your agent how to read, write and search here.
+            </p>
+            <%= render "application/onboarding_command", command: "recuerd0 skills install" %>
+          </div>
+        </div>
+
+        <%= render "components/separator", css_classes: "!mx-0 !my-3.5" %>
+
+        <div
+          class="mb-3.5"
+          data-onboarding-item
+          data-onboarding-kind="guidance"
+          data-folded="<%= onboarding_complete %>"
+        >
+          <div class="flex items-center gap-[9px]">
+            <span
+              class="flex size-[19px] shrink-0 items-center justify-center text-[15px] leading-none text-[#C9C9C6]"
+              data-onboarding-marker="guidance"
+              aria-hidden="true"
+            >•</span>
+            <h3
+              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= onboarding_complete ? "font-medium text-muted-foreground" : "font-semibold" %>"
+              data-onboarding-item-title
+            >Import existing notes</h3>
+            <%= render "components/badge",
+              variant: :outline,
+              size: :sm,
+              css_classes: "!h-auto !px-1.5 !py-px font-mono !text-[9.5px] uppercase tracking-[0.08em] !text-muted-foreground",
+              data: { onboarding_optional: true } do %>
+              optional
+            <% end %>
+            <% if onboarding_complete %>
+              <button
+                type="button"
+                class="!h-auto !px-1 !py-0 text-[11.5px] !text-muted-foreground hover:!text-foreground"
+                data-component="button"
+                data-variant="ghost"
+                data-size="sm"
+                data-action="onboarding-drawer#toggleItem"
+                data-onboarding-item-toggle
+                aria-expanded="false"
+                aria-controls="onboarding-terminal-import-body"
+              >Show</button>
+            <% end %>
+          </div>
+          <div
+            id="onboarding-terminal-import-body"
+            class="pt-2 pl-7"
+            data-onboarding-item-body
+            <%= "hidden" if onboarding_complete %>
+          >
+            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
+              Propose, read the plan, then commit.
+            </p>
+            <%= render "application/onboarding_command", command: "recuerd0 workspace list" %>
+            <%= render "application/onboarding_command", command: "recuerd0 import propose <path> --workspace <id>" %>
+            <%= render "application/onboarding_command", command: "recuerd0 import commit import.plan.yaml" %>
+          </div>
+        </div>
+
+        <div
+          class="mb-3.5"
+          data-onboarding-item
+          data-onboarding-kind="tracked"
+          data-onboarding-step="2"
+          data-folded="<%= first_content %>"
+        >
+          <div class="flex items-center gap-[9px]">
+            <% if first_content %>
+              <span
+                class="grid size-[19px] shrink-0 place-items-center rounded-full border border-primary bg-primary text-primary-foreground"
+                data-onboarding-marker="check"
+                aria-label="Add your first memory complete"
+              ><%= icon_for(:check, class: "size-3") %></span>
+            <% else %>
+              <span
+                class="grid size-[19px] shrink-0 place-items-center rounded-full border border-border bg-muted font-mono text-[10px] font-semibold text-muted-foreground"
+                data-onboarding-marker="number"
+                aria-hidden="true"
+              >2</span>
+            <% end %>
+            <h3
+              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= first_content ? "font-medium text-muted-foreground" : "font-semibold" %>"
+              data-onboarding-item-title
+            >Add your first memory</h3>
+            <% if first_content %>
+              <button
+                type="button"
+                class="!h-auto !px-1 !py-0 text-[11.5px] !text-muted-foreground hover:!text-foreground"
+                data-component="button"
+                data-variant="ghost"
+                data-size="sm"
+                data-action="onboarding-drawer#toggleItem"
+                data-onboarding-item-toggle
+                aria-expanded="false"
+                aria-controls="onboarding-terminal-memory-body"
+              >Show</button>
+            <% end %>
+          </div>
+          <div
+            id="onboarding-terminal-memory-body"
+            class="pt-2 pl-7"
+            data-onboarding-item-body
+            <%= "hidden" if first_content %>
+          >
+            <p class="text-xs leading-[1.5] text-muted-foreground">
+              Ask your agent to save something here.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        data-onboarding-drawer-target="chatPanel"
+        data-onboarding-panel="chat"
+        hidden
+      >
+        <div
+          class="mb-3.5"
+          data-onboarding-item
+          data-onboarding-kind="tracked"
+          data-onboarding-step="1"
+          data-folded="<%= agent_connected %>"
+        >
+          <div class="flex items-center gap-[9px]">
+            <% if agent_connected %>
+              <span
+                class="grid size-[19px] shrink-0 place-items-center rounded-full border border-primary bg-primary text-primary-foreground"
+                data-onboarding-marker="check"
+                aria-label="Add the connector complete"
+              ><%= icon_for(:check, class: "size-3") %></span>
+            <% else %>
+              <span
+                class="grid size-[19px] shrink-0 place-items-center rounded-full border border-border bg-muted font-mono text-[10px] font-semibold text-muted-foreground"
+                data-onboarding-marker="number"
+                aria-hidden="true"
+              >1</span>
+            <% end %>
+            <h3
+              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= agent_connected ? "font-medium text-muted-foreground" : "font-semibold" %>"
+              data-onboarding-item-title
+            >Add the connector</h3>
+            <% if agent_connected %>
+              <button
+                type="button"
+                class="!h-auto !px-1 !py-0 text-[11.5px] !text-muted-foreground hover:!text-foreground"
+                data-component="button"
+                data-variant="ghost"
+                data-size="sm"
+                data-action="onboarding-drawer#toggleItem"
+                data-onboarding-item-toggle
+                aria-expanded="false"
+                aria-controls="onboarding-chat-connect-body"
+              >Show</button>
+            <% end %>
+          </div>
+          <div
+            id="onboarding-chat-connect-body"
+            class="pt-2 pl-7"
+            data-onboarding-item-body
+            <%= "hidden" if agent_connected %>
+          >
+            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">Browser sign-in — no token to copy.</p>
+            <%= render "application/onboarding_command", command: "https://recuerd0.ai/mcp" %>
+          </div>
+        </div>
+
+        <div
+          class="mb-3.5"
+          data-onboarding-item
+          data-onboarding-kind="guidance"
+          data-folded="<%= onboarding_complete %>"
+        >
+          <div class="flex items-center gap-[9px]">
+            <span
+              class="flex size-[19px] shrink-0 items-center justify-center text-[15px] leading-none text-[#C9C9C6]"
+              data-onboarding-marker="guidance"
+              aria-hidden="true"
+            >•</span>
+            <h3
+              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= onboarding_complete ? "font-medium text-muted-foreground" : "font-semibold" %>"
+              data-onboarding-item-title
+            >Add the MCP skill</h3>
+            <% if onboarding_complete %>
+              <button
+                type="button"
+                class="!h-auto !px-1 !py-0 text-[11.5px] !text-muted-foreground hover:!text-foreground"
+                data-component="button"
+                data-variant="ghost"
+                data-size="sm"
+                data-action="onboarding-drawer#toggleItem"
+                data-onboarding-item-toggle
+                aria-expanded="false"
+                aria-controls="onboarding-chat-skill-body"
+              >Show</button>
+            <% end %>
+          </div>
+          <div
+            id="onboarding-chat-skill-body"
+            class="pt-2 pl-7"
+            data-onboarding-item-body
+            <%= "hidden" if onboarding_complete %>
+          >
+            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
+              Teaches your agent how to read, write and search here.
+            </p>
+            <%= link_to "Download skill",
+              recuerd0_mcp_skill_path,
+              data: {component: "button", variant: "outline", size: "sm"} %>
+          </div>
+        </div>
+
+        <div
+          class="mb-3.5"
+          data-onboarding-item
+          data-onboarding-kind="tracked"
+          data-onboarding-step="2"
+          data-folded="<%= first_content %>"
+        >
+          <div class="flex items-center gap-[9px]">
+            <% if first_content %>
+              <span
+                class="grid size-[19px] shrink-0 place-items-center rounded-full border border-primary bg-primary text-primary-foreground"
+                data-onboarding-marker="check"
+                aria-label="Add your first memory complete"
+              ><%= icon_for(:check, class: "size-3") %></span>
+            <% else %>
+              <span
+                class="grid size-[19px] shrink-0 place-items-center rounded-full border border-border bg-muted font-mono text-[10px] font-semibold text-muted-foreground"
+                data-onboarding-marker="number"
+                aria-hidden="true"
+              >2</span>
+            <% end %>
+            <h3
+              class="min-w-0 flex-1 text-[13.5px] leading-5 <%= first_content ? "font-medium text-muted-foreground" : "font-semibold" %>"
+              data-onboarding-item-title
+            >Add your first memory</h3>
+            <% if first_content %>
+              <button
+                type="button"
+                class="!h-auto !px-1 !py-0 text-[11.5px] !text-muted-foreground hover:!text-foreground"
+                data-component="button"
+                data-variant="ghost"
+                data-size="sm"
+                data-action="onboarding-drawer#toggleItem"
+                data-onboarding-item-toggle
+                aria-expanded="false"
+                aria-controls="onboarding-chat-memory-body"
+              >Show</button>
+            <% end %>
+          </div>
+          <div
+            id="onboarding-chat-memory-body"
+            class="pt-2 pl-7"
+            data-onboarding-item-body
+            <%= "hidden" if first_content %>
+          >
+            <p class="text-xs leading-[1.5] text-muted-foreground">
+              Ask your agent to save something here.
+            </p>
+          </div>
+        </div>
+      </section>
+    <% end %>
+  <% end %>
+<% end %>

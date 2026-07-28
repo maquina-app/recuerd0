@@ -107,7 +107,7 @@ class Memory < ApplicationRecord
   before_validation :set_version, on: :create
 
   def self.create_with_content(workspace, attributes)
-    memory = workspace.memories.build(attributes.slice(:title, :tags, :source, :category))
+    memory = workspace.memories.build(attributes.slice(:title, :tags, :source, :category).compact)
 
     transaction do
       memory.save!

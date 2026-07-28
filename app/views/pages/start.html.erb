@@ -1,0 +1,161 @@
+<% content_for :title, "Getting Started" %>
+<% content_for :description, "Go from zero to working with recuerd0: create a token, connect the CLI, import knowledge, install the agent skill, or connect over MCP." %>
+<% content_for :canonical_url, "https://recuerd0.ai/start" %>
+
+<div data-controller="marketing-sidebar">
+  <%= render "pages/doc_header", section: "Getting Started" %>
+
+  <aside class="doc-sidebar" data-marketing-sidebar-target="sidebar">
+    <div class="sidebar-group">
+      <div class="sidebar-heading">Getting Started</div>
+      <a href="#path" class="sidebar-link active" data-section="path" data-action="click->marketing-sidebar#closeSidebar">From zero to working</a>
+      <a href="#doors" class="sidebar-link" data-section="doors" data-action="click->marketing-sidebar#closeSidebar">Three doors, one knowledge base</a>
+      <a href="#shape" class="sidebar-link" data-section="shape" data-action="click->marketing-sidebar#closeSidebar">What you start with</a>
+    </div>
+  </aside>
+
+  <main class="doc-main">
+    <div class="doc-content">
+      <div class="page-header">
+        <h1>Getting Started</h1>
+        <p>Five steps take you from a new account to a working knowledge base your tools can use.</p>
+      </div>
+
+      <div class="api-section" id="path">
+        <div class="resource-header">
+          <h2>From zero to working</h2>
+          <p>Set up access, bring in what matters, and give your tools a way through the same front door.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>1. Create a token</h3>
+          <p>In the web app, open <strong><%= link_to "Access Tokens", profile_path(anchor: "access-tokens") %></strong>, create a token — full access if your tools will write, read only if you only want to serve context — and copy it when it appears. It will not be shown again.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>2. Install and connect the CLI</h3>
+          <p>Install the <%= link_to "recuerd0 CLI", cli_path %> with Homebrew, then add your account using the token you just created.</p>
+        </div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">brew install maquina-app/tap/recuerd0
+recuerd0 account add personal --api-url https://your-server.com --token YOUR_TOKEN</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>3. Import what you already know</h3>
+          <p>Import is propose → review → commit. Propose writes <code>import.plan.yaml</code> without touching the server; review that plan before you approve any writes. Run <code>recuerd0 workspace list</code> to find the workspace ID.</p>
+        </div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 workspace list
+recuerd0 import propose ./vault --workspace 12 --pretty
+<span class="cc"># Review import.plan.yaml, then commit the plan you approved</span>
+recuerd0 import commit import.plan.yaml --yes --pretty</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>4. Install the skill</h3>
+          <p><code>recuerd0 skills install</code> copies the bundled skill to <code>./.claude/skills</code> by default. Use <code>--global</code> for <code>~/.claude/skills</code>, <code>--target &lt;directory&gt;</code> for any directory, and <code>--force</code> to overwrite an existing copy.</p>
+        </div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">CLI</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 skills install</code></div>
+        </div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">Claude Code</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">/plugin marketplace add maquina-app/rails-claude-code
+/plugin install recuerd0@maquina</code></div>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>5. Connect over MCP</h3>
+          <p>Claude Desktop, Claude.ai, and other MCP clients can use the <%= link_to "remote MCP server", mcp_path %> with browser-based authorization. The workspace context endpoint returns the pinned map and continuation brief as a compact wake-up snapshot. MCP clients do not include the CLI installer, so <%= link_to "download the MCP skill", recuerd0_mcp_skill_path %> and add it to your client.</p>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="api-section" id="doors">
+        <div class="resource-header">
+          <h2>Three doors, one knowledge base</h2>
+          <p>Choose the surface that fits the work. Every door reaches the same workspaces, memories, versions, and search.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Web</h3>
+          <p>Write, edit, pin, organize, and review memories in the browser.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>CLI + API</h3>
+          <p>Use the <%= link_to "CLI", cli_path %> for terminal workflows and the API for scripts and automation.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>MCP</h3>
+          <p>Use <%= link_to "MCP", mcp_path %> when an AI client should search, read, and write memories during the conversation.</p>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="api-section" id="shape">
+        <div class="resource-header">
+          <h2>What you start with</h2>
+          <p>Every new account includes <strong>My Workspace</strong> with four memories in a deliberate reading order: _MAP, Continuation Brief, _INDEX — Decisions, and D001 — the first decision.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>_MAP</h3>
+          <p>The front door and getting-started checklist. Read it first, then keep every memory reachable within two hops.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>Continuation Brief</h3>
+          <p>The second read: current state, open threads, and the first thing to pick up next session.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>_INDEX — Decisions</h3>
+          <p>One line per locked decision, each pointing to the memory that records what you chose and why.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>D001 — the first decision</h3>
+          <p>A real decision in the full format — what was chosen, why, what was rejected — and the reason this workspace starts flat.</p>
+        </div>
+
+        <div class="endpoint-head">
+          <h3>When it grows</h3>
+          <p>A hub is a routing-table memory for crowded territory: one line of judgment per entry, each pointing at the memory with the detail. It earns its place around twenty memories, when clusters start crowding the map — create the hub, move the cluster's map lines into it, and leave a single line on the map pointing there. The seeded D001 is the worked example of making, and recording, the call not to have one yet:</p>
+        </div>
+
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">flat map → hub, later</span></div>
+          <div class="code-body"><code>Today the map is flat:
+- Payments retry logic — #12
+- Payments webhook quirks — #15
+- Payments provider limits — #18
+
+Past ~20 memories, those lines collapse into one:
+- Payments — routing in Hub — Payments (#22)
+
+And the hub is just a routing table — one line of judgment per entry:
+- Why retries drop large jobs — #12
+- Which webhook events lie — #15
+- Provider limits that bit us — #18</code></div>
+        </div>
+
+        <p class="doc-note">None of this is enforced — rename it, trim it, or delete any of it; a blank workspace is a fine workspace.</p>
+
+        <p class="doc-note">
+          Read the full reasoning in the
+          <%= link_to "workspace blueprint", "https://github.com/maquina-app/recuerd0/blob/main/docs/blueprint.md", target: "_blank", rel: "noopener" %>.
+        </p>
+      </div>
+    </div>
+
+    <%= render "pages/doc_footer" %>
+  </main>
+</div>

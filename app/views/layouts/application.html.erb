@@ -36,6 +36,7 @@
 
     <%= render "shared/turbo_confirm_dialog" %>
     <%= render "shared/search_command_dialog" if Current.user %>
+    <%= render "application/onboarding_drawer" if Current.user %>
 
     <!-- Privacy-friendly analytics by Plausible -->
     <script async src="https://plausible.maquina.app/js/pa-uTuQ7v91jt7E0eiSxsSRZ.js"></script>

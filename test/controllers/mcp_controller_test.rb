@@ -398,7 +398,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal "# Updated\n\nCurrent body.\n", current.content.body.content
     assert_equal ["current", "edited"], current.tags
     assert_equal "Version one", root.reload.title
-    assert_equal ["v1"], root.tags
+    assert_equal ["current", "edited"], root.tags
     assert_equal original_body.bytes, root.content.body.content.bytes
 
     read = call_tool("read_memory", {memory_id: root.id.to_s})

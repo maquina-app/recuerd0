@@ -157,37 +157,41 @@ class AccountTest < ActiveSupport::TestCase
   end
 
   # seed_start_here_workspace tests
-  test "seed_start_here_workspace creates Start Here workspace" do
+  test "seed_start_here_workspace creates My Workspace" do
     account = accounts(:one)
     user = users(:one)
 
     account.seed_start_here_workspace(user)
 
-    workspace = account.workspaces.find_by(name: "Start Here")
-    assert workspace.present?, "Expected 'Start Here' workspace to exist"
+    workspace = account.workspaces.find_by(name: "My Workspace")
+    assert workspace.present?, "Expected 'My Workspace' to exist"
   end
 
-  test "seed_start_here_workspace creates ten memories" do
+  test "seed_start_here_workspace creates four memories in boot order" do
     account = accounts(:one)
     user = users(:one)
 
     account.seed_start_here_workspace(user)
 
-    workspace = account.workspaces.find_by(name: "Start Here")
-    assert_equal 10, workspace.memories.count
+    workspace = account.workspaces.find_by(name: "My Workspace")
+    assert_equal 4, workspace.memories.count
     assert_equal [
-      "Why recuerd0",
-      "Quick Manual",
-      "The API",
-      "The CLI",
-      "The Agent",
       "_MAP",
       "Continuation Brief",
       "_INDEX — Decisions",
-      "Hub — Project Conventions",
-      "Why this shape"
+      "D001 — Keep this workspace flat until ~20 memories"
     ],
       workspace.memories.order(:id).pluck(:title)
+
+    map_memory = workspace.memories.find_by!(title: "_MAP")
+    assert_includes map_memory.content.body.content, "https://example.com/start"
+    assert_not_includes map_memory.content.body.content, "recuerd0.ai"
+    assert_not_includes map_memory.content.body.content, "Create an access token"
+
+    decision_memory = workspace.memories.find_by!(
+      title: "D001 — Keep this workspace flat until ~20 memories"
+    )
+    assert_equal "decision", decision_memory.category
 
     default_listing = workspace.memories.latest_versions
       .ordered_by(Memory.resolve_sort(nil, query: nil))
@@ -200,7 +204,7 @@ class AccountTest < ActiveSupport::TestCase
 
     account.seed_start_here_workspace(user)
 
-    workspace = account.workspaces.find_by(name: "Start Here")
+    workspace = account.workspaces.find_by(name: "My Workspace")
     workspace.memories.each do |memory|
       assert memory.content.present?, "Expected memory '#{memory.title}' to have content"
       assert memory.content.body.content.present?, "Expected memory '#{memory.title}' to have non-empty body"
@@ -213,31 +217,32 @@ class AccountTest < ActiveSupport::TestCase
 
     account.seed_start_here_workspace(user)
 
-    workspace = account.workspaces.find_by(name: "Start Here")
+    workspace = account.workspaces.find_by(name: "My Workspace")
     workspace.memories.each do |memory|
       assert_equal "system", memory.source, "Expected memory '#{memory.title}' source to be 'system'"
     end
   end
 
-  test "seed_start_here_workspace pins Why recuerd0 and _MAP for user" do
+  test "seed_start_here_workspace pins exactly the map and continuation brief for user" do
     account = accounts(:one)
     user = users(:one)
 
     account.seed_start_here_workspace(user)
 
-    workspace = account.workspaces.find_by(name: "Start Here")
-    why_memory = workspace.memories.find_by(title: "Why recuerd0")
-    assert why_memory.pinned_by?(user), "Expected 'Why recuerd0' to be pinned for user"
+    workspace = account.workspaces.find_by(name: "My Workspace")
     map_memory = workspace.memories.find_by(title: "_MAP")
     assert map_memory.pinned_by?(user), "Expected '_MAP' to be pinned for user"
-
-    # Other memories should not be pinned
-    workspace.memories.where.not(title: ["Why recuerd0", "_MAP"]).each do |memory|
-      assert_not memory.pinned_by?(user), "Expected '#{memory.title}' NOT to be pinned"
-    end
+    brief_memory = workspace.memories.find_by(title: "Continuation Brief")
+    assert brief_memory.pinned_by?(user), "Expected 'Continuation Brief' to be pinned for user"
+    index_memory = workspace.memories.find_by(title: "_INDEX — Decisions")
+    assert_not index_memory.pinned_by?(user), "Expected '_INDEX — Decisions' NOT to be pinned"
+    decision_memory = workspace.memories.find_by(
+      title: "D001 — Keep this workspace flat until ~20 memories"
+    )
+    assert_not decision_memory.pinned_by?(user), "Expected 'D001' NOT to be pinned"
   end
 
-  test "create_with_user seeds Start Here workspace" do
+  test "create_with_user seeds My Workspace" do
     user = Account.create_with_user(
       email_address: "starhere@test.com",
       password: "password123",
@@ -245,9 +250,9 @@ class AccountTest < ActiveSupport::TestCase
     )
 
     assert user.persisted?
-    workspace = user.account.workspaces.find_by(name: "Start Here")
-    assert workspace.present?, "Expected 'Start Here' workspace on new account"
-    assert_equal 10, workspace.memories.count
+    workspace = user.account.workspaces.find_by(name: "My Workspace")
+    assert workspace.present?, "Expected 'My Workspace' on new account"
+    assert_equal 4, workspace.memories.count
   end
 
   # Anonymize users test

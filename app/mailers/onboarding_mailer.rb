@@ -39,7 +39,7 @@ class OnboardingMailer < ApplicationMailer
     return if skip_delivery?(user)
 
     user_workspaces = user.account.workspaces.active
-    return if user_workspaces.count <= 1 && user_workspaces.first&.name == "Start Here"
+    return if user_workspaces.count <= 1 && user_workspaces.first&.name == "My Workspace"
 
     mail subject: default_i18n_subject, to: user.email_address
   end

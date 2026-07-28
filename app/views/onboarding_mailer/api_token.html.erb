@@ -9,7 +9,7 @@
 <p><strong>Three steps:</strong></p>
 
 <ol>
-  <li>Go to <strong>Settings → Access Tokens</strong></li>
+  <li>Go to <strong>Profile → Access Tokens</strong></li>
   <li>Click <strong>"New Token"</strong> — give it a name and choose a permission level</li>
   <li>Copy the token and store it somewhere safe (you won't see it again)</li>
 </ol>
@@ -17,7 +17,7 @@
 <p>That's it. Once you have a token, the CLI and any AI integration can authenticate with your account.</p>
 
 <p style="margin: 24px 0;">
-  <a href="<%= profile_url %>" class="btn">Create an API Token</a>
+  <a href="<%= profile_url(anchor: "access-tokens") %>" class="btn">Create an API Token</a>
 </p>
 
 <p class="muted">You can create multiple tokens with different permissions — read-only for AI tools, full access for the CLI.</p>

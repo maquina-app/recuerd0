@@ -3,6 +3,8 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  config.x.app_base_url = ENV.fetch("APP_BASE_URL") { "https://#{ENV.fetch("APP_HOST", "recuerd0.ai")}" }
+
   # Code is not reloaded between requests.
   config.enable_reloading = false
 

@@ -13,6 +13,10 @@
 <% filter_active = @category.present? || @memory_query.present? || @memory_tag.present? %>
 
 <div class="mx-auto max-w-5xl">
+  <% if @workspace.active? && show_onboarding_alert? %>
+    <%= render "application/onboarding_alert" %>
+  <% end %>
+
   <%# ===== HEADER ===== %>
   <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div class="flex min-w-0 items-start gap-3.5">

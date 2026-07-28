@@ -12,7 +12,7 @@
 
 <p><strong>Where to start:</strong></p>
 
-<p>We created a <strong>"Start Here"</strong> workspace for you with five onboarding memories covering the product overview, account management, the REST API, the CLI tool, and AI agent integrations. It's the fastest way to get up to speed.</p>
+<p>We created <strong>My Workspace</strong> for you with four seeded memories: _MAP, Continuation Brief, _INDEX — Decisions, and a first decision, D001. The <%= link_to "Getting Started guide", start_url %> takes you from zero to your first import in a few minutes.</p>
 
 <p><strong>Developer tools:</strong></p>
 
@@ -24,7 +24,7 @@
 
 <p style="margin: 24px 0;">
   <% if @start_here_workspace %>
-    <a href="<%= workspace_url(@start_here_workspace) %>" class="btn">Open Start Here</a>
+    <a href="<%= workspace_url(@start_here_workspace) %>" class="btn">Open My Workspace</a>
   <% else %>
     <a href="<%= workspaces_url %>" class="btn">Go to Workspaces</a>
   <% end %>
