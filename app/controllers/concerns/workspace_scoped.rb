@@ -18,8 +18,17 @@ module WorkspaceScoped
 
   def load_workspace_memories
     @memory_view = resolve_memory_view_mode
-    @category = params[:category].presence_in(Memory::CATEGORIES)
-    @memory_query = Memory.normalize_search_query(params[:q])
+    @memory_tag = params[:tag].presence
+
+    # A tag filter replaces category/search (single active filter at a time).
+    # Ignoring them here is defense in depth against a crafted URL carrying both.
+    if @memory_tag
+      @category = nil
+      @memory_query = ""
+    else
+      @category = params[:category].presence_in(Memory::CATEGORIES)
+      @memory_query = Memory.normalize_search_query(params[:q])
+    end
     @memory_sort_param = params[:sort].presence_in(Memory::SEARCH_SORTS)
 
     base = @workspace.memories.latest_versions.includes(:content, :pins, child_versions: :content)
@@ -27,6 +36,7 @@ module WorkspaceScoped
     @category_counts.default = 0
 
     scope = base.by_category(@category)
+    scope = scope.by_tag(@memory_tag) if @memory_tag
     scope = scope.search(@memory_query) if @memory_query.present?
     @memory_sort = Memory.resolve_sort(@memory_sort_param, query: @memory_query)
     scope = scope.ordered_by(@memory_sort)

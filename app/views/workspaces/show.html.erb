@@ -10,7 +10,7 @@
 
 <% is_pinned = @workspace.pinned_by?(Current.user) %>
 <% has_any_memories = @pinned_memories.any? || @regular_memories.any? %>
-<% filter_active = @category.present? || @memory_query.present? %>
+<% filter_active = @category.present? || @memory_query.present? || @memory_tag.present? %>
 
 <div class="mx-auto max-w-5xl">
   <% if @workspace.active? && show_onboarding_banner? %>

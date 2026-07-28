@@ -239,6 +239,41 @@ class MemoryTest < ActiveSupport::TestCase
     assert_equal Memory.count, Memory.by_category("bogus").count
   end
 
+  test "by_tag filters memories by an exact tag" do
+    tagged = Memory.create_with_content(workspaces(:one), title: "T", content: "b", tags: ["onboarding", "billing"])
+    other = Memory.create_with_content(workspaces(:one), title: "O", content: "b", tags: ["billing"])
+    assert_includes Memory.by_tag("onboarding"), tagged
+    assert_not_includes Memory.by_tag("onboarding"), other
+  end
+
+  test "by_tag is case-sensitive" do
+    tagged = Memory.create_with_content(workspaces(:one), title: "T", content: "b", tags: ["Onboarding"])
+    assert_not_includes Memory.by_tag("onboarding"), tagged
+    assert_includes Memory.by_tag("Onboarding"), tagged
+  end
+
+  test "by_tag is a no-op for blank input" do
+    before = Memory.count
+    assert_equal before, Memory.by_tag(nil).count
+    assert_equal before, Memory.by_tag("").count
+  end
+
+  test "create_version! syncs the root tags to the new version's tags" do
+    memory = Memory.create_with_content(workspaces(:one), title: "T", content: "b", tags: ["old"])
+    memory.create_version!(tags: ["new"], content: "b2")
+    assert_equal ["new"], memory.reload.tags,
+      "root tags should track the current version so the by_tag filter and display agree"
+    assert_includes Memory.latest_versions.by_tag("new"), memory
+  end
+
+  test "update_with_content syncs the root tags" do
+    memory = Memory.create_with_content(workspaces(:one), title: "T", content: "b", tags: ["old"])
+    child = memory.create_version!(content: "b2")
+    child.update_with_content(tags: ["fresh"])
+    assert_equal ["fresh"], memory.reload.tags
+    assert_includes Memory.latest_versions.by_tag("fresh"), memory
+  end
+
   test "new version inherits category from parent when not specified" do
     parent = Memory.create_with_content(workspaces(:one), title: "Parent", content: "b", category: "decision")
     child = parent.create_version!(content: "v2")

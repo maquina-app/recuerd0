@@ -1,9 +1,25 @@
 <%# locals: (workspace:) %>
 <div class="mb-6 flex flex-col gap-3">
+  <% if @memory_tag.present? %>
+    <%# Active tag filter chip — replaces category/search while present %>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="category-chip" data-state="on" aria-current="true">
+        <%= icon_for(:tag) %>
+        <span><%= t("workspaces.show.toolbar.tag_filter_label", tag: @memory_tag) %></span>
+        <%= link_to workspace_show_path(workspace, view: @memory_view),
+              class: "inline-flex items-center",
+              data: { turbo_action: "advance" },
+              "aria-label": t("workspaces.show.toolbar.tag_filter_clear") do %>
+          <%= icon_for(:x) %>
+        <% end %>
+      </span>
+    </div>
+  <% end %>
+
   <%# Category filter chips — own horizontal scroll, never widens the page %>
   <div class="category-bar" role="group" aria-label="<%= t("workspaces.show.toolbar.filter_label") %>">
     <% all_active = @category.nil? %>
-    <%= link_to workspace_show_path(workspace, **memory_filter_params(category: nil)),
+    <%= link_to workspace_show_path(workspace, **memory_filter_params(category: nil, tag: nil)),
           class: "category-chip",
           data: { state: (all_active ? "on" : "off") },
           "aria-current": (all_active ? "true" : nil) do %>
@@ -13,7 +29,7 @@
 
     <% Memory::CATEGORIES.each do |cat| %>
       <% active = (@category == cat) %>
-      <%= link_to workspace_show_path(workspace, **memory_filter_params(category: cat)),
+      <%= link_to workspace_show_path(workspace, **memory_filter_params(category: cat, tag: nil)),
             class: "category-chip",
             data: { state: (active ? "on" : "off") },
             "aria-current": (active ? "true" : nil) do %>
