@@ -370,7 +370,6 @@
             data-onboarding-item-body
             <%= "hidden" if chat_connected %>
           >
-            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">In Claude Desktop or Claude.ai, open Settings → Connectors and add a custom connector with this URL. Browser sign-in — no token to copy.</p>
             <%= render "application/onboarding_command", command: "https://recuerd0.ai/mcp" %>
           </div>
         </div>
@@ -413,9 +412,6 @@
           >
             <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
               Teaches your agent how to read, write and search here.
-            </p>
-            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
-              Save the file, then add it to your client's skills — in Claude.ai, open your project's settings and upload it there.
             </p>
             <%= link_to "Download skill",
               recuerd0_mcp_skill_path,

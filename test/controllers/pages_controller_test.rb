@@ -62,9 +62,11 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#doors a[href='#{cli_path}']"
     assert_select "#doors a[href='#{mcp_path}']"
     assert_select "#shape a[href='https://github.com/maquina-app/recuerd0/blob/main/docs/blueprint.md']"
-    assert_select ".code-block[data-controller='clipboard']", count: 5
-    assert_select ".code-block button[data-action='clipboard#copy']", count: 5
-    assert_select ".code-block code[data-clipboard-target='source']", count: 5
+    assert_select ".code-block[data-controller='clipboard']", count: 4
+    assert_select ".code-block button[data-action='clipboard#copy']", count: 4
+    assert_select ".code-block code[data-clipboard-target='source']", count: 4
+    assert_not_includes response.body, "/plugin marketplace add maquina-app/rails-claude-code"
+    assert_not_includes response.body, "/plugin install recuerd0@maquina"
 
     import_heading = css_select("#path .endpoint-head").find do |heading|
       heading.at_css("h3")&.text&.strip == "4. Import what you already know"

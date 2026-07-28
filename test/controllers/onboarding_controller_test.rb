@@ -258,12 +258,14 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       assert_select "[data-onboarding-command] code", text: "https://recuerd0.ai/mcp"
       assert_select "a[href='#{recuerd0_mcp_skill_path}'][data-component='button'][data-variant='outline']",
         text: "Download skill"
-      assert_select "p",
-        text: "In Claude Desktop or Claude.ai, open Settings → Connectors and add a custom connector with this URL. Browser sign-in — no token to copy."
       assert_select "p", text: "Teaches your agent how to read, write and search here."
-      assert_select "p",
-        text: "Save the file, then add it to your client's skills — in Claude.ai, open your project's settings and upload it there."
       assert_select "p", text: "Ask your agent to save something here."
+      assert_select "p",
+        text: "In Claude Desktop or Claude.ai, open Settings → Connectors and add a custom connector with this URL. Browser sign-in — no token to copy.",
+        count: 0
+      assert_select "p",
+        text: "Save the file, then add it to your client's skills — in Claude.ai, open your project's settings and upload it there.",
+        count: 0
       assert_select "[data-onboarding-item-title]", text: "Have your agent organise the import", count: 0
       assert_select "p",
         text: "Importing a folder of notes needs the Terminal — it reads files from your machine.",
