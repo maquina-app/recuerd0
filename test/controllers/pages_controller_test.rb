@@ -37,15 +37,20 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#path .endpoint-head", text: /4\. Import what you already know/ do
       assert_select "p",
         text: /Run recuerd0 workspace list to find the workspace ID\./
+      assert_select "p", text: "Propose, read the plan, then commit."
     end
     assert_includes response.body, "there is no token to copy"
     assert_includes response.body, "./.claude/skills"
+    assert_includes response.body,
+      "Claude Code loads it automatically — restart an open session to pick it up. Other agents need the file added to their instructions."
     assert_select "#path a[href='#{recuerd0_mcp_skill_path}']", text: "download the MCP skill"
     mcp_step = css_select("#path .endpoint-head").find do |heading|
       heading.at_css("h3")&.text&.strip == "5. Connect over MCP"
     end
     assert_select mcp_step, "code", text: "Map — how this workspace is kept", count: 0
     assert_includes mcp_step.at_css("p").text, "read Map — how this workspace is kept first"
+    assert_includes mcp_step.at_css("p").text,
+      "Add the connector under Settings → Connectors, and upload the skill file to your project's settings."
     assert_select "#shape h3", text: "D001 — the first decision"
     assert_select "#shape h3", text: "When it grows"
     assert_select "#shape p", text: /A hub is a routing-table memory for crowded territory/
@@ -57,28 +62,35 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#doors a[href='#{cli_path}']"
     assert_select "#doors a[href='#{mcp_path}']"
     assert_select "#shape a[href='https://github.com/maquina-app/recuerd0/blob/main/docs/blueprint.md']"
-    assert_select ".code-block[data-controller='clipboard']", count: 4
-    assert_select ".code-block button[data-action='clipboard#copy']", count: 4
-    assert_select ".code-block code[data-clipboard-target='source']", count: 4
+    assert_select ".code-block[data-controller='clipboard']", count: 5
+    assert_select ".code-block button[data-action='clipboard#copy']", count: 5
+    assert_select ".code-block code[data-clipboard-target='source']", count: 5
 
     import_heading = css_select("#path .endpoint-head").find do |heading|
       heading.at_css("h3")&.text&.strip == "4. Import what you already know"
     end
-    import_commands = import_heading.next_element.at_css("code[data-clipboard-target='source']").text.lines.map(&:strip)
+    propose_commands = import_heading.next_element.at_css("code[data-clipboard-target='source']").text.lines.map(&:strip)
     assert_equal(
       [
         "recuerd0 workspace list",
-        "recuerd0 import propose ./vault --workspace 12 --pretty",
-        "# Review import.plan.yaml, then commit — it will prompt for confirmation",
-        "recuerd0 import commit import.plan.yaml --pretty"
+        "recuerd0 import propose ./vault --workspace 12 --pretty"
       ],
-      import_commands
+      propose_commands
+    )
+    plan_explanation = import_heading.next_element.next_element
+    assert_equal(
+      "Propose writes import.plan.yaml in your current directory. Open it — the manifest lists one entry per file with the title, category and tags it will use.",
+      plan_explanation.text.squish
     )
     assert_equal(
-      'Import leaves the memories unstructured. Ask your agent: "I just imported notes into ' \
-        'workspace <id>. Do the post-import pass." It will cluster the memories, fix weak titles, ' \
+      "recuerd0 import commit import.plan.yaml --pretty",
+      plan_explanation.next_element.at_css("code[data-clipboard-target='source']").text.strip
+    )
+    assert_equal(
+      'Ask your agent: "I just imported notes into recuerd0 workspace <id>. Do the after-import pass." ' \
+        "It will cluster the memories, fix weak titles, " \
         "and propose hubs for review.",
-      import_heading.next_element.next_element.text.squish
+      plan_explanation.next_element.next_element.text.squish
     )
   end
 

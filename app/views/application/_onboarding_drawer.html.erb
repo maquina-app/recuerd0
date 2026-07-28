@@ -164,7 +164,7 @@
             <%= "hidden" if onboarding_complete %>
           >
             <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
-              Teaches your agent how to read, write and search here.
+              Teaches your agent how to read, write and search here. Claude Code loads it automatically. Other agents need the file added manually.
             </p>
             <%= render "application/onboarding_command", command: "recuerd0 skills install" %>
           </div>
@@ -219,6 +219,9 @@
               Propose, read the plan, then commit.
             </p>
             <%= render "application/onboarding_command", command: "recuerd0 import propose <path> --workspace <id>" %>
+            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
+              Propose writes import.plan.yaml in your current directory. Open it — the manifest lists one entry per file with the title, category and tags it will use.
+            </p>
             <%= render "application/onboarding_command", command: "recuerd0 import commit import.plan.yaml" %>
           </div>
         </div>
@@ -260,7 +263,7 @@
             <%= "hidden" if onboarding_complete %>
           >
             <p class="text-xs leading-[1.5] text-muted-foreground">
-              Ask your agent: "I just imported notes into workspace &lt;id&gt;. Do the post-import pass." It will cluster the memories, fix weak titles, and propose hubs for review.
+              Ask your agent: "I just imported notes into recuerd0 workspace &lt;id&gt;. Do the after-import pass." It will cluster the memories, fix weak titles, and propose hubs for review.
             </p>
           </div>
         </div>
@@ -367,7 +370,7 @@
             data-onboarding-item-body
             <%= "hidden" if chat_connected %>
           >
-            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">Browser sign-in — no token to copy.</p>
+            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">In Claude Desktop or Claude.ai, open Settings → Connectors and add a custom connector with this URL. Browser sign-in — no token to copy.</p>
             <%= render "application/onboarding_command", command: "https://recuerd0.ai/mcp" %>
           </div>
         </div>
@@ -410,6 +413,9 @@
           >
             <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
               Teaches your agent how to read, write and search here.
+            </p>
+            <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
+              Save the file, then add it to your client's skills — in Claude.ai, open your project's settings and upload it there.
             </p>
             <%= link_to "Download skill",
               recuerd0_mcp_skill_path,

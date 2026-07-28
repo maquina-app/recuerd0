@@ -44,7 +44,7 @@ recuerd0 account add personal --api-url https://your-server.com --token YOUR_TOK
 
         <div class="endpoint-head">
           <h3>3. Install the skill</h3>
-          <p><code>recuerd0 skills install</code> copies the bundled skill to <code>./.claude/skills</code> by default. Use <code>--global</code> for <code>~/.claude/skills</code>, <code>--target &lt;directory&gt;</code> for any directory, and <code>--force</code> to overwrite an existing copy.</p>
+          <p><code>recuerd0 skills install</code> copies the bundled skill to <code>./.claude/skills</code> by default. Use <code>--global</code> for <code>~/.claude/skills</code>, <code>--target &lt;directory&gt;</code> for any directory, and <code>--force</code> to overwrite an existing copy. Claude Code loads it automatically — restart an open session to pick it up. Other agents need the file added to their instructions.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">CLI</span><%= render "pages/code_copy" %></div>
@@ -58,20 +58,24 @@ recuerd0 account add personal --api-url https://your-server.com --token YOUR_TOK
 
         <div class="endpoint-head">
           <h3>4. Import what you already know</h3>
-          <p>Import is propose → review → commit. Propose writes <code>import.plan.yaml</code> without touching the server; review that plan before you approve any writes. Run <code>recuerd0 workspace list</code> to find the workspace ID.</p>
+          <p>Import is propose → review → commit. Run <code>recuerd0 workspace list</code> to find the workspace ID.</p>
+          <p>Propose, read the plan, then commit.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
           <div class="code-body"><code data-clipboard-target="source">recuerd0 workspace list
-recuerd0 import propose ./vault --workspace 12 --pretty
-<span class="cc"># Review import.plan.yaml, then commit — it will prompt for confirmation</span>
-recuerd0 import commit import.plan.yaml --pretty</code></div>
+recuerd0 import propose ./vault --workspace 12 --pretty</code></div>
         </div>
-        <p>Import leaves the memories unstructured. Ask your agent: "I just imported notes into workspace &lt;id&gt;. Do the post-import pass." It will cluster the memories, fix weak titles, and propose hubs for review.</p>
+        <p>Propose writes <code>import.plan.yaml</code> in your current directory. Open it — the manifest lists one entry per file with the title, category and tags it will use.</p>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 import commit import.plan.yaml --pretty</code></div>
+        </div>
+        <p>Ask your agent: "I just imported notes into recuerd0 workspace &lt;id&gt;. Do the after-import pass." It will cluster the memories, fix weak titles, and propose hubs for review.</p>
 
         <div class="endpoint-head">
           <h3>5. Connect over MCP</h3>
-          <p>Claude Desktop, Claude.ai, and other MCP clients can use the <%= link_to "remote MCP server", mcp_path %> with browser-based authorization, so there is no token to copy. MCP can list, search, read, and write memories; have your agent read Map — how this workspace is kept first so it picks up the workspace's shape before it writes. MCP clients do not include the CLI installer, so <%= link_to "download the MCP skill", recuerd0_mcp_skill_path %> and add it to your client.</p>
+          <p>Claude Desktop, Claude.ai, and other MCP clients can use the <%= link_to "remote MCP server", mcp_path %> with browser-based authorization, so there is no token to copy. MCP can list, search, read, and write memories; have your agent read Map — how this workspace is kept first so it picks up the workspace's shape before it writes. MCP clients do not include the CLI installer, so <%= link_to "download the MCP skill", recuerd0_mcp_skill_path %> and add it to your client. Add the connector under Settings → Connectors, and upload the skill file to your project's settings.</p>
         </div>
       </div>
 

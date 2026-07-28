@@ -20,6 +20,12 @@ class WorkspaceTest < ActiveSupport::TestCase
       "The brief carries state between sessions — its version history becomes your log."
     assert_includes map.content.body.content,
       "Search is keyword search, fast and literal, so write map lines and titles the way you'd ask for them."
+    assert_equal 4,
+      map.content.body.content
+        .match(/## How this workspace is kept\n\n(?<bullets>(?:- .+\n)+)/)[:bullets]
+        .lines
+        .size
+    assert_not_includes map.content.body.content, "Link memories that belong together."
     assert_not_includes map.content.body.content,
       "Index — decisions keeps locked decisions one hop away."
     assert_not_includes map.content.body.content, StartHereContent::MAP_ROUTING_BULLETS.first

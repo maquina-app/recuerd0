@@ -15,7 +15,6 @@ A workspace's conventions are usually recorded in a memory whose title begins wi
 - Before creating a memory, check whether one already covers the same ground. If a note supersedes an existing memory, use `create_version` on that memory rather than creating a second one.
 - Use `update_memory` to correct a memory, `create_version` when the earlier text should stay readable.
 - Titles are what search ranks first.
-- Use `link_memories` for memories that belong together.
 
 ## Searching
 

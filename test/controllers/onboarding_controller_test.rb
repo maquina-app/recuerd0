@@ -234,7 +234,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_equal "guidance", organise_item["data-onboarding-kind"]
     assert_equal "•", organise_item.at_css("[data-onboarding-marker='guidance']").text.squish
     assert_equal(
-      'Ask your agent: "I just imported notes into workspace <id>. Do the post-import pass." ' \
+      'Ask your agent: "I just imported notes into recuerd0 workspace <id>. Do the after-import pass." ' \
         "It will cluster the memories, fix weak titles, and propose hubs for review.",
       organise_item.at_css("[data-onboarding-item-body] p").text.squish
     )
@@ -245,7 +245,10 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       text: "Propose, read the plan, then commit.",
       count: 1
     assert_select "[data-onboarding-panel='terminal'] p",
-      text: "Teaches your agent how to read, write and search here.",
+      text: "Propose writes import.plan.yaml in your current directory. Open it — the manifest lists one entry per file with the title, category and tags it will use.",
+      count: 1
+    assert_select "[data-onboarding-panel='terminal'] p",
+      text: "Teaches your agent how to read, write and search here. Claude Code loads it automatically. Other agents need the file added manually.",
       count: 1
     assert_select "[data-onboarding-panel='terminal'] p",
       text: "Ask your agent to save something here.",
@@ -255,8 +258,11 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       assert_select "[data-onboarding-command] code", text: "https://recuerd0.ai/mcp"
       assert_select "a[href='#{recuerd0_mcp_skill_path}'][data-component='button'][data-variant='outline']",
         text: "Download skill"
-      assert_select "p", text: "Browser sign-in — no token to copy."
+      assert_select "p",
+        text: "In Claude Desktop or Claude.ai, open Settings → Connectors and add a custom connector with this URL. Browser sign-in — no token to copy."
       assert_select "p", text: "Teaches your agent how to read, write and search here."
+      assert_select "p",
+        text: "Save the file, then add it to your client's skills — in Claude.ai, open your project's settings and upload it there."
       assert_select "p", text: "Ask your agent to save something here."
       assert_select "[data-onboarding-item-title]", text: "Have your agent organise the import", count: 0
       assert_select "p",
