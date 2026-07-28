@@ -1,0 +1,23 @@
+<%# locals: (command:) %>
+<div
+  class="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2"
+  data-controller="clipboard"
+  data-onboarding-command
+>
+  <code
+    class="min-w-0 flex-1 break-all font-mono text-xs text-foreground"
+    data-clipboard-target="source"
+  ><%= command %></code>
+  <button
+    type="button"
+    class="shrink-0"
+    data-component="button"
+    data-variant="ghost"
+    data-size="icon-sm"
+    data-action="clipboard#copy"
+    aria-label="Copy command"
+  >
+    <span data-clipboard-target="copyIcon"><%= icon_for(:copy, class: "size-4") %></span>
+    <span data-clipboard-target="checkIcon" class="hidden"><%= icon_for(:check, class: "size-4") %></span>
+  </button>
+</div>

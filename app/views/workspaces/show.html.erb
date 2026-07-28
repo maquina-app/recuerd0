@@ -13,8 +13,8 @@
 <% filter_active = @category.present? || @memory_query.present? || @memory_tag.present? %>
 
 <div class="mx-auto max-w-5xl">
-  <% if @workspace.active? && show_onboarding_banner? %>
-    <%= render "application/onboarding_banner" %>
+  <% if @workspace.active? && show_onboarding_alert? %>
+    <%= render "application/onboarding_alert" %>
   <% end %>
 
   <%# ===== HEADER ===== %>

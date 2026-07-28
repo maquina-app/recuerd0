@@ -31,6 +31,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     end
     assert_includes response.body, "workspace context endpoint"
     assert_includes response.body, "./.claude/skills"
+    assert_select "#path a[href='#{recuerd0_mcp_skill_path}']", text: "download the MCP skill"
     assert_select "#shape h3", text: "D001 — the first decision"
     assert_select "#shape h3", text: "When it grows"
     assert_select "#shape p", text: /A hub is a routing-table memory for crowded territory/

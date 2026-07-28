@@ -31,6 +31,7 @@ Rails.application.routes.draw do
   get "cli", to: "pages#cli", as: :cli
   get "agents", to: "pages#agents", as: :agents
   get "mcp", to: "pages#mcp", as: :mcp
+  get "skills/recuerd0-mcp/SKILL.md", to: "skills#recuerd0_mcp", as: :recuerd0_mcp_skill
 
   if Rails.application.config.multi_tenant
     resource :registration, only: %i[new create]

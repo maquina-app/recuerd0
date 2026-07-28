@@ -1,7 +1,9 @@
 require "test_helper"
 
 class OnboardingControllerTest < ActionDispatch::IntegrationTest
-  BANNER_SELECTOR = "[data-onboarding-banner='true']"
+  ALERT_SELECTOR = "[data-onboarding-banner='true']"
+  DRAWER_SELECTOR = "#onboarding-drawer-provider"
+  MENU_TRIGGER_SELECTOR = "[data-onboarding-menu-trigger='true']"
 
   setup do
     @user = Account.create_with_user(
@@ -15,151 +17,91 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@user)
   end
 
-  test "fresh seeded account renders a flat banner before workspace page headers" do
+  test "fresh account renders a compact alert before both active workspace headers" do
     get workspaces_url
 
     assert_response :success
-    assert_fresh_banner
-    assert_banner_is_first_content_element
-    assert_select "#{BANNER_SELECTOR} ~ div h1", text: "Workspaces"
+    assert_fresh_alert
+    assert_select "#{ALERT_SELECTOR} ~ div h1", text: "Workspaces"
 
     get workspace_url(@workspace)
 
     assert_response :success
-    assert_fresh_banner
-    assert_banner_is_first_content_element
-    assert_select "#{BANNER_SELECTOR} ~ div h1", text: "My Workspace"
+    assert_fresh_alert
+    assert_select "#{ALERT_SELECTOR} ~ div h1", text: "My Workspace"
   end
 
-  test "a created token completes step one and expands only the CLI step" do
-    @user.access_tokens.create!(permission: "full_access")
+  test "unused and used manual tokens drive only the current user's agent signal" do
+    token = @user.access_tokens.create!(permission: "full_access")
 
     get workspaces_url
 
-    assert_response :success
-    assert_banner_progress(completed: 1, active_step: 2)
-    assert_select "[data-onboarding-step='2'][data-expanded='true'] p",
-      text: "One account command makes every CLI workflow available."
-    assert_only_commands(
-      "brew install maquina-app/tap/recuerd0",
-      "recuerd0 account add personal --token <token>"
-    )
+    assert_alert_progress(agent: :incomplete, content: :incomplete, completed: 0)
+
+    token.touch_last_used!
+    get workspaces_url
+
+    assert_alert_progress(agent: :complete, content: :incomplete, completed: 1)
+    assert_menu_label "Getting started · 1 of 2"
   end
 
-  test "using a token completes two steps and expands only the import step" do
-    token = @user.access_tokens.create!(permission: "full_access")
+  test "a used OAuth token connects the agent" do
+    client = OauthClient.create!(
+      client_name: "Onboarding request client",
+      redirect_uris: ["https://example.com/callback"].to_json
+    )
+    token = @user.access_tokens.create!(
+      permission: "read_only",
+      oauth_client: client,
+      expires_at: 1.hour.from_now
+    )
     token.touch_last_used!
 
     get workspaces_url
 
-    assert_response :success
-    assert_banner_progress(completed: 2, active_step: 3)
-    assert_select "[data-onboarding-step='3'][data-expanded='true'] p",
-      text: "Find the workspace ID, propose an import, review the generated plan, then commit it."
-    assert_select "[data-onboarding-step='3'][data-expanded='true'] p.mt-2",
-      text: "recuerd0 workspace list, then recuerd0 import propose <path> --workspace <id>, " \
-        "review the plan it writes, then recuerd0 import commit import.plan.yaml --yes"
-    assert_only_commands(
-      "recuerd0 workspace list",
-      "recuerd0 import propose <path> --workspace <id>",
-      "recuerd0 import commit import.plan.yaml --yes"
-    )
+    assert_alert_progress(agent: :complete, content: :incomplete, completed: 1)
   end
 
-  test "token and CLI progress is account-wide and includes revoked tokens" do
+  test "account content does not complete the current user's agent signal" do
+    Memory.create_with_content(
+      @workspace,
+      title: "Account content",
+      content: "Body",
+      source: "manual"
+    )
     teammate = @account.users.create!(
       email_address: "onboarding-teammate@example.com",
       password: "password",
       role: "member"
     )
-    token = teammate.access_tokens.create!(permission: "full_access")
 
+    delete session_url
+    post session_url, params: {email_address: teammate.email_address, password: "password"}
     get workspaces_url
 
-    assert_banner_progress(completed: 1, active_step: 2)
+    assert_response :success
+    assert_alert_progress(agent: :incomplete, content: :complete, completed: 1)
+    assert_menu_label "Getting started · 1 of 2"
+  end
 
+  test "both completed signals hide only the alert" do
+    token = @user.access_tokens.create!(permission: "full_access")
     token.touch_last_used!
-    token.revoke!
-
-    get workspaces_url
-
-    assert_banner_progress(completed: 2, active_step: 3)
-  end
-
-  test "non-system and null-sourced roots in another account do not affect the banner" do
-    other_workspace = accounts(:two).workspaces.create!(name: "Other account content")
-    Memory.create_with_content(other_workspace, title: "Manual root", content: "Body", source: "manual")
-    null_source = Memory.create_with_content(other_workspace, title: "Null root", content: "Body", source: nil)
-
-    assert_nil null_source.source
-
-    get workspaces_url
-
-    assert_select BANNER_SELECTOR, count: 1
-  end
-
-  test "a first imported root in another workspace of the same account hides the banner" do
-    other_workspace = @account.workspaces.create!(name: "Imported notes")
-    root = Memory.create_with_content(other_workspace, title: "Imported root", content: "Body", source: nil)
-
-    assert_nil root.source
-
-    get workspaces_url
-
-    assert_select BANNER_SELECTOR, count: 0
-    assert_select "[data-onboarding-divider]", count: 0
-  end
-
-  test "a non-system root in an inactive workspace of the same account hides the banner" do
-    archived_workspace = @account.workspaces.create!(name: "Archived import", archived_at: Time.current)
     Memory.create_with_content(
-      archived_workspace,
-      title: "Archived manual root",
+      @workspace,
+      title: "First content",
       content: "Body",
-      source: "manual"
+      source: nil
     )
 
     get workspaces_url
 
-    assert_select BANNER_SELECTOR, count: 0
-    assert_select "[data-onboarding-divider]", count: 0
+    assert_select ALERT_SELECTOR, count: 0
+    assert_global_drawer
+    assert_menu_label "Getting started"
   end
 
-  test "editing or versioning a seeded system root does not hide the banner" do
-    map = @workspace.memories.find_by!(title: "_MAP")
-
-    map.update_with_content(content: "Edited seeded map")
-
-    assert_equal "system", map.reload.source
-
-    get workspaces_url
-
-    assert_select BANNER_SELECTOR, count: 1
-
-    child_version = map.create_version!(content: "User-authored version", source: "manual")
-
-    assert child_version.persisted?
-    assert_equal map, child_version.parent_memory
-    assert_equal "manual", child_version.source
-
-    get workspaces_url
-
-    assert_select BANNER_SELECTOR, count: 1
-  end
-
-  test "inactive workspace show pages do not render the banner" do
-    @workspace.update!(archived_at: Time.current)
-
-    get workspace_url(@workspace)
-
-    assert_redirected_to archived_workspace_url(@workspace)
-    follow_redirect!
-
-    assert_response :success
-    assert_select BANNER_SELECTOR, count: 0
-  end
-
-  test "dismissal persists for the current user across reloads and sessions" do
+  test "dismissal hides only the alert and persists for the current user" do
     post onboarding_dismiss_url
 
     assert_response :see_other
@@ -168,161 +110,120 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     get workspaces_url
 
-    assert_select BANNER_SELECTOR, count: 0
-    assert_select "[data-onboarding-divider]", count: 0
-
-    fresh_session = open_session
-    fresh_session.post session_url,
-      params: {email_address: @user.email_address, password: "password"}
-    fresh_session.get workspaces_url
-
-    fresh_session.assert_response :success
-    fresh_session.assert_select BANNER_SELECTOR, count: 0
-    fresh_session.assert_select "[data-onboarding-divider]", count: 0
+    assert_select ALERT_SELECTOR, count: 0
+    assert_global_drawer
+    assert_menu_label "Getting started · 0 of 2"
   end
 
-  test "dismissal is per-user" do
-    teammate = @account.users.create!(
-      email_address: "onboarding-dismiss-teammate@example.com",
-      password: "password",
-      role: "member"
-    )
+  test "drawer and menu trigger are global on signed-in non-workspace pages" do
+    get profile_url
 
-    post onboarding_dismiss_url
-
-    teammate_session = open_session
-    teammate_session.post session_url,
-      params: {email_address: teammate.email_address, password: "password"}
-    teammate_session.get workspaces_url
-
-    teammate_session.assert_response :success
-    teammate_session.assert_select BANNER_SELECTOR, count: 1
+    assert_response :success
+    assert_select ALERT_SELECTOR, count: 0
+    assert_global_drawer
+    assert_menu_label "Getting started · 0 of 2"
   end
 
-  test "dismissal requires authentication" do
-    anonymous_session = open_session
+  test "logged-out application pages do not mount onboarding controls" do
+    delete session_url
+    get new_session_url
 
-    anonymous_session.post onboarding_dismiss_url
+    assert_response :success
+    assert_select DRAWER_SELECTOR, count: 0
+    assert_select MENU_TRIGGER_SELECTOR, count: 0
+  end
 
-    anonymous_session.assert_redirected_to new_session_url
-    assert_nil @user.reload.onboarding_dismissed_at
+  test "inactive workspace pages do not render the alert" do
+    @workspace.update!(archived_at: Time.current)
+
+    get workspace_url(@workspace)
+
+    assert_redirected_to archived_workspace_url(@workspace)
+    follow_redirect!
+
+    assert_response :success
+    assert_select ALERT_SELECTOR, count: 0
+    assert_global_drawer
+  end
+
+  test "drawer contains exact Terminal commands and complete Chat guidance" do
+    get workspaces_url
+
+    assert_global_drawer
+    assert_select "#onboarding-connection-methods[data-component='toggle-group'][data-variant='outline']" do
+      assert_select "[data-value='terminal'][data-state='on'][aria-pressed='true']", text: "Terminal"
+      assert_select "[data-value='chat'][data-state='off'][aria-pressed='false']", text: "Chat"
+    end
+
+    commands = css_select("[data-onboarding-panel='terminal'] [data-onboarding-command] code")
+      .map { |command| command.text.strip }
+    assert_equal [
+      "brew install maquina-app/tap/recuerd0",
+      "recuerd0 account add personal --token <token>",
+      "recuerd0 workspace list",
+      "recuerd0 import propose <path> --workspace <id>",
+      "recuerd0 import commit import.plan.yaml",
+      "recuerd0 skills install"
+    ], commands
+    assert_not_includes commands, "recuerd0 import commit import.plan.yaml --yes"
+    assert_select "[data-onboarding-command][data-controller='clipboard']", count: 6
+    assert_select "[data-onboarding-command] button[data-action='clipboard#copy']", count: 6
+    assert_select "[data-onboarding-command] code[data-clipboard-target='source']", count: 6
+    assert_select "[data-onboarding-panel='terminal'] a[href='#{profile_path(anchor: "access-tokens")}']",
+      text: "Access Tokens"
+
+    assert_select "[data-onboarding-panel='chat'][hidden]" do
+      assert_select "a[href='https://recuerd0.ai/mcp']", text: "https://recuerd0.ai/mcp"
+      assert_select "a[href='#{recuerd0_mcp_skill_path}']", text: "Download the recuerd0 MCP skill"
+      assert_select "p", text: /Sign in in the browser/
+      assert_select "p", text: /do not need to create or paste an access token/
+      assert_select "p", text: /create your first memory/
+      assert_select "p", text: "Folder imports require Terminal because they read local files."
+    end
+
+    assert_select "[data-drawer-part='footer'] a[href='#{start_path}']", text: "Full walkthrough"
+    assert_select "[data-drawer-part='footer'] p", text: /Reopen this drawer anytime from the user menu/
   end
 
   private
 
-  def assert_fresh_banner
-    assert_banner_progress(completed: 0, active_step: 1)
-
-    assert_select BANNER_SELECTOR, count: 1 do
-      assert_select(
-        "p.font-mono.text-\\[12px\\].font-medium.uppercase.tracking-wider.text-muted-foreground",
-        text: "Getting started"
-      )
-      assert_select "form[action='#{onboarding_dismiss_path}'] button.text-muted-foreground", text: "Dismiss"
-      assert_select "[data-onboarding-step]", count: 4
-      assert_select "[data-onboarding-indicator]", count: 4
-      assert_select "[data-onboarding-step='4'][data-state]", count: 0
-      assert_select "[data-onboarding-step='1'] p.font-medium.text-foreground",
-        text: "1. Create an access token"
-      assert_select "[data-onboarding-step='2'] p.text-muted-foreground",
-        text: "2. Install the CLI and connect"
-      assert_select "[data-onboarding-step='3'] p.text-muted-foreground",
-        text: "3. Import what you already have"
-      assert_select "[data-onboarding-step='4'] p.text-muted-foreground",
-        text: "4. Give your agent the skill"
-      assert_select "a[href='#{profile_path(anchor: "access-tokens")}']", text: "Access Tokens"
-      assert_select "a[href='#{start_path}'].text-primary.underline.underline-offset-2",
-        text: "Full walkthrough"
-      assert_select "[data-onboarding-divider]", count: 1
-      assert_select "code", count: 0
+  def assert_fresh_alert
+    assert_select "#{ALERT_SELECTOR}[data-component='alert'][data-variant='default'][data-has-icon='true']", count: 1 do
+      assert_select "[data-onboarding-alert-row]", count: 1
+      assert_select "ol", count: 0
+      assert_select "p", text: "Finish setting up — connect an agent so it can read and write here."
+      assert_select "button", text: "Show me how"
+      assert_select "form[action='#{onboarding_dismiss_path}'] button", text: "Dismiss"
     end
-
-    banner = css_select(BANNER_SELECTOR).first
-    walkthrough = banner.at_css("a[href='#{start_path}']")
-    dismiss_form = banner.at_css("form[action='#{onboarding_dismiss_path}']")
-
-    assert_equal "section", banner.name
-    assert_includes banner["class"].split, "mb-4"
-    assert_not_includes banner["class"].split, "mb-6"
-    assert_no_match(/\b(?:bg-|border|rounded|shadow)/, banner["class"].to_s)
-    assert_select "#{BANNER_SELECTOR} [data-card-part]", count: 0
-    assert_equal "text-[13px] text-primary underline underline-offset-2", walkthrough["class"]
-    assert_equal "contents", dismiss_form["class"]
+    assert_alert_progress(agent: :incomplete, content: :incomplete, completed: 0)
+    assert_global_drawer
+    assert_menu_label "Getting started · 0 of 2"
   end
 
-  def assert_banner_progress(completed:, active_step:)
-    assert_select BANNER_SELECTOR, count: 1 do
-      assert_select "p", text: "#{completed}/4 completed"
-      assert_select "li[data-expanded='true']", count: 1
-      assert_select "li[data-onboarding-step='#{active_step}'][data-expanded='true']", count: 1
-      assert_select "[data-state='complete']", count: completed
-      assert_select "[data-state='incomplete']", count: 3 - completed
-
-      (1..completed).each do |step|
-        assert_select(
-          "[data-onboarding-step='#{step}'][data-state='complete']:not([data-expanded]) " \
-            "[data-onboarding-indicator] svg",
-          count: 1
-        )
-      end
-
-      ((completed + 1)..3).each do |step|
-        assert_select(
-          "[data-onboarding-step='#{step}'][data-state='incomplete'] [data-onboarding-indicator] svg",
-          count: 0
-        )
-      end
-    end
-
-    banner = css_select(BANNER_SELECTOR).first
-    header = banner.element_children.first
-    left_group, right_group = header.element_children
-    steps = banner.css("[data-onboarding-step]")
-    active_row = banner.at_css("[data-onboarding-step='#{active_step}']")
-    collapsed_rows = steps.reject { |step| step == active_row }
-    title_row, body = active_row.element_children
-    complete_indicators = banner.css("[data-onboarding-indicator]").select { |indicator| indicator.at_css("svg") }
-    incomplete_indicators = banner.css("[data-onboarding-indicator]").reject { |indicator| indicator.at_css("svg") }
-
-    assert_not_includes left_group.text, "#{completed}/4 completed"
-    assert_includes right_group.text, "#{completed}/4 completed"
-    assert_equal "flex shrink-0 items-center gap-4 text-[13px]", right_group["class"]
-    assert_equal "space-y-1", banner.at_css("ol")["class"]
-    assert_equal "my-1 rounded-[10px] border border-border bg-muted/40 px-3 py-2.5", active_row["class"]
-    assert_equal "flex items-center gap-3", title_row["class"]
-    assert_equal "mt-1.5 ml-[26px]", body["class"]
-    body.css("p").each do |paragraph|
-      assert_includes paragraph["class"].split, "text-[13px]"
-    end
-    collapsed_rows.each do |row|
-      assert_equal "flex items-center gap-3 px-3 py-1.5", row["class"]
-    end
-    assert_equal completed, complete_indicators.size
-    complete_indicators.each do |indicator|
-      assert_equal(
-        "flex size-[14px] shrink-0 items-center justify-center rounded-full " \
-          "bg-primary text-primary-foreground",
-        indicator["class"]
-      )
-    end
-    assert_equal 4 - completed, incomplete_indicators.size
-    incomplete_indicators.each do |indicator|
-      assert_equal(
-        "onboarding-indicator-ring size-[14px] shrink-0 rounded-full",
-        indicator["class"]
-      )
+  def assert_alert_progress(agent:, content:, completed:)
+    assert_select ALERT_SELECTOR, count: 1 do
+      assert_select "[data-onboarding-progress][aria-label='#{completed} of 2 setup steps complete']"
+      assert_select "[data-onboarding-pip='agent'][data-state='#{agent}']", count: 1
+      assert_select "[data-onboarding-pip='content'][data-state='#{content}']", count: 1
+      assert_select "[data-onboarding-pip].bg-primary", count: completed
+      assert_select "[data-onboarding-pip].bg-border", count: 2 - completed
     end
   end
 
-  def assert_only_commands(*commands)
-    rendered_commands = css_select("#{BANNER_SELECTOR} code").map { |code| code.text.strip }
-    assert_equal commands, rendered_commands
+  def assert_global_drawer
+    assert_select DRAWER_SELECTOR, count: 1 do
+      assert_select "[data-controller~='drawer'][data-controller~='onboarding-drawer']", count: 1
+      assert_select "[data-drawer-cookie-name-value='recuerd0_onboarding_drawer_state']"
+      assert_select "#onboarding-drawer[data-drawer-part='root'][data-state='closed'][data-side='right']"
+      assert_select "#onboarding-drawer-panel[role='dialog'][aria-label='Connect your agent'][aria-hidden='true'][inert]"
+    end
   end
 
-  def assert_banner_is_first_content_element
-    container = css_select("div.mx-auto.max-w-5xl").first
-    first_element = container.element_children.first
-
-    assert_equal "true", first_element["data-onboarding-banner"]
+  def assert_menu_label(text)
+    assert_select MENU_TRIGGER_SELECTOR, count: 1 do
+      assert_select "[data-controller~='drawer-trigger']"
+      assert_select "[data-action~='click->drawer-trigger#triggerClick']"
+      assert_select "*", text: /#{Regexp.escape(text)}/
+    end
   end
 end
