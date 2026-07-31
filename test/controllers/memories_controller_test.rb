@@ -13,9 +13,83 @@ class MemoriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "new renders form" do
+  test "new renders blank form without prefill parameters" do
     get new_workspace_memory_url(@workspace)
+
     assert_response :success
+    assert_select "input[name='memory[title]']", 1 do |inputs|
+      assert_equal "", inputs.first["value"].to_s
+    end
+    assert_select "house-md[name='memory[content]']", 1 do |editors|
+      assert_equal "", editors.first.text
+    end
+    assert_select ".tag-badge", count: 0
+    assert_select "input[type='hidden'][name='memory[tags][]']", count: 0
+    assert_select "input[type='radio'][name='memory[category]'][value='general'][checked]", count: 1
+  end
+
+  test "new prefills title content category and tags without persisting records" do
+    assert_no_difference "Memory.count" do
+      assert_no_difference "Content.count" do
+        get new_workspace_memory_url(@workspace), params: {
+          title: "Everybody Lies",
+          content: "It's never lupus.",
+          category: "decision",
+          tags: ["diagnostics"]
+        }
+      end
+    end
+
+    assert_response :success
+    assert_select "input[name='memory[title]'][value='Everybody Lies']", count: 1
+    assert_select "house-md[name='memory[content]']", text: "It's never lupus.", count: 1
+    assert_select "input[type='radio'][name='memory[category]'][value='decision'][checked]", count: 1
+    assert_select ".tag-badge .tag-label", text: "diagnostics", count: 1
+    assert_select "input[type='hidden'][name='memory[tags][]'][value='diagnostics']", count: 1
+  end
+
+  test "new drops invalid category and keeps general selected" do
+    get new_workspace_memory_url(@workspace), params: {category: "bogus"}
+
+    assert_response :success
+    assert_select "input[type='radio'][name='memory[category]'][value='bogus']", count: 0
+    assert_select "input[type='radio'][name='memory[category]'][value='general'][checked]", count: 1
+  end
+
+  test "new keeps only non-blank string tags without normalizing them" do
+    get new_workspace_memory_url(@workspace), params: {
+      tags: ["diagnostics", "", " ", " differential ", "diagnostics"]
+    }
+
+    assert_response :success
+    assert_select ".tag-badge", count: 3
+    hidden_tags = css_select("input[type='hidden'][name='memory[tags][]']").map { |input| input["value"] }
+    assert_equal ["diagnostics", " differential ", "diagnostics"], hidden_tags
+  end
+
+  test "new ignores nested and unknown prefill parameters" do
+    get new_workspace_memory_url(@workspace), params: {
+      memory: {
+        title: "Nested title",
+        content: "Nested content",
+        category: "decision",
+        tags: ["nested"]
+      },
+      source: "Unknown source"
+    }
+
+    assert_response :success
+    assert_select "input[name='memory[title]']", 1 do |inputs|
+      assert_equal "", inputs.first["value"].to_s
+    end
+    assert_select "house-md[name='memory[content]']", 1 do |editors|
+      assert_equal "", editors.first.text
+    end
+    assert_select ".tag-badge", count: 0
+    assert_select "input[name='memory[source]']", 1 do |inputs|
+      assert_equal "", inputs.first["value"].to_s
+    end
+    assert_select "input[type='radio'][name='memory[category]'][value='general'][checked]", count: 1
   end
 
   test "create saves memory with content" do
