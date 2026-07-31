@@ -44,7 +44,9 @@ class MemoriesController < ApplicationController
   end
 
   def new
-    @memory = @workspace.memories.build
+    prefill = prefill_params
+    @memory = @workspace.memories.build(prefill.slice(:title, :category, :tags))
+    @memory.build_content(body: prefill[:content]) if prefill[:content]
   end
 
   def create
@@ -126,6 +128,14 @@ class MemoriesController < ApplicationController
       parse_line_range_params
       render_validation_error(t("memories.show.invalid_line_range")) if invalid_line_range?
     end
+  end
+
+  # Param names are a contract with fragua's capture-candidate promote URL — change both or neither.
+  def prefill_params
+    prefill = params.permit(:title, :content, :category, tags: []).compact_blank
+    prefill.delete(:category) unless Memory::CATEGORIES.include?(prefill[:category])
+    prefill[:tags]&.select! { |tag| tag.is_a?(String) && tag.present? }
+    prefill
   end
 
   def memory_params
