@@ -30,5 +30,6 @@ class Content < ApplicationRecord
 
   def reindex_memory
     memory.rebuild_search_index if memory.respond_to?(:rebuild_search_index)
+    memory.rebuild_embedding_safely if memory.respond_to?(:rebuild_embedding_safely)
   end
 end

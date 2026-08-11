@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_26_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_11_000000) do
   create_table "access_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
@@ -149,6 +149,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_26_000000) do
     t.index ["workspace_id"], name: "index_memories_on_workspace_id"
   end
 
+  create_table "memory_embeddings", force: :cascade do |t|
+    t.string "content_hash", null: false
+    t.datetime "created_at", null: false
+    t.integer "memory_id", null: false
+    t.string "model", null: false
+    t.datetime "updated_at", null: false
+    t.binary "vector", null: false
+    t.index ["memory_id"], name: "index_memory_embeddings_on_memory_id", unique: true
+  end
+
   create_table "memory_links", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "from_memory_id", null: false
@@ -248,6 +258,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_26_000000) do
   add_foreign_key "contents", "memories"
   add_foreign_key "memories", "memories", column: "parent_memory_id"
   add_foreign_key "memories", "workspaces"
+  add_foreign_key "memory_embeddings", "memories", on_delete: :cascade
   add_foreign_key "memory_links", "memories", column: "from_memory_id"
   add_foreign_key "memory_links", "memories", column: "to_memory_id"
   add_foreign_key "oauth_authorization_codes", "oauth_clients"

@@ -13,5 +13,14 @@ module ActiveSupport
     fixtures :all
 
     include AuthenticationHelper
+    include HybridRetrievalTestHelper
+
+    setup do
+      EmbeddingProviders.provider_override = FakeEmbeddingProvider.new
+    end
+
+    teardown do
+      EmbeddingProviders.provider_override = nil
+    end
   end
 end

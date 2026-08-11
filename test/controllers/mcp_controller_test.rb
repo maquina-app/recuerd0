@@ -3,6 +3,13 @@ require "test_helper"
 class McpControllerTest < ActionDispatch::IntegrationTest
   HISTORICAL_VERSION_ERROR =
     "historical versions are immutable — update the current version or create a new version"
+  LIST_MEMORIES_DESCRIPTION = "List memories within a workspace. Search safely phrase-wraps " \
+    "queries for FTS across title and body and also matches case-insensitive whole tags. " \
+    "FTS matches come first by relevance, followed by tag-only matches by recency; " \
+    "a memory matching both appears once as an FTS match. Queries under 3 characters " \
+    "search exact tags only. Returns a paginated envelope: " \
+    "{memories, total_count, has_more, next_offset}. Pass `offset: next_offset` " \
+    "to fetch the following page. Defaults to 50 per page (max 200)."
 
   setup do
     @user = users(:one)
@@ -119,6 +126,10 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_includes properties["query"]["description"], "1–2 characters"
     assert_includes tool["description"], "FTS matches come first by relevance"
     assert_includes tool["description"], "tag-only matches by recency"
+    assert_equal LIST_MEMORIES_DESCRIPTION, tool["description"]
+    assert_equal %w[lexical semantic hybrid hybrid_decay], properties["retrieval"]["enum"]
+    assert_equal "internal/experimental; requires server flag",
+      properties["retrieval"]["description"]
   end
 
   test "tools/list advertises omitted field and blank overwrite update semantics" do
@@ -365,6 +376,237 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal [fts.id.to_s, tag.id.to_s], relevant["memories"].map { |memory| memory["id"] }
     assert_equal [tag.id.to_s, fts.id.to_s], updated["memories"].map { |memory| memory["id"] }
+  end
+
+  test "hybrid flag and omitted retrieval preserve the complete lexical contract" do
+    workspace = create_workspace_without_starter_map("MCP Hybrid Lexical Regression")
+    fts = Memory.create_with_content(
+      workspace,
+      title: "Checkpoint runbook",
+      content: "checkpoint checkpoint recovery"
+    )
+    dual = Memory.create_with_content(
+      workspace,
+      title: "Checkpoint notes",
+      content: "checkpoint",
+      tags: ["checkpoint"]
+    )
+    tag_only = Memory.create_with_content(
+      workspace,
+      title: "Storage operations",
+      content: "mount details",
+      tags: ["checkpoint"]
+    )
+    tag_only.update_column(:updated_at, 1.hour.from_now)
+
+    args = {workspace_id: workspace.id.to_s, query: "checkpoint"}
+    lexical_ids = nil
+    flag_off = nil
+    with_hybrid_retrieval(false) do
+      lexical_ids = workspace.memories.latest_versions.search("checkpoint").pluck(:id)
+      flag_off = call_tool("list_memories", args)
+    end
+
+    assert_equal [fts.id, dual.id].sort, lexical_ids.first(2).sort
+    assert_equal tag_only.id, lexical_ids.last
+    assert_equal lexical_ids.map(&:to_s), flag_off["memories"].map { |memory| memory["id"] }
+
+    with_hybrid_retrieval(true) do
+      assert_equal lexical_ids,
+        workspace.memories.latest_versions.search("checkpoint").pluck(:id)
+      assert_equal flag_off, call_tool("list_memories", args)
+      assert_equal flag_off, call_tool("list_memories", args.merge(retrieval: "lexical"))
+    end
+
+    embedding_sql = []
+    subscriber = lambda do |_name, _started, _finished, _id, payload|
+      embedding_sql << payload[:sql] if payload[:sql].match?(/memory_embeddings/i)
+    end
+    with_hybrid_retrieval(false) do
+      ActiveSupport::Notifications.subscribed(subscriber, "sql.active_record") do
+        assert_equal flag_off, call_tool("list_memories", args.merge(retrieval: "semantic"))
+        assert_equal flag_off, call_tool("list_memories", args.merge(retrieval: "invalid"))
+      end
+    end
+    assert_empty embedding_sql
+  end
+
+  test "enabled retrieval validation rejects explicit null blank and unknown modes" do
+    with_hybrid_retrieval(true) do
+      [nil, "", "unknown"].each do |retrieval|
+        result = mcp(
+          rpc(
+            "tools/call",
+            name: "list_memories",
+            arguments: {workspace_id: @workspace.id.to_s, retrieval: retrieval}
+          ),
+          token: @read_token.raw_token
+        )
+
+        assert result.dig("result", "isError"), retrieval.inspect
+        assert_equal "Invalid retrieval mode", result.dig("result", "content", 0, "text")
+      end
+    end
+  end
+
+  test "short and blank experimental queries stay lexical and never invoke the provider" do
+    workspace = create_workspace_without_starter_map("MCP Short Experimental")
+    tag = Memory.create_with_content(workspace, title: "Tagged", content: "body", tags: ["Go"])
+    other = Memory.create_with_content(workspace, title: "Other", content: "body")
+    provider = FakeEmbeddingProvider.new
+
+    with_hybrid_retrieval(provider: provider) do
+      short = call_tool(
+        "list_memories",
+        {workspace_id: workspace.id.to_s, query: "go", retrieval: "semantic"}
+      )
+      blank = call_tool(
+        "list_memories",
+        {workspace_id: workspace.id.to_s, query: "  ", retrieval: "hybrid"}
+      )
+
+      assert_equal [tag.id.to_s], short["memories"].map { |memory| memory["id"] }
+      assert_equal [other.id.to_s, tag.id.to_s],
+        blank["memories"].map { |memory| memory["id"] }
+    end
+
+    assert_empty provider.embedded_texts
+  end
+
+  test "semantic retrieval preserves rank while explicit sorts override it" do
+    workspace = create_workspace_without_starter_map("MCP Semantic Sorts")
+    alpha = Memory.create_with_content(workspace, title: "Alpha", content: "body")
+    beta = Memory.create_with_content(workspace, title: "Beta", content: "body")
+    gamma = Memory.create_with_content(workspace, title: "Gamma", content: "body")
+    alpha.update_columns(created_at: 3.days.ago, updated_at: 1.day.ago)
+    beta.update_columns(created_at: 1.day.ago, updated_at: 3.days.ago)
+    gamma.update_columns(created_at: 2.days.ago, updated_at: 2.days.ago)
+    query = "restore hangs"
+    provider = FakeEmbeddingProvider.new(vectors: {query => [1.0, 0.0, 0.0]})
+    create_memory_embedding(alpha, vector: [0.5, 0.5, 0.0], model: provider.model)
+    create_memory_embedding(beta, vector: [1.0, 0.0, 0.0], model: provider.model)
+    create_memory_embedding(gamma, vector: [0.8, 0.2, 0.0], model: provider.model)
+    base_args = {workspace_id: workspace.id.to_s, query: query, retrieval: "semantic"}
+
+    with_hybrid_retrieval(provider: provider) do
+      relevance = call_tool("list_memories", base_args.merge(limit: 2))
+      title = call_tool("list_memories", base_args.merge(sort: "title"))
+      updated = call_tool("list_memories", base_args.merge(sort: "updated"))
+      created = call_tool("list_memories", base_args.merge(sort: "created"))
+
+      assert_equal [beta.id.to_s, gamma.id.to_s],
+        relevance["memories"].map { |memory| memory["id"] }
+      assert_equal 3, relevance["total_count"]
+      assert relevance["has_more"]
+      assert_equal 2, relevance["next_offset"]
+      assert_equal [alpha.id.to_s, beta.id.to_s, gamma.id.to_s],
+        title["memories"].map { |memory| memory["id"] }
+      assert_equal [alpha.id.to_s, gamma.id.to_s, beta.id.to_s],
+        updated["memories"].map { |memory| memory["id"] }
+      assert_equal [beta.id.to_s, gamma.id.to_s, alpha.id.to_s],
+        created["memories"].map { |memory| memory["id"] }
+    end
+
+    assert_equal [query] * 4, provider.embedded_texts
+  end
+
+  test "semantic category filtering happens after the top fifty are ranked" do
+    workspace = create_workspace_without_starter_map("MCP Semantic Category")
+    query = "restore hangs"
+    provider = FakeEmbeddingProvider.new(vectors: {query => [1.0, 0.0, 0.0]})
+
+    50.times do |index|
+      memory = Memory.create_with_content(
+        workspace,
+        title: "General #{index}",
+        content: "body",
+        category: "general"
+      )
+      create_memory_embedding(
+        memory,
+        vector: [1.0, (index + 1) / 100.0, 0.0],
+        model: provider.model
+      )
+    end
+    decision = Memory.create_with_content(
+      workspace,
+      title: "Decision below cutoff",
+      content: "body",
+      category: "decision"
+    )
+    create_memory_embedding(decision, vector: [0.0, 1.0, 0.0], model: provider.model)
+
+    with_hybrid_retrieval(provider: provider) do
+      payload = call_tool(
+        "list_memories",
+        {
+          workspace_id: workspace.id.to_s,
+          query: query,
+          retrieval: "semantic",
+          category: "decision"
+        }
+      )
+
+      assert_equal 0, payload["total_count"]
+      assert_empty payload["memories"]
+    end
+  end
+
+  test "hybrid retrieval finds a semantic vocabulary-gap result and paginates in Ruby" do
+    workspace = create_workspace_without_starter_map("MCP Hybrid Vocabulary")
+    checkpoint = Memory.create_with_content(
+      workspace,
+      title: "Checkpoint stalls on the storage mount",
+      content: "Snapshot troubleshooting"
+    )
+    other = Memory.create_with_content(workspace, title: "Lunch", content: "Soup")
+    query = "restore hangs"
+    provider = FakeEmbeddingProvider.new(vectors: {query => [1.0, 0.0, 0.0]})
+    create_memory_embedding(checkpoint, vector: [1.0, 0.0, 0.0], model: provider.model)
+    create_memory_embedding(other, vector: [0.0, 1.0, 0.0], model: provider.model)
+
+    assert_empty workspace.memories.latest_versions.search(query)
+    with_hybrid_retrieval(provider: provider) do
+      payload = call_tool(
+        "list_memories",
+        {
+          workspace_id: workspace.id.to_s,
+          query: query,
+          retrieval: "hybrid",
+          limit: 1
+        }
+      )
+
+      assert_equal checkpoint.id.to_s, payload["memories"].sole["id"]
+      assert_equal 2, payload["total_count"]
+      assert payload["has_more"]
+      assert_equal 1, payload["next_offset"]
+    end
+  end
+
+  test "semantic provider load failures return a backfill tool error without fallback" do
+    provider = FakeEmbeddingProvider.new do
+      raise EmbeddingProviders::Error, "model cache missing"
+    end
+
+    with_hybrid_retrieval(provider: provider) do
+      result = mcp(
+        rpc(
+          "tools/call",
+          name: "list_memories",
+          arguments: {
+            workspace_id: @workspace.id.to_s,
+            query: "restore hangs",
+            retrieval: "semantic"
+          }
+        ),
+        token: @read_token.raw_token
+      )
+
+      assert result.dig("result", "isError")
+      assert_includes result.dig("result", "content", 0, "text"), "search:embed_backfill"
+      assert_not_includes result.dig("result", "content", 0, "text"), "model cache missing"
+    end
   end
 
   test "list_memories applies explicit non-relevance sorts and resolves relevance without a query" do

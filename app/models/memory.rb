@@ -1,6 +1,7 @@
 class Memory < ApplicationRecord
   include Pinnable
   include Searchable
+  include Embeddable
 
   belongs_to :workspace, touch: true, counter_cache: true
   belongs_to :parent_memory, class_name: "Memory", optional: true

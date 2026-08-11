@@ -58,6 +58,11 @@ module Mcp
                 "FTS hits rank first, dual hits are deduplicated, and tag-only hits follow by " \
                 "recency. At 1–2 characters, only exact tags are searched."
             },
+            retrieval: {
+              type: "string",
+              enum: %w[lexical semantic hybrid hybrid_decay],
+              description: "internal/experimental; requires server flag"
+            },
             category: {type: "string", enum: CATEGORIES, description: "Filter by memory category"},
             sort: {type: "string", enum: Memory::SEARCH_SORTS,
                    description: "Sort order. Defaults to relevance when query is present and " \
