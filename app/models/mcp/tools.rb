@@ -17,6 +17,7 @@ module Mcp
     # gives callers an explicit signal to page.
     LIST_DEFAULT_LIMIT = 50
     LIST_MAX_LIMIT = 200
+    RETRIEVAL_MODES = %w[lexical semantic hybrid hybrid_decay].freeze
 
     # Cap on ids accepted by read_memories in one call, to bound response size.
     BATCH_READ_LIMIT = 50
@@ -75,6 +76,18 @@ module Mcp
       offset = [args["offset"].to_i, 0].max
       query = Memory.normalize_search_query(args["query"])
 
+      retrieval = resolve_retrieval(args)
+      if retrieval != "lexical" && query.length >= Searchable::MIN_QUERY_LENGTH
+        return list_memories_experimentally(
+          workspace,
+          args,
+          query: query,
+          retrieval: retrieval,
+          limit: limit,
+          offset: offset
+        )
+      end
+
       memories = workspace.memories.latest_versions
       memories = memories.search(query) if query.present?
       memories = memories.by_category(args["category"]) if args["category"].present?
@@ -91,6 +104,49 @@ module Mcp
         next_offset: (offset + limit < total_count) ? offset + limit : nil
       }
     end
+
+    def resolve_retrieval(args)
+      return "lexical" unless Rails.configuration.x.hybrid_retrieval
+      return "lexical" unless args.key?("retrieval")
+
+      retrieval = args["retrieval"]
+      unless retrieval.is_a?(String) && RETRIEVAL_MODES.include?(retrieval)
+        raise ToolError, "Invalid retrieval mode"
+      end
+
+      retrieval
+    end
+    private_class_method :resolve_retrieval
+
+    def list_memories_experimentally(workspace, args, query:, retrieval:, limit:, offset:)
+      roots = workspace.memories.latest_versions
+      ranked_ids = MemoryRetrieval.new(relation: roots).ranked_ids(query: query, mode: retrieval)
+      candidates = roots.where(id: ranked_ids)
+      candidates = candidates.by_category(args["category"]) if args["category"].present?
+      sort = Memory.resolve_sort(args["sort"], query: query)
+
+      memories = if sort == "relevance"
+        candidates_by_id = candidates.index_by(&:id)
+        ranked_ids.filter_map { |id| candidates_by_id[id] }
+      else
+        candidates.ordered_by(sort).to_a
+      end
+
+      total_count = memories.length
+      page = memories.slice(offset, limit) || []
+
+      {
+        memories: page.map { |memory| memory_json(memory.resolve_current_version) },
+        total_count: total_count,
+        has_more: offset + limit < total_count,
+        next_offset: (offset + limit < total_count) ? offset + limit : nil
+      }
+    rescue EmbeddingProviders::Error, MemoryEmbedding::InvalidVector
+      raise ToolError,
+        "Semantic retrieval is unavailable. Run HYBRID_RETRIEVAL=true " \
+          "bin/rails search:embed_backfill and retry."
+    end
+    private_class_method :list_memories_experimentally
 
     def read_memory(account, args = {}, user: nil)
       memory = find_memory(account, args["memory_id"]).resolve_current_version

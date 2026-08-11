@@ -30,6 +30,17 @@ module Recuerd0
 
     config.multi_tenant = ENV.fetch("MULTI_TENANT_ENABLED", "false") == "true"
 
+    config.x.hybrid_retrieval = ENV.fetch("HYBRID_RETRIEVAL", "false") == "true"
+    config.x.hybrid_retrieval_provider = ENV.fetch("HYBRID_RETRIEVAL_PROVIDER", "informers")
+    config.x.hybrid_retrieval_model = ENV.fetch(
+      "HYBRID_RETRIEVAL_MODEL",
+      "sentence-transformers/all-MiniLM-L6-v2"
+    )
+    config.x.hybrid_retrieval_dimensions = ENV.fetch("HYBRID_RETRIEVAL_DIMENSIONS", "384").to_i
+    config.x.hybrid_retrieval_cache_dir = if Rails.env.production?
+      Rails.root.join("storage", "informers")
+    end
+
     config.exceptions_app = routes
   end
 end

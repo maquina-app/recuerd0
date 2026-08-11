@@ -46,6 +46,7 @@ gem "redcarpet", "~> 3.6"
 gem "rouge", "~> 4.5"
 gem "pagy", "~> 9.3"
 gem "maquina-components", "~> 0.5.1"
+gem "informers", "~> 1.3.0"
 gem "rubyzip", "~> 3.0", require: "zip"
 
 group :development, :test do
