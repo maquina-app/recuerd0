@@ -7,7 +7,9 @@ class MemoryEmbedding < ApplicationRecord
   validates :model, :content_hash, :vector, presence: true
 
   def self.pack_vector(values, dimensions:)
-    validate_vector!(values, dimensions:).pack("e*")
+    packed = validate_vector!(values, dimensions:).pack("e*")
+    validate_vector!(packed.unpack("e*"), dimensions:)
+    packed
   end
 
   def self.unpack_vector(bytes, dimensions:)

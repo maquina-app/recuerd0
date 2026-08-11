@@ -20,6 +20,9 @@ class MemoryEmbeddingTest < ActiveSupport::TestCase
       MemoryEmbedding.pack_vector([1.0, Float::INFINITY, 3.0], dimensions: 3)
     end
     assert_raises(MemoryEmbedding::InvalidVector) do
+      MemoryEmbedding.pack_vector([1.0, Float::MAX, 3.0], dimensions: 3)
+    end
+    assert_raises(MemoryEmbedding::InvalidVector) do
       MemoryEmbedding.pack_vector([1.0, Object.new, 3.0], dimensions: 3)
     end
   end
