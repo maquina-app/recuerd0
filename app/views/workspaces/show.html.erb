@@ -81,6 +81,19 @@
           New Memory
         <% end %>
 
+        <div data-controller="clipboard" data-clipboard-text-value="<%= @workspace.id %>">
+          <button type="button"
+                  data-component="button"
+                  data-variant="ghost"
+                  data-size="sm"
+                  data-action="clipboard#copy"
+                  aria-label="Copy workspace ID">
+            <span data-clipboard-target="copyIcon"><%= icon_for(:copy, class: "size-4") %></span>
+            <span data-clipboard-target="checkIcon" class="hidden"><%= icon_for(:check, class: "size-4") %></span>
+            Copy ID
+          </button>
+        </div>
+
         <%= render "shared/pin_button", pinnable: @workspace %>
       <% end %>
 

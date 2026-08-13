@@ -88,6 +88,17 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "show renders a copy ID button for an active workspace" do
+    get workspace_url(@workspace)
+
+    assert_response :success
+    assert_select "[data-controller='clipboard'][data-clipboard-text-value='#{@workspace.id}']" do
+      assert_select "button[data-component='button'][data-variant='ghost'][data-size='sm'][data-action='clipboard#copy'][aria-label='Copy workspace ID']", text: /Copy ID/
+      assert_select "[data-clipboard-target='copyIcon']", count: 1
+      assert_select "[data-clipboard-target='checkIcon'].hidden", count: 1
+    end
+  end
+
   test "show defaults memory view to cards" do
     get workspace_url(@workspace)
     assert_response :success

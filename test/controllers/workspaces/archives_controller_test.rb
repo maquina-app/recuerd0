@@ -32,6 +32,7 @@ class Workspaces::ArchivesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "cards", @controller.view_assigns["memory_view"]
     assert_not_nil @controller.view_assigns["category_counts"]
+    assert_select "button[aria-label='Copy workspace ID']", count: 0
   end
 
   test "create archives a workspace" do
