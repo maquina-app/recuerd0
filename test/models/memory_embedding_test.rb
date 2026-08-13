@@ -83,18 +83,26 @@ class MemoryEmbeddingTest < ActiveSupport::TestCase
     assert_empty provider.embedded_texts
   end
 
-  test "a model change re-embeds unchanged content" do
+  test "a pinned revision re-embeds unchanged content stored under the old bare model" do
     memory = Memory.create_with_content(workspaces(:one), title: "Stable", content: "Same")
-    old_provider = FakeEmbeddingProvider.new(model: "old-model")
-    new_provider = FakeEmbeddingProvider.new(model: "new-model")
+    bare_model = Rails.configuration.x.hybrid_retrieval_model
+    revision = Rails.configuration.x.hybrid_retrieval_revision
+    pinned_model = "#{bare_model}@#{revision}"
+    text = "Stable\n\nSame"
+    MemoryEmbedding.create!(
+      memory_id: memory.id,
+      model: bare_model,
+      content_hash: Digest::SHA256.hexdigest(text),
+      vector: MemoryEmbedding.pack_vector([1.0, 0.0, 0.0], dimensions: 3)
+    )
+    provider = FakeEmbeddingProvider.new(model: pinned_model)
 
-    with_hybrid_retrieval(provider: old_provider) { memory.rebuild_embedding }
-    with_hybrid_retrieval(provider: new_provider) do
+    with_hybrid_retrieval(provider: provider) do
       assert_equal :embedded, memory.rebuild_embedding
     end
 
-    assert_equal ["Stable\n\nSame"], new_provider.embedded_texts
-    assert_equal "new-model", MemoryEmbedding.find_by!(memory_id: memory.id).model
+    assert_equal [text], provider.embedded_texts
+    assert_equal pinned_model, MemoryEmbedding.find_by!(memory_id: memory.id).model
   end
 
   test "flag-off writes never invoke the provider" do
@@ -177,11 +185,77 @@ class EmbeddingProvidersTest < ActiveSupport::TestCase
 
       assert_equal true, application.instance_variable_get(:@local_files_only)
       assert_equal false, backfill.instance_variable_get(:@local_files_only)
-      assert_equal "sentence-transformers/all-MiniLM-L6-v2", application.model
+      assert_equal "sentence-transformers/all-MiniLM-L6-v2", application.instance_variable_get(:@model_name)
+      assert_equal "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+        application.instance_variable_get(:@revision)
+      assert_equal "sentence-transformers/all-MiniLM-L6-v2@" \
+        "1110a243fdf4706b3f48f1d95db1a4f5529b4d41", application.model
       assert_equal 384, application.dimensions
     end
   ensure
     EmbeddingProviders.provider_override = previous_override
+  end
+
+  test "Informers receives the bare model and exact revision while model exposes their identity" do
+    model = "sentence-transformers/all-MiniLM-L6-v2"
+    revision = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+    cache_dir = "/tmp/informers-provider-revision-test"
+    calls = []
+    pipeline = ->(_text) { [1.0, 0.0, 0.0] }
+    builder = lambda do |task, pipeline_model, **options|
+      calls << [task, pipeline_model, options]
+      pipeline
+    end
+    provider = EmbeddingProviders::InformersProvider.new(
+      model: model,
+      revision: revision,
+      dimensions: 3,
+      cache_dir: cache_dir,
+      local_files_only: true
+    )
+
+    Informers.stub(:pipeline, builder) { provider.embed("query") }
+
+    assert_equal "#{model}@#{revision}", provider.model
+    assert_equal [
+      "embedding",
+      model,
+      {revision: revision, cache_dir: cache_dir, local_files_only: true}
+    ], calls.sole
+  ensure
+    EmbeddingProviders::InformersProvider.pipelines.delete(["#{model}@#{revision}", cache_dir, true])
+  end
+
+  test "different revisions use different Informers pipeline memoization entries" do
+    model = "memoization-test-model"
+    revisions = ["a" * 40, "b" * 40]
+    calls = []
+    builder = lambda do |_task, _pipeline_model, **options|
+      calls << options[:revision]
+      ->(_text) { [1.0, 0.0, 0.0] }
+    end
+    providers = revisions.map do |revision|
+      EmbeddingProviders::InformersProvider.new(
+        model: model,
+        revision: revision,
+        dimensions: 3,
+        cache_dir: nil,
+        local_files_only: true
+      )
+    end
+
+    Informers.stub(:pipeline, builder) do
+      providers.first.embed("first")
+      providers.first.embed("again")
+      providers.second.embed("second")
+    end
+
+    assert_equal revisions, calls
+    assert_equal revisions.map { |revision| "#{model}@#{revision}" }, providers.map(&:model)
+  ensure
+    revisions&.each do |revision|
+      EmbeddingProviders::InformersProvider.pipelines.delete(["#{model}@#{revision}", nil, true])
+    end
   end
 
   test "unknown configured providers raise a configuration error" do

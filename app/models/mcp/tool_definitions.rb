@@ -60,7 +60,7 @@ module Mcp
             },
             retrieval: {
               type: "string",
-              enum: %w[lexical semantic hybrid hybrid_decay],
+              enum: %w[lexical semantic],
               description: "internal/experimental; requires server flag"
             },
             category: {type: "string", enum: CATEGORIES, description: "Filter by memory category"},

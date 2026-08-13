@@ -7,14 +7,16 @@ class SearchTaskTest < ActiveSupport::TestCase
     @task = Rake::Task["search:embed_backfill"]
   end
 
-  test "backfill scopes workspaces and reports exact embedded and unchanged counts" do
+  test "pinned backfill scopes workspaces and skips provider loading on the second run" do
     first_workspace = workspace_without_starter("Backfill first")
     second_workspace = workspace_without_starter("Backfill second")
     2.times do |index|
       Memory.create_with_content(first_workspace, title: "First #{index}", content: "Body")
     end
     Memory.create_with_content(second_workspace, title: "Second", content: "Body")
-    provider = FakeEmbeddingProvider.new
+    pinned_model = "#{Rails.configuration.x.hybrid_retrieval_model}@" \
+      "#{Rails.configuration.x.hybrid_retrieval_revision}"
+    provider = FakeEmbeddingProvider.new(model: pinned_model)
 
     with_hybrid_retrieval(provider: provider) do
       output = invoke_task(first_workspace.id.to_s)

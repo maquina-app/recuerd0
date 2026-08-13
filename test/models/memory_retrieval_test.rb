@@ -17,10 +17,7 @@ class MemoryRetrievalTest < ActiveSupport::TestCase
     create_memory_embedding(stale, vector: [1.0, 0.0, 0.0], model: "previous-model")
     create_memory_embedding(foreign, vector: [1.0, 0.0, 0.0], model: provider.model)
 
-    ids = MemoryRetrieval.new(
-      relation: @workspace.memories.latest_versions,
-      provider: provider
-    ).ranked_ids(query: "restore hangs", mode: "semantic")
+    ids = retrieval(provider).ranked_ids(query: "restore hangs")
 
     assert_equal [match.id, weaker.id], ids
     assert_equal ["restore hangs"], provider.embedded_texts
@@ -28,7 +25,7 @@ class MemoryRetrievalTest < ActiveSupport::TestCase
     assert_not_includes ids, foreign.id
   end
 
-  test "semantic and hybrid bridge a vocabulary gap that lexical search misses" do
+  test "semantic retrieval bridges a vocabulary gap that lexical search misses" do
     query = "restore hangs"
     provider = FakeEmbeddingProvider.new(vectors: {query => [1.0, 0.0, 0.0]})
     checkpoint = Memory.create_with_content(
@@ -43,27 +40,90 @@ class MemoryRetrievalTest < ActiveSupport::TestCase
     )
     create_memory_embedding(checkpoint, vector: [1.0, 0.0, 0.0], model: provider.model)
     create_memory_embedding(unrelated, vector: [0.0, 1.0, 0.0], model: provider.model)
-    relation = @workspace.memories.latest_versions
 
-    assert_empty relation.search(query)
-    assert_equal checkpoint.id,
-      MemoryRetrieval.new(relation: relation, provider: provider)
-        .ranked_ids(query: query, mode: "semantic").first
-    assert_equal checkpoint.id,
-      MemoryRetrieval.new(relation: relation, provider: provider)
-        .ranked_ids(query: query, mode: "hybrid").first
+    assert_empty @workspace.memories.latest_versions.search(query)
+    assert_equal checkpoint.id, retrieval(provider).ranked_ids(query: query).first
   end
 
-  test "reciprocal rank fusion matches the hand-computed order" do
-    a, b, c, d = 1, 2, 3, 4
-    scores = MemoryRetrieval.rrf_scores([a, b, c], [c, b, d])
-    order = scores.sort_by { |id, score| [-score, id] }.map(&:first)
+  test "mixed-case superseded tags demote a higher raw similarity" do
+    query = "restore hangs"
+    provider = FakeEmbeddingProvider.new(vectors: {query => [1.0, 0.0, 0.0]})
+    superseded = Memory.create_with_content(
+      @workspace,
+      title: "Superseded",
+      content: "Body",
+      tags: ["archive", "SuPeRsEdEd"]
+    )
+    current = Memory.create_with_content(@workspace, title: "Current", content: "Body")
+    create_memory_embedding(superseded, vector: [1.0, 0.0, 0.0], model: provider.model)
+    create_memory_embedding(current, vector: [0.6, 0.8, 0.0], model: provider.model)
 
-    assert_equal [c, b, a, d], order
-    assert_in_delta 1.0 / 61, scores[a]
-    assert_in_delta 2.0 / 62, scores[b]
-    assert_in_delta(1.0 / 63 + 1.0 / 61, scores[c])
-    assert_in_delta 1.0 / 63, scores[d]
+    assert_equal [current.id, superseded.id], retrieval(provider).ranked_ids(query: query)
+  end
+
+  test "nil empty malformed and non-array tags do not crash or demote" do
+    query = "same score"
+    provider = FakeEmbeddingProvider.new(vectors: {query => [1.0, 0.0, 0.0]})
+    memories = [nil, "[]", "{malformed", '"superseded"'].map.with_index do |tags, index|
+      memory = Memory.create_with_content(
+        @workspace,
+        title: "Metadata #{index}",
+        content: "Body"
+      )
+      Memory.where(id: memory.id).update_all(["tags = ?", tags])
+      create_memory_embedding(memory, vector: [1.0, 0.0, 0.0], model: provider.model)
+      memory
+    end
+    tied_at = 1.day.ago
+    Memory.where(id: memories.map(&:id)).update_all(updated_at: tied_at)
+
+    ids = retrieval(provider).ranked_ids(query: query)
+
+    assert_equal memories.map(&:id).sort.reverse, ids
+    refute retrieval(provider).send(:superseded?, [])
+  end
+
+  test "superseded demotion happens before the semantic top fifty cutoff" do
+    query = "restore hangs"
+    provider = FakeEmbeddingProvider.new(vectors: {query => [1.0, 0.0, 0.0]})
+
+    49.times do |index|
+      memory = Memory.create_with_content(
+        @workspace,
+        title: "Strong current #{index}",
+        content: "Body"
+      )
+      create_memory_embedding(memory, vector: [0.8, 0.6, 0.0], model: provider.model)
+    end
+    superseded = Memory.create_with_content(
+      @workspace,
+      title: "Raw strongest but superseded",
+      content: "Body",
+      tags: ["superseded"]
+    )
+    current = Memory.create_with_content(@workspace, title: "Current at cutoff", content: "Body")
+    create_memory_embedding(superseded, vector: [1.0, 0.0, 0.0], model: provider.model)
+    create_memory_embedding(current, vector: [0.6, 0.8, 0.0], model: provider.model)
+
+    ids = retrieval(provider).ranked_ids(query: query)
+
+    assert_equal MemoryRetrieval::SEMANTIC_TOP_K, ids.size
+    assert_includes ids, current.id
+    assert_not_includes ids, superseded.id
+  end
+
+  test "a superseded memory remains eligible without a stronger competitor" do
+    query = "restore hangs"
+    provider = FakeEmbeddingProvider.new(vectors: {query => [1.0, 0.0, 0.0]})
+    superseded = Memory.create_with_content(
+      @workspace,
+      title: "Only candidate",
+      content: "Body",
+      tags: ["superseded"]
+    )
+    create_memory_embedding(superseded, vector: [1.0, 0.0, 0.0], model: provider.model)
+
+    assert_equal [superseded.id], retrieval(provider).ranked_ids(query: query)
   end
 
   test "semantic ties use updated time then descending id" do
@@ -79,65 +139,20 @@ class MemoryRetrievalTest < ActiveSupport::TestCase
       create_memory_embedding(memory, vector: [1.0, 0.0, 0.0], model: provider.model)
     end
 
-    ids = MemoryRetrieval.new(
-      relation: @workspace.memories.latest_versions,
-      provider: provider
-    ).ranked_ids(query: "same score", mode: "semantic")
+    ids = retrieval(provider).ranked_ids(query: "same score")
 
     assert_equal [higher_id.id, lower_id.id, older.id], ids
   end
 
-  test "decay has a thirty-day half-life floor and category exemption" do
-    now = Time.zone.parse("2026-08-11 12:00:00")
-
-    assert_in_delta 1.0, decay_factor("general", now + 1.day, now)
-    assert_in_delta 0.5, decay_factor("general", now - 30.days, now)
-    assert_in_delta 0.25, decay_factor("general", now - 60.days, now)
-    assert_in_delta 0.25, decay_factor("general", now - 365.days, now)
-    %w[decision preference discovery].each do |category|
-      assert_in_delta 1.0, decay_factor(category, now - 365.days, now)
-    end
-  end
-
-  test "hybrid decay re-sorts fused scores with stable metadata tie breakers" do
-    general = Memory.create_with_content(
-      @workspace,
-      title: "Old general",
-      content: "Body",
-      category: "general"
-    )
-    decision = Memory.create_with_content(
-      @workspace,
-      title: "Old decision",
-      content: "Body",
-      category: "decision"
-    )
-    now = Time.zone.parse("2026-08-11 12:00:00")
-    general.update_column(:updated_at, now - 30.days)
-    decision.update_column(:updated_at, now - 365.days)
-    retrieval = MemoryRetrieval.new(
-      relation: @workspace.memories.latest_versions,
-      provider: FakeEmbeddingProvider.new,
-      now: now
-    )
-
-    decayed = retrieval.send(:apply_decay, {general.id => 1.0, decision.id => 0.6})
-    ids = retrieval.send(:sort_scores, decayed)
-
-    assert_in_delta 0.5, decayed[general.id]
-    assert_in_delta 0.6, decayed[decision.id]
-    assert_equal [decision.id, general.id], ids
-  end
-
   private
+
+  def retrieval(provider)
+    MemoryRetrieval.new(relation: @workspace.memories.latest_versions, provider: provider)
+  end
 
   def workspace_without_starter(name)
     accounts(:one).workspaces.create!(name: name).tap do |workspace|
       workspace.memories.find_by!(title: WorkspaceStarter::TITLE).destroy!
     end
-  end
-
-  def decay_factor(category, updated_at, now)
-    MemoryRetrieval.decay_factor(category: category, updated_at: updated_at, now: now)
   end
 end

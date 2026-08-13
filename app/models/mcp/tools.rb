@@ -17,7 +17,7 @@ module Mcp
     # gives callers an explicit signal to page.
     LIST_DEFAULT_LIMIT = 50
     LIST_MAX_LIMIT = 200
-    RETRIEVAL_MODES = %w[lexical semantic hybrid hybrid_decay].freeze
+    RETRIEVAL_MODES = %w[lexical semantic].freeze
 
     # Cap on ids accepted by read_memories in one call, to bound response size.
     BATCH_READ_LIMIT = 50
@@ -82,7 +82,6 @@ module Mcp
           workspace,
           args,
           query: query,
-          retrieval: retrieval,
           limit: limit,
           offset: offset
         )
@@ -118,9 +117,9 @@ module Mcp
     end
     private_class_method :resolve_retrieval
 
-    def list_memories_experimentally(workspace, args, query:, retrieval:, limit:, offset:)
+    def list_memories_experimentally(workspace, args, query:, limit:, offset:)
       roots = workspace.memories.latest_versions
-      ranked_ids = MemoryRetrieval.new(relation: roots).ranked_ids(query: query, mode: retrieval)
+      ranked_ids = MemoryRetrieval.new(relation: roots).ranked_ids(query: query)
       candidates = roots.where(id: ranked_ids)
       candidates = candidates.by_category(args["category"]) if args["category"].present?
       sort = Memory.resolve_sort(args["sort"], query: query)
