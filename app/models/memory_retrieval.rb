@@ -1,48 +1,13 @@
 class MemoryRetrieval
   SEMANTIC_TOP_K = 50
-  RRF_K = 60
-  HALF_LIFE_DAYS = 30
-  DECAY_FLOOR = 0.25
+  SUPERSEDED_DEMOTION = 0.5
 
-  def initialize(relation:, provider: EmbeddingProviders.application, now: Time.current)
+  def initialize(relation:, provider: EmbeddingProviders.application)
     @relation = relation
     @provider = provider
-    @now = now
   end
 
-  def ranked_ids(query:, mode:)
-    case mode
-    when "semantic"
-      semantic_ids(query)
-    when "hybrid", "hybrid_decay"
-      lexical_ids = @relation.search(query).pluck(:id)
-      semantic_ids = semantic_ids(query)
-      scores = self.class.rrf_scores(lexical_ids, semantic_ids)
-      scores = apply_decay(scores) if mode == "hybrid_decay"
-      sort_scores(scores)
-    else
-      raise ArgumentError, "unsupported retrieval mode: #{mode.inspect}"
-    end
-  end
-
-  def self.rrf_scores(*ranked_lists)
-    ranked_lists.each_with_object(Hash.new(0.0)) do |ids, scores|
-      ids.each_with_index do |id, index|
-        scores[id] += 1.0 / (RRF_K + index + 1)
-      end
-    end
-  end
-
-  def self.decay_factor(category:, updated_at:, now: Time.current)
-    return 1.0 unless category == Memory::DEFAULT_CATEGORY
-
-    age_days = [((now - updated_at) / 1.day).to_f, 0.0].max
-    [0.5**(age_days / HALF_LIFE_DAYS), DECAY_FLOOR].max
-  end
-
-  private
-
-  def semantic_ids(query)
+  def ranked_ids(query:)
     query_vector = MemoryEmbedding.validate_vector!(
       @provider.embed(query),
       dimensions: @provider.dimensions
@@ -60,7 +25,11 @@ class MemoryRetrieval
           embedding.vector,
           dimensions: @provider.dimensions
         )
-        [embedding.memory_id, cosine_similarity(query_vector, vector)]
+        similarity = cosine_similarity(query_vector, vector)
+        memory = metadata.fetch(embedding.memory_id)
+        similarity *= SUPERSEDED_DEMOTION if superseded?(memory[:tags])
+
+        [embedding.memory_id, similarity]
       end
 
     candidates.sort_by do |memory_id, similarity|
@@ -68,6 +37,8 @@ class MemoryRetrieval
       [-similarity, -memory[:updated_at].to_f, -memory_id]
     end.first(SEMANTIC_TOP_K).map(&:first)
   end
+
+  private
 
   def cosine_similarity(left, right)
     dot_product = 0.0
@@ -84,32 +55,29 @@ class MemoryRetrieval
     denominator.zero? ? 0.0 : dot_product / denominator
   end
 
-  def apply_decay(scores)
-    metadata = relation_metadata
-    scores.to_h do |memory_id, score|
-      memory = metadata.fetch(memory_id)
-      [
-        memory_id,
-        score * self.class.decay_factor(
-          category: memory[:category],
-          updated_at: memory[:updated_at],
-          now: @now
-        )
-      ]
-    end
+  def superseded?(tags)
+    normalize_tags(tags).any? { |tag| tag.to_s.casecmp?("superseded") }
   end
 
-  def sort_scores(scores)
-    metadata = relation_metadata
-    scores.sort_by do |memory_id, score|
-      memory = metadata.fetch(memory_id)
-      [-score, -memory[:updated_at].to_f, -memory_id]
-    end.map(&:first)
+  def normalize_tags(tags)
+    values = case tags
+    when Array
+      tags
+    when String
+      JSON.parse(tags) unless tags.blank?
+    end
+
+    values.is_a?(Array) ? values : []
+  rescue JSON::ParserError
+    []
   end
 
   def relation_metadata
-    @relation_metadata ||= @relation.reorder(nil).pluck(:id, :updated_at, :category).to_h do |row|
-      [row[0], {updated_at: row[1], category: row[2]}]
-    end
+    @relation_metadata ||= @relation
+      .reorder(nil)
+      .pluck(:id, :updated_at, Arel.sql("CAST(memories.tags AS TEXT)"))
+      .to_h do |id, updated_at, tags|
+        [id, {updated_at: updated_at, tags: tags}]
+      end
   end
 end

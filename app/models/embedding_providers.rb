@@ -28,6 +28,7 @@ module EmbeddingProviders
 
       factory.call(
         model: Rails.configuration.x.hybrid_retrieval_model,
+        revision: Rails.configuration.x.hybrid_retrieval_revision,
         dimensions: Rails.configuration.x.hybrid_retrieval_dimensions,
         cache_dir: Rails.configuration.x.hybrid_retrieval_cache_dir,
         local_files_only: local_files_only
@@ -45,8 +46,10 @@ module EmbeddingProviders
 
     attr_reader :model, :dimensions
 
-    def initialize(model:, dimensions:, cache_dir:, local_files_only:)
-      @model = model.to_s
+    def initialize(model:, revision:, dimensions:, cache_dir:, local_files_only:)
+      @model_name = model.to_s
+      @revision = revision.to_s
+      @model = "#{@model_name}@#{@revision}"
       @dimensions = Integer(dimensions)
       @cache_dir = cache_dir&.to_s
       @local_files_only = local_files_only
@@ -65,7 +68,8 @@ module EmbeddingProviders
       self.class.pipelines_mutex.synchronize do
         self.class.pipelines[key] ||= ::Informers.pipeline(
           "embedding",
-          @model,
+          @model_name,
+          revision: @revision,
           cache_dir: @cache_dir,
           local_files_only: @local_files_only
         )

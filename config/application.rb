@@ -36,6 +36,10 @@ module Recuerd0
       "HYBRID_RETRIEVAL_MODEL",
       "sentence-transformers/all-MiniLM-L6-v2"
     )
+    config.x.hybrid_retrieval_revision = ENV.fetch(
+      "HYBRID_RETRIEVAL_REVISION",
+      "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+    )
     config.x.hybrid_retrieval_dimensions = ENV.fetch("HYBRID_RETRIEVAL_DIMENSIONS", "384").to_i
     config.x.hybrid_retrieval_cache_dir = if Rails.env.production?
       Rails.root.join("storage", "informers")

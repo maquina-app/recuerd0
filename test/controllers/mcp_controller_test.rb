@@ -127,7 +127,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_includes tool["description"], "FTS matches come first by relevance"
     assert_includes tool["description"], "tag-only matches by recency"
     assert_equal LIST_MEMORIES_DESCRIPTION, tool["description"]
-    assert_equal %w[lexical semantic hybrid hybrid_decay], properties["retrieval"]["enum"]
+    assert_equal %w[lexical semantic], properties["retrieval"]["enum"]
     assert_equal "internal/experimental; requires server flag",
       properties["retrieval"]["description"]
   end
@@ -424,8 +424,11 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     end
     with_hybrid_retrieval(false) do
       ActiveSupport::Notifications.subscribed(subscriber, "sql.active_record") do
-        assert_equal flag_off, call_tool("list_memories", args.merge(retrieval: "semantic"))
-        assert_equal flag_off, call_tool("list_memories", args.merge(retrieval: "invalid"))
+        %w[semantic hybrid hybrid_decay invalid].each do |retrieval|
+          assert_equal flag_off,
+            call_tool("list_memories", args.merge(retrieval: retrieval)),
+            retrieval
+        end
       end
     end
     assert_empty embedding_sql
@@ -433,7 +436,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
   test "enabled retrieval validation rejects explicit null blank and unknown modes" do
     with_hybrid_retrieval(true) do
-      [nil, "", "unknown"].each do |retrieval|
+      [nil, "", "unknown", "hybrid", "hybrid_decay"].each do |retrieval|
         result = mcp(
           rpc(
             "tools/call",
@@ -462,7 +465,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       )
       blank = call_tool(
         "list_memories",
-        {workspace_id: workspace.id.to_s, query: "  ", retrieval: "hybrid"}
+        {workspace_id: workspace.id.to_s, query: "  ", retrieval: "semantic"}
       )
 
       assert_equal [tag.id.to_s], short["memories"].map { |memory| memory["id"] }
@@ -549,38 +552,6 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
       assert_equal 0, payload["total_count"]
       assert_empty payload["memories"]
-    end
-  end
-
-  test "hybrid retrieval finds a semantic vocabulary-gap result and paginates in Ruby" do
-    workspace = create_workspace_without_starter_map("MCP Hybrid Vocabulary")
-    checkpoint = Memory.create_with_content(
-      workspace,
-      title: "Checkpoint stalls on the storage mount",
-      content: "Snapshot troubleshooting"
-    )
-    other = Memory.create_with_content(workspace, title: "Lunch", content: "Soup")
-    query = "restore hangs"
-    provider = FakeEmbeddingProvider.new(vectors: {query => [1.0, 0.0, 0.0]})
-    create_memory_embedding(checkpoint, vector: [1.0, 0.0, 0.0], model: provider.model)
-    create_memory_embedding(other, vector: [0.0, 1.0, 0.0], model: provider.model)
-
-    assert_empty workspace.memories.latest_versions.search(query)
-    with_hybrid_retrieval(provider: provider) do
-      payload = call_tool(
-        "list_memories",
-        {
-          workspace_id: workspace.id.to_s,
-          query: query,
-          retrieval: "hybrid",
-          limit: 1
-        }
-      )
-
-      assert_equal checkpoint.id.to_s, payload["memories"].sole["id"]
-      assert_equal 2, payload["total_count"]
-      assert payload["has_more"]
-      assert_equal 1, payload["next_offset"]
     end
   end
 
