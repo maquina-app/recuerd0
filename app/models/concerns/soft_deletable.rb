@@ -15,8 +15,9 @@ module SoftDeletable
 
   # Restore a soft deleted record
   def restore
-    update_attribute(:deleted_at, nil)
+    restored = update_attribute(:deleted_at, nil)
     after_restore if respond_to?(:after_restore, true)
+    restored
   end
 
   # Check if the record is soft deleted

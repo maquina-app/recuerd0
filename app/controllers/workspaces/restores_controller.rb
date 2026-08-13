@@ -5,9 +5,9 @@ class Workspaces::RestoresController < ApplicationController
 
   def create
     if @workspace.restore
-      redirect_to @workspace, notice: t(".created")
+      redirect_to @workspace, notice: t("workspaces/restores.create.created")
     else
-      redirect_to deleted_workspaces_path, alert: t(".error")
+      redirect_to deleted_workspaces_path, alert: t("workspaces/restores.create.error")
     end
   end
 end

@@ -28,12 +28,12 @@ class Workspaces::ArchivesController < ApplicationController
     if @workspace.archive
       track_event("workspace.archive", resource: @workspace)
       respond_to do |format|
-        format.html { redirect_to workspaces_path, notice: t(".created") }
+        format.html { redirect_to workspaces_path, notice: t("workspaces/archives.create.created") }
         format.json { render "workspaces/show", status: :ok }
       end
     else
       respond_to do |format|
-        format.html { redirect_to workspaces_path, alert: t(".error") }
+        format.html { redirect_to workspaces_path, alert: t("workspaces/archives.create.error") }
         format.json { render_validation_errors(@workspace) }
       end
     end
@@ -44,12 +44,12 @@ class Workspaces::ArchivesController < ApplicationController
     if @workspace.unarchive
       track_event("workspace.unarchive", resource: @workspace)
       respond_to do |format|
-        format.html { redirect_to workspaces_path, notice: t(".destroyed") }
+        format.html { redirect_to workspaces_path, notice: t("workspaces/archives.destroy.destroyed") }
         format.json { render "workspaces/show", status: :ok }
       end
     else
       respond_to do |format|
-        format.html { redirect_to workspaces_path, alert: t(".error") }
+        format.html { redirect_to workspaces_path, alert: t("workspaces/archives.destroy.error") }
         format.json { render_validation_errors(@workspace) }
       end
     end

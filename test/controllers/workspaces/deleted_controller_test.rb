@@ -33,5 +33,6 @@ class Workspaces::DeletedControllerTest < ActionDispatch::IntegrationTest
     assert_difference("Workspace.count", -1) do
       delete destroy_deleted_workspace_url(workspace)
     end
+    assert_equal I18n.t("workspaces/deleted.destroy.destroyed", raise: true), flash[:notice]
   end
 end
