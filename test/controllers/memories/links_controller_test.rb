@@ -13,6 +13,76 @@ class Memories::LinksControllerTest < ActionDispatch::IntegrationTest
     @full_token = "test_full_token_456"
   end
 
+  # -- browser (HTML) link management --
+  #
+  # The JSON resource keeps defaults: {format: :json}; these routes are a
+  # separate HTML surface so API clients that omit the extension are unaffected.
+
+  test "browser can create a link and is redirected back to the memory" do
+    sign_in_as(@user)
+
+    assert_difference -> { MemoryLink.count }, 1 do
+      post workspace_memory_memory_linking_url(@workspace, @memory),
+        params: {to_memory_id: @other_memory.id}
+    end
+
+    assert_redirected_to workspace_memory_path(@workspace, @memory)
+    assert_equal 303, response.status, "a redirect Turbo may follow must be See Other"
+  end
+
+  test "browser can remove a link by the other memory's id" do
+    sign_in_as(@user)
+    MemoryLink.create!(from_memory: @memory, to_memory: @other_memory)
+
+    assert_difference -> { MemoryLink.count }, -1 do
+      delete workspace_memory_memory_linking_remove_url(@workspace, @memory, other_id: @other_memory.id)
+    end
+
+    assert_redirected_to workspace_memory_path(@workspace, @memory)
+    assert_equal 303, response.status
+  end
+
+  test "memory show always renders the related section, even with no links" do
+    sign_in_as(@user)
+
+    get workspace_memory_url(@workspace, @memory)
+    assert_response :success
+
+    # Gating this on links_count > 0 made the feature undiscoverable to anyone
+    # who had not already used it.
+    assert_select "section#related-memories"
+    assert_select "h2#related-memories-heading"
+    assert_select "#related-memories [data-component=empty]"
+  end
+
+  test "memory show names the workspace only for cross-workspace links" do
+    sign_in_as(@user)
+    same_ws = @workspace.memories.create!(title: "Neighbour")
+    same_ws.create_content!(body: "x")
+    MemoryLink.create!(from_memory: @memory, to_memory: same_ws)
+    MemoryLink.create!(from_memory: @memory, to_memory: @other_memory)
+
+    get workspace_memory_url(@workspace, @memory)
+    assert_response :success
+
+    # One marker for the one link that leaves this workspace; printing it on
+    # every row made the only fact that matters read as decoration.
+    assert_select ".mr-elsewhere", count: 1
+    assert_select ".mr-elsewhere", text: /#{@other_workspace.name}/
+  end
+
+  test "link picker excludes the memory itself and anything already linked" do
+    sign_in_as(@user)
+    MemoryLink.create!(from_memory: @memory, to_memory: @other_memory)
+
+    get workspace_memory_url(@workspace, @memory), params: {link_q: "Linkable"}
+    assert_response :success
+
+    candidates = @controller.view_assigns["link_candidates"].to_a
+    assert_not_includes candidates.map(&:id), @other_memory.id, "already linked"
+    assert_not_includes candidates.map(&:id), @memory.id, "itself"
+  end
+
   test "index returns linked memories with workspace embedded" do
     MemoryLink.create!(from_memory: @memory, to_memory: @other_memory)
 

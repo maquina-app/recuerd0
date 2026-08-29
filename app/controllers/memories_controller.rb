@@ -31,6 +31,7 @@ class MemoriesController < ApplicationController
   def show
     @all_versions = @memory.all_versions
     @viewing_old_version = @memory.versioned? && !@memory.current_version?
+    load_link_candidates
     track_event("memory.view", resource: @memory)
 
     respond_to do |format|
@@ -111,6 +112,27 @@ class MemoriesController < ApplicationController
   end
 
   private
+
+  # Candidates for the "Link a memory" picker. Account-scoped (never just the
+  # current workspace — links are explicitly allowed to cross them), with the
+  # memory itself and anything already linked removed so the list only ever
+  # offers a link that can actually be made.
+  def load_link_candidates
+    @link_query = params[:link_q].to_s.strip.first(80).presence
+    return if @link_query.blank?
+
+    excluded = [@memory.id] + @memory.linked_memory_ids
+
+    @link_candidates = Memory
+      .joins(:workspace)
+      .where(workspaces: {account_id: Current.account.id})
+      .latest_versions
+      .where.not(id: excluded)
+      .search(@link_query)
+      .includes(:workspace)
+      .order(updated_at: :desc)
+      .limit(8)
+  end
 
   def set_memory
     @memory = @workspace.memories.find(params[:id])

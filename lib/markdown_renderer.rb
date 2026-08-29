@@ -5,20 +5,37 @@ require "rouge/plugins/redcarpet"
 class MarkdownRenderer < Redcarpet::Render::HTML
   include Rouge::Plugins::Redcarpet
 
-  def self.build
+  # heading_offset shifts every rendered heading down by N levels. Content
+  # embedded in a page that already owns the <h1> passes 1; a standalone
+  # document rendered on its own (the downloadable SKILL.md) passes 0 and keeps
+  # its real <h1>.
+  def self.build(heading_offset: 0)
     renderer = MarkdownRenderer.new(ActionText::Markdown::DEFAULT_RENDERER_OPTIONS)
+    renderer.heading_offset = heading_offset
     Redcarpet::Markdown.new(renderer, ActionText::Markdown::DEFAULT_MARKDOWN_EXTENSIONS)
   end
+
+  attr_accessor :heading_offset
 
   def initialize(*args)
     super
     @id_counts = Hash.new(0)
+    @heading_offset = 0
   end
 
+  # A memory whose Markdown opens with "# Title" used to emit a second <h1> with
+  # the same text as the page heading — a heading-structure violation and the
+  # largest text on screen. heading_offset fixes that for embedded content
+  # without touching standalone documents. h6 has nowhere to go and stays put.
+  #
+  # The anchor is aria-hidden, so it must also leave the tab order: aria-hidden
+  # on a focusable element leaves a stop that announces nothing (five of them,
+  # before the first real link, on a typical memory).
   def header(text, header_level)
+    level = [header_level + heading_offset, 6].min
     unique_id(text).then do |id|
       escaped_id = ERB::Util.html_escape(id)
-      "<h#{header_level} id='#{escaped_id}'>#{text} <a href='##{escaped_id}' class='heading__link' aria-hidden='true'>#</a></h#{header_level}>"
+      "<h#{level} id='#{escaped_id}'>#{text} <a href='##{escaped_id}' class='heading__link' aria-hidden='true' tabindex='-1'>#</a></h#{level}>"
     end
   end
 
