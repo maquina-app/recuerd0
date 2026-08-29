@@ -1,4 +1,5 @@
 <%# locals: (form:, field:, value: []) %>
+<% entry_id = "#{form.object_name}_#{field}_entry" %>
 
 <div
   data-controller="tag-input"
@@ -29,8 +30,12 @@
     <% end %>
 
     <%# Input for new tags %>
+    <%# id is what the group's <label for=...> points at. Without it the label
+        resolved to the hidden inputs below and the control people actually
+        type into announced nothing but its placeholder. %>
     <input
       type="text"
+      id="<%= entry_id %>"
       class="
         flex px-1 py-1 text-sm bg-transparent border-0
         placeholder:text-muted-foreground
