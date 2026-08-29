@@ -5,27 +5,49 @@
       gem's grid/gap styling. This editor layout uses its own flex structure to
       maximize the writing area. Individual inputs still use data-component
       attributes for consistent styling. The House MD editor is a form-associated
-      Web Component and syncs its value on submit, so standard Turbo Drive works. %>
-  <%= form_with model: [workspace, memory], class: "flex flex-col h-full gap-3" do |form| %>
-    <%# Toolbar: borderless document title + desktop actions %>
-    <div class="shrink-0 flex items-start gap-2">
-      <div class="flex-1 min-w-0" data-form-part="group">
+      Web Component that carries its value in a hidden input it renders itself,
+      so standard Turbo Drive works.
+
+      The action buttons are LAST in the DOM on purpose. They used to sit right
+      after the title, which put Cancel and Save at tab stops 2 and 3 — the first
+      Tab-then-Space after typing a title discarded the work. On sm+ they are
+      lifted back into the header visually with position: absolute, so the design
+      is unchanged and the tab order now ends where the buttons belong. This also
+      collapses what were two duplicate action blocks (a desktop pair and a
+      mobile pair) into one. %>
+  <%= form_with model: [workspace, memory],
+      class: "memory-form relative flex flex-col h-full gap-3",
+      data: {
+        controller: "memory-editor",
+        action: "house-md:change->memory-editor#change submit->memory-editor#submit",
+        memory_editor_autosave_value: memory.persisted?,
+        memory_editor_saved_label_value: t("memories.form.status.saved"),
+        memory_editor_saving_label_value: t("memories.form.status.saving"),
+        memory_editor_unsaved_label_value: t("memories.form.status.unsaved"),
+        memory_editor_failed_label_value: t("memories.form.status.failed"),
+        memory_editor_unload_prompt_value: t("memories.form.status.unload_prompt")
+      } do |form| %>
+    <%# Borderless document title. sm:pr-* reserves the strip the absolutely
+        positioned actions occupy so a long title never runs under them. %>
+    <div class="shrink-0 sm:pr-64">
+      <div class="relative" data-form-part="group">
         <%= form.label :title, t("memories.form.title_label"), data: { component: "label" }, class: "sr-only" %>
         <%= form.text_field :title,
             placeholder: t("memories.form.title_placeholder"),
             maxlength: 255,
             autocomplete: "off",
-            class: "form-title" %>
+            autofocus: !memory.persisted?,
+            class: "form-title",
+            data: {
+              memory_editor_target: "title",
+              action: "input->memory-editor#titleInput"
+            } %>
+        <%# Appears only in the last 25 characters — the input used to just stop
+            accepting keystrokes with no explanation. %>
+        <span class="title-count" data-memory-editor-target="titleCount" aria-live="polite" hidden></span>
         <% if memory.errors[:title].any? %>
           <p data-form-part="error" class="text-destructive"><%= memory.errors[:title].first %></p>
         <% end %>
-      </div>
-      <div class="hidden sm:flex shrink-0 items-center gap-2 pt-1">
-        <%= link_to t("memories.form.cancel"),
-            memory.persisted? ? workspace_memory_path(workspace, memory) : workspace_path(workspace),
-            data: { component: "button", variant: "outline", size: "sm" } %>
-        <%= form.submit memory.persisted? ? t("memories.form.save") : t("memories.form.create"),
-            data: { component: "button", variant: "primary", size: "sm" } %>
       </div>
     </div>
 
@@ -43,10 +65,12 @@
           <% end %>
         </div>
 
-        <%# Category — segmented control backed by native radios (no JS needed). %>
-        <div class="shrink-0" data-form-part="group">
+        <%# Category — segmented control backed by native radios (no JS needed).
+            min-w-0 lets it shrink rather than overflow its parent on narrow
+            phones; .seg itself scrolls if the labels ever outgrow the row. %>
+        <div class="min-w-0" data-form-part="group">
           <span data-component="label" id="memory-category-label"><%= t("memories.form.category_label") %></span>
-          <div class="seg" role="radiogroup" aria-labelledby="memory-category-label">
+          <div class="seg seg-scroll" role="radiogroup" aria-labelledby="memory-category-label">
             <% selected_category = memory.category.presence || Memory::DEFAULT_CATEGORY %>
             <% Memory::CATEGORIES.each do |c| %>
               <label class="seg-item">
@@ -65,31 +89,42 @@
 
       <%# Tags — full width below; chips use the tag-badge vocabulary %>
       <div class="min-w-0" data-form-part="group">
-        <%= form.label :tags, data: { component: "label" } %>
+        <%= form.label :tags, for: "memory_tags_entry", data: { component: "label" } %>
         <%= render "application/components/tag_input", form: form, field: :tags, value: memory.tags %>
       </div>
-    </div>
-
-    <%# Mobile action buttons — after metadata, before editor %>
-    <div class="flex items-center gap-2 sm:hidden">
-      <%= link_to t("memories.form.cancel"),
-          memory.persisted? ? workspace_memory_path(workspace, memory) : workspace_path(workspace),
-          data: { component: "button", variant: "outline", size: "sm" } %>
-      <%= form.submit memory.persisted? ? t("memories.form.save") : t("memories.form.create"),
-          data: { component: "button", variant: "primary", size: "sm" } %>
     </div>
 
     <%# Editor area: maquina-styled toolbar + House MD editor.
         Rendered with name="memory[content]" so the existing memory_params
         contract and JSON API stay unchanged. %>
-    <div class="house-md-shell flex-1 min-h-0 flex flex-col rounded-md border border-border overflow-hidden">
+    <div class="house-md-shell flex-1 min-h-0 flex flex-col rounded-md border border-border overflow-hidden"
+         data-memory-editor-target="shell">
       <%= render "shared/house_toolbar" %>
       <%# The editor adds its own inner .house-md-content contenteditable; these
-          classes size/scroll the host. Content is read from the inner text. %>
-      <%= tag.house_md memory.content&.body&.content.to_s,
-          name: "memory[content]",
-          toolbar: "house_toolbar",
-          class: "flex-1 min-h-0 overflow-y-auto p-3 text-sm" %>
+          classes size/scroll the host. Content is read from the inner text.
+          The placeholder is a sibling rather than a ::before on the
+          contenteditable: House MD renders an empty line element into it, so
+          :empty never matches and the controller toggles data-empty instead. %>
+      <div class="editor-well relative flex-1 min-h-0 flex flex-col">
+        <%= tag.house_md memory.content&.body&.content.to_s,
+            name: "memory[content]",
+            toolbar: "house_toolbar",
+            data: { memory_editor_target: "editor" },
+            class: "flex-1 min-h-0 overflow-y-auto p-3 text-sm" %>
+        <p class="editor-placeholder" aria-hidden="true"><%= t("memories.form.content_placeholder") %></p>
+      </div>
+    </div>
+
+    <%# The one action row. Absolutely positioned into the header on sm+; a
+        normal bottom row on phones, where it stays reachable instead of
+        scrolling away above the editor. %>
+    <div class="form-actions shrink-0 flex items-center gap-2 sm:absolute sm:right-0 sm:top-0">
+      <span class="save-status" data-memory-editor-target="status" aria-live="polite" role="status"></span>
+      <%= link_to t("memories.form.cancel"),
+          memory.persisted? ? workspace_memory_path(workspace, memory) : workspace_path(workspace),
+          data: { component: "button", variant: "outline", size: "sm" } %>
+      <%= form.submit memory.persisted? ? t("memories.form.save") : t("memories.form.create"),
+          data: { component: "button", variant: "primary", size: "sm" } %>
     </div>
   <% end %>
 </div>

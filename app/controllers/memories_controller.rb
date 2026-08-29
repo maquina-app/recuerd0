@@ -87,14 +87,23 @@ class MemoriesController < ApplicationController
       @memory.root_memory.touch
       track_event("memory.update", resource: @memory)
       respond_to do |format|
-        format.html { redirect_to [@workspace, @memory], notice: t(".updated") }
+        # An autosave is a background write, not a navigation: redirecting would
+        # make the editor fetch and discard a full show page every few seconds.
+        format.html { autosave? ? head(:no_content) : redirect_to([@workspace, @memory], notice: t(".updated")) }
         format.json { render :show }
       end
     else
       respond_to do |format|
         format.html do
-          flash.now[:alert] = t(".errors")
-          render :edit, status: :unprocessable_entity
+          # The editor keeps its own copy of the text, so a failed autosave only
+          # needs a status code to flip the chip to "Not saved" — re-rendering
+          # the form underneath it would clobber what the person is typing.
+          if autosave?
+            head :unprocessable_entity
+          else
+            flash.now[:alert] = t(".errors")
+            render :edit, status: :unprocessable_entity
+          end
         end
         format.json { render_validation_errors(@memory) }
       end
@@ -132,6 +141,10 @@ class MemoriesController < ApplicationController
       .includes(:workspace)
       .order(updated_at: :desc)
       .limit(8)
+  end
+
+  def autosave?
+    params[:autosave].present?
   end
 
   def set_memory

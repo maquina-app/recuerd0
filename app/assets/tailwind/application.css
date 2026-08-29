@@ -164,7 +164,9 @@
   @media screen and (max-width: 767px) {
     select,
     textarea,
-    input[type="text"],
+    /* .form-title is 1.6rem — already well past the 16px iOS zoom threshold,
+       so clamping it only destroyed the type hierarchy on phones. */
+    input[type="text"]:not(.form-title),
     input[type="password"],
     input[type="email"],
     input[type="url"],
@@ -208,7 +210,18 @@
 }
 .form-title::placeholder {
   color: var(--muted-foreground);
-  opacity: 0.75;
+  opacity: 1;
+}
+
+/* The only focusable control in the app with no focus indicator at all: the
+   rule below sets border/outline to none and nothing restored a ring. Padding
+   plus a matching negative margin buys the halo breathing room without moving
+   the text. */
+.form-title:focus-visible {
+  border-radius: var(--radius);
+  padding-inline: 0.25rem;
+  margin-inline: -0.25rem;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
 }
 
 /* Opt a textarea out of resizing. The gem defaults [data-component="textarea"]
@@ -264,6 +277,7 @@
 
 /* tag-x — muted icon button that removes a tag chip */
 .tag-badge .tag-x {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -275,6 +289,16 @@
   color: var(--muted-foreground);
   cursor: pointer;
   transition: color 150ms;
+}
+/* The glyph stays 12px; the pointer target grows to the 24px minimum. */
+.tag-badge .tag-x::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  transform: translate(-50%, -50%);
 }
 .tag-badge .tag-x:hover {
   color: var(--foreground);
@@ -329,6 +353,96 @@ house-md-toolbar button svg {
 .house-md-content:focus,
 .house-md-content:focus-visible {
   outline: none;
+}
+
+/* The editor host declares overflow-y only, which makes the browser compute
+   overflow-x to `auto` — producing a scrollbar with nothing to scroll. */
+.house-md-shell house-md {
+  overflow-x: clip;
+}
+
+/* The gem sets min-block-size: 50dvh on the content area while the host is a
+   flex child with min-h-0; the two fought. Filling the host instead keeps the
+   whole editor area clickable without imposing a second height model. */
+.house-md-shell .house-md-content {
+  min-block-size: 100%;
+}
+
+/* Cap the measure. The editor ran the full container width — 98 characters at
+   1440, well past the readable ceiling for sustained writing. */
+.house-md-shell house-md {
+  --house-measure: 74ch;
+}
+.house-md-shell .house-md-content {
+  max-inline-size: var(--house-measure);
+  margin-inline: auto;
+  inline-size: 100%;
+}
+
+/* Empty-state hint. Positioned to sit exactly where the caret rests, so it
+   reads as the first line rather than as a label. */
+.editor-placeholder {
+  position: absolute;
+  inset-block-start: 0.75rem;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  inline-size: min(100%, var(--house-measure, 74ch));
+  padding-inline: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  pointer-events: none;
+  display: none;
+}
+.house-md-shell[data-empty] .editor-placeholder {
+  display: block;
+}
+
+/* Remaining-characters hint on the document title */
+.title-count {
+  position: absolute;
+  inset-block-start: 0.5rem;
+  inset-inline-end: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+/* Toolbar grouping separator */
+.toolbar-sep {
+  inline-size: 1px;
+  block-size: 1.125rem;
+  margin-inline: 0.25rem;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* Save status chip. Mono label type, per the DESIGN.md label role. */
+.save-status {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  transition: color 150ms;
+}
+.memory-form.is-dirty .save-status {
+  color: var(--foreground);
+}
+.memory-form.is-saving .save-status {
+  opacity: 0.7;
+}
+
+/* .seg is inline-flex with no wrap, so a long set of labels overflowed its
+   parent rather than adapting. Let it scroll instead of clipping. */
+.seg-scroll {
+  max-inline-size: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.seg-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 /* Mirror the published .memory-content reading style in the live editor.
@@ -1166,7 +1280,7 @@ a {
   background: var(--muted-foreground);
 }
 .category-dot[data-cat="decision"] {
-  background: var(--primary);
+  background: color-mix(in oklch, var(--info-foreground) 70%, var(--info));
 }
 .category-dot[data-cat="discovery"] {
   background: color-mix(in oklch, var(--secondary-foreground) 80%, var(--secondary));
@@ -1175,7 +1289,8 @@ a {
   background: color-mix(in oklch, var(--warning-foreground) 70%, var(--warning));
 }
 .category-dot[data-cat="general"] {
-  background: var(--muted-foreground);
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--muted-foreground);
 }
 .category-chip .category-dot {
   width: 0.5625rem;

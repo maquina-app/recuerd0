@@ -105,6 +105,45 @@ class MemoriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "autosave update answers no content instead of redirecting" do
+    patch workspace_memory_url(@workspace, @memory),
+      params: {autosave: "1", memory: {title: "Autosaved title"}}
+
+    assert_response :no_content
+    assert_equal "Autosaved title", @memory.reload.title
+  end
+
+  test "autosave update answers unprocessable entity without re-rendering the form" do
+    patch workspace_memory_url(@workspace, @memory),
+      params: {autosave: "1", memory: {title: "x" * 256}}
+
+    assert_response :unprocessable_entity
+    assert_empty response.body
+  end
+
+  test "a normal update still redirects" do
+    patch workspace_memory_url(@workspace, @memory),
+      params: {memory: {title: "Saved by hand"}}
+
+    assert_redirected_to workspace_memory_url(@workspace, @memory)
+  end
+
+  test "the editor form puts its actions after the content fields" do
+    get edit_workspace_memory_url(@workspace, @memory)
+
+    assert_response :success
+    body = response.body
+    assert_operator body.index("house-md"), :<, body.index("form-actions"),
+      "Cancel/Save must come after the editor in the DOM so they are not the first tab stops"
+  end
+
+  test "the tag entry field is labelled" do
+    get edit_workspace_memory_url(@workspace, @memory)
+
+    assert_select "label[for=?]", "memory_tags_entry"
+    assert_select "input#memory_tags_entry"
+  end
+
   test "update changes memory" do
     patch workspace_memory_url(@workspace, @memory), params: {
       memory: {title: "Updated Title", content: "Updated body"}

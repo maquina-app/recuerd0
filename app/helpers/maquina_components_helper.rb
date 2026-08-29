@@ -543,6 +543,28 @@ module MaquinaComponentsHelper
           <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path>
         </svg>
       SVG
+    when :strikethrough
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <path d="M16 4H9a3 3 0 0 0-2.83 4"></path>
+          <path d="M14 12a4 4 0 0 1 0 8H6"></path>
+          <line x1="4" x2="20" y1="12" y2="12"></line>
+        </svg>
+      SVG
+    when :undo
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <path d="M3 7v6h6"></path>
+          <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+        </svg>
+      SVG
+    when :redo
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <path d="M21 7v6h-6"></path>
+          <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"></path>
+        </svg>
+      SVG
     else
       nil # Return nil so gem can show its fallback or nothing
     end
