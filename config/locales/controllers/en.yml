@@ -5,13 +5,13 @@ en:
   workspaces:
     inactive_workspace: "This workspace cannot be modified."
     create:
-      created: "Workspace was successfully created."
+      created: "Created %{name}."
       errors: "Please review the errors below."
     update:
-      updated: "Workspace was successfully updated."
+      updated: "Saved %{name}."
       errors: "Please review the errors below."
     destroy:
-      destroyed: "Workspace was successfully deleted."
+      destroyed: "Deleted %{name}. You can restore it from Deleted for %{days} days."
 
   memories:
     show:
@@ -36,10 +36,10 @@ en:
 
   pins:
     create:
-      created: "Pinned successfully."
+      created: "Pinned."
       error: "Could not pin this item."
     destroy:
-      destroyed: "Unpinned successfully."
+      destroyed: "Unpinned."
     not_found: "Item not found."
     limit_reached: "You've reached the maximum number of pins (%{limit})."
 
@@ -114,19 +114,19 @@ en:
   workspaces/archives:
     not_archived: "This workspace is not archived."
     create:
-      created: "Workspace was successfully archived."
-      error: "Failed to archive workspace."
+      created: "Archived %{name}. Find it under Archived."
+      error: "Could not archive that workspace."
     destroy:
-      destroyed: "Workspace was successfully unarchived."
-      error: "Failed to unarchive workspace."
+      destroyed: "Unarchived %{name}."
+      error: "Could not unarchive that workspace."
 
   workspaces/deleted:
     not_deleted: "This workspace is not deleted."
     destroy:
-      destroyed: "Workspace was permanently deleted."
-      error: "Failed to permanently delete workspace."
+      destroyed: "Permanently deleted %{name}."
+      error: "Could not permanently delete that workspace."
 
   workspaces/restores:
     create:
-      created: "Workspace was successfully restored."
-      error: "Failed to restore workspace."
+      created: "Restored %{name}."
+      error: "Could not restore that workspace."

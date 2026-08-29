@@ -1,23 +1,24 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-06-11T00:00:00Z",
+  "generatedAt": "2026-08-29T18:39:10Z",
   "title": "Design System: Recuerd0",
   "extensions": {
     "colorMeta": {
       "memory-green": {
         "role": "primary",
         "displayName": "Memory Green",
-        "canonical": "oklch(0.600 0.190 150)",
+        "canonical": "oklch(0.480 0.190 150)",
         "tonalRamp": [
-          "oklch(0.250 0.090 150)",
-          "oklch(0.330 0.120 150)",
-          "oklch(0.420 0.150 150)",
-          "oklch(0.510 0.175 150)",
+          "oklch(0.200 0.075 150)",
+          "oklch(0.280 0.110 150)",
+          "oklch(0.360 0.150 150)",
+          "oklch(0.480 0.190 150)",
           "oklch(0.600 0.190 150)",
-          "oklch(0.700 0.150 150)",
-          "oklch(0.820 0.090 150)",
+          "oklch(0.700 0.180 150)",
+          "oklch(0.850 0.075 150)",
           "oklch(0.940 0.045 150)"
-        ]
+        ],
+        "note": "Canonical moved from oklch(0.600 0.190 150) to oklch(0.480 0.190 150) on 2026-08-29: the old value was 3.56:1 both as white-on-green and as green-on-Paper, failing AA in both directions. Dark mode uses oklch(0.700 0.180 150) with dark-ink foreground oklch(0.170 0.010 150). The logomark artwork deliberately retains 0.600."
       },
       "secondary": {
         "role": "secondary",
@@ -96,26 +97,73 @@
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display — Jura 500", "purpose": "Marketing hero and page headings. Ceiling under 6rem; the page designs, it does not shout." },
-      "headline": { "displayName": "Headline — Jura 500", "purpose": "Section headings, marketing and in-app." },
-      "title": { "displayName": "Title — Jura 500", "purpose": "Card titles and the borderless form-title document input." },
-      "body": { "displayName": "Body — Instrument Sans 400", "purpose": "All prose and UI text. Measure capped at 65–75ch." },
-      "label": { "displayName": "Label — Geist Mono 400", "purpose": "Tags, badges, technical metadata. The one technical tell; small chrome only." }
+      "display": {
+        "displayName": "Display — Jura 500",
+        "purpose": "Marketing hero and page headings. Ceiling under 6rem; the page designs, it does not shout."
+      },
+      "headline": {
+        "displayName": "Headline — Jura 500",
+        "purpose": "Section headings, marketing and in-app."
+      },
+      "title": {
+        "displayName": "Title — Jura 500",
+        "purpose": "Card titles and the borderless form-title document input."
+      },
+      "body": {
+        "displayName": "Body — Instrument Sans 400",
+        "purpose": "All prose and UI text. Measure capped at 65–75ch."
+      },
+      "label": {
+        "displayName": "Label — Geist Mono 400",
+        "purpose": "Tags, badges, technical metadata. The one technical tell; small chrome only."
+      }
     },
     "shadows": [
-      { "name": "hairline", "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)", "purpose": "Inputs at rest and checked segmented-control items. The --shadow-xs workhorse." },
-      { "name": "focus-ring", "value": "0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, oklch(0.600 0.190 150) 50%, transparent)", "purpose": "Universal focus treatment on every focusable control. A 3px Memory-Green halo." },
-      { "name": "frosted-float", "value": "0 8px 32px rgb(0 0 0 / 0.08), 0 2px 8px rgb(0 0 0 / 0.05)", "purpose": "Toasts only, paired with backdrop-filter: blur(16px) saturate(1.4). The single frosted exception." }
+      {
+        "name": "hairline",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "Inputs at rest and checked segmented-control items. The --shadow-xs workhorse."
+      },
+      {
+        "name": "focus-ring",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, oklch(0.600 0.190 150) 50%, transparent)",
+        "purpose": "Universal focus treatment on every focusable control. A 3px Memory-Green halo."
+      },
+      {
+        "name": "frosted-float",
+        "value": "0 8px 32px rgb(0 0 0 / 0.08), 0 2px 8px rgb(0 0 0 / 0.05)",
+        "purpose": "Toasts only, paired with backdrop-filter: blur(16px) saturate(1.4). The single frosted exception."
+      }
     ],
     "motion": [
-      { "name": "state-150", "value": "150ms", "purpose": "Default duration for color/box-shadow state transitions (buttons, inputs, tag-x)." },
-      { "name": "ease-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Ease-out-quint for entrances and reveals. No bounce, no elastic." }
+      {
+        "name": "state-150",
+        "value": "150ms",
+        "purpose": "Default duration for color/box-shadow state transitions (buttons, inputs, tag-x)."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Ease-out-quint for entrances and reveals. No bounce, no elastic."
+      }
     ],
     "breakpoints": [
-      { "name": "mobile-max", "value": "767px" },
-      { "name": "sidebar-width", "value": "16rem" },
-      { "name": "sidebar-width-icon", "value": "3rem" },
-      { "name": "header-height", "value": "3.5rem" }
+      {
+        "name": "mobile-max",
+        "value": "767px"
+      },
+      {
+        "name": "sidebar-width",
+        "value": "16rem"
+      },
+      {
+        "name": "sidebar-width-icon",
+        "value": "3rem"
+      },
+      {
+        "name": "header-height",
+        "value": "3.5rem"
+      }
     ]
   },
   "components": [
@@ -125,7 +173,7 @@
       "refersTo": "button-primary",
       "description": "The single call-to-action. Memory Green fill, compact, no gloss or lift.",
       "html": "<button class=\"ds-btn-primary\">Start preserving</button>",
-      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 36px; padding: 8px 16px; background: var(--primary, oklch(0.600 0.190 150)); color: var(--primary-foreground, oklch(1 0 0)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border: none; border-radius: var(--radius, 8px); cursor: pointer; transition: background 150ms; } .ds-btn-primary:hover { background: oklch(0.555 0.185 150); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.600 0.190 150)) 50%, transparent); }"
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 36px; padding: 8px 16px; background: var(--primary, oklch(0.480 0.190 150)); color: var(--primary-foreground, oklch(1 0 0)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border: none; border-radius: var(--radius, 8px); cursor: pointer; transition: background 150ms; } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary) 90%, black); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.480 0.190 150)) 50%, transparent); }"
     },
     {
       "name": "Secondary Button",
@@ -133,7 +181,7 @@
       "refersTo": "button-secondary",
       "description": "Quiet alternative action. Tint Green fill, Secondary Ink text.",
       "html": "<button class=\"ds-btn-secondary\">Read the docs</button>",
-      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 36px; padding: 8px 16px; background: var(--secondary, oklch(0.940 0.045 150)); color: var(--secondary-foreground, oklch(0.280 0.055 150)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border: none; border-radius: var(--radius, 8px); cursor: pointer; transition: background 150ms; } .ds-btn-secondary:hover { background: oklch(0.910 0.050 150); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.600 0.190 150)) 50%, transparent); }"
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 36px; padding: 8px 16px; background: var(--secondary, oklch(0.940 0.045 150)); color: var(--secondary-foreground, oklch(0.280 0.055 150)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border: none; border-radius: var(--radius, 8px); cursor: pointer; transition: background 150ms; } .ds-btn-secondary:hover { background: oklch(0.910 0.050 150); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.480 0.190 150)) 50%, transparent); }"
     },
     {
       "name": "Ghost Button",
@@ -141,7 +189,7 @@
       "refersTo": "button-ghost",
       "description": "Lowest-emphasis action. Transparent at rest, Muted fill on hover.",
       "html": "<button class=\"ds-btn-ghost\">Cancel</button>",
-      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 36px; padding: 8px 16px; background: transparent; color: var(--foreground, oklch(0.145 0 0)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border: none; border-radius: var(--radius, 8px); cursor: pointer; transition: background 150ms; } .ds-btn-ghost:hover { background: var(--muted, oklch(0.960 0.008 150)); } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.600 0.190 150)) 50%, transparent); }"
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 36px; padding: 8px 16px; background: transparent; color: var(--foreground, oklch(0.145 0 0)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border: none; border-radius: var(--radius, 8px); cursor: pointer; transition: background 150ms; } .ds-btn-ghost:hover { background: var(--muted, oklch(0.960 0.008 150)); } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.480 0.190 150)) 50%, transparent); }"
     },
     {
       "name": "Text Input",
@@ -149,7 +197,7 @@
       "refersTo": "input",
       "description": "Standard field. Hairline shadow at rest; Memory-Green border + halo on focus.",
       "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search memories…\" />",
-      "css": ".ds-input { width: 100%; height: 36px; padding: 8px 12px; background: var(--background, oklch(1 0 0)); color: var(--foreground, oklch(0.145 0 0)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; border: 1px solid var(--input, oklch(0.900 0.010 150)); border-radius: var(--radius, 8px); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); transition: color 150ms, box-shadow 150ms, border-color 150ms; } .ds-input::placeholder { color: var(--muted-foreground, oklch(0.460 0.010 150)); opacity: 0.75; } .ds-input:focus { outline: none; border-color: var(--ring, oklch(0.600 0.190 150)); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.600 0.190 150)) 50%, transparent); }"
+      "css": ".ds-input { width: 100%; height: 36px; padding: 8px 12px; background: var(--background, oklch(1 0 0)); color: var(--foreground, oklch(0.145 0 0)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.875rem; border: 1px solid var(--input, oklch(0.900 0.010 150)); border-radius: var(--radius, 8px); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); transition: color 150ms, box-shadow 150ms, border-color 150ms; } .ds-input::placeholder { color: var(--muted-foreground, oklch(0.460 0.010 150)); opacity: 0.75; } .ds-input:focus { outline: none; border-color: var(--ring, oklch(0.480 0.190 150)); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.480 0.190 150)) 50%, transparent); }"
     },
     {
       "name": "Content Card",
@@ -182,6 +230,38 @@
       "description": "The north star made literal: three rounded rectangles offset 8px diagonally at 15/40/100% opacity, all Memory Green.",
       "html": "<svg class=\"ds-logo\" viewBox=\"0 0 52 56\" width=\"52\" height=\"56\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"16\" y=\"2\" width=\"32\" height=\"38\" rx=\"7\" fill=\"oklch(0.600 0.190 150)\" opacity=\"0.15\"/><rect x=\"8\" y=\"10\" width=\"32\" height=\"38\" rx=\"7\" fill=\"oklch(0.600 0.190 150)\" opacity=\"0.40\"/><rect x=\"0\" y=\"18\" width=\"32\" height=\"38\" rx=\"7\" fill=\"oklch(0.600 0.190 150)\"/></svg>",
       "css": ".ds-logo { display: block; }"
+    },
+    {
+      "name": "Strata Tile",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Leading mark on a workspace row. The logomark's layers become information: one stratum per order of magnitude of what the workspace holds.",
+      "html": "<div class=\"ds-ws-tile\" data-depth=\"3\"><svg viewBox=\"0 0 48 54\" fill=\"currentColor\" aria-hidden=\"true\" focusable=\"false\"><rect opacity=\"0.2\" x=\"16\" y=\"0\" width=\"32\" height=\"38\" rx=\"7\"></rect><rect opacity=\"0.5\" x=\"8\" y=\"8\" width=\"32\" height=\"38\" rx=\"7\"></rect><rect x=\"0\" y=\"16\" width=\"32\" height=\"38\" rx=\"7\"></rect></svg></div>",
+      "css": ".ds-ws-tile { flex-shrink: 0; width: 2.5rem; height: 2.5rem; border-radius: calc(var(--radius, 8px) - 2px); display: grid; place-items: center; background: var(--muted, oklch(0.960 0.008 150)); color: color-mix(in oklch, var(--muted-foreground, oklch(0.460 0.010 150)) 78%, var(--muted, oklch(0.960 0.008 150))); position: relative; transition: color 150ms; } .ds-ws-tile svg { width: 1.25rem; height: 1.40625rem; }"
+    },
+    {
+      "name": "Stat Chip",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Metric pill on a workspace row. Only the number is mono, so a column of chips can be compared without reading the nouns.",
+      "html": "<span class=\"ds-stat-chip\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"></path><polyline points=\"14 2 14 8 20 8\"></polyline></svg><strong>29</strong> memories</span>",
+      "css": ".ds-stat-chip { display: inline-flex; align-items: center; gap: 0.3125rem; font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.75rem; line-height: 1; color: var(--muted-foreground, oklch(0.460 0.010 150)); white-space: nowrap; } .ds-stat-chip svg { width: 0.875rem; height: 0.875rem; flex-shrink: 0; } .ds-stat-chip strong { font-family: 'Geist Mono', ui-monospace, monospace; font-weight: 500; font-size: 0.75rem; color: var(--foreground, oklch(0.145 0 0)); font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "nav",
+      "refersTo": "button-ghost",
+      "description": "Sort and view toggles rendered as server-driven links. Selected state is a hairline inset, not a resting shadow (The Flat-By-Default Rule).",
+      "html": "<div class=\"ds-seg\" role=\"group\" aria-label=\"Sort by\"><a class=\"ds-seg-item\" data-state=\"on\" aria-current=\"page\">Recent</a><a class=\"ds-seg-item\" data-state=\"off\">Name</a><a class=\"ds-seg-item\" data-state=\"off\">Memories</a></div>",
+      "css": ".ds-seg { display: inline-flex; padding: 0.1875rem; gap: 0.1875rem; background: var(--muted, oklch(0.960 0.008 150)); border-radius: var(--radius, 8px); } .ds-seg-item { display: inline-flex; align-items: center; justify-content: center; height: 1.75rem; padding: 0 0.625rem; border-radius: calc(var(--radius, 8px) - 3px); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.8125rem; font-weight: 500; color: var(--muted-foreground, oklch(0.460 0.010 150)); background: transparent; border: none; cursor: pointer; text-decoration: none; transition: background-color 150ms, color 150ms, box-shadow 150ms; } .ds-seg-item:hover { color: var(--foreground, oklch(0.145 0 0)); } .ds-seg-item[data-state=\"on\"] { background: var(--background, oklch(1 0 0)); color: var(--foreground, oklch(0.145 0 0)); box-shadow: inset 0 0 0 1px var(--border, oklch(0.900 0.010 150)); } .ds-seg-item:focus-visible { outline: none; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.480 0.190 150)) 50%, transparent); }"
+    },
+    {
+      "name": "Filter Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Client-side list filter with a leading icon and a '/' shortcut hint that hides once the field has content.",
+      "html": "<label class=\"ds-ws-filter\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"></circle><path d=\"m21 21-4.3-4.3\"></path></svg><input type=\"search\" placeholder=\"Filter workspaces…\"><kbd aria-hidden=\"true\">/</kbd></label>",
+      "css": ".ds-ws-filter { position: relative; display: flex; align-items: center; min-width: 0; } .ds-ws-filter > svg { position: absolute; left: 0.625rem; width: 0.875rem; height: 0.875rem; color: var(--muted-foreground, oklch(0.460 0.010 150)); pointer-events: none; } .ds-ws-filter input { width: 100%; height: 2.125rem; padding: 0 2rem; border: 1px solid var(--input, oklch(0.900 0.010 150)); border-radius: var(--radius, 8px); background: var(--background, oklch(1 0 0)); color: var(--foreground, oklch(0.145 0 0)); font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 0.8125rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); transition: border-color 150ms, box-shadow 150ms; } .ds-ws-filter input:focus-visible { outline: none; border-color: var(--primary, oklch(0.480 0.190 150)); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.480 0.190 150)) 50%, transparent); } .ds-ws-filter kbd { position: absolute; right: 0.5rem; display: inline-flex; align-items: center; height: 1.125rem; padding: 0 0.3125rem; border: 1px solid var(--border, oklch(0.900 0.010 150)); border-radius: calc(var(--radius, 8px) - 3px); background: var(--muted, oklch(0.960 0.008 150)); color: var(--muted-foreground, oklch(0.460 0.010 150)); font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.625rem; } .ds-ws-filter input:not(:placeholder-shown) ~ kbd { display: none; }"
     }
   ],
   "narrative": {
@@ -195,13 +275,41 @@
       "Lowercase brand, always: recuerd0."
     ],
     "rules": [
-      { "name": "The One Green Rule", "body": "Memory Green is the only chromatic accent in the product palette. It appears on roughly ≤10% of any screen. If two things on a screen are green, one of them is wrong. Its scarcity is what makes it mean 'this matters / this is live.'", "section": "colors" },
-      { "name": "The True-Neutral Rule", "body": "Backgrounds are chroma-0 Paper or near-zero tinted neutrals. The cream/sand/beige warm-near-white is forbidden — warmth comes from Jura and the green, not from the body color.", "section": "colors" },
-      { "name": "The Dark-Mode Lift Rule", "body": "In dark mode the hue holds; lightness inverts around oklch(0.170 0.010 150) surfaces with oklch(0.580 0.180 150) accent. Never invert by desaturating to gray — the green identity survives the switch.", "section": "colors" },
-      { "name": "The Jura-Headlines Rule", "body": "Every heading is Jura 500. Body is never Jura; labels are never Instrument Sans. The three faces stay in their lanes so the contrast axis reads.", "section": "typography" },
-      { "name": "The Lowercase Wordmark Rule", "body": "The brand is always recuerd0, lowercase, with the terminal '0' in Memory Green at a heavier weight. Never capitalize, never recolor.", "section": "typography" },
-      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. Shadow appears only as a response to state — focus, the pressed segment, a floating toast. If a card has a resting drop-shadow, it is wrong; separate with a border or a tonal plane instead.", "section": "elevation" },
-      { "name": "The One-Frost Rule", "body": "Backdrop-blur glass exists in exactly one place: the toast. It floats above the app, so it earns the frost. Glassmorphism anywhere else — cards, nav, hero panels — is forbidden.", "section": "elevation" }
+      {
+        "name": "The One Green Rule",
+        "body": "Memory Green is the only chromatic accent in the product palette. It appears on roughly ≤10% of any screen. If two things on a screen are green, one of them is wrong. Its scarcity is what makes it mean 'this matters / this is live.'",
+        "section": "colors"
+      },
+      {
+        "name": "The True-Neutral Rule",
+        "body": "Backgrounds are chroma-0 Paper or near-zero tinted neutrals. The cream/sand/beige warm-near-white is forbidden — warmth comes from Jura and the green, not from the body color.",
+        "section": "colors"
+      },
+      {
+        "name": "The Dark-Mode Lift Rule",
+        "body": "In dark mode the hue holds; lightness inverts around oklch(0.170 0.010 150) surfaces with an oklch(0.700 0.180 150) accent, and the accent's foreground flips to dark ink oklch(0.170 0.010 150) (7.68:1). Filled green controls carry dark text in dark mode and white text in light mode; this asymmetry is deliberate, because a mid-green cannot clear AA against both. Never invert by desaturating to gray — the green identity survives the switch.",
+        "section": "colors"
+      },
+      {
+        "name": "The Jura-Headlines Rule",
+        "body": "Every heading is Jura 500. Body is never Jura; labels are never Instrument Sans. The three faces stay in their lanes so the contrast axis reads.",
+        "section": "typography"
+      },
+      {
+        "name": "The Lowercase Wordmark Rule",
+        "body": "The brand is always recuerd0, lowercase, with the terminal '0' in Memory Green at a heavier weight. Never capitalize, never recolor.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Surfaces are flat at rest. Shadow appears only as a response to state — focus, the pressed segment, a floating toast. If a card has a resting drop-shadow, it is wrong; separate with a border or a tonal plane instead.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One-Frost Rule",
+        "body": "Backdrop-blur glass exists in exactly one place: the toast. It floats above the app, so it earns the frost. Glassmorphism anywhere else — cards, nav, hero panels — is forbidden.",
+        "section": "elevation"
+      }
     ],
     "dos": [
       "Do keep Memory Green load-bearing and rare — ≤10% of any screen (The One Green Rule).",
@@ -211,7 +319,8 @@
       "Do hold body and placeholder text to ≥4.5:1 (target 7:1 / AAA where feasible); bump Muted Ink toward Ink before shipping faint text.",
       "Do pair every status with text or icon, never hue alone (color-blind safe).",
       "Do write the brand lowercase: recuerd0, terminal '0' in Memory Green.",
-      "Do show real material — an actual API call, a version diff, a workspace — over abstract promises (concrete > abstract)."
+      "Do show real material — an actual API call, a version diff, a workspace — over abstract promises (concrete > abstract).",
+      "Do check green in both directions before changing it — ink-on-green and green-on-ink. This palette's failure mode is a mid-green that looks fine as an icon and fails as a button label and as body text at the same time."
     ],
     "donts": [
       "Don't use a cream / sand / beige / warm-near-white body background. Backgrounds are chroma-0 Paper or near-zero tinted neutral (The True-Neutral Rule).",

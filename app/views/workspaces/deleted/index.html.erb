@@ -19,12 +19,20 @@
     <p class="mt-1"><%= t("workspaces.deleted.index.alert_description") %></p>
   <% end %>
 
-  <% if @workspaces.any? %>
-    <div class="mb-5 flex justify-end">
-      <%= render "workspaces/view_toggle", view_mode: @view_mode, path_helper: :deleted_workspaces_path %>
+  <% if @total.to_i.positive? %>
+    <div data-controller="ws-filter">
+      <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <%= render "workspaces/filter", query: @query, path_helper: :deleted_workspaces_path, extra_params: { view: @view_mode } %>
+        <%= render "workspaces/view_toggle", view_mode: @view_mode, path_helper: :deleted_workspaces_path %>
+      </div>
+      <%= turbo_frame_tag "workspaces_list" do %>
+        <% if @workspaces.any? %>
+          <%= render "workspaces/workspaces_list", workspaces: @workspaces, pagy: @pagy, path_helper: :deleted_workspaces_path, view_mode: @view_mode, show_pins: false, show_status: true %>
+        <% else %>
+          <%= render "workspaces/filter_empty_state", query: @query %>
+        <% end %>
+      <% end %>
     </div>
-
-    <%= render "workspaces/workspaces_list", workspaces: @workspaces, pagy: @pagy, path_helper: :deleted_workspaces_path, view_mode: @view_mode, show_pins: false, show_status: true %>
   <% else %>
     <%= render "workspaces/empty_state_generic", icon: :trash_2, title: t(".empty_title"), description: t(".empty_description") %>
   <% end %>

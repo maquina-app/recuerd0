@@ -1,0 +1,24 @@
+<%# Resolves the "system" theme before first paint, so the page never flashes
+    the wrong mode. An explicit light/dark choice is already on <html> from the
+    server; this only fills in the system case and follows OS changes. %>
+<%= javascript_tag nonce: true do %>
+  (function () {
+    var root = document.documentElement
+    var media = window.matchMedia("(prefers-color-scheme: dark)")
+
+    function stored() {
+      var match = document.cookie.match(/(?:^|;\s*)recuerd0_theme=([^;]*)/)
+      return match ? decodeURIComponent(match[1]) : "system"
+    }
+
+    function apply() {
+      var choice = stored()
+      var dark = choice === "dark" || (choice !== "light" && media.matches)
+      root.classList.toggle("dark", dark)
+    }
+
+    apply()
+    media.addEventListener("change", apply)
+    document.addEventListener("turbo:load", apply)
+  })()
+<% end %>

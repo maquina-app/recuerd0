@@ -34,6 +34,8 @@ class Workspaces::DeletedControllerTest < ActionDispatch::IntegrationTest
     assert_difference("Workspace.count", -1) do
       delete destroy_deleted_workspace_url(workspace)
     end
-    assert_equal I18n.t("workspaces/deleted.destroy.destroyed", raise: true), flash[:notice]
+    # 303, or Turbo replays the DELETE against /workspaces/deleted.
+    assert_response :see_other
+    assert_equal I18n.t("workspaces/deleted.destroy.destroyed", name: workspace.name, raise: true), flash[:notice]
   end
 end

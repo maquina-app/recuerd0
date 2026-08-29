@@ -1,10 +1,21 @@
-<%# locals: (workspace:) -%>
-<span class="stat-chip" title="<%= t("workspaces.index.memories_count", count: workspace.memories_count) %>">
+<%# locals: (workspace:, stale_after: nil) -%>
+<span class="stat-chip">
   <%= icon_for(:file_text) %>
   <strong><%= workspace.memories_count %></strong>
-  <%= (workspace.memories_count == 1) ? "memory" : "memories" %>
+  <%= t("workspaces.index.memories_noun", count: workspace.memories_count) %>
 </span>
-<span class="stat-chip" title="<%= workspace.last_activity.strftime("%B %-d, %Y at %-l:%M %p") %>">
-  <%= icon_for(:clock) %>
-  <%= t("workspaces.index.activity_ago", time: time_ago_in_words(workspace.last_activity)) %>
+
+<% freshness = workspace_freshness(workspace, stale_after: stale_after) -%>
+<span class="stat-chip <%= "is-stale" if freshness == :stale %>">
+  <%= icon_for(freshness == :stale ? :alert_triangle : :clock) %>
+  <% if freshness == :stale %>
+    <span class="stale-flag"><%= t("workspaces.index.freshness.stale") %></span>
+    <span aria-hidden="true">·</span>
+  <% end %>
+  <%# The exact date belongs in the document, not in a title attribute a
+      keyboard or touch user can never reach. %>
+  <time datetime="<%= workspace.last_activity.iso8601 %>">
+    <%= t("workspaces.index.activity_ago", time: time_ago_in_words(workspace.last_activity)) %>
+  </time>
+  <span class="sr-only"><%= l(workspace.last_activity, format: :long) %></span>
 </span>

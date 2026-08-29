@@ -1,0 +1,30 @@
+<%# locals: (query: nil, path_helper: :workspaces_path, extra_params: {}) -%>
+<%# Server-backed: the filter searches the whole account, not the page you
+    happen to be on. Submitted debounced into the list frame. %>
+<%= form_with url: public_send(path_helper, extra_params.compact),
+              method: :get,
+              data: {
+                turbo_frame: "workspaces_list",
+                turbo_action: "advance",
+                ws_filter_target: "form"
+              },
+              class: "ws-filter sm:max-w-xs" do |f| %>
+  <% extra_params.compact.each do |key, value| %>
+    <%= hidden_field_tag key, value, id: nil %>
+  <% end %>
+
+  <label class="contents">
+    <span class="sr-only"><%= t("workspaces.index.filter_label") %></span>
+    <%= icon_for(:search) %>
+    <%= f.search_field :q,
+          value: query,
+          autocomplete: "off",
+          spellcheck: "false",
+          placeholder: t("workspaces.index.filter_placeholder"),
+          data: {
+            ws_filter_target: "input",
+            action: "input->ws-filter#submit search->ws-filter#submit keydown.esc->ws-filter#clear"
+          } %>
+  </label>
+  <kbd aria-hidden="true">/</kbd>
+<% end %>

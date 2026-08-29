@@ -1,8 +1,8 @@
 <%# locals: (workspace:, show_status: false) -%>
 <% if show_status && workspace.archived? %>
-  <%= render "components/badge", variant: :warning, size: :sm do %>Archived<% end %>
+  <%= render "components/badge", variant: :warning, size: :sm do %><%= t("workspaces.show.archived_badge") %><% end %>
 <% elsif show_status && workspace.deleted? %>
-  <%= render "components/badge", variant: :outline, size: :sm do %>Deleted<% end %>
+  <%= render "components/badge", variant: :outline, size: :sm do %><%= t("workspaces.show.deleted_badge") %><% end %>
 <% end %>
 
 <% if workspace.deleted? %>

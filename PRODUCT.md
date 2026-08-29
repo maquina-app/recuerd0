@@ -1,15 +1,20 @@
 # Product
 
-## Register
+## Surfaces
 
-brand
+Two surfaces, and they are judged differently:
 
-> The primary design surface is the marketing/brand layer (landing home, marketing
-> and security layouts, public pages) — design IS the product there. The repo also
-> contains a product app (workspaces, memories editor, search, profile/account)
-> built on `maquina_components`; when working on those surfaces, override to the
-> `product` register per task. Brand is the default because positioning and first
-> impression are where the work and the stakes currently are.
+- **Marketing / brand** (landing home, marketing and security layouts, public
+  pages) — design *is* the product there. The visitor decides and acts; earn
+  attention and action.
+- **Product app** (workspaces, memories editor, search, profile/account), built on
+  `maquina_components` — the visitor is completing a task. Scanability,
+  consistency, native expectations and complete component states outrank
+  expression; brand lives in precise details.
+
+Pick the standard from the surface you are on, not from the product as a whole.
+Positioning and first impression are where the stakes currently sit, so the
+marketing surface gets the benefit of the doubt on ambition; the app does not.
 
 ## Users
 
@@ -141,8 +146,11 @@ Target **WCAG 2.1 AAA where feasible**, AA as the non-negotiable floor:
 
 - Body text aims for 7:1 contrast (AAA); never below 4.5:1. Large/bold text never
   below 3:1. Placeholder and muted text held to body-text contrast, not a faint gray.
-  The brand green `oklch(0.600 0.190 150)` is mid-tone — verify it against light
-  backgrounds and darken toward ink for body-weight text on tint.
+  The brand green is `oklch(0.480 0.190 150)` (light) and `oklch(0.700 0.180 150)`
+  with dark-ink foreground (dark). Verify any change to it in **both** directions —
+  ink-on-green and green-on-ink. The previous `oklch(0.600 0.190 150)` looked like a
+  safe mid-tone and failed AA at 3.56:1 both ways, which is this palette's
+  characteristic failure mode.
 - Full keyboard operability with visible focus rings (`--ring`, brand green).
 - `prefers-reduced-motion: reduce` honored for every animation — crossfade or instant
   fallback, never a blank gated reveal.

@@ -3,12 +3,27 @@
   <%= render "components/empty/header" do %>
     <%= render "components/empty/media", icon: :folder %>
     <%= render "components/empty/title", text: t("workspaces.index.empty_title") %>
-    <%= render "components/empty/description", text: t("workspaces.index.empty_description") %>
+    <%# The loop, not just the concept: a workspace is worth making because a
+        tool reads it. Named here too, since the onboarding banner above can be
+        dismissed for good. %>
+    <%= render "components/empty/description", content: capture {
+      safe_join([
+        t("workspaces.index.empty_description"),
+        tag.span(t("workspaces.index.empty_connect"), class: "block mt-2")
+      ])
+    } %>
   <% end %>
   <%= render "components/empty/content" do %>
-    <%= link_to new_workspace_path, data: { component: "button", variant: "default" } do %>
-      <%= icon_for(:plus, class: "w-4 h-4") %>
-      <%= t("workspaces.index.new_workspace") %>
-    <% end %>
+    <div class="flex flex-wrap items-center justify-center gap-2">
+      <%= link_to new_workspace_path, data: { component: "button", variant: "default" } do %>
+        <%= icon_for(:plus, class: "w-4 h-4") %>
+        <%= t("workspaces.index.new_workspace") %>
+      <% end %>
+
+      <%= link_to start_path, target: "_blank", data: { component: "button", variant: "ghost" } do %>
+        <%= icon_for(:rocket, class: "w-4 h-4") %>
+        <%= t("workspaces.index.empty_read_docs") %>
+      <% end %>
+    </div>
   <% end %>
 <% end %>

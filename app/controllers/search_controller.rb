@@ -10,6 +10,7 @@ class SearchController < ApplicationController
     end
 
     memories = build_search_scope
+    @workspaces = matching_workspaces
 
     @pagy, @memories = pagy(memories, items: 10)
 
@@ -34,6 +35,21 @@ class SearchController < ApplicationController
   end
 
   private
+
+  # ⌘K is the most habitual control in the app, so it must not be a dead end for
+  # "open the workspace for the repo I'm in". Workspace hits are cheap (a LIKE
+  # over a small, account-scoped table) and are shown above the memory results.
+  WORKSPACE_RESULT_LIMIT = 5
+
+  def matching_workspaces
+    return Workspace.none if api_request? || @query.blank?
+
+    term = "%#{ActiveRecord::Base.sanitize_sql_like(@query)}%"
+    Current.account.workspaces
+      .where("workspaces.name LIKE :term OR workspaces.description LIKE :term", term: term)
+      .order(Arel.sql("workspaces.deleted_at IS NOT NULL, workspaces.archived_at IS NOT NULL, workspaces.updated_at DESC"))
+      .limit(WORKSPACE_RESULT_LIMIT)
+  end
 
   def build_search_scope
     scope = Memory.joins(:workspace)

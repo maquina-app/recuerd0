@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Override Turbo's default confirmation method
   Turbo.config.forms.confirm = (message, element) => {
     const dialog = document.getElementById('turbo-confirm');
+    const defaults = {
+      title: dialog?.querySelector('#turbo-confirm-title')?.dataset.defaultText,
+      confirmLabel: dialog?.querySelector('[data-behavior="confirm"]')?.dataset.defaultText
+    };
 
     if (!dialog) {
       console.error('Turbo confirm dialog not found');
@@ -25,6 +29,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageElement = dialog.querySelector('#turbo-confirm-message');
     if (messageElement) {
       messageElement.textContent = message;
+    }
+
+    // The trigger names what is about to happen. Severity drives the confirm
+    // button's variant, so a reversible action (archive) is not dressed in the
+    // same red as an irreversible one (permanent delete).
+    const titleElement = dialog.querySelector('#turbo-confirm-title');
+    const confirmElement = dialog.querySelector('[data-behavior="confirm"]');
+    const data = element?.dataset ?? {};
+
+    if (titleElement) {
+      titleElement.textContent = data.confirmTitle || defaults.title;
+    }
+    if (confirmElement) {
+      confirmElement.textContent = data.confirmButton || defaults.confirmLabel;
+      confirmElement.setAttribute(
+        'data-variant',
+        data.confirmSeverity === 'warning' ? 'default' : 'destructive'
+      );
     }
 
     // Set state to open for animations

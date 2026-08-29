@@ -21,7 +21,7 @@
   --card-foreground: oklch(0.145 0.000 0);
   --popover: oklch(1.000 0.000 0);
   --popover-foreground: oklch(0.145 0.000 0);
-  --primary: oklch(0.600 0.190 150);
+  --primary: oklch(0.480 0.190 150);
   --primary-foreground: oklch(1.000 0.000 0);
   --secondary: oklch(0.940 0.045 150);
   --secondary-foreground: oklch(0.280 0.055 150);
@@ -39,7 +39,7 @@
   --info-foreground: oklch(0.300 0.065 230);
   --border: oklch(0.900 0.010 150);
   --input: oklch(0.900 0.010 150);
-  --ring: oklch(0.600 0.190 150);
+  --ring: oklch(0.480 0.190 150);
   --chart-1: oklch(0.600 0.190 150);
   --chart-2: oklch(0.500 0.160 150);
   --chart-3: oklch(0.420 0.130 150);
@@ -47,12 +47,12 @@
   --chart-5: oklch(0.800 0.080 150);
   --sidebar: oklch(0.975 0.006 150);
   --sidebar-foreground: oklch(0.250 0.010 150);
-  --sidebar-primary: oklch(0.600 0.190 150);
+  --sidebar-primary: oklch(0.480 0.190 150);
   --sidebar-primary-foreground: oklch(1.000 0.000 0);
   --sidebar-accent: oklch(0.930 0.030 150);
   --sidebar-accent-foreground: oklch(0.280 0.030 150);
   --sidebar-border: oklch(0.910 0.008 150);
-  --sidebar-ring: oklch(0.600 0.190 150);
+  --sidebar-ring: oklch(0.480 0.190 150);
 
   /* Sidebar dimensions */
   --sidebar-width: 16rem;
@@ -118,8 +118,8 @@
   --card-foreground: oklch(0.950 0.005 150);
   --popover: oklch(0.210 0.012 150);
   --popover-foreground: oklch(0.950 0.005 150);
-  --primary: oklch(0.580 0.180 150);
-  --primary-foreground: oklch(0.980 0.005 150);
+  --primary: oklch(0.700 0.180 150);
+  --primary-foreground: oklch(0.170 0.010 150);
   --secondary: oklch(0.260 0.035 150);
   --secondary-foreground: oklch(0.920 0.020 150);
   --muted: oklch(0.260 0.015 150);
@@ -136,7 +136,7 @@
   --info-foreground: oklch(0.850 0.045 230);
   --border: oklch(0.340 0.020 150);
   --input: oklch(0.340 0.020 150);
-  --ring: oklch(0.580 0.180 150);
+  --ring: oklch(0.700 0.180 150);
   --chart-1: oklch(0.580 0.180 150);
   --chart-2: oklch(0.480 0.150 150);
   --chart-3: oklch(0.400 0.120 150);
@@ -144,12 +144,12 @@
   --chart-5: oklch(0.760 0.080 150);
   --sidebar: oklch(0.200 0.015 150);
   --sidebar-foreground: oklch(0.920 0.008 150);
-  --sidebar-primary: oklch(0.580 0.180 150);
-  --sidebar-primary-foreground: oklch(0.980 0.005 150);
+  --sidebar-primary: oklch(0.700 0.180 150);
+  --sidebar-primary-foreground: oklch(0.170 0.010 150);
   --sidebar-accent: oklch(0.300 0.040 150);
   --sidebar-accent-foreground: oklch(0.920 0.015 150);
   --sidebar-border: oklch(0.320 0.018 150);
-  --sidebar-ring: oklch(0.580 0.180 150);
+  --sidebar-ring: oklch(0.700 0.180 150);
 }
 
 @layer base {
@@ -568,8 +568,9 @@ house-md-toolbar button svg {
 
 /* ===== Workspace index: folder tile, stat chips, segmented controls, rows ===== */
 
-/* Group label — mono uppercase section heading */
+/* Group label — mono uppercase section heading (rendered as <h2>) */
 .ws-group-label {
+  font-weight: 400;
   font-family: var(--font-mono, "Geist Mono", ui-monospace, monospace);
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
@@ -628,7 +629,10 @@ house-md-toolbar button svg {
   color: color-mix(in oklch, var(--warning-foreground) 80%, transparent);
 }
 
-/* Folder tile — visual anchor for a workspace */
+/* Workspace tile — a recognition mark. Its job is "which workspace is this?",
+   which the name alone cannot do at a glance across twenty rows. Tone varies
+   across four NEUTRAL steps only: a second hue would break The One Green Rule,
+   and green here would spend the accent on decoration. */
 .ws-tile {
   flex-shrink: 0;
   width: 2.5rem;
@@ -637,38 +641,36 @@ house-md-toolbar button svg {
   display: grid;
   place-items: center;
   background: var(--muted);
-  color: var(--primary);
+  color: var(--muted-foreground);
   position: relative;
+  transition: background-color 150ms, color 150ms;
 }
-.ws-tile svg {
-  width: 1.125rem;
-  height: 1.125rem;
+.ws-tile-initial {
+  font-family: var(--font-display, "Jura", system-ui, sans-serif);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  /* Optical centring: Jura's cap sits high in the em box. */
+  transform: translateY(0.5px);
 }
 .ws-tile.ws-tile-sm {
   width: 2rem;
   height: 2rem;
 }
-.ws-tile.ws-tile-sm svg {
-  width: 1rem;
-  height: 1rem;
+.ws-tile.ws-tile-sm .ws-tile-initial {
+  font-size: 0.8125rem;
 }
-.ws-tile .ws-pin-dot {
-  position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 999px;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  display: grid;
-  place-items: center;
-  box-shadow: 0 0 0 2px var(--background);
+/* Only the ground varies. The ink is held constant so no tile is louder than
+   another — the initial is the signal, the tone is texture, and neither may
+   outweigh the workspace name beside it. */
+.ws-tile-initial {
+  color: color-mix(in oklch, var(--muted-foreground) 60%, var(--foreground));
 }
-.ws-tile .ws-pin-dot svg {
-  width: 0.625rem;
-  height: 0.625rem;
-}
+.ws-tile[data-tone="0"] { background: var(--muted); }
+.ws-tile[data-tone="1"] { background: color-mix(in oklch, var(--muted) 72%, var(--border)); }
+.ws-tile[data-tone="2"] { background: color-mix(in oklch, var(--muted) 44%, var(--border)); }
+.ws-tile[data-tone="3"] { background: color-mix(in oklch, var(--muted) 16%, var(--border)); }
 
 /* Stat chip — token-based metric pill */
 .stat-chip {
@@ -690,10 +692,23 @@ house-md-toolbar button svg {
   font-weight: 500;
   color: var(--foreground);
   font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+/* Staleness is relative to the account (Workspace.stale_threshold_for), so the
+   flag is rare by construction. Carried by icon + word as well as hue, so it
+   survives a colour-blind or greyscale read — but held at chip weight, never
+   louder than the workspace name it describes. */
+.stat-chip.is-stale,
+.stat-chip.is-stale svg {
+  color: var(--warning-foreground);
+}
+.stat-chip.is-stale .stale-flag {
+  font-weight: 500;
 }
 
 /* Workspace row (list mode) */
 .ws-row {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 0.875rem;
@@ -706,6 +721,32 @@ house-md-toolbar button svg {
 }
 .ws-row.is-deleted {
   opacity: 0.7;
+}
+
+/* The whole row is the click target the hover state promises. One link owns
+   it, so the tab order stays at one stop per row; the menu sits above it. */
+.ws-row-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.ws-row-actions {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+}
+/* The stretched overlay otherwise swallows every pointer event, so a
+   description could not be selected or copied. Lift the text above it. */
+.ws-row-text {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+  max-width: 100%;
+}
+.ws-row:focus-within {
+  background: color-mix(in oklch, var(--accent) 50%, transparent);
+  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
 }
 
 /* Segmented control — links styled as a toggle group */
@@ -742,7 +783,7 @@ house-md-toolbar button svg {
 .seg-item[data-state="on"] {
   background: var(--background);
   color: var(--foreground);
-  box-shadow: var(--shadow-xs);
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 .seg-item:focus-visible {
   outline: none;
@@ -750,12 +791,138 @@ house-md-toolbar button svg {
 }
 .dark .seg-item[data-state="on"] {
   background: color-mix(in oklch, var(--background) 60%, transparent);
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 
 /* Icon-only segmented item (view toggle) */
 .seg-item.seg-item-icon {
   width: 2rem;
   padding: 0;
+}
+
+/* First paint on a phone must not be a nav drawer over the content. The server
+   only knows the desktop cookie, and the sidebar controller can only correct
+   the state once it connects — so hold the sheet off-canvas until then. */
+@media (max-width: 767px) {
+  [data-sidebar-part="root"].sidebar-loading[data-side="left"] [data-sidebar-part="container"] {
+    left: calc(var(--sidebar-width) * -1);
+  }
+  [data-sidebar-part="root"].sidebar-loading[data-side="right"] [data-sidebar-part="container"] {
+    right: calc(var(--sidebar-width) * -1);
+  }
+  [data-sidebar-part="root"].sidebar-loading [data-sidebar-part="backdrop"] {
+    display: none;
+  }
+}
+
+/* Grid mode is a desktop density choice. Below the breakpoint one card per row
+   is strictly worse than the list — same four facts, three times the scroll —
+   so the view cookie does not follow you onto a phone. */
+@media (max-width: 639px) {
+  .ws-group-grid {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Workspace filter — narrows the rendered list as you type. Sized and focused
+   to match the segmented controls it sits beside. */
+.ws-filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.ws-filter svg {
+  position: absolute;
+  left: 0.625rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+.ws-filter input[type="search"] {
+  width: 100%;
+  height: 2.125rem;
+  padding: 0 2rem 0 2rem;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.8125rem;
+  box-shadow: var(--shadow-xs);
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.ws-filter input[type="search"]::placeholder {
+  color: var(--muted-foreground);
+}
+.ws-filter input[type="search"]::-webkit-search-cancel-button {
+  appearance: none;
+}
+.ws-filter input[type="search"]:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+.ws-filter kbd {
+  position: absolute;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  height: 1.125rem;
+  padding: 0 0.3125rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 3px);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-family: var(--font-mono, "Geist Mono", ui-monospace, monospace);
+  font-size: 0.625rem;
+  pointer-events: none;
+}
+.ws-filter:has(input[type="search"]:not(:placeholder-shown)) kbd {
+  display: none;
+}
+
+/* ===== Browser surfaces — the parts we did not draw still carry the design ===== */
+
+::selection {
+  background: color-mix(in oklch, var(--primary) 22%, transparent);
+  color: var(--foreground);
+}
+
+:root {
+  --caret: var(--primary);
+  scrollbar-color: color-mix(in oklch, var(--muted-foreground) 40%, transparent) transparent;
+  scrollbar-width: thin;
+}
+
+input,
+textarea,
+[contenteditable] {
+  caret-color: var(--caret);
+}
+
+/* WebKit keeps its own scrollbar; theme it to the same palette. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  background-color: color-mix(in oklch, var(--muted-foreground) 35%, transparent);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklch, var(--muted-foreground) 55%, transparent);
+}
+
+a {
+  text-underline-offset: 0.2em;
 }
 
 /* ============================================================

@@ -326,7 +326,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
 
     workspace = Workspace.last
     assert_redirected_to workspace_url(workspace)
-    assert_equal I18n.t("workspaces.create.created"), flash[:notice]
+    assert_equal I18n.t("workspaces.create.created", name: workspace.name), flash[:notice]
 
     map = workspace.memories.sole
     assert_equal WorkspaceStarter::TITLE, map.title
@@ -382,7 +382,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     patch workspace_url(@workspace), params: {workspace: {name: "Updated Name"}}
 
     assert_redirected_to workspace_url(@workspace)
-    assert_equal I18n.t("workspaces.update.updated"), flash[:notice]
+    assert_equal I18n.t("workspaces.update.updated", name: "Updated Name"), flash[:notice]
     assert_equal "Updated Name", @workspace.reload.name
   end
 

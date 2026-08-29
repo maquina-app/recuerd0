@@ -18,24 +18,44 @@
       <strong><%= t("search.index.min_length_title") %></strong>
       <p class="mt-1"><%= t("search.index.min_length_description") %></p>
     <% end %>
-  <% elsif @memories.any? %>
-    <p class="text-sm text-muted-foreground mb-4">
-      <%= t(".results_count", count: @pagy.count, query: @query) %>
-    </p>
-
-    <div class="grid gap-4">
-      <% @memories.each do |memory| %>
-        <div>
-          <p class="text-xs text-muted-foreground mb-1">
-            <%= icon_for(:folders, class: "w-3 h-3 inline") %>
-            <%= link_to memory.workspace.name, workspace_path(memory.workspace), class: "hover:underline" %>
-          </p>
-          <%= render "memories/memory", memory: memory, workspace: memory.workspace %>
+  <% elsif @memories.any? || @workspaces.any? %>
+    <%# Workspaces first: "which workspace?" is the commoner question, and it is
+        answered by a name, not by a snippet. %>
+    <% if @workspaces.any? %>
+      <section class="mb-8" aria-labelledby="search-workspaces-heading">
+        <h2 id="search-workspaces-heading" class="ws-group-label mb-2 px-0.5">
+          <%= t("search.index.workspaces_heading") %>
+        </h2>
+        <div class="divide-y divide-border">
+          <%= render partial: "workspaces/workspace", collection: @workspaces, as: :workspace, locals: { show_status: true } %>
         </div>
-      <% end %>
-    </div>
+      </section>
+    <% end %>
 
-    <%= pagination_nav(@pagy, :search_path, params: { q: @query }) %>
+    <% if @memories.any? %>
+      <section aria-labelledby="search-memories-heading">
+        <h2 id="search-memories-heading" class="ws-group-label mb-2 px-0.5">
+          <%= t("search.index.memories_heading") %>
+        </h2>
+        <p class="text-sm text-muted-foreground mb-4">
+          <%= t(".results_count", count: @pagy.count, query: @query) %>
+        </p>
+
+        <div class="grid gap-4">
+          <% @memories.each do |memory| %>
+            <div>
+              <p class="text-xs text-muted-foreground mb-1">
+                <%= icon_for(:folders, class: "w-3 h-3 inline") %>
+                <%= link_to memory.workspace.name, workspace_path(memory.workspace), class: "hover:underline" %>
+              </p>
+              <%= render "memories/memory", memory: memory, workspace: memory.workspace %>
+            </div>
+          <% end %>
+        </div>
+
+        <%= pagination_nav(@pagy, :search_path, params: { q: @query }) %>
+      </section>
+    <% end %>
   <% elsif @query.present? %>
     <%= empty_state title: t("search.index.no_results_title"),
         description: t("search.index.no_results_description", query: @query),

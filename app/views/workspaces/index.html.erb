@@ -2,9 +2,11 @@
 <% content_for :head do %>
   <meta name="turbo-cache-control" content="no-cache">
 <% end %>
-<% content_for :page_title, "Workspaces" %>
+<% content_for :page_title, t("workspaces.index.page_title") %>
+<%# The breadcrumb is also the shell's title slot: without it the layout renders
+    its own <h1>, which would give this page two. %>
 <% content_for :breadcrumb do %>
-  <%= responsive_breadcrumbs({}, "Workspaces") %>
+  <%= responsive_breadcrumbs({}, t("workspaces.index.page_title")) %>
 <% end %>
 
 <div class="mx-auto max-w-5xl">
@@ -12,11 +14,12 @@
     <%= render "application/onboarding_alert" %>
   <% end %>
 
-  <%# Header %>
+  <%# Header. The count reflects what you are actually looking at: filtering to
+      three of twenty-one says so, rather than contradicting the list. %>
   <div class="mb-6 flex items-center justify-between gap-4">
     <div class="flex items-baseline gap-2.5">
-      <h1 class="font-display text-2xl font-medium leading-[1.4] tracking-tight">Workspaces</h1>
-      <span class="font-mono text-sm text-muted-foreground"><%= @pagy&.count || @workspaces.size %></span>
+      <h1 class="font-display text-2xl font-medium leading-[1.4] tracking-tight"><%= t("workspaces.index.page_title") %></h1>
+      <span class="font-mono text-sm text-muted-foreground tabular-nums"><%= @total %></span>
     </div>
 
     <%= link_to new_workspace_path, data: { component: "button", variant: "default" } do %>
@@ -25,33 +28,51 @@
     <% end %>
   </div>
 
-  <% if @workspaces.any? %>
-    <%# Toolbar: sort & view segmented controls (search lives in the sidebar header) %>
-    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-      <div class="flex items-center gap-2">
-        <%# Sort segmented control %>
-        <div class="seg" role="group" aria-label="<%= t("workspaces.index.sort_label") %>">
-          <%= link_to t("workspaces.index.sort_recent"), workspaces_path(view: @view_mode),
-                class: "seg-item",
-                data: { state: (@sort.blank? ? "on" : "off") },
-                "aria-current": (@sort.blank? ? "true" : nil) %>
-          <%= link_to t("workspaces.index.sort_name"), workspaces_path(view: @view_mode, sort: "name"),
-                class: "seg-item",
-                data: { state: (@sort == "name" ? "on" : "off") },
-                "aria-current": (@sort == "name" ? "true" : nil) %>
-          <%= link_to t("workspaces.index.sort_memories"), workspaces_path(view: @view_mode, sort: "memories"),
-                class: "seg-item",
-                data: { state: (@sort == "memories" ? "on" : "off") },
-                "aria-current": (@sort == "memories" ? "true" : nil) %>
-        </div>
-
-        <%# View (list/grid) segmented control %>
-        <%= render "workspaces/view_toggle", view_mode: @view_mode, extra_params: { sort: @sort } %>
-      </div>
-    </div>
-
-    <%= render "workspaces/workspaces_list", workspaces: @workspaces, pagy: @pagy, view_mode: @view_mode, show_pins: true %>
-  <% else %>
+  <% if @total.zero? %>
     <%= render "workspaces/empty_state" %>
+  <% else %>
+    <div data-controller="ws-filter">
+      <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <%= render "workspaces/filter", query: @query, extra_params: { view: @view_mode, sort: @sort } %>
+
+        <div class="flex items-center gap-2">
+          <%# Sort segmented control %>
+          <div class="seg" role="group" aria-label="<%= t("workspaces.index.sort_label") %>">
+            <%= link_to t("workspaces.index.sort_recent"), workspaces_path(view: @view_mode, q: @query),
+                  class: "seg-item",
+                  data: { state: (@sort.blank? ? "on" : "off") },
+                  "aria-current": (@sort.blank? ? "page" : nil) %>
+            <%= link_to t("workspaces.index.sort_name"), workspaces_path(view: @view_mode, sort: "name", q: @query),
+                  class: "seg-item",
+                  data: { state: (@sort == "name" ? "on" : "off") },
+                  "aria-current": (@sort == "name" ? "page" : nil) %>
+            <%= link_to t("workspaces.index.sort_memories"), workspaces_path(view: @view_mode, sort: "memories", q: @query),
+                  class: "seg-item",
+                  data: { state: (@sort == "memories" ? "on" : "off") },
+                  "aria-current": (@sort == "memories" ? "page" : nil) %>
+          </div>
+
+          <%# View (list/grid) segmented control %>
+          <%= render "workspaces/view_toggle", view_mode: @view_mode, extra_params: { sort: @sort, q: @query } %>
+        </div>
+      </div>
+
+      <%= turbo_frame_tag "workspaces_list" do %>
+        <%# The result count lives inside the frame, so it can never disagree
+            with the rows beneath it. %>
+        <% if @query.present? %>
+          <p class="mb-3 px-0.5 text-xs text-muted-foreground">
+            <%= t("workspaces.index.count_filtered", count: @pagy.count, total: @total, query: @query) %>
+          </p>
+        <% end %>
+        <% if @workspaces.any? %>
+          <%= render "workspaces/workspaces_list",
+                workspaces: @workspaces, pagy: @pagy, view_mode: @view_mode,
+                show_pins: true, stale_after: @stale_after %>
+        <% else %>
+          <%= render "workspaces/filter_empty_state", query: @query %>
+        <% end %>
+      <% end %>
+    </div>
   <% end %>
 </div>

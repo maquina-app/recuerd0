@@ -8,16 +8,16 @@ class PinsController < ApplicationController
     @pin = @pinnable.pin!(Current.user)
     track_event("pin.create", resource: @pinnable)
 
-    redirect_back(fallback_location: workspaces_path, notice: t(".created"))
+    redirect_back(fallback_location: workspaces_path, notice: t(".created"), status: :see_other)
   rescue ActiveRecord::RecordInvalid => e
-    redirect_back(fallback_location: workspaces_path, alert: e.message)
+    redirect_back(fallback_location: workspaces_path, alert: e.message, status: :see_other)
   end
 
   def destroy
     @unpinned = @pinnable.unpin!(Current.user)
     track_event("pin.destroy", resource: @pinnable)
 
-    redirect_back(fallback_location: workspaces_path, notice: t(".destroyed"))
+    redirect_back(fallback_location: workspaces_path, notice: t(".destroyed"), status: :see_other)
   end
 
   private
@@ -25,7 +25,7 @@ class PinsController < ApplicationController
   def set_pinnable
     @pinnable = find_pinnable
   rescue ActiveRecord::RecordNotFound
-    redirect_back(fallback_location: workspaces_path, alert: t("pins.not_found"))
+    redirect_back(fallback_location: workspaces_path, alert: t("pins.not_found"), status: :see_other)
   end
 
   def find_pinnable
@@ -48,7 +48,7 @@ class PinsController < ApplicationController
           flash.now[:alert] = alert
           render turbo_stream: turbo_stream.refresh
         }
-        format.html { redirect_back(fallback_location: workspaces_path, alert: alert) }
+        format.html { redirect_back(fallback_location: workspaces_path, alert: alert, status: :see_other) }
       end
     end
   end
