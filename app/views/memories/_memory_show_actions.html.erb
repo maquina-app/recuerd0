@@ -21,7 +21,12 @@
   <%= render "components/dropdown_menu/item",
       href: workspace_memory_versions_path(workspace, memory),
       method: :post,
-      data: { turbo_confirm: t("memories.memory_show_actions.new_version_confirm", version: memory.version_label) } do %>
+      data: {
+        turbo_confirm: t("memories.memory_show_actions.new_version_confirm", version: memory.version_label),
+        confirm_severity: "warning",
+        confirm_title: t("memories.memory_show_actions.new_version_title"),
+        confirm_button: t("memories.memory_show_actions.new_version_button")
+      } do %>
     <%= icon_for(:copy_plus, class: "size-4") %>
     <%= t("memories.memory_show_actions.new_version") %>
   <% end %>
@@ -39,7 +44,12 @@
         href: workspace_memory_version_consolidation_path(workspace, memory, memory),
         method: :post,
         variant: :destructive,
-        data: { turbo_confirm: t("memories.memory_show_actions.delete_other_versions_confirm", version: memory.version_label) } do %>
+        data: {
+        turbo_confirm: t("memories.memory_show_actions.delete_other_versions_confirm", version: memory.version_label),
+        confirm_severity: "destructive",
+        confirm_title: t("memories.memory_show_actions.delete_other_versions_title"),
+        confirm_button: t("memories.memory_show_actions.delete_other_versions_button")
+      } do %>
       <%= icon_for(:trash_2, class: "size-4") %>
       <%= t("memories.memory_show_actions.delete_other_versions") %>
     <% end %>
@@ -51,7 +61,17 @@
       href: workspace_memory_path(workspace, memory),
       method: :delete,
       variant: :destructive,
-      data: { turbo_confirm: t("memories.memory_show_actions.delete_confirm") } do %>
+      data: {
+        turbo_confirm: [
+          t("memories.memory_show_actions.delete_confirm",
+            versions: pluralize(memory.all_versions.size, "version")),
+          (t("memories.memory_show_actions.delete_confirm_links",
+             links: pluralize(memory.links_count, "link")) if memory.links_count > 0)
+        ].compact.join(" "),
+        confirm_severity: "destructive",
+        confirm_title: t("memories.memory_show_actions.delete_title", title: memory.display_title),
+        confirm_button: t("memories.memory_show_actions.delete_button")
+      } do %>
     <%= icon_for(:trash_2, class: "size-4") %>
     <%= t("memories.memory_show_actions.delete") %>
   <% end %>

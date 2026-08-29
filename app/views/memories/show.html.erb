@@ -17,7 +17,8 @@
 <% category_variant = {"decision" => :default, "discovery" => :secondary, "preference" => :warning, "general" => :outline}[@memory.category] || :outline %>
 <% has_content = @memory.content&.body&.content.present? %>
 
-<div class="mx-auto max-w-5xl overflow-x-clip">
+<%# pb-20 keeps the scroll-to-top button from covering the last section. %>
+<div class="mx-auto max-w-5xl overflow-x-clip pb-20">
   <%# ===== HEADER: tile + title + actions ===== %>
   <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
     <div class="flex min-w-0 items-center gap-3.5">
@@ -98,11 +99,6 @@
       <% end %>
     <% end %>
 
-    <% if @memory.links_count > 0 %>
-      <span class="mc-ind" title="<%= pluralize(@memory.links_count, "linked memory", "linked memories") %>">
-        <%= icon_for(:link) %><%= @memory.links_count %>
-      </span>
-    <% end %>
   </div>
 
   <% if @memory.source.present? %>
@@ -130,11 +126,11 @@
       </span>
     <% end %>
     <% if @memory.links_count > 0 %>
-      <span class="stat-chip">
+      <a href="#related-memories" class="stat-chip stat-chip-link">
         <%= icon_for(:link) %>
         <strong><%= @memory.links_count %></strong>
-        <%= "link".pluralize(@memory.links_count) %>
-      </span>
+        <%= t("memories.links.count_noun", count: @memory.links_count) %>
+      </a>
     <% end %>
   </div>
 
@@ -232,25 +228,114 @@
     <% end %>
   <% end %>
 
-  <%# ===== RELATED MEMORIES ===== %>
-  <% if @memory.links_count > 0 %>
-    <section class="mt-8" id="related-memories">
-      <div class="ws-group-label mb-3"><%= t("memories.show.related_memories") %></div>
-      <div class="divide-y divide-border overflow-hidden rounded-lg border border-border">
-        <% @memory.linked_memories.latest_versions.includes(:workspace).order(updated_at: :desc).each do |linked| %>
+  <%# ===== RELATED MEMORIES =====
+      Always rendered. Gating the whole section on links_count > 0 meant a
+      visitor with no links saw no trace of the feature anywhere in the browser
+      — you could only discover linking by already having done it. %>
+  <section class="mt-8" id="related-memories" aria-labelledby="related-memories-heading">
+    <%# A real heading, not a styled div: this is the only landmark a screen
+        reader can use to reach the link list. %>
+    <h2 id="related-memories-heading" class="ws-group-label mb-3"><%= t("memories.show.related_memories") %></h2>
+
+    <% if @memory.links_count > 0 %>
+      <ul class="divide-y divide-border overflow-hidden rounded-lg border border-border">
+        <% @memory.linked_memories.latest_versions.includes(:workspace).order(:title).each do |linked| %>
           <% linked_cat = Memory::CATEGORIES.include?(linked.category) ? linked.category : "general" %>
-          <div class="memory-row">
-            <span class="category-dot" data-cat="<%= linked_cat %>" title="<%= t("memories.categories.#{linked_cat}") %>"></span>
-            <%= link_to linked.display_title, workspace_memory_path(linked.workspace, linked), class: "mr-title flex-1" %>
-            <span class="flex-shrink-0 text-xs text-muted-foreground">
-              <%= t("memories.show.related_in") %>
-              <%= link_to linked.workspace.name, workspace_path(linked.workspace), class: "hover:underline" %>
-            </span>
-          </div>
+          <% elsewhere = linked.workspace_id != @workspace.id %>
+          <li class="memory-row">
+            <span class="category-dot" data-cat="<%= linked_cat %>" aria-hidden="true"></span>
+            <span class="sr-only"><%= t("memories.categories.#{linked_cat}") %></span>
+
+            <%= link_to linked.display_title, workspace_memory_path(linked.workspace, linked), class: "mr-title" %>
+
+            <%# The workspace is named only when it is a DIFFERENT one. Printing
+                it on every row made the single fact that matters — that this
+                link leaves the workspace you are in — read as decoration. %>
+            <% if elsewhere %>
+              <%= link_to workspace_path(linked.workspace), class: "mr-elsewhere" do %>
+                <%= icon_for(:external_link) %>
+                <%= linked.workspace.name %>
+              <% end %>
+            <% end %>
+
+            <% if @workspace.active? && !@viewing_old_version %>
+              <%= button_to workspace_memory_memory_linking_remove_path(@workspace, @memory, other_id: linked.id),
+                    method: :delete,
+                    class: "mr-remove",
+                    form: { class: "contents" },
+                    data: {
+                      turbo_confirm: t("memories.links.remove_confirm", title: linked.display_title),
+                      confirm_severity: "warning",
+                      confirm_title: t("memories.links.remove_title"),
+                      confirm_button: t("memories.links.remove_button")
+                    },
+                    aria: { label: t("memories.links.remove_aria", title: linked.display_title) } do %>
+                <%= icon_for(:x) %>
+              <% end %>
+            <% end %>
+          </li>
         <% end %>
-      </div>
-    </section>
-  <% end %>
+      </ul>
+    <% else %>
+      <%= render "components/empty", variant: :outline do %>
+        <%= render "components/empty/header" do %>
+          <%= render "components/empty/media", icon: :link %>
+          <%= render "components/empty/title", text: t("memories.links.empty_title") %>
+          <%= render "components/empty/description", text: t("memories.links.empty_description") %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%# Picker. A <details> rather than a dialog: the server can render it open
+        when a search is active, so it survives the page morph with no JS state
+        to resync. %>
+    <% if @workspace.active? && !@viewing_old_version %>
+      <details class="link-picker mt-3" id="link-picker" <%= "open" if @link_query.present? %>>
+        <summary class="link-picker-summary">
+          <%= icon_for(:plus) %>
+          <%= t("memories.links.add") %>
+        </summary>
+
+        <div class="link-picker-body">
+          <%= form_with url: workspace_memory_path(@workspace, @memory), method: :get,
+                        data: { turbo_action: "replace" }, class: "search-field" do %>
+            <%= icon_for(:search) %>
+            <label for="link-picker-search" class="sr-only"><%= t("memories.links.search_label") %></label>
+            <input id="link-picker-search" type="search" name="link_q" value="<%= @link_query %>"
+                   data-component="input" autocomplete="off"
+                   placeholder="<%= t("memories.links.search_placeholder") %>">
+          <% end %>
+
+          <% if @link_query.present? %>
+            <% if @link_candidates.present? %>
+              <ul class="mt-2 divide-y divide-border overflow-hidden rounded-lg border border-border">
+                <% @link_candidates.each do |candidate| %>
+                  <li class="memory-row">
+                    <span class="category-dot" data-cat="<%= Memory::CATEGORIES.include?(candidate.category) ? candidate.category : "general" %>" aria-hidden="true"></span>
+                    <span class="mr-title"><%= candidate.display_title %></span>
+                    <span class="mr-elsewhere-static"><%= candidate.workspace.name %></span>
+                    <%= button_to t("memories.links.link_button"),
+                          workspace_memory_memory_linking_path(@workspace, @memory),
+                          params: { to_memory_id: candidate.id },
+                          form: { class: "contents" },
+                          data: { component: "button", variant: "secondary", size: "sm" } %>
+                  </li>
+                <% end %>
+              </ul>
+            <% else %>
+              <p class="mt-2 px-0.5 text-xs text-muted-foreground">
+                <%= t("memories.links.no_candidates", query: @link_query) %>
+              </p>
+            <% end %>
+          <% else %>
+            <p class="mt-2 px-0.5 text-xs text-muted-foreground">
+              <%= t("memories.links.search_hint") %>
+            </p>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
+  </section>
 
   <%# ===== VERSIONS ===== %>
   <% if @memory.versioned? %>

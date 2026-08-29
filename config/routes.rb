@@ -76,6 +76,15 @@ Rails.application.routes.draw do
       resources :versions, only: %i[index show create], controller: "memories/versions" do
         resource :consolidation, only: %i[create], controller: "memories/versions/consolidations"
       end
+      # Browser-facing link management. Deliberately on its own path segment so
+      # it can never shadow the JSON API below, which keeps its
+      # defaults: {format: :json} untouched — clients that omit the extension
+      # must keep working.
+      scope defaults: {format: :html} do
+        post "linking", to: "memories/links#create_html", as: :memory_linking
+        delete "linking/:other_id", to: "memories/links#destroy_html", as: :memory_linking_remove
+      end
+
       resources :links, only: %i[index create destroy], controller: "memories/links",
         defaults: {format: :json}
     end

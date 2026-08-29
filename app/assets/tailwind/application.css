@@ -1328,9 +1328,137 @@ a {
   white-space: nowrap;
   min-width: 0;
 }
-.memory-row .mr-title a:hover {
-  text-decoration: underline;
+/* .mr-title IS the <a>. The previous selector was `.memory-row .mr-title a`,
+   which requires an anchor INSIDE .mr-title and therefore matched nothing —
+   the primary navigation target on the page had no hover affordance at all
+   while the workspace name beside it did. */
+.memory-row a.mr-title {
+  flex: 1 1 auto;
+  color: var(--foreground);
+  text-decoration: none;
+  /* The 20px text was the only hit target in a 41px row; the padding was dead
+     space. Reclaim the row height for the pointer. */
+  padding-block: 0.6875rem;
+  margin-block: -0.6875rem;
 }
+.memory-row a.mr-title:hover {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.memory-row a.mr-title:focus-visible {
+  outline: none;
+  border-radius: calc(var(--radius) - 4px);
+  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+
+/* Cross-workspace marker. Rendered ONLY when the link leaves the current
+   workspace, so it reads as a signal rather than as a suffix on every row. */
+.mr-elsewhere,
+.mr-elsewhere-static {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.6875rem;
+  line-height: 1;
+  padding: 0.1875rem 0.375rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  background: var(--muted);
+}
+.mr-elsewhere svg,
+.mr-elsewhere-static svg {
+  width: 0.6875rem;
+  height: 0.6875rem;
+  flex-shrink: 0;
+}
+.mr-elsewhere:hover {
+  color: var(--foreground);
+  border-color: color-mix(in oklch, var(--border) 60%, var(--foreground));
+}
+.mr-elsewhere:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+
+/* Remove-link control. Quiet until the row is hovered or it takes focus, so a
+   destructive affordance never outweighs the link it sits beside. */
+.mr-remove {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 150ms, background-color 150ms, color 150ms;
+}
+.mr-remove svg { width: 0.875rem; height: 0.875rem; }
+.memory-row:hover .mr-remove,
+.mr-remove:focus-visible {
+  opacity: 1;
+}
+.mr-remove:hover {
+  background: color-mix(in oklch, var(--destructive) 12%, transparent);
+  color: var(--destructive);
+}
+.mr-remove:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+/* Touch has no hover, so the control must always be visible there. */
+@media (pointer: coarse) {
+  .mr-remove { opacity: 1; }
+}
+
+/* The link count in the stat row jumps to the list rather than restating it. */
+.stat-chip-link { text-decoration: none; }
+.stat-chip-link:hover { color: var(--foreground); }
+.stat-chip-link:focus-visible {
+  outline: none;
+  border-radius: calc(var(--radius) - 4px);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+
+/* Link picker — a <details> so the server can render it open when a search is
+   active and it survives the page morph with no client state to resync. */
+.link-picker {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+.link-picker[open] {
+  border-style: solid;
+  background: color-mix(in oklch, var(--muted) 40%, transparent);
+}
+.link-picker-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--radius);
+}
+.link-picker-summary::-webkit-details-marker { display: none; }
+.link-picker-summary svg { width: 0.875rem; height: 0.875rem; }
+.link-picker-summary:hover { color: var(--foreground); }
+.link-picker-summary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+.link-picker-body { padding: 0 0.75rem 0.75rem; }
 .memory-row.is-deleted {
   opacity: 0.7;
 }
