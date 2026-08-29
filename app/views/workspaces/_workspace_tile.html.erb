@@ -1,4 +1,4 @@
-<%# locals: (workspace:, size: :md) -%>
+<%# locals: (workspace:, size: :md, announce_pin: true) -%>
 <%# The leading square answers "which workspace is this?", not "how big is it?" —
     the size already reads, in words, in the stat chip beside it. %>
 <div class="ws-tile <%= "ws-tile-sm" if size == :sm %>"
@@ -12,6 +12,7 @@
     </span>
   <% end %>
 </div>
-<% if workspace.pinned_by?(Current.user) %>
+<%# Suppressed where a visible Pinned badge already carries the same fact. %>
+<% if announce_pin && workspace.pinned_by?(Current.user) %>
   <span class="sr-only"><%= t("workspaces.index.pinned_marker") %></span>
 <% end %>

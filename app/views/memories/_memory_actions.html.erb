@@ -40,7 +40,7 @@
 
   <%= render "components/dropdown_menu/item",
       href: workspace_memory_path(workspace, memory),
-      css_classes: "text-destructive focus:text-destructive",
+      variant: :destructive,
       data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this memory?" } do %>
     <%= icon_for(:trash_2, class: "w-4 h-4") %>
     Delete

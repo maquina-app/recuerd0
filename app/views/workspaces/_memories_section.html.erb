@@ -33,10 +33,12 @@
     <% end %>
 
     <% if !search_active && show_pinned_group %>
-      <section>
+      <%# Real headings, not styled spans: this is the only structure a screen
+          reader can use to skim a workspace with a hundred memories in it. %>
+      <section aria-labelledby="memories-group-pinned">
         <div class="mb-2 flex items-center gap-2 px-0.5">
           <span class="text-primary"><%= icon_for(:pin, class: "size-3") %></span>
-          <span class="ws-group-label"><%= t("workspaces.show.group_pinned") %></span>
+          <h2 id="memories-group-pinned" class="ws-group-label"><%= t("workspaces.show.group_pinned") %></h2>
         </div>
         <% if compact %>
           <div class="divide-y divide-border rounded-lg border">
@@ -52,9 +54,9 @@
 
     <% all_items = show_pinned_group ? regular_memories : (pinned_memories + regular_memories) %>
     <% if !search_active && all_items.any? %>
-      <section>
+      <section aria-labelledby="memories-group-all">
         <div class="mb-2 px-0.5">
-          <span class="ws-group-label"><%= t("workspaces.show.group_all") %></span>
+          <h2 id="memories-group-all" class="ws-group-label"><%= t("workspaces.show.group_all") %></h2>
         </div>
         <% if compact %>
           <div class="divide-y divide-border rounded-lg border">
@@ -75,29 +77,34 @@
 
 <% elsif filter_active %>
   <%# Filtered-empty: a filter/search is active but nothing matched %>
-  <div class="empty-box">
-    <div class="empty-ic">
-      <%= icon_for(:search, class: "size-6") %>
-    </div>
-    <h2 class="font-display text-lg font-medium"><%= t("workspaces.show.filtered_empty_title") %></h2>
-    <p class="mt-1 max-w-sm text-sm text-muted-foreground"><%= t("workspaces.show.filtered_empty_description") %></p>
-    <%= link_to t("workspaces.show.filtered_empty_clear"), workspace_show_path(workspace),
-          class: "mt-4", data: { component: "button", variant: "outline", size: "sm" } %>
-  </div>
+  <%# Same component as the no-memories state below — two empty-state languages
+      thirty lines apart taught the user that dashed vs solid meant something.
+      The description names the filter that actually emptied the list. %>
+  <%= render "components/empty", variant: :outline do %>
+    <%= render "components/empty/header" do %>
+      <%= render "components/empty/media", icon: :search %>
+      <%= render "components/empty/title", text: t("workspaces.show.filtered_empty_title") %>
+      <%= render "components/empty/description", text: memory_filter_summary %>
+    <% end %>
+    <%= render "components/empty/content" do %>
+      <%= link_to t("workspaces.show.filtered_empty_clear"), workspace_show_path(workspace),
+            data: { component: "button", variant: "outline", size: "sm" } %>
+    <% end %>
+  <% end %>
 
 <% else %>
   <%# No memories at all in this workspace %>
   <%= render "components/empty", variant: :outline do %>
     <%= render "components/empty/header" do %>
       <%= render "components/empty/media", icon: :sticky_note %>
-      <%= render "components/empty/title", text: "No memories yet" %>
-      <%= render "components/empty/description", text: workspace.active? ? "Start adding memories to this workspace." : "This workspace doesn't have any memories." %>
+      <%= render "components/empty/title", text: t("workspaces.show.empty_title") %>
+      <%= render "components/empty/description", text: workspace.active? ? t("workspaces.show.empty_description_active") : t("workspaces.show.empty_description_inactive") %>
     <% end %>
     <% if workspace.active? %>
       <%= render "components/empty/content" do %>
         <%= link_to new_workspace_memory_path(workspace), data: { component: "button", variant: "secondary" } do %>
           <%= icon_for(:bookmark_plus, class: "w-4 h-4") %>
-          Add First Memory
+          <%= t("workspaces.show.new_memory") %>
         <% end %>
       <% end %>
     <% end %>

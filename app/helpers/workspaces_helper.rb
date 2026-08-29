@@ -31,6 +31,20 @@ module WorkspacesHelper
       .merge(overrides).compact
   end
 
+  # "Nothing matched" is only actionable if it says what was applied. The old
+  # copy was a fixed sentence, so a failed search and a failed category filter
+  # read identically.
+  def memory_filter_summary
+    parts = []
+    parts << t("workspaces.show.filter_summary.query", query: @memory_query) if @memory_query.present?
+    parts << t("workspaces.show.filter_summary.category", category: @category.to_s.humanize) if @category.present?
+    parts << t("workspaces.show.filter_summary.tag", tag: @memory_tag) if @memory_tag.present?
+
+    return t("workspaces.show.filtered_empty_description") if parts.empty?
+
+    t("workspaces.show.filter_summary.prefix", filters: parts.to_sentence)
+  end
+
   def workspace_breadcrumb_links(workspace)
     base = {"Workspaces" => workspaces_path}
 

@@ -32,7 +32,15 @@ module WorkspaceScoped
     @memory_sort_param = params[:sort].presence_in(Memory::SEARCH_SORTS)
 
     base = @workspace.memories.latest_versions.includes(:content, :pins, child_versions: :content)
-    @category_counts = base.group(:category).count
+
+    # Counts must answer "how many would this category give me *now*", so they
+    # respect every active filter except the category itself. Counting the
+    # unfiltered set made the chips read "All 5" directly above "nothing
+    # matched".
+    counting_scope = base
+    counting_scope = counting_scope.by_tag(@memory_tag) if @memory_tag
+    counting_scope = counting_scope.search(@memory_query) if @memory_query.present?
+    @category_counts = counting_scope.group(:category).count
     @category_counts.default = 0
 
     scope = base.by_category(@category)
