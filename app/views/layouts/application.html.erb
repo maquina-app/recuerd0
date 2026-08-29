@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="<%= "dark" if theme_preference == "dark" %>">
   <head>
-    <title><%= content_for(:title) || "recuerd0 — LLM context management" %></title>
-    <meta name="description" content="Preserve, version, and organize your AI conversations.">
+    <title><%= page_title %></title>
+    <meta name="description" content="Curate, version, and organize your project knowledge, and serve it to any AI coding tool over a REST API.">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#009D39">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,6 +13,8 @@
 
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+
+    <%= render "application/theme_script" %>
 
     <%= yield :head %>
 

@@ -9,9 +9,17 @@ class WorkspacesController < ApplicationController
   def index
     @view_mode = resolve_workspace_view_mode
     @sort = params[:sort].presence_in(%w[name memories]) # nil => default "recent"
+    @query = params[:q].to_s.strip.first(80).presence
 
-    workspaces = Current.account.workspaces
-      .active
+    scope = Current.account.workspaces.active
+
+    # The filter is server-side so it searches the whole account, not just the
+    # page you happen to be on. @total is the unfiltered count, so the header
+    # can say "3 of 21" rather than contradicting the list.
+    @total = scope.count
+    scope = scope.search(@query) if @query
+
+    workspaces = scope
       .ordered_with_pins_first(Current.user, sort: @sort)
       .includes(:pins)
       .select(<<~SQL.squish)
@@ -20,6 +28,7 @@ class WorkspacesController < ApplicationController
       SQL
 
     @pagy, @workspaces = pagy(workspaces)
+    @stale_after = Workspace.stale_threshold_for(Current.account)
 
     respond_to do |format|
       format.html
@@ -58,7 +67,7 @@ class WorkspacesController < ApplicationController
     if @workspace.save
       track_event("workspace.create", resource: @workspace)
       respond_to do |format|
-        format.html { redirect_to @workspace, notice: t(".created") }
+        format.html { redirect_to @workspace, notice: t(".created", name: @workspace.name) }
         format.json { render :show, status: :created }
       end
     else
@@ -76,7 +85,7 @@ class WorkspacesController < ApplicationController
     if @workspace.update(workspace_params)
       track_event("workspace.update", resource: @workspace)
       respond_to do |format|
-        format.html { redirect_to @workspace, notice: t(".updated") }
+        format.html { redirect_to @workspace, notice: t(".updated", name: @workspace.name) }
         format.json { render :show }
       end
     else
@@ -95,7 +104,7 @@ class WorkspacesController < ApplicationController
     @workspace.soft_delete
 
     respond_to do |format|
-      format.html { redirect_to workspaces_url, notice: t(".destroyed"), status: :see_other }
+      format.html { redirect_to workspaces_url, notice: t(".destroyed", name: @workspace.name, days: SoftDeletable::RETENTION_DAYS), status: :see_other }
       format.json { head :no_content }
     end
   end

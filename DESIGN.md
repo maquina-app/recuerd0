@@ -2,7 +2,7 @@
 name: Recuerd0
 description: The knowledge base your AI tools deserve — human-curated, version-controlled context.
 colors:
-  memory-green: "oklch(0.600 0.190 150)"
+  memory-green: "oklch(0.480 0.190 150)"
   memory-green-foreground: "oklch(1.000 0.000 0)"
   secondary: "oklch(0.940 0.045 150)"
   secondary-foreground: "oklch(0.280 0.055 150)"
@@ -68,7 +68,7 @@ components:
     padding: "8px 16px"
     height: "36px"
   button-primary-hover:
-    backgroundColor: "oklch(0.555 0.185 150)"
+    backgroundColor: "oklch(0.432 0.171 150)"
     textColor: "{colors.memory-green-foreground}"
   button-secondary:
     backgroundColor: "{colors.secondary}"
@@ -147,16 +147,25 @@ small set of semantic signals. Restraint is the strategy: the surface is near-wh
 the green appears only where it means something.
 
 ### Primary
-- **Memory Green** (`oklch(0.600 0.190 150)` ≈ `#009d3a`): The single brand accent and
-  canonical brand green. In-app buttons, links, focus rings, the wordmark's terminal
-  "0", active sidebar items, chart series, and the browser `theme-color`. Mid-tone —
-  bright enough to signal, dark enough to read on white. Load-bearing, never a wash.
-- **Memory Green (on-white variant)** (`oklch(0.480 0.190 150)` ≈ `#00780d`): A
-  deliberately darker step used **only on the marketing surface** (`--m-primary`),
-  where text and small accents sit on a near-white page. The darker value clears
-  WCAG AA/AAA on `#f8f9f8` that the standard Memory Green would miss. Same hue and
-  chroma — this is one brand green at two lightnesses for two backgrounds, not a
-  second color. Keep them in lockstep if the hue ever shifts.
+- **Memory Green** (`oklch(0.480 0.190 150)` ≈ `#00780d`): The single brand accent,
+  used identically on the product and marketing surfaces (`--primary` and
+  `--m-primary` now hold the same value). In-app buttons, links, focus rings, the
+  wordmark's terminal "0", active sidebar items, chart series, and the browser
+  `theme-color`. Deep enough to carry white text at **5.70:1** and to be read *as*
+  text on Paper at **5.70:1** — the accent works in both directions, which is the
+  whole point of the value. Load-bearing, never a wash.
+  - **Hover** is derived, not authored: the button component computes
+    `color-mix(in oklch, var(--primary) 90%, black)` ≈ `oklch(0.432 0.171 150)`
+    (`#00670a`, 7.10:1 with white). Darken by shifting toward black, never by
+    picking a new hue.
+  - **Superseded:** `oklch(0.600 0.190 150)` (`#009d3a`) was the canonical green
+    until 2026-08-29. It failed WCAG AA in **both** directions — 3.56:1 for white
+    on it, and 3.56:1 for it as text on Paper — which put the primary CTA below
+    the floor PRODUCT.md calls non-negotiable. The marketing surface had already
+    moved to `0.480` for exactly this reason; the product surface has now joined
+    it, so there is one green at one lightness rather than two to keep in step.
+    `#009D39` survives only as the `theme-color` meta value, which paints browser
+    chrome and carries no text.
 
 ### Secondary
 - **Tint Green** (`oklch(0.940 0.045 150)`): Subtle filled backgrounds for secondary
@@ -193,8 +202,12 @@ The cream/sand/beige warm-near-white is forbidden — warmth comes from Jura and
 green, not from the body color.
 
 **The Dark-Mode Lift Rule.** In dark mode the hue holds; lightness inverts around
-`oklch(0.170 0.010 150)` surfaces with `oklch(0.580 0.180 150)` accent. Never invert by
-desaturating to gray — the green identity survives the switch.
+`oklch(0.170 0.010 150)` surfaces with an `oklch(0.700 0.180 150)` (`#28bc5e`) accent,
+and the accent's foreground flips to dark ink `oklch(0.170 0.010 150)` — **7.68:1**.
+Filled green controls carry dark text in dark mode and white text in light mode; this
+asymmetry is deliberate, because a mid-green cannot clear AA against both. Never invert
+by desaturating to gray — the green identity survives the switch.
+(Superseded: a `0.580 0.180` accent under near-white text, which was 3.68:1.)
 
 ## 3. Typography
 
@@ -265,8 +278,10 @@ Components are styled by the `maquina_components` gem via `[data-component]` and
 ### Buttons
 Precise and quietly confident — solid, compact, no gloss.
 - **Shape:** Gently rounded (`var(--radius)`, 8px / `rounded.lg`).
-- **Primary:** Memory Green fill, white text, `8px 16px` padding, ~36px tall. Hover
-  darkens the green by ~one step; no lift, no glow.
+- **Primary:** Memory Green fill, `8px 16px` padding, ~36px tall. Text is white in
+  light mode and dark ink in dark mode (see The Dark-Mode Lift Rule) — the label
+  colour follows the mode, because one text colour cannot clear AA against both
+  greens. Hover darkens the fill by mixing 10% black; no lift, no glow.
 - **Secondary:** Tint Green fill with Secondary Ink text. **Ghost:** transparent with
   Ink text, Muted hover fill.
 - **Hover / Focus:** Background shift on hover (150ms); focus uses the universal Focus
@@ -325,6 +340,9 @@ content over form. The bordered editor shell owns the focus frame.
   for body, Geist Mono for labels/tags/code.
 - **Do** hold body and placeholder text to ≥4.5:1 (target 7:1 / AAA where feasible);
   bump Muted Ink toward Ink before shipping faint text.
+- **Do** check green in **both** directions before changing it — ink-on-green *and*
+  green-on-ink. This palette's failure mode is a mid-green that looks fine as an icon
+  and fails as a button label and as body text at the same time.
 - **Do** pair every status with text or icon, never hue alone (color-blind safe).
 - **Do** write the brand lowercase: `recuerd0`, terminal "0" in Memory Green.
 - **Do** show real material — an actual API call, a version diff, a workspace — over

@@ -1,0 +1,17 @@
+<%# locals: (workspace:, size: :md) -%>
+<%# The leading square answers "which workspace is this?", not "how big is it?" —
+    the size already reads, in words, in the stat chip beside it. %>
+<div class="ws-tile <%= "ws-tile-sm" if size == :sm %>"
+     data-tone="<%= workspace_tone(workspace) %>"
+     aria-hidden="true">
+  <span class="ws-tile-initial"><%= workspace_initial(workspace) %></span>
+
+  <% if workspace.pinned_by?(Current.user) %>
+    <span class="ws-pin-dot">
+      <%= icon_for(:pin_solid) %>
+    </span>
+  <% end %>
+</div>
+<% if workspace.pinned_by?(Current.user) %>
+  <span class="sr-only"><%= t("workspaces.index.pinned_marker") %></span>
+<% end %>

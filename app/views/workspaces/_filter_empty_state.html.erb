@@ -1,0 +1,20 @@
+<%# locals: (query:) -%>
+<%# A filter that finds nothing must offer a way out, not just report the fact. %>
+<%= render "components/empty", variant: :outline do %>
+  <%= render "components/empty/header" do %>
+    <%= render "components/empty/media", icon: :search %>
+    <%= render "components/empty/title", text: t("workspaces.index.filter_empty_title", query: query) %>
+    <%= render "components/empty/description", text: t("workspaces.index.filter_empty_description") %>
+  <% end %>
+  <%= render "components/empty/content" do %>
+    <div class="flex flex-wrap items-center justify-center gap-2">
+      <%= link_to workspaces_path, data: { component: "button", variant: "outline" } do %>
+        <%= t("workspaces.index.filter_empty_clear") %>
+      <% end %>
+      <%= link_to search_path(q: query), data: { component: "button", variant: "ghost" } do %>
+        <%= icon_for(:search, class: "w-4 h-4") %>
+        <%= t("workspaces.index.filter_empty_search_all", query: query) %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

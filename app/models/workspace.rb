@@ -26,6 +26,35 @@ class Workspace < ApplicationRecord
   scope :active, -> { not_archived.not_deleted }
   scope :archived_ordered, -> { archived.not_deleted.order(archived_at: :desc) }
 
+  # Staleness is relative to the account, not a constant someone guessed.
+  # A flag that fires on every row is decoration; deriving the cutoff from the
+  # account's own distribution keeps it rare by construction.
+  #
+  # Returns a Time: workspaces last touched before it are "stale". nil means
+  # "flag nothing" — too few workspaces to have a distribution worth reading.
+  MIN_WORKSPACES_FOR_STALENESS = 4
+  STALENESS_FLOOR = 30.days
+  STALENESS_PERCENTILE = 0.25 # oldest quartile
+
+  def self.stale_threshold_for(account)
+    timestamps = account.workspaces.active
+      .joins(:memories)
+      .group("workspaces.id")
+      .maximum("memories.created_at")
+      .values
+      .compact
+      .sort
+
+    return nil if timestamps.size < MIN_WORKSPACES_FOR_STALENESS
+
+    cutoff = timestamps[(timestamps.size * STALENESS_PERCENTILE).floor]
+    return nil if cutoff.blank?
+
+    # Never call something stale that is also recent in absolute terms.
+    floor = STALENESS_FLOOR.ago
+    (cutoff < floor) ? cutoff : nil
+  end
+
   # Additional scopes that consider pinning
   scope :ordered_with_pins_first, ->(user, sort: nil) {
     tail = case sort

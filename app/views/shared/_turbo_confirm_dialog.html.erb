@@ -11,20 +11,22 @@
       "
     >
       <div class="flex flex-col gap-2 text-center sm:text-left">
-        <h2 class="font-display text-lg leading-none font-medium">
-          Confirm Action
+        <h2 id="turbo-confirm-title" data-default-text="<%= t("shared.confirm.title") %>" class="font-display text-lg leading-none font-medium">
+          <%= t("shared.confirm.title") %>
         </h2>
         <p id="turbo-confirm-message" class="text-muted-foreground text-sm">
-          Are you sure you want to continue?
+          <%= t("shared.confirm.body") %>
         </p>
       </div>
 
       <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <button type="button" data-behavior="cancel" data-component="button" data-variant="outline">
-          Cancel
+          <%= t("shared.confirm.cancel") %>
         </button>
-        <button type="button" data-behavior="confirm" data-component="button" data-variant="destructive">
-          Confirm
+        <%# Variant and label are set per trigger: a reversible action must not %>
+        <%# wear the same red as an irreversible one. %>
+        <button type="button" data-behavior="confirm" data-component="button" data-variant="destructive" data-default-text="<%= t("shared.confirm.confirm") %>">
+          <%= t("shared.confirm.confirm") %>
         </button>
       </div>
     </div>

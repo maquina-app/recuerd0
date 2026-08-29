@@ -3,7 +3,7 @@
   <%= link_to public_send(path_helper, extra_params.merge(view: "list")),
         class: "seg-item seg-item-icon",
         data: { state: (view_mode == "grid" ? "off" : "on") },
-        "aria-current": (view_mode == "grid" ? nil : "true"),
+        "aria-current": (view_mode == "grid" ? nil : "page"),
         "aria-label": t("workspaces.index.view_list"),
         title: t("workspaces.index.view_list") do %>
     <%= icon_for(:list) %>
@@ -11,7 +11,7 @@
   <%= link_to public_send(path_helper, extra_params.merge(view: "grid")),
         class: "seg-item seg-item-icon",
         data: { state: (view_mode == "grid" ? "on" : "off") },
-        "aria-current": (view_mode == "grid" ? "true" : nil),
+        "aria-current": (view_mode == "grid" ? "page" : nil),
         "aria-label": t("workspaces.index.view_grid"),
         title: t("workspaces.index.view_grid") do %>
     <%= icon_for(:grid) %>

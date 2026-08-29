@@ -39,13 +39,15 @@ class Workspaces::ArchivesControllerTest < ActionDispatch::IntegrationTest
     workspace = workspaces(:one)
     post archive_workspace_url(workspace)
     assert workspace.reload.archived?
-    assert_equal I18n.t("workspaces/archives.create.created", raise: true), flash[:notice]
+    assert_equal I18n.t("workspaces/archives.create.created", name: workspace.name, raise: true), flash[:notice]
   end
 
   test "destroy unarchives a workspace" do
     workspace = workspaces(:archived)
     delete archive_workspace_url(workspace)
+    # 303, or Turbo replays the DELETE against /workspaces, which is unrouted.
+    assert_response :see_other
     assert_not workspace.reload.archived?
-    assert_equal I18n.t("workspaces/archives.destroy.destroyed", raise: true), flash[:notice]
+    assert_equal I18n.t("workspaces/archives.destroy.destroyed", name: workspace.name, raise: true), flash[:notice]
   end
 end

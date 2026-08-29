@@ -8,6 +8,11 @@ en:
     home: "Home"
   shared:
     back_to_workspaces: "Back to Workspaces"
+    confirm:
+      title: "Confirm"
+      body: "Are you sure you want to continue?"
+      cancel: "Cancel"
+      confirm: "Confirm"
   workspaces:
     form:
       name_placeholder: "Untitled workspace"
@@ -17,8 +22,19 @@ en:
       create: "Create workspace"
       update: "Save"
     index:
+      page_title: "Workspaces"
       new_workspace: "New Workspace"
       count: "%{count}"
+      actions_for: "Actions for %{name}"
+      filter_label: "Filter workspaces on this page"
+      filter_placeholder: "Filter workspaces…"
+      count_filtered:
+        one: "1 of %{total} workspaces matches \"%{query}\""
+        other: "%{count} of %{total} workspaces match \"%{query}\""
+      filter_empty_title: "No workspaces match \"%{query}\""
+      filter_empty_description: "Nothing in this account matches that. Try fewer characters, or search your memories instead."
+      filter_empty_clear: "Clear filter"
+      filter_empty_search_all: "Search memories for \"%{query}\""
       sort_label: "Sort by"
       sort_recent: "Recent"
       sort_name: "Name"
@@ -29,17 +45,53 @@ en:
       pinned_label: "Pinned"
       all_workspaces_label: "All workspaces"
       pinned_marker: "Pinned"
-      no_description: "No description"
       memories_count:
         one: "%{count} memory"
         other: "%{count} memories"
+      memories_noun:
+        one: "memory"
+        other: "memories"
       activity_ago: "%{time} ago"
+      freshness:
+        stale: "stale"
       deletes_in:
         one: "Deletes in %{count} day"
         other: "Deletes in %{count} days"
       deleting_today: "Deleting today"
       empty_title: "No workspaces yet"
       empty_description: "Workspaces hold your memories. Create your first one to start curating, organizing, and versioning what matters."
+      empty_connect: "Then connect an agent so it can read and write here over the API."
+      empty_read_docs: "Read the setup guide"
+    actions:
+      open: "Open"
+      pin: "Pin"
+      unpin: "Unpin"
+      edit: "Edit"
+      archive: "Archive"
+      unarchive: "Unarchive"
+      restore: "Restore"
+      delete: "Delete"
+      delete_permanently: "Delete permanently"
+      pins_left:
+        zero: "none left"
+        one: "1 left"
+        other: "%{count} left"
+      confirm:
+        archive_title: "Archive %{name}?"
+        archive_body: "It moves to Archived and becomes read-only. You can unarchive it any time."
+        archive_button: "Archive"
+        delete_title: "Delete %{name}?"
+        delete_button: "Delete"
+        delete_body:
+          zero: "It moves to Deleted. You can restore it for %{days} days, after which it is permanently removed."
+          one: "It moves to Deleted. You can restore it for %{days} days, after which it and its memory are permanently removed."
+          other: "It moves to Deleted. You can restore it for %{days} days, after which it and its %{count} memories are permanently removed."
+        destroy_title: "Permanently delete %{name}?"
+        destroy_button: "Delete permanently"
+        destroy_body:
+          zero: "This cannot be undone. The workspace is removed immediately."
+          one: "This cannot be undone. The workspace and its memory are removed immediately."
+          other: "This cannot be undone. The workspace and its %{count} memories are removed immediately."
     show:
       page_title: "Workspaces"
       archived_title: "This workspace is archived"
@@ -170,7 +222,7 @@ en:
         empty_title: "No pinned memories"
         empty_description: "Pin memories from any workspace to see them here."
   search:
-    placeholder: "Search memories…"
+    placeholder: "Search workspaces and memories…"
     command:
       hint: "Press Enter to search, Esc to close"
     index:
@@ -178,8 +230,10 @@ en:
       results_count:
         one: "%{count} result for \"%{query}\""
         other: "%{count} results for \"%{query}\""
+      workspaces_heading: "Workspaces"
+      memories_heading: "Memories"
       no_results_title: "No results found"
-      no_results_description: "No memories matched \"%{query}\". Try a different search term."
+      no_results_description: "Nothing matched \"%{query}\". Try a different search term."
       empty_title: "Search your memories"
       empty_description: "Enter a search term to find memories across all your workspaces."
       min_length_title: "Query too short"
@@ -191,6 +245,10 @@ en:
         account: "Account"
         profile: "Profile"
         log_out: "Log out"
+        appearance: "Appearance"
+        theme_system: "System"
+        theme_light: "Light"
+        theme_dark: "Dark"
 
   profiles:
     show:

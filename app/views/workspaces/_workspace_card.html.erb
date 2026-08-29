@@ -1,16 +1,10 @@
-<%# locals: (workspace:, show_status: false) -%>
-<%= render "components/card", id: dom_id(workspace), css_classes: ("opacity-70" if workspace.deleted?) do %>
+<%# locals: (workspace:, show_status: false, stale_after: nil) -%>
+<%= render "components/card",
+    id: dom_id(workspace),
+    css_classes: "flex flex-col h-full #{"opacity-70" if workspace.deleted?}" do %>
   <%= render "components/card/header" do %>
     <div class="flex items-start justify-between gap-2">
-      <div class="ws-tile ws-tile-sm">
-        <%= icon_for(:folder) %>
-        <% if workspace.pinned_by?(Current.user) %>
-          <span class="ws-pin-dot">
-            <%= icon_for(:pin_solid) %>
-            <span class="sr-only"><%= t("workspaces.index.pinned_marker") %></span>
-          </span>
-        <% end %>
-      </div>
+      <%= render "workspaces/workspace_tile", workspace: workspace, size: :sm %>
 
       <div class="flex-shrink-0">
         <%= render "components/dropdown_menu", auto_close: true do %>
@@ -24,7 +18,7 @@
               data-action="dropdown-menu#toggle"
               aria-haspopup="menu"
               aria-expanded="false"
-              aria-label="Workspace actions"
+              aria-label="<%= t("workspaces.index.actions_for", name: workspace.name) %>"
             >
               <%= icon_for(:more_vertical, class: "w-4 h-4") %>
             </button>
@@ -47,8 +41,6 @@
 
     <% if workspace.description.present? %>
       <%= render "components/card/description", css_classes: "truncate", content: workspace.description %>
-    <% else %>
-      <%= render "components/card/description", css_classes: "opacity-60", text: t("workspaces.index.no_description") %>
     <% end %>
 
     <% badges = capture { render "workspaces/workspace_badges", workspace: workspace, show_status: show_status } %>
@@ -57,7 +49,7 @@
     <% end %>
   <% end %>
 
-  <%= render "components/card/footer", css_classes: "gap-4 flex-wrap" do %>
-    <%= render "workspaces/workspace_stats", workspace: workspace %>
+  <%= render "components/card/footer", css_classes: "gap-4 flex-wrap mt-auto" do %>
+    <%= render "workspaces/workspace_stats", workspace: workspace, stale_after: stale_after %>
   <% end %>
 <% end %>

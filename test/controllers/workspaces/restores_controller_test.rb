@@ -10,6 +10,6 @@ class Workspaces::RestoresControllerTest < ActionDispatch::IntegrationTest
     workspace = workspaces(:deleted)
     post restore_deleted_workspace_url(workspace)
     assert_not workspace.reload.deleted?
-    assert_equal I18n.t("workspaces/restores.create.created", raise: true), flash[:notice]
+    assert_equal I18n.t("workspaces/restores.create.created", name: workspace.name, raise: true), flash[:notice]
   end
 end

@@ -1,22 +1,18 @@
-<%# locals: (workspace:, show_status: false) -%>
-<div id="<%= dom_id(workspace) %>" class="group ws-row <%= 'is-deleted' if workspace.deleted? %>">
-  <%# Leading folder tile with optional pin marker %>
-  <div class="ws-tile">
-    <%= icon_for(:folder) %>
-    <% if workspace.pinned_by?(Current.user) %>
-      <span class="ws-pin-dot">
-        <%= icon_for(:pin_solid) %>
-        <span class="sr-only"><%= t("workspaces.index.pinned_marker") %></span>
-      </span>
-    <% end %>
-  </div>
+<%# locals: (workspace:, show_status: false, stale_after: nil) -%>
+<div
+  id="<%= dom_id(workspace) %>"
+  class="group ws-row <%= "is-deleted" if workspace.deleted? %>"
+>
+  <%= render "workspaces/workspace_tile", workspace: workspace %>
 
   <%# Name, description, stats %>
   <div class="flex-1 min-w-0">
     <div class="flex items-center gap-2">
       <h3 class="text-sm font-medium truncate">
         <% if (path = workspace_link_path(workspace)) %>
-          <%= link_to workspace.name, path, class: "hover:underline" %>
+          <%# ws-row-link stretches this one link across the whole row, so the %>
+          <%# hover state and the click target are the same shape. %>
+          <%= link_to workspace.name, path, class: "ws-row-link hover:underline" %>
         <% else %>
           <%= workspace.name %>
         <% end %>
@@ -25,16 +21,16 @@
     </div>
 
     <% if workspace.description.present? %>
-      <p class="text-xs text-muted-foreground truncate mt-0.5"><%= workspace.description %></p>
+      <p class="ws-row-text text-xs text-muted-foreground truncate mt-0.5"><%= workspace.description %></p>
     <% end %>
 
     <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-      <%= render "workspaces/workspace_stats", workspace: workspace %>
+      <%= render "workspaces/workspace_stats", workspace: workspace, stale_after: stale_after %>
     </div>
   </div>
 
   <%# Actions dropdown — always reachable (visible, no hover gating) %>
-  <div class="flex-shrink-0">
+  <div class="ws-row-actions flex-shrink-0">
     <%= render "components/dropdown_menu", auto_close: true do %>
       <%= render "components/dropdown_menu/trigger", as_child: true do %>
         <button
@@ -46,7 +42,7 @@
           data-action="dropdown-menu#toggle"
           aria-haspopup="menu"
           aria-expanded="false"
-          aria-label="Workspace actions"
+          aria-label="<%= t("workspaces.index.actions_for", name: workspace.name) %>"
         >
           <%= icon_for(:more_vertical, class: "w-4 h-4") %>
         </button>

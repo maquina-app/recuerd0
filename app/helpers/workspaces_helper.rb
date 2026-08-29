@@ -42,4 +42,30 @@ module WorkspacesHelper
       base
     end
   end
+
+  # The tile's job is recognition, not quantity: 21 workspaces should be 21
+  # distinguishable objects. The count already lives in the stat chip, in words.
+  # Tone is a deterministic neutral step (never a second hue — The One Green
+  # Rule), so the column has texture without the accent becoming a wash.
+  WORKSPACE_TONES = 4
+
+  def workspace_initial(workspace)
+    workspace.name.to_s.strip.first&.upcase.presence || "?"
+  end
+
+  def workspace_tone(workspace)
+    workspace.name.to_s.sum % WORKSPACE_TONES
+  end
+
+  # Staleness is relative to the account (Workspace.stale_threshold_for), so the
+  # flag stays rare by construction instead of firing on every row.
+  def workspace_freshness(workspace, stale_after:)
+    return :current unless workspace.active?
+    return :current if stale_after.blank?
+
+    activity = workspace.last_activity
+    return :current if activity.blank?
+
+    (activity < stale_after) ? :stale : :current
+  end
 end

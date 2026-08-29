@@ -83,6 +83,33 @@
 
         <%= render "components/dropdown_menu/separator" %>
 
+        <%# Appearance — the audience works in dark terminals; the token set has
+            always had a dark mode, this is the control that reaches it. %>
+        <%= render "components/dropdown_menu/group" do %>
+          <%= render "components/dropdown_menu/label", css_classes: "text-xs font-normal text-muted-foreground" do %>
+            <%= t("components.sidebar.nav_user.appearance") %>
+          <% end %>
+
+          <% current_theme = theme_preference %>
+          <% [[:system, :monitor], [:light, :sun], [:dark, :moon]].each do |theme, icon| %>
+            <%= render "components/dropdown_menu/item",
+                data: {
+                  controller: "theme",
+                  theme_theme_value: theme,
+                  action: "theme#select"
+                },
+                aria: { current: (current_theme == theme.to_s ? "true" : nil) } do %>
+              <%= icon_for icon, class: "size-4" %>
+              <%= t("components.sidebar.nav_user.theme_#{theme}") %>
+              <% if current_theme == theme.to_s %>
+                <span class="ml-auto"><%= icon_for :check, class: "size-3.5 text-primary" %></span>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <%= render "components/dropdown_menu/separator" %>
+
         <%= render "components/dropdown_menu/item",
             href: session_path,
             data: { turbo_method: :delete } do %>

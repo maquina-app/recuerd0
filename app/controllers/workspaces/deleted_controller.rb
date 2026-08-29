@@ -7,7 +7,13 @@ class Workspaces::DeletedController < ApplicationController
   # GET /workspaces/deleted
   def index
     @view_mode = resolve_workspace_view_mode
-    @pagy, @workspaces = pagy(Current.account.workspaces.deleted_ordered)
+    @query = params[:q].to_s.strip.first(80).presence
+
+    scope = Current.account.workspaces.deleted_ordered
+    @total = scope.count
+    scope = scope.search(@query) if @query
+
+    @pagy, @workspaces = pagy(scope)
   end
 
   # GET /workspaces/deleted/:id
@@ -25,7 +31,8 @@ class Workspaces::DeletedController < ApplicationController
   # DELETE /workspaces/deleted/:id
   def destroy
     track_event("workspace.permanent_destroy", resource: @workspace)
+    name = @workspace.name
     @workspace.destroy!
-    redirect_to deleted_workspaces_path, notice: t("workspaces/deleted.destroy.destroyed")
+    redirect_to deleted_workspaces_path, notice: t("workspaces/deleted.destroy.destroyed", name: name), status: :see_other
   end
 end
