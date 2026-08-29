@@ -6,6 +6,12 @@ class Workspaces::ArchivesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@user)
   end
 
+  test "index renders no turbo frame" do
+    get archived_workspaces_url
+    assert_response :success
+    assert_select "turbo-frame", count: 0
+  end
+
   test "index lists archived workspaces" do
     get archived_workspaces_url
     assert_response :success

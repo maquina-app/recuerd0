@@ -1,8 +1,10 @@
 <%# locals: (view_mode:, path_helper: :workspaces_path, extra_params: {}) %>
+<%# turbo_action: replace on both links — changing density is list state, not
+    navigation, and replace is what makes the same-pathname visit morph. %>
 <div class="seg" role="group" aria-label="<%= t("workspaces.index.view_label") %>">
   <%= link_to public_send(path_helper, extra_params.merge(view: "list")),
         class: "seg-item seg-item-icon",
-        data: { state: (view_mode == "grid" ? "off" : "on") },
+        data: { state: (view_mode == "grid" ? "off" : "on"), turbo_action: "replace" },
         "aria-current": (view_mode == "grid" ? nil : "page"),
         "aria-label": t("workspaces.index.view_list"),
         title: t("workspaces.index.view_list") do %>
@@ -10,7 +12,7 @@
   <% end %>
   <%= link_to public_send(path_helper, extra_params.merge(view: "grid")),
         class: "seg-item seg-item-icon",
-        data: { state: (view_mode == "grid" ? "on" : "off") },
+        data: { state: (view_mode == "grid" ? "on" : "off"), turbo_action: "replace" },
         "aria-current": (view_mode == "grid" ? "page" : nil),
         "aria-label": t("workspaces.index.view_grid"),
         title: t("workspaces.index.view_grid") do %>

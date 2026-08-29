@@ -16,6 +16,27 @@ if ("serviceWorker" in navigator) {
 // and a synthesised form has no submitter — so for every dropdown menu item the
 // handler below used to receive `undefined` and fall back to "Confirm".
 // Recording the clicked trigger is the only way to get the authored copy back.
+// Never let a morph overwrite the field the visitor is currently typing in.
+//
+// The workspaces filter submits debounced and morphs the page in place. Without
+// this guard, the response for an earlier keystroke morphs its own (older)
+// value back into the input: typing "systemd" reliably ends up as "s", because
+// each render resets the field to whatever the server last saw. Idiomorph
+// restores focus and caret, but it has no way to know the value it is writing
+// is already stale.
+//
+// Scoped deliberately to the focused element, rather than data-turbo-permanent
+// on the input: the server must still be able to reset the field when the
+// visitor is NOT typing in it (the "Clear filter" link, a sort change).
+document.addEventListener('turbo:before-morph-element', (event) => {
+  const el = event.target;
+  if (el !== document.activeElement) return;
+  if (el instanceof HTMLTextAreaElement ||
+      (el instanceof HTMLInputElement && !['checkbox', 'radio', 'submit', 'button'].includes(el.type))) {
+    event.preventDefault();
+  }
+});
+
 let lastConfirmTrigger = null;
 document.addEventListener('click', (event) => {
   const trigger = event.target?.closest?.('[data-turbo-confirm]');

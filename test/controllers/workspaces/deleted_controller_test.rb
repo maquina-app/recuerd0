@@ -6,6 +6,12 @@ class Workspaces::DeletedControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@user)
   end
 
+  test "index renders no turbo frame" do
+    get deleted_workspaces_url
+    assert_response :success
+    assert_select "turbo-frame", count: 0
+  end
+
   test "index lists deleted workspaces" do
     get deleted_workspaces_url
     assert_response :success
