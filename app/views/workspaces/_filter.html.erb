@@ -1,11 +1,16 @@
 <%# locals: (query: nil, path_helper: :workspaces_path, extra_params: {}) -%>
 <%# Server-backed: the filter searches the whole account, not the page you
-    happen to be on. Submitted debounced into the list frame. %>
+    happen to be on. Submitted debounced, and it drives the whole page — there
+    is no frame here.
+
+    turbo_action is "replace", not "advance", for two reasons: morph requires it
+    (same pathname + action replace + the layout's turbo-refresh-method meta),
+    and it stops a debounced keystroke burst from pushing one history entry per
+    submit. Idiomorph preserves focus and caret across the morph. %>
 <%= form_with url: public_send(path_helper, extra_params.compact),
               method: :get,
               data: {
-                turbo_frame: "workspaces_list",
-                turbo_action: "advance",
+                turbo_action: "replace",
                 ws_filter_target: "form"
               },
               class: "ws-filter sm:max-w-xs" do |f| %>

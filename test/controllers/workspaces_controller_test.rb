@@ -12,6 +12,57 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
 
   # -- index --
 
+  # -- no turbo frames on the list pages --
+  #
+  # The list used to be wrapped in turbo_frame_tag "workspaces_list". Every link
+  # inside it (a workspace, Edit, "search everywhere") is frame-scoped by
+  # inheritance, and none of those targets has a matching frame, so each one
+  # failed with "Content missing". Filtering now morphs the whole page instead.
+
+  test "index renders no turbo frame" do
+    get workspaces_url
+    assert_response :success
+    assert_select "turbo-frame", count: 0
+  end
+
+  test "workspace links on the index are plain links, not frame-scoped" do
+    get workspaces_url
+    assert_response :success
+
+    assert_select "a.ws-row-link[href=?]", workspace_path(@workspace)
+    assert_select "a.ws-row-link[data-turbo-frame]", count: 0
+  end
+
+  test "index filter form drives the page, not a frame" do
+    get workspaces_url
+    assert_response :success
+
+    # replace (not advance) is what makes the same-pathname visit morph.
+    assert_select "form.ws-filter[data-turbo-action=replace]"
+    assert_select "form.ws-filter[data-turbo-frame]", count: 0
+  end
+
+  test "index filters workspaces by query" do
+    match = Workspace.create!(account: @user.account, name: "Zebra Notes")
+
+    get workspaces_url(q: "Zebra")
+    assert_response :success
+
+    names = @controller.view_assigns["workspaces"].map(&:name)
+    assert_includes names, match.name
+    assert_equal 1, names.size
+    assert_operator @controller.view_assigns["total"], :>, 1,
+      "total must report the unfiltered count so the header can say 1 of N"
+  end
+
+  test "index renders the filter empty state when nothing matches" do
+    get workspaces_url(q: "zzzznotarealworkspace")
+    assert_response :success
+
+    assert_empty @controller.view_assigns["workspaces"].to_a
+    assert_select "turbo-frame", count: 0
+  end
+
   test "index defaults view mode to list" do
     get workspaces_url
     assert_response :success

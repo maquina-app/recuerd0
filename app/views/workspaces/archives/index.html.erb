@@ -25,12 +25,11 @@
         <%= render "workspaces/filter", query: @query, path_helper: :archived_workspaces_path, extra_params: { view: @view_mode } %>
         <%= render "workspaces/view_toggle", view_mode: @view_mode, path_helper: :archived_workspaces_path %>
       </div>
-      <%= turbo_frame_tag "workspaces_list" do %>
-        <% if @workspaces.any? %>
-          <%= render "workspaces/workspaces_list", workspaces: @workspaces, pagy: @pagy, path_helper: :archived_workspaces_path, view_mode: @view_mode, show_pins: false, show_status: true %>
-        <% else %>
-          <%= render "workspaces/filter_empty_state", query: @query %>
-        <% end %>
+      <%# No frame — the workspace links inside navigate to pages that have none. %>
+      <% if @workspaces.any? %>
+        <%= render "workspaces/workspaces_list", workspaces: @workspaces, pagy: @pagy, path_helper: :archived_workspaces_path, view_mode: @view_mode, show_pins: false, show_status: true %>
+      <% else %>
+        <%= render "workspaces/filter_empty_state", query: @query %>
       <% end %>
     </div>
   <% else %>

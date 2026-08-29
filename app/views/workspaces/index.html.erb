@@ -36,19 +36,20 @@
         <%= render "workspaces/filter", query: @query, extra_params: { view: @view_mode, sort: @sort } %>
 
         <div class="flex items-center gap-2">
-          <%# Sort segmented control %>
+          <%# Sort segmented control. Sorting is list state, so it replaces
+              rather than advances — which is also what lets it morph. %>
           <div class="seg" role="group" aria-label="<%= t("workspaces.index.sort_label") %>">
             <%= link_to t("workspaces.index.sort_recent"), workspaces_path(view: @view_mode, q: @query),
                   class: "seg-item",
-                  data: { state: (@sort.blank? ? "on" : "off") },
+                  data: { state: (@sort.blank? ? "on" : "off"), turbo_action: "replace" },
                   "aria-current": (@sort.blank? ? "page" : nil) %>
             <%= link_to t("workspaces.index.sort_name"), workspaces_path(view: @view_mode, sort: "name", q: @query),
                   class: "seg-item",
-                  data: { state: (@sort == "name" ? "on" : "off") },
+                  data: { state: (@sort == "name" ? "on" : "off"), turbo_action: "replace" },
                   "aria-current": (@sort == "name" ? "page" : nil) %>
             <%= link_to t("workspaces.index.sort_memories"), workspaces_path(view: @view_mode, sort: "memories", q: @query),
                   class: "seg-item",
-                  data: { state: (@sort == "memories" ? "on" : "off") },
+                  data: { state: (@sort == "memories" ? "on" : "off"), turbo_action: "replace" },
                   "aria-current": (@sort == "memories" ? "page" : nil) %>
           </div>
 
@@ -57,21 +58,22 @@
         </div>
       </div>
 
-      <%= turbo_frame_tag "workspaces_list" do %>
-        <%# The result count lives inside the frame, so it can never disagree
-            with the rows beneath it. %>
-        <% if @query.present? %>
-          <p class="mb-3 px-0.5 text-xs text-muted-foreground">
-            <%= t("workspaces.index.count_filtered", count: @pagy.count, total: @total, query: @query) %>
-          </p>
-        <% end %>
-        <% if @workspaces.any? %>
-          <%= render "workspaces/workspaces_list",
-                workspaces: @workspaces, pagy: @pagy, view_mode: @view_mode,
-                show_pins: true, stale_after: @stale_after %>
-        <% else %>
-          <%= render "workspaces/filter_empty_state", query: @query %>
-        <% end %>
+      <%# No frame here. Every link in this list navigates somewhere without one
+          (a workspace, Edit, search), so a frame made each of them fail with
+          "Content missing". Filtering, sorting and paging all keep the same
+          pathname and use turbo_action: replace, which morphs the page — so the
+          count below, the header total and the sort chrome update together. %>
+      <% if @query.present? %>
+        <p class="mb-3 px-0.5 text-xs text-muted-foreground">
+          <%= t("workspaces.index.count_filtered", count: @pagy.count, total: @total, query: @query) %>
+        </p>
+      <% end %>
+      <% if @workspaces.any? %>
+        <%= render "workspaces/workspaces_list",
+              workspaces: @workspaces, pagy: @pagy, view_mode: @view_mode,
+              show_pins: true, stale_after: @stale_after %>
+      <% else %>
+        <%= render "workspaces/filter_empty_state", query: @query %>
       <% end %>
     </div>
   <% end %>
