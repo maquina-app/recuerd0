@@ -48,6 +48,9 @@ class WorkspacesController < ApplicationController
         end
 
         track_event("workspace.view", resource: @workspace)
+        # Staleness is account-relative, so the header chip agrees with the flag
+        # the index showed on the row the visitor just clicked.
+        @stale_after = Workspace.stale_threshold_for(Current.account)
         load_workspace_memories
       end
       format.json { stale?(@workspace) }

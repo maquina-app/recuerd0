@@ -20,15 +20,10 @@
   <%# ===== HEADER ===== %>
   <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div class="flex min-w-0 items-start gap-3.5">
-      <div class="ws-tile">
-        <%= icon_for(:folder) %>
-        <% if @workspace.active? && is_pinned %>
-          <span class="ws-pin-dot">
-            <%= icon_for(:pin_solid) %>
-            <span class="sr-only"><%= t("workspaces.show.pinned_badge") %></span>
-          </span>
-        <% end %>
-      </div>
+      <%# The same recognition mark the index shows, so the tile a visitor
+          clicked is the tile that greets them here. A visible Pinned badge sits
+          beside the title, so the partial's sr-only marker is suppressed. %>
+      <%= render "workspaces/workspace_tile", workspace: @workspace, announce_pin: false %>
 
       <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-2">
@@ -54,22 +49,32 @@
 
         <% if @workspace.description.present? %>
           <p class="mt-1 text-sm text-muted-foreground break-words"><%= @workspace.description %></p>
+        <% else %>
+          <%# A workspace with no description cannot tell an agent what it is
+              for. Say so where the description would have been, and make the
+              fix one click away rather than three levels into a kebab menu. %>
+          <p class="mt-1 text-sm text-muted-foreground">
+            <%= t("workspaces.show.no_description") %>
+            <%= link_to t("workspaces.show.add_description"), edit_workspace_path(@workspace),
+                  class: "underline underline-offset-2 hover:text-foreground" %>
+          </p>
         <% end %>
 
+        <%# The ID is what this audience pastes into an MCP config or a CLI call.
+            Copying it while never showing it meant you could not verify what
+            landed on your clipboard, and left nothing to select by hand when
+            the Clipboard API is unavailable on a plain-http install. %>
+        <p class="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span class="sr-only"><%= t("workspaces.show.workspace_id_label") %></span>
+          <code class="ws-id font-mono select-all"><%= @workspace.id %></code>
+        </p>
+
+        <%# Same two chips as the index row, from the same partial: one count,
+            one freshness. The third chip here used to repeat the clock icon with
+            no noun, and all three hid their exact dates in title attributes that
+            no keyboard or touch user could reach. %>
         <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-          <span class="stat-chip" title="<%= @workspace.created_at.strftime("%B %-d, %Y") %>">
-            <%= icon_for(:clock) %>
-            <%= t("workspaces.show.created_ago", time: time_ago_in_words(@workspace.created_at)) %>
-          </span>
-          <span class="stat-chip" title="<%= t("workspaces.index.memories_count", count: @workspace.memories_count) %>">
-            <%= icon_for(:file_text) %>
-            <strong><%= @workspace.memories_count %></strong>
-            <%= (@workspace.memories_count == 1) ? "memory" : "memories" %>
-          </span>
-          <span class="stat-chip" title="<%= @workspace.last_activity.strftime("%B %-d, %Y at %-l:%M %p") %>">
-            <%= icon_for(:clock) %>
-            <%= t("workspaces.show.activity_ago", time: time_ago_in_words(@workspace.last_activity)) %>
-          </span>
+          <%= render "workspaces/workspace_stats", workspace: @workspace, stale_after: @stale_after %>
         </div>
       </div>
     </div>
@@ -78,19 +83,23 @@
       <% if @workspace.active? %>
         <%= link_to new_workspace_memory_path(@workspace), data: { component: "button", variant: "default", size: "sm" } do %>
           <%= icon_for(:bookmark_plus, class: "size-4") %>
-          New Memory
+          <%= t("workspaces.show.new_memory") %>
         <% end %>
 
-        <div data-controller="clipboard" data-clipboard-text-value="<%= @workspace.id %>">
+        <div data-controller="clipboard"
+             data-clipboard-text-value="<%= @workspace.id %>"
+             data-clipboard-copied-text="<%= t("workspaces.show.copy_id_copied") %>"
+             data-clipboard-failed-text="<%= t("workspaces.show.copy_id_failed") %>">
+          <span class="sr-only" role="status" aria-live="polite" data-clipboard-target="status"></span>
           <button type="button"
                   data-component="button"
                   data-variant="ghost"
                   data-size="sm"
                   data-action="clipboard#copy"
-                  aria-label="Copy workspace ID">
+                  aria-label="<%= t("workspaces.show.copy_id_aria") %>">
             <span data-clipboard-target="copyIcon"><%= icon_for(:copy, class: "size-4") %></span>
             <span data-clipboard-target="checkIcon" class="hidden"><%= icon_for(:check, class: "size-4") %></span>
-            Copy ID
+            <%= t("workspaces.show.copy_id") %>
           </button>
         </div>
 
@@ -108,7 +117,7 @@
             data-action="dropdown-menu#toggle"
             aria-haspopup="menu"
             aria-expanded="false"
-            aria-label="Workspace actions"
+            aria-label="<%= t("workspaces.show.actions_aria") %>"
           >
             <%= icon_for(:more_vertical, class: "size-4") %>
           </button>

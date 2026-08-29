@@ -126,8 +126,8 @@
   --muted-foreground: oklch(0.650 0.010 150);
   --accent: oklch(0.300 0.035 150);
   --accent-foreground: oklch(0.920 0.015 150);
-  --destructive: oklch(0.580 0.237 28.43);
-  --destructive-foreground: oklch(0.960 0.015 25);
+  --destructive: oklch(0.650 0.200 28.43);
+  --destructive-foreground: oklch(0.170 0.010 25);
   --success: oklch(0.250 0.030 150);
   --success-foreground: oklch(0.850 0.045 150);
   --warning: oklch(0.250 0.025 85);
@@ -672,6 +672,103 @@ house-md-toolbar button svg {
 .ws-tile[data-tone="2"] { background: color-mix(in oklch, var(--muted) 44%, var(--border)); }
 .ws-tile[data-tone="3"] { background: color-mix(in oklch, var(--muted) 16%, var(--border)); }
 
+/* Pin marker on a tile. This rule is load-bearing for three templates
+   (workspaces/_workspace_tile, workspaces/show, memories/show) and its absence
+   is invisible until something is actually pinned: without `position: absolute`
+   the span becomes a second grid row inside the tile, stacking the pin under
+   the mark and overflowing the box. */
+.ws-tile .ws-pin-dot {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 0 2px var(--background);
+}
+.ws-tile .ws-pin-dot svg {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+/* The workspace ID, rendered so it can be read and hand-selected. Quiet by
+   default — it is reference data, not a headline. */
+.ws-id {
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  padding: 0.0625rem 0.25rem;
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+
+/* Tiles that still carry an icon rather than an initial (memory show header). */
+.ws-tile > svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+.ws-tile.ws-tile-sm > svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Focus ring restoration.
+   The gem defines [data-component="button"]:focus-visible with a ring, then
+   overrides box-shadow in every variant rule at EQUAL specificity and later
+   source order — ghost resolves to `none`, default/outline/secondary to
+   --shadow-sm. The ring is therefore absent on every button that is not
+   destructive. Reinstating it one specificity step up (an extra attribute
+   selector) puts it back without touching the gem. */
+[data-component="button"][data-variant]:focus-visible,
+[data-component="button"]:not([data-variant]):focus-visible {
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--ring);
+}
+[data-component="button"][data-variant="destructive"]:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--destructive);
+}
+
+/* The gem's ghost variant sets `color: var(--foreground)` unlayered, which beats
+   the .text-destructive utility — so every destructive icon button (remove user,
+   revoke app, delete token) rendered in plain ink. Same specificity, later
+   source order, so this restores the intent without touching the gem. */
+[data-component="button"].text-destructive,
+[data-component="button"].text-destructive:hover,
+[data-component="button"].hover\:text-destructive:hover {
+  color: var(--destructive);
+}
+
+/* Coarse pointers get a 44px hit target without the control growing visually:
+   the box stays at its designed size, a pseudo-element carries the touch area.
+   Applied only under (pointer: coarse) so desktop density is untouched. */
+@media (pointer: coarse) {
+  [data-component="button"][data-size="sm"],
+  [data-component="button"][data-size="icon-sm"],
+  .seg-item {
+    position: relative;
+  }
+  [data-component="button"][data-size="sm"]::after,
+  [data-component="button"][data-size="icon-sm"]::after,
+  .seg-item::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+  }
+}
+
 /* Stat chip — token-based metric pill */
 .stat-chip {
   display: inline-flex;
@@ -1003,6 +1100,60 @@ a {
 .category-chip[aria-current="true"] .cat-count {
   background: color-mix(in oklch, var(--accent-foreground) 14%, transparent);
   color: var(--accent-foreground);
+}
+
+/* filter-token — an APPLIED filter, not an available one. Deliberately not a
+   .category-chip: those are toggles and this is state with a remove action, so
+   it stays neutral (the accent is reserved) and reads at label size. The tag
+   value is mono because a tag is data the user typed, not UI copy. The whole
+   token is the remove control. */
+.filter-token {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.625rem;
+  padding: 0 0.25rem 0 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 150ms, color 150ms, border-color 150ms;
+}
+.filter-token svg {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+}
+.filter-token-value {
+  font-family: var(--font-mono, "Geist Mono", ui-monospace, monospace);
+  color: var(--foreground);
+}
+/* The x is the affordance; it earns contrast only on hover/focus, so the token
+   reads as a quiet statement until you reach for it. */
+.filter-token-x {
+  display: inline-grid;
+  place-items: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  transition: background-color 150ms, color 150ms;
+}
+.filter-token:hover {
+  border-color: color-mix(in oklch, var(--border) 60%, var(--foreground));
+  color: var(--foreground);
+}
+.filter-token:hover .filter-token-x {
+  background: color-mix(in oklch, var(--foreground) 10%, transparent);
+  color: var(--foreground);
+}
+.filter-token:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
 }
 
 /* category-dot — small color dot keyed to the category badge color */

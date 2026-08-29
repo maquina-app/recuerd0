@@ -1,24 +1,11 @@
 <%# locals: (workspace:) %>
 <div class="mb-6 flex flex-col gap-3">
-  <% if @memory_tag.present? %>
-    <%# Active tag filter chip — replaces category/search while present %>
-    <div class="flex flex-wrap items-center gap-2">
-      <span class="category-chip" data-state="on" aria-current="true">
-        <%= icon_for(:tag) %>
-        <span><%= t("workspaces.show.toolbar.tag_filter_label", tag: @memory_tag) %></span>
-        <%= link_to workspace_show_path(workspace, view: @memory_view),
-              class: "inline-flex items-center",
-              data: { turbo_action: "advance" },
-              "aria-label": t("workspaces.show.toolbar.tag_filter_clear") do %>
-          <%= icon_for(:x) %>
-        <% end %>
-      </span>
-    </div>
-  <% end %>
-
   <%# Category filter chips — own horizontal scroll, never widens the page %>
   <div class="category-bar" role="group" aria-label="<%= t("workspaces.show.toolbar.filter_label") %>">
-    <% all_active = @category.nil? %>
+    <%# While a tag governs the list, no category is selected — showing "All" lit
+        would claim the list is unfiltered when it plainly is not. Clicking any
+        category from here replaces the tag filter. %>
+    <% all_active = @category.nil? && @memory_tag.blank? %>
     <%= link_to workspace_show_path(workspace, **memory_filter_params(category: nil, tag: nil)),
           class: "category-chip",
           data: { state: (all_active ? "on" : "off") },
@@ -103,6 +90,24 @@
       </div>
     </div>
   </div>
+
+  <% if @memory_tag.present? %>
+    <%# An applied filter is state, not an option — so it must not wear the same
+        pill as the category toggles above, and must not spend the accent. It
+        sits last in the toolbar, directly above the list it narrows, and the
+        whole token is the button that removes it. %>
+    <p class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <span><%= t("workspaces.show.toolbar.tag_filter_prefix") %></span>
+      <%= link_to workspace_show_path(workspace, view: @memory_view),
+            class: "filter-token",
+            data: { turbo_action: "advance" },
+            "aria-label": t("workspaces.show.toolbar.tag_filter_remove", tag: @memory_tag) do %>
+        <%= icon_for(:tag) %>
+        <span class="filter-token-value"><%= @memory_tag %></span>
+        <span class="filter-token-x" aria-hidden="true"><%= icon_for(:x) %></span>
+      <% end %>
+    </p>
+  <% end %>
 
   <% if @memory_query.present? && @memory_query.length < Searchable::MIN_QUERY_LENGTH %>
     <p class="text-xs text-muted-foreground"><%= t("workspaces.show.toolbar.short_query_hint") %></p>

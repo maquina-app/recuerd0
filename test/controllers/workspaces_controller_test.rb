@@ -131,6 +131,55 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, counts["preference"]
   end
 
+  test "show category counts respect an active search filter" do
+    Memory.create_with_content(@workspace, title: "Zebra decision", content: "b", category: "decision")
+    @workspace.memories.each(&:rebuild_search_index)
+
+    get workspace_url(@workspace, q: "zzzznotarealterm")
+    assert_response :success
+
+    counts = @controller.view_assigns["category_counts"]
+    assert_equal 0, counts.values.sum,
+      "counts must not advertise matches the filtered list does not contain"
+  end
+
+  test "show renders the workspace id so it can be read and hand-selected" do
+    get workspace_url(@workspace)
+    assert_response :success
+    assert_select "code.ws-id", text: @workspace.id.to_s
+  end
+
+  test "show prompts for a description when the workspace has none" do
+    @workspace.update!(description: nil)
+
+    get workspace_url(@workspace)
+    assert_response :success
+    assert_select "a[href=?]", edit_workspace_path(@workspace),
+      text: I18n.t("workspaces.show.add_description")
+  end
+
+  test "show memory groups are headings, not styled spans" do
+    get workspace_url(@workspace)
+    assert_response :success
+    assert_select "h2.ws-group-label", minimum: 1
+    assert_select "span.ws-group-label", count: 0
+  end
+
+  test "destructive workspace action carries the copy the confirm dialog needs" do
+    get workspace_url(@workspace)
+    assert_response :success
+
+    # Turbo synthesises a form from a data-turbo-method link and copies only
+    # data-turbo-confirm onto it, so the dialog recovers title/button/severity
+    # from the trigger. If these attributes go missing the dialog silently
+    # degrades to "Confirm / Confirm" on an irreversible action.
+    assert_select "a[data-turbo-method=delete][data-confirm-title=?]",
+      I18n.t("workspaces.actions.confirm.delete_title", name: @workspace.name)
+    assert_select "a[data-turbo-method=delete][data-confirm-button=?]",
+      I18n.t("workspaces.actions.confirm.delete_button")
+    assert_select "a[data-turbo-method=delete][data-confirm-severity=destructive]"
+  end
+
   test "show filters memories by category" do
     decision = Memory.create_with_content(@workspace, title: "Decided", content: "b", category: "decision")
     Memory.create_with_content(@workspace, title: "Found", content: "b", category: "discovery")
@@ -188,8 +237,11 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     get workspace_url(@workspace, tag: "onboarding")
     assert_response :success
 
-    assert_select "span.category-chip", text: /Tag: onboarding/
-    assert_select "a[aria-label='Clear tag filter']"
+    # The applied filter is a token, deliberately not a .category-chip: those are
+    # toggles, this is state plus a remove action.
+    assert_select "a.filter-token .filter-token-value", text: "onboarding"
+    assert_select "a.filter-token[aria-label=?]", "Remove tag filter: onboarding"
+    assert_select "span.category-chip", count: 0
   end
 
   test "show renders clickable tag links on memory cards" do
@@ -208,8 +260,8 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     assert_empty @controller.view_assigns["memories"].to_a
-    assert_select "span.category-chip", text: /Tag: nonexistent/
-    assert_select "a[aria-label='Clear tag filter']"
+    assert_select "a.filter-token .filter-token-value", text: "nonexistent"
+    assert_select "a.filter-token[aria-label=?]", "Remove tag filter: nonexistent"
   end
 
   test "show with sort=title responds 200 and sets memory_sort" do
