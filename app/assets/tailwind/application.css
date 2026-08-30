@@ -61,6 +61,10 @@
 
   /* Header */
   --header-height: 3.5rem;
+
+  /* Modal scrim. Not derived from --background: a scrim mixed from the page's
+     own background composites to the page colour and dims nothing. */
+  --scrim: oklch(0.17 0.01 150);
 }
 
 @theme {
@@ -150,6 +154,9 @@
   --sidebar-accent-foreground: oklch(0.920 0.015 150);
   --sidebar-border: oklch(0.320 0.018 150);
   --sidebar-ring: oklch(0.700 0.180 150);
+  /* The page is already near the light theme's scrim, so dark needs its own,
+     darker value or the overlay is again a no-op. */
+  --scrim: oklch(0.040 0.004 150);
 }
 
 @layer base {
@@ -1681,15 +1688,23 @@ a {
 }
 
 /* ── ⌘K command palette ────────────────────────────────────────────────────
-   Dark mode measured 1.05:1 between the panel and the dimmed page, with a
-   1px border at 1.73:1 — both under the 3:1 non-text bar, so the modal did not
-   read as modal at all. `bg-black/50` does nothing over a near-black page and
-   shadow-lg is invisible on it. The fix is to lift the panel above the page
-   rather than dimming the page toward it, and to tint the scrim with the
-   neutral ramp instead of pure black (The True-Neutral Rule). */
+   The modal had no perceivable boundary: measured 1.05:1 panel-vs-backdrop in
+   dark, 1.00:1 in light, against a 3:1 bar. `bg-black/50` does nothing over a
+   near-black page and shadow-lg is invisible on it.
+
+   The scrim must be a colour the page is NOT. Mixing `--background` toward
+   transparency over a page painted `--background` composites to exactly the
+   page colour — a no-op that measured identical to the page within 1/255 in
+   both themes. So the scrim is an explicit dark neutral off the hue-150 ramp
+   (tinted, not pure black, per The True-Neutral Rule), and the dark theme
+   needs its own darker value because the page is already near the light
+   theme's scrim. */
 .search-command-dialog::backdrop {
-  background-color: color-mix(in oklch, var(--background) 55%, transparent);
+  background-color: color-mix(in oklch, var(--scrim) 62%, transparent);
   backdrop-filter: blur(2px);
+}
+.dark .search-command-dialog::backdrop {
+  background-color: color-mix(in oklch, var(--scrim) 74%, transparent);
 }
 
 .search-command-panel {
