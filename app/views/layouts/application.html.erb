@@ -37,7 +37,7 @@
     </div>
 
     <%= render "shared/turbo_confirm_dialog" %>
-    <%= render "shared/search_command_dialog" if Current.user %>
+    <%= render "shared/search_command_dialog", scoped_workspace: palette_scope_workspace if Current.user %>
     <%= render "application/onboarding_drawer" if Current.user %>
 
     <!-- Privacy-friendly analytics by Plausible -->

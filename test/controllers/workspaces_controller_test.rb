@@ -22,7 +22,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
   test "index renders no turbo frame" do
     get workspaces_url
     assert_response :success
-    assert_select "turbo-frame", count: 0
+    assert_select "turbo-frame#workspaces_list", count: 0
   end
 
   test "workspace links on the index are plain links, not frame-scoped" do
@@ -60,7 +60,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     assert_empty @controller.view_assigns["workspaces"].to_a
-    assert_select "turbo-frame", count: 0
+    assert_select "turbo-frame#workspaces_list", count: 0
   end
 
   test "index defaults view mode to list" do

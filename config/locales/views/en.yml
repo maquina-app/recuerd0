@@ -309,9 +309,19 @@ en:
   search:
     placeholder: "Search workspaces and memories…"
     command:
-      hint: "Press Enter to search, Esc to close"
+      label: "Search"
+      input_label: "Search workspaces and memories"
+      hint: "Type at least %{count} characters. ↑↓ to move, Enter to open, Esc to close."
+      hint_operators: "Supports AND, OR, NOT, \"phrases\" and title: / body:"
+      results_label: "Search results"
+      invalid_query: "That search syntax isn't valid. Try plain words, or check your quotes and operators."
+      see_all: "Press Enter to see all %{count} results"
+      scope_workspace: "Only in %{workspace}"
+      scope_everywhere: "Search everywhere"
+      empty_query: "Type something to search."
     index:
       title: "Search"
+      invalid_query_title: "That search couldn't be run"
       results_count:
         one: "%{count} result for \"%{query}\""
         other: "%{count} results for \"%{query}\""

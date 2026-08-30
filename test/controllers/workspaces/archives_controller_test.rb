@@ -9,7 +9,7 @@ class Workspaces::ArchivesControllerTest < ActionDispatch::IntegrationTest
   test "index renders no turbo frame" do
     get archived_workspaces_url
     assert_response :success
-    assert_select "turbo-frame", count: 0
+    assert_select "turbo-frame#workspaces_list", count: 0
   end
 
   test "index lists archived workspaces" do

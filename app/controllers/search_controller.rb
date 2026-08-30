@@ -23,15 +23,28 @@ class SearchController < ApplicationController
     end
 
     respond_to do |format|
-      format.html
+      # The ⌘K palette points a turbo-frame at this same action, so the palette
+      # and the full page can never disagree about what matches. A frame request
+      # gets the compact list; everything else gets the page. With JS off there
+      # is no frame, so the form submits and /search renders normally.
+      format.html { render :palette, layout: false if palette_frame? }
       format.json do
         set_pagination_headers(@pagy)
         parse_grep_params if grep_mode?
       end
     end
   rescue ActiveRecord::StatementInvalid => e
-    raise unless api_request? && e.message.include?("fts5")
-    render_validation_error("Invalid search query syntax")
+    raise unless e.message.include?("fts5")
+    return render_validation_error("Invalid search query syntax") if api_request?
+
+    @invalid_query = true
+    @workspaces = Workspace.none
+    @pagy, @memories = pagy(Memory.none, items: 10)
+    if palette_frame?
+      render :palette, layout: false
+    else
+      render :index
+    end
   end
 
   private
@@ -41,8 +54,19 @@ class SearchController < ApplicationController
   # over a small, account-scoped table) and are shown above the memory results.
   WORKSPACE_RESULT_LIMIT = 5
 
+  # Frame id lives in shared/_search_command_dialog; keep the two in step.
+  PALETTE_FRAME_ID = "search_command_results"
+
+  def palette_frame?
+    request.headers["Turbo-Frame"] == PALETTE_FRAME_ID
+  end
+  helper_method :palette_frame?
+
   def matching_workspaces
     return Workspace.none if api_request? || @query.blank?
+    # Scoped to one workspace, "jump to a workspace" is not the question being
+    # asked, so the workspace block would just be noise above the memories.
+    return Workspace.none if params[:workspace_id].present?
 
     term = "%#{ActiveRecord::Base.sanitize_sql_like(@query)}%"
     Current.account.workspaces
@@ -56,13 +80,14 @@ class SearchController < ApplicationController
       .where(workspaces: {account_id: Current.account.id})
       .latest_versions
 
-    scope = if api_request?
-      scope.api_search(@query)
-    else
-      scope.full_search(@query)
-    end
+    # The browser gets the same FTS5 operators as the API. The audience is
+    # people who think in queries, and `sqlite kamal` returning nothing because
+    # the whole string was quoted as one phrase read as a broken index. Invalid
+    # syntax is caught in #index and reported, rather than being pre-empted by
+    # neutering the query.
+    scope = scope.api_search(@query)
 
-    if api_request? && params[:workspace_id].present?
+    if params[:workspace_id].present?
       workspace = Current.account.workspaces.find(params[:workspace_id])
       scope = scope.where(workspace: workspace)
     end
@@ -73,7 +98,13 @@ class SearchController < ApplicationController
       .includes(:content, :workspace, :child_versions)
   end
 
+  # One cap for both formats. They used to differ (30 for HTML, 100 for API),
+  # which meant the palette's maxlength="100" let a user type 70 characters the
+  # server then dropped without a word — and because search is phrase-capable,
+  # a truncated query returns silence rather than an error.
+  QUERY_MAX_LENGTH = 100
+
   def query_max_length
-    api_request? ? 100 : 30
+    QUERY_MAX_LENGTH
   end
 end

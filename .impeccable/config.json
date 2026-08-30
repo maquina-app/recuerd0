@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-radius",
+        "value": "2px)",
+        "createdAt": "2026-08-30T20:48:48.066Z",
+        "reason": "Parse artifact: the detector splits calc(var(--radius) - 2px) and reads the tail as a literal radius. Token-based, already used 6x in this stylesheet."
+      },
+      {
+        "rule": "overused-font",
+        "value": "instrument sans",
+        "createdAt": "2026-08-30T20:52:21.973Z",
+        "reason": "DESIGN.md commits to Jura / Instrument Sans / Geist Mono as the brand type system; documented decision, predates this change."
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist mono",
+        "createdAt": "2026-08-30T20:52:22.001Z",
+        "reason": "DESIGN.md commits to Jura / Instrument Sans / Geist Mono as the brand type system; documented decision, predates this change."
+      }
+    ]
+  }
+}
