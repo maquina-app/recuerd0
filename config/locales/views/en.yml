@@ -281,6 +281,7 @@ en:
       index:
         title: "Pinned Memories"
         summary: "%{memories} across %{projects}"
+        summary_filtered: "%{memories} in %{workspace}"
         summary_memories:
           one: "1 memory"
           other: "%{count} memories"

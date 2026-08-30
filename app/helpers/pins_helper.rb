@@ -54,7 +54,8 @@ module PinsHelper
         concat render("components/toast/action",
           label: t("pins.destroy.undo"),
           href: href,
-          method: :post)
+          method: :post,
+          data: {pin_focus_target: "undo"})
       })
   end
 

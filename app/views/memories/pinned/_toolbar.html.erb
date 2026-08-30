@@ -15,7 +15,15 @@
         <span class="cat-count"><%= total %></span>
       <% end %>
 
-      <% workspace_counts.each do |workspace, count| %>
+      <%# A workspace filtered down to zero pins has no entry in workspace_counts,
+          so its chip vanished and "All projects" stayed off — the toolbar showed
+          no active filter at all while one was applied. Render the filtered
+          workspace explicitly when the counts do not contain it. %>
+      <% shown = workspace_counts %>
+      <% if active_workspace && workspace_counts.none? { |workspace, _| workspace.id == active_workspace.id } %>
+        <% shown = workspace_counts + [[active_workspace, 0]] %>
+      <% end %>
+      <% shown.each do |workspace, count| %>
         <% active = active_workspace&.id == workspace.id %>
         <%= link_to pinned_memories_path(workspace_id: workspace.id, sort: sort, view: view),
               class: "category-chip",

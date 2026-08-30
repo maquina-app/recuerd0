@@ -19,9 +19,15 @@
         announcing a permanent, purely informational paragraph on every visit. %>
     <% if @total_count.positive? %>
       <p class="mt-1 text-sm text-muted-foreground">
-        <%= t(".summary",
-              memories: t(".summary_memories", count: @total_count),
-              projects: t(".summary_projects", count: @workspace_counts.size)) %>
+        <%= if @workspace_filter
+              t("memories.pinned.index.summary_filtered",
+                memories: t("memories.pinned.index.summary_memories", count: @memories.size),
+                workspace: @workspace_filter.name)
+            else
+              t("memories.pinned.index.summary",
+                memories: t("memories.pinned.index.summary_memories", count: @total_count),
+                projects: t("memories.pinned.index.summary_projects", count: @workspace_counts.size))
+            end %>
         <span class="mx-1" aria-hidden="true">·</span>
         <%# The ten-pin cap used to be invisible here and surfaced only as a
             failed pin on some other page. Shown as a budget it becomes a
@@ -54,7 +60,7 @@
       <% @grouped.each do |workspace, memories| %>
         <% group_id = "pinned-ws-#{workspace.id}" %>
         <section aria-labelledby="<%= group_id %>">
-          <div class="mb-2 flex items-center gap-2 px-0.5">
+          <div class="mb-2 flex items-center gap-2 px-0.5<%= " sr-only" if @workspace_filter %>">
             <%= icon_for(:folders, class: "size-3 shrink-0 text-muted-foreground") %>
             <h2 id="<%= group_id %>" class="ws-group-label">
               <%= link_to workspace.name, workspace_path(workspace), class: "ws-group-link" %>
@@ -101,7 +107,7 @@
         <%= render "components/empty/description", text: t("memories.pinned.index.filtered_empty_description", workspace: @workspace_filter.name) %>
       <% end %>
       <%= render "components/empty/content" do %>
-        <%= link_to t("memories.pinned.index.filtered_empty_clear"), pinned_memories_path,
+        <%= link_to t("memories.pinned.index.filtered_empty_clear"), pinned_memories_path(sort: @sort, view: @view),
               data: { component: "button", variant: "outline", size: "sm" } %>
       <% end %>
     <% end %>
@@ -109,12 +115,12 @@
     <%= render "components/empty", variant: :outline do %>
       <%= render "components/empty/header" do %>
         <%= render "components/empty/media", icon: :pin %>
-        <%= render "components/empty/title", text: t(".empty_title") %>
+        <%= render "components/empty/title", text: t("memories.pinned.index.empty_title") %>
         <%# Says where the control actually is. Both the old banner and the old
             empty state told the user pins come "from any workspace"; neither
             said the control lives in a per-memory overflow menu, so a
             first-timer had to guess. %>
-        <%= render "components/empty/description", text: t(".empty_description") %>
+        <%= render "components/empty/description", text: t("memories.pinned.index.empty_description") %>
       <% end %>
       <%= render "components/empty/content" do %>
         <%= link_to workspaces_path, data: { component: "button", variant: "secondary" } do %>
