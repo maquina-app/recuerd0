@@ -43,6 +43,42 @@ typography:
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: "normal"
+  cardTitle:
+    fontFamily: "Jura, system-ui, sans-serif"
+    fontSize: "1.0625rem"
+    fontWeight: 500
+    lineHeight: 1.3
+    letterSpacing: "-0.01em"
+  reading:
+    fontFamily: "Instrument Sans, system-ui, sans-serif"
+    fontSize: "0.9375rem"
+    fontWeight: 400
+    lineHeight: 1.7
+    letterSpacing: "normal"
+  ui:
+    fontFamily: "Instrument Sans, system-ui, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 400
+    lineHeight: 1.5
+    letterSpacing: "normal"
+  small:
+    fontFamily: "Instrument Sans, system-ui, sans-serif"
+    fontSize: "0.8125rem"
+    fontWeight: 400
+    lineHeight: 1.5
+    letterSpacing: "normal"
+  caption:
+    fontFamily: "Instrument Sans, system-ui, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 400
+    lineHeight: 1.4
+    letterSpacing: "normal"
+  micro:
+    fontFamily: "Instrument Sans, system-ui, sans-serif"
+    fontSize: "0.6875rem"
+    fontWeight: 500
+    lineHeight: 1.4
+    letterSpacing: "0.04em"
   label:
     fontFamily: "Geist Mono, ui-monospace, monospace"
     fontSize: "0.625rem"
