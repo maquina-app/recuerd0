@@ -30,4 +30,23 @@ class PinsControllerTest < ActionDispatch::IntegrationTest
     delete destroy_pin_url("Workspace", workspaces(:one))
     assert_response :see_other
   end
+
+  # The toast used to read a bare "Unpinned." against the only cross-workspace
+  # index the user has: no name to search for and no way back.
+  test "destroy names what was unpinned and offers a way back" do
+    memory = memories(:one)
+    memory.pin!(@user) unless memory.pinned_by?(@user)
+
+    delete destroy_pin_url("Memory", memory)
+
+    assert_equal I18n.t("pins.destroy.destroyed", title: memory.display_title), flash[:notice]
+    assert_equal({"type" => "Memory", "id" => memory.id.to_s}, flash[:undo_pin])
+  end
+
+  test "create names what was pinned" do
+    memory = memories(:versioned_parent)
+    post create_pin_url("Memory", memory)
+
+    assert_equal I18n.t("pins.create.created", title: memory.display_title), flash[:notice]
+  end
 end

@@ -1,7 +1,8 @@
-<%# locals: (memory:, workspace:) %>
+<%# locals: (memory:, workspace:, pinned: nil, show_pin_badge: true, tag_view: nil) %>
 <% display_version = memory.versioned? ? memory.current_version : memory %>
 <% category_variant = { "decision" => :default, "discovery" => :secondary, "preference" => :warning, "general" => :outline }[display_version.category] || :outline %>
-<% is_pinned = workspace.active? && memory.pinned_by?(Current.user) %>
+<% known_pinned = pinned.nil? ? memory.pinned_by?(Current.user) : pinned %>
+<% is_pinned = workspace.active? && known_pinned && show_pin_badge %>
 
 <div class="memory-row<%= " is-deleted" unless workspace.active? %>">
   <span class="category-dot" data-cat="<%= display_version.category %>" title="<%= t("memories.categories.#{display_version.category}") %>"></span>
@@ -28,7 +29,7 @@
     <% end %>
 
     <% if is_pinned %>
-      <span class="inline-flex text-primary" title="<%= t("workspaces.show.pinned_badge") %>">
+      <span class="pin-badge inline-flex" title="<%= t("workspaces.show.pinned_badge") %>">
         <%= icon_for(:pin, class: "size-3.5") %>
         <span class="sr-only"><%= t("workspaces.show.pinned_badge") %></span>
       </span>
@@ -50,14 +51,14 @@
           data-action="dropdown-menu#toggle"
           aria-haspopup="menu"
           aria-expanded="false"
-          aria-label="Memory actions"
+          aria-label="<%= t("memories.actions.menu_label") %>"
         >
           <%= icon_for(:more_vertical, class: "size-4") %>
         </button>
       <% end %>
 
       <%= render "components/dropdown_menu/content", align: :end, css_classes: "w-48" do %>
-        <%= render "memories/memory_actions", memory: memory, workspace: workspace %>
+        <%= render "memories/memory_actions", memory: memory, workspace: workspace, pinned: known_pinned %>
       <% end %>
     <% end %>
   </div>

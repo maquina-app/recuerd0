@@ -508,4 +508,43 @@ class MemoryTest < ActiveSupport::TestCase
     assert_raises(ArgumentError) { Memory.ordered_by(nil).load }
     assert_raises(ArgumentError) { Memory.ordered_by("bogus").load }
   end
+
+  # A pin must follow the memory, not freeze on the version that happened to be
+  # on screen: memories#show renders every version at its own URL and hands
+  # that record to shared/_pin_button.
+  #
+  # No fixture has a child version (versioned_parent is a misnomer), so these
+  # build a real one.
+  test "pinning a version pins the root memory instead" do
+    root = memories(:versioned_parent)
+    version = root.create_version!(title: "Design Doc v2", content: "second pass")
+    assert version.persisted?
+    refute_equal root.id, version.id
+
+    version.pin!(users(:one))
+
+    assert root.reload.pinned_by?(users(:one))
+    assert version.pinned_by?(users(:one)), "the version reports the root's pin"
+    assert_equal root.id, users(:one).pins.where(pinnable_type: "Memory").last.pinnable_id
+  end
+
+  test "unpinning from a version removes the root pin" do
+    root = memories(:versioned_parent)
+    version = root.create_version!(title: "Design Doc v2", content: "second pass")
+    root.pin!(users(:one))
+
+    assert_difference("Pin.count", -1) { version.unpin!(users(:one)) }
+    refute root.reload.pinned_by?(users(:one))
+  end
+
+  # Consolidating onto a child destroys the root, and pins are
+  # dependent: :destroy — the user would silently lose a pin they never touched.
+  test "consolidating onto a version keeps the user's pin" do
+    root = memories(:versioned_parent)
+    version = root.create_version!(title: "Design Doc v2", content: "second pass")
+    root.pin!(users(:one))
+
+    assert_no_difference("Pin.count") { version.consolidate_versions! }
+    assert version.reload.pinned_by?(users(:one))
+  end
 end

@@ -399,7 +399,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_operator response.body.index(fts.title), :<, response.body.index(pinned_tag.title)
     assert_select ".ws-group-label", count: 0
-    assert_select ".memory-card .inline-flex.text-primary[title='Pinned']", count: 1
+    assert_select ".memory-card .pin-badge[title='Pinned']", count: 1
   end
 
   test "show redirects to archived path for archived workspace" do

@@ -19,19 +19,27 @@ module Pinnable
     }
   end
 
+  # The record a pin actually attaches to. Defaults to self; Memory overrides
+  # it to the root, so a pin follows the memory across versions instead of
+  # freezing on the version that happened to be on screen.
+  def pin_target
+    self
+  end
+
   def pinned_by?(user)
     return false unless user
 
-    if pins.loaded?
+    target = pin_target
+    if target.equal?(self) && pins.loaded?
       pins.any? { |p| p.user_id == user.id }
     else
-      pins.exists?(user: user)
+      target.pins.exists?(user: user)
     end
   end
 
   def pin_for(user)
     return nil unless user
-    pins.find_by(user: user)
+    pin_target.pins.find_by(user: user)
   end
 
   def pin!(user)
@@ -44,7 +52,7 @@ module Pinnable
       raise ActiveRecord::RecordInvalid.new(self)
     end
 
-    pins.create!(user: user)
+    pin_target.pins.create!(user: user)
   end
 
   def unpin!(user)

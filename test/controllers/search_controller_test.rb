@@ -71,12 +71,12 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
 
     get search_url, params: {q: "Unique unpinned"}
     assert_response :success
-    assert_select ".memory-card .inline-flex.text-primary[title='Pinned']", count: 0
+    assert_select ".memory-card .pin-badge[title='Pinned']", count: 0
 
     memory.pin!(@user)
     get search_url, params: {q: "Unique unpinned"}
     assert_response :success
-    assert_select ".memory-card .inline-flex.text-primary[title='Pinned']", count: 1
+    assert_select ".memory-card .pin-badge[title='Pinned']", count: 1
   end
 
   test "global search keeps FTS rank ahead of recency" do

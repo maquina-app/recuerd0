@@ -266,13 +266,45 @@ en:
       delete_other_versions_button: "Delete versions"
     memory:
       view_details: "View Details"
+      source_label: "Source:"
+    actions:
+      menu_label: "Memory actions"
+      open: "Open"
+      pin: "Pin"
+      unpin: "Unpin"
+      versions: "Versions"
+      edit: "Edit"
+      delete: "Delete"
+      delete_confirm: "Delete this memory? This cannot be undone."
+      tag_filter_scoped_aria: "Filter %{workspace} by the tag %{tag}"
     pinned:
       index:
         title: "Pinned Memories"
-        about_title: "About Pinned Memories"
-        about_description: "These are memories you've pinned across all your workspaces for quick access."
+        summary: "%{memories} across %{projects}"
+        summary_memories:
+          one: "1 memory"
+          other: "%{count} memories"
+        summary_projects:
+          one: "1 project"
+          other: "%{count} projects"
+        budget: "%{used} of %{limit} pins used"
+        workspace_inactive: "Inactive"
         empty_title: "No pinned memories"
-        empty_description: "Pin memories from any workspace to see them here."
+        empty_description: "Open any memory's ⋯ menu and choose Pin. Pinned memories from every workspace collect here."
+        empty_cta: "Browse workspaces"
+        filtered_empty_title: "Nothing pinned in this project"
+        filtered_empty_description: "You have no pinned memories in %{workspace}."
+        filtered_empty_clear: "Show all projects"
+        toolbar:
+          filter_label: "Filter by project"
+          all_projects: "All projects"
+          sort_label: "Sort pinned memories"
+          sort_pinned: "Recently pinned"
+          sort_updated: "Recently updated"
+          sort_title: "Title"
+          view_label: "View density"
+          view_cards: "Card view"
+          view_compact: "Compact view"
   search:
     placeholder: "Search workspaces and memories…"
     command:

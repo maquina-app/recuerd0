@@ -10,11 +10,11 @@ json.workspace do
 end
 
 json.memories @root_memories do |memory|
-  json.partial! "memories/memory", memory: memory
+  json.partial! "memories/memory", memory: memory, include_pin_state: false
   json.content memory.content&.body&.content.to_s
 
   json.versions @versions_by_root_id.fetch(memory.id).sort_by(&:version) do |version|
-    json.partial! "memories/memory", memory: version
+    json.partial! "memories/memory", memory: version, include_pin_state: false
     json.content version.content&.body&.content.to_s
   end
 end

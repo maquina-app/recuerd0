@@ -22,11 +22,11 @@
       <section>
         <% if compact %>
           <div class="divide-y divide-border rounded-lg border">
-            <%= render partial: "memories/memory_row", collection: memories, as: :memory, locals: { workspace: workspace } %>
+            <%= render partial: "memories/memory_row", collection: memories, as: :memory, locals: { workspace: workspace, tag_view: @memory_view } %>
           </div>
         <% else %>
           <div class="grid gap-4 lg:grid-cols-2">
-            <%= render partial: "memories/memory", collection: memories, as: :memory, locals: { workspace: workspace } %>
+            <%= render partial: "memories/memory", collection: memories, as: :memory, locals: { workspace: workspace, tag_view: @memory_view } %>
           </div>
         <% end %>
       </section>
@@ -42,11 +42,11 @@
         </div>
         <% if compact %>
           <div class="divide-y divide-border rounded-lg border">
-            <%= render partial: "memories/memory_row", collection: pinned_memories, as: :memory, locals: { workspace: workspace } %>
+            <%= render partial: "memories/memory_row", collection: pinned_memories, as: :memory, locals: { workspace: workspace, tag_view: @memory_view } %>
           </div>
         <% else %>
           <div class="grid gap-4 lg:grid-cols-2">
-            <%= render partial: "memories/memory", collection: pinned_memories, as: :memory, locals: { workspace: workspace, show_pinned: true } %>
+            <%= render partial: "memories/memory", collection: pinned_memories, as: :memory, locals: { workspace: workspace, show_pinned: true, tag_view: @memory_view } %>
           </div>
         <% end %>
       </section>
@@ -60,11 +60,11 @@
         </div>
         <% if compact %>
           <div class="divide-y divide-border rounded-lg border">
-            <%= render partial: "memories/memory_row", collection: all_items, as: :memory, locals: { workspace: workspace } %>
+            <%= render partial: "memories/memory_row", collection: all_items, as: :memory, locals: { workspace: workspace, tag_view: @memory_view } %>
           </div>
         <% else %>
           <div class="grid gap-4 lg:grid-cols-2">
-            <%= render partial: "memories/memory", collection: all_items, as: :memory, locals: { workspace: workspace } %>
+            <%= render partial: "memories/memory", collection: all_items, as: :memory, locals: { workspace: workspace, tag_view: @memory_view } %>
           </div>
         <% end %>
       </section>

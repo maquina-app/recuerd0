@@ -115,7 +115,14 @@ class Workspace < ApplicationRecord
     account.active_users.find_each { |user| starter_map.pin!(user) } if active?
   end
 
-  # Unpin from all users when workspace becomes inactive
+  # Unpin from all users when workspace becomes inactive.
+  #
+  # Deliberately does NOT touch the workspace's memory pins — see the two
+  # "but not memory pins" tests in test/models/workspace_test.rb. A memory you
+  # pinned stays pinned when its workspace is archived. The consequence used to
+  # be invisible on /memories/pinned (the card silently lost its pin badge and
+  # its Edit/Delete actions, both gated on workspace.active?); that page now
+  # labels the group Inactive instead of leaving it unexplained.
   def unpin_if_inactive
     return if active?
 

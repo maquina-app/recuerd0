@@ -70,9 +70,12 @@
 
     <div class="flex flex-1 flex-col overflow-hidden">
       <div class="@container/main flex flex-1 flex-col gap-2 overflow-hidden">
-        <main class="flex-1 p-4 md:p-6 overflow-y-auto">
+        <%# A <div>, not a <main>: components/sidebar/inset already renders the
+            page's <main> landmark, and a second one nested inside it is invalid
+            and gives screen readers two competing "main content" targets. %>
+        <div class="flex-1 p-4 md:p-6 overflow-y-auto">
           <%= yield %>
-        </main>
+        </div>
       </div>
     </div>
   <% end %>
