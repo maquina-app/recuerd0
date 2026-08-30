@@ -1,4 +1,9 @@
 <%# locals: () %>
+<%# Mutable list: restore and permanent destroy mutate it, so a cached
+    snapshot serves rows that no longer exist. %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
 <% content_for :page_title, t(".page_title") %>
 
 <% content_for :breadcrumb do %>

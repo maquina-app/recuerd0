@@ -1,4 +1,9 @@
 <%# locals: () %>
+<%# Mutable list: unarchive and delete mutate it, so a cached snapshot serves
+    rows that no longer exist. workspaces/index already does this. %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
 <% content_for :page_title, t(".page_title") %>
 
 <% content_for :breadcrumb do %>

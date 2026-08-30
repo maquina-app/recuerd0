@@ -1,3 +1,9 @@
+<%# The generated invitation URL is a working credential rendered from the
+    flash; without this it survives in the Turbo snapshot and comes back on the
+    Back button. %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
 <% content_for :page_title, t("accounts.show.page_title") %>
 
 <% content_for :breadcrumb do %>

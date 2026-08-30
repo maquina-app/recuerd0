@@ -48,4 +48,48 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to profile_path
     assert_equal "", @user.reload.name
   end
+
+  # A newly created token is rendered into an input's value= attribute, and
+  # attributes are serialized into Turbo's page snapshot — so without no-cache
+  # a Drive visit away and a Back press re-rendered the plaintext secret the
+  # page had just promised would never be shown again.
+  test "show opts out of the turbo cache so a revealed token cannot come back" do
+    sign_in_as(@user)
+    get profile_url
+
+    assert_response :success
+    assert_select "meta[name='turbo-cache-control'][content='no-cache']", count: 1
+  end
+
+  # .oauth.active also required expires_at in the future, but
+  # AccessToken.find_by_refresh_token gates only on revoked_at — so an app whose
+  # access token had expired disappeared from the list while still able to mint
+  # new ones, leaving the user nothing to revoke.
+  test "connected apps still lists a grant whose access token has expired" do
+    client = OauthClient.create!(
+      client_name: "Expired Probe Client",
+      redirect_uris: ["https://example.test/callback"].to_json,
+      registered_at: Time.current
+    )
+    token = @user.access_tokens.create!(
+      description: "Expired but refreshable",
+      permission: "read_only",
+      oauth_client: client,
+      expires_at: 1.day.ago,
+      token_digest: Digest::SHA256.hexdigest("expired_access_token_probe"),
+      refresh_token_digest: Digest::SHA256.hexdigest("live_refresh_token_probe")
+    )
+
+    # The condition that actually grants access: find_by_refresh_token gates
+    # only on revoked_at, so this grant is still live.
+    assert_equal token, AccessToken.find_by_refresh_token("live_refresh_token_probe")
+
+    sign_in_as(@user)
+    get profile_url
+
+    assert_response :success
+    # `assigns` is gone in modern Rails; assert on the rendered page instead —
+    # which is the thing the user was being denied.
+    assert_select "body", text: /Expired Probe Client/
+  end
 end
