@@ -1,0 +1,61 @@
+<%# locals: (workspace_counts:, active_workspace:, sort:, view:, total:) %>
+<%# Accelerators, mirroring workspaces/_memory_toolbar so the same objects get
+    the same controls wherever they are listed. Every link carries
+    turbo_action: "replace" — narrowing a list is state, not navigation, and
+    replace is also what lets a same-pathname visit morph. %>
+<div class="mb-6 flex flex-col gap-3">
+  <% if workspace_counts.size > 1 %>
+    <div class="category-bar" role="group" aria-label="<%= t("memories.pinned.index.toolbar.filter_label") %>">
+      <% all_active = active_workspace.nil? %>
+      <%= link_to pinned_memories_path(sort: sort, view: view),
+            class: "category-chip",
+            data: { state: (all_active ? "on" : "off"), turbo_action: "replace" },
+            "aria-current": (all_active ? "true" : nil) do %>
+        <span><%= t("memories.pinned.index.toolbar.all_projects") %></span>
+        <span class="cat-count"><%= total %></span>
+      <% end %>
+
+      <% workspace_counts.each do |workspace, count| %>
+        <% active = active_workspace&.id == workspace.id %>
+        <%= link_to pinned_memories_path(workspace_id: workspace.id, sort: sort, view: view),
+              class: "category-chip",
+              data: { state: (active ? "on" : "off"), turbo_action: "replace" },
+              "aria-current": (active ? "true" : nil) do %>
+          <span><%= workspace.name %></span>
+          <span class="cat-count"><%= count %></span>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="seg" role="group" aria-label="<%= t("memories.pinned.index.toolbar.sort_label") %>">
+      <% Memories::PinnedController::SORTS.each do |option| %>
+        <%= link_to t("memories.pinned.index.toolbar.sort_#{option}"),
+              pinned_memories_path(workspace_id: active_workspace&.id, sort: option, view: view),
+              class: "seg-item",
+              data: { state: (sort == option ? "on" : "off"), turbo_action: "replace" },
+              "aria-current": (sort == option ? "true" : nil) %>
+      <% end %>
+    </div>
+
+    <div class="seg" role="group" aria-label="<%= t("memories.pinned.index.toolbar.view_label") %>">
+      <%= link_to pinned_memories_path(workspace_id: active_workspace&.id, sort: sort, view: "cards"),
+            class: "seg-item seg-item-icon",
+            data: { state: (view == "compact" ? "off" : "on"), turbo_action: "replace" },
+            "aria-current": (view == "compact" ? nil : "true"),
+            "aria-label": t("memories.pinned.index.toolbar.view_cards"),
+            title: t("memories.pinned.index.toolbar.view_cards") do %>
+        <%= icon_for(:grid) %>
+      <% end %>
+      <%= link_to pinned_memories_path(workspace_id: active_workspace&.id, sort: sort, view: "compact"),
+            class: "seg-item seg-item-icon",
+            data: { state: (view == "compact" ? "on" : "off"), turbo_action: "replace" },
+            "aria-current": (view == "compact" ? "true" : nil),
+            "aria-label": t("memories.pinned.index.toolbar.view_compact"),
+            title: t("memories.pinned.index.toolbar.view_compact") do %>
+        <%= icon_for(:list) %>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -163,6 +163,17 @@ class Memory < ApplicationRecord
     parent_memory_id.present? ? parent_memory : self
   end
 
+  # Pins always attach to the root, never to a version.
+  #
+  # memories#show renders any version at its own URL and hands that record to
+  # shared/_pin_button, so pinning while reading v2 used to create a pin on v2.
+  # That pin then pointed at a frozen snapshot: it kept showing v2 while the
+  # memory moved on, it disagreed with pinned_by? everywhere else (which asks
+  # the root), and consolidating versions destroyed the row out from under it.
+  def pin_target
+    root_memory
+  end
+
   # Get all versions of this memory (including self if root)
   def all_versions
     if root_version?
@@ -254,11 +265,38 @@ class Memory < ApplicationRecord
     child_versions.any? || parent_memory.present?
   end
 
-  # Consolidate versions: keep this version and destroy all others
+  # Consolidate versions: keep this version and destroy all others.
+  #
+  # Order matters and used to be wrong. child_versions is dependent: :destroy,
+  # so destroying the old root cascades into every remaining child — including
+  # THIS one when consolidating onto a version. The survivor has to be detached
+  # from its parent before the others are destroyed, and its ids captured up
+  # front because all_versions resolves differently once it is a root.
   def consolidate_versions!
     transaction do
-      all_versions.where.not(id: id).destroy_all
-      update!(parent_memory_id: nil, version: 1) if parent_memory_id.present?
+      doomed_ids = all_versions.where.not(id: id).pluck(:id)
+
+      if parent_memory_id.present?
+        # Pins are dependent: :destroy too, so a pin on the outgoing root would
+        # vanish along with it — a pin the user never touched.
+        adopt_pins_from(Memory.where(id: doomed_ids))
+        update!(parent_memory_id: nil, version: 1)
+      end
+
+      Memory.where(id: doomed_ids).destroy_all
+    end
+  end
+
+  # Re-home pins from records that are about to be destroyed, keeping one pin
+  # per user (a user may have pinned both the root and a version before pins
+  # were normalized to the root).
+  def adopt_pins_from(doomed)
+    Pin.where(pinnable_type: "Memory", pinnable_id: doomed.select(:id)).find_each do |pin|
+      if pins.exists?(user_id: pin.user_id)
+        pin.destroy!
+      else
+        pin.update!(pinnable_id: id)
+      end
     end
   end
 

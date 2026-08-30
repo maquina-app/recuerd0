@@ -1,23 +1,26 @@
-<%# locals: (memory:, workspace:) -%>
+<%# locals: (memory:, workspace:, pinned: nil) -%>
+<%# `pinned` lets a caller that already knows the pin state pass it in; without
+    it this partial fired one pinned_by? query per row. -%>
+<% is_pinned = pinned.nil? ? memory.pinned_by?(Current.user) : pinned -%>
 <%= render "components/dropdown_menu/item",
     href: workspace_memory_path(workspace, memory) do %>
   <%= icon_for(:file_text, class: "w-4 h-4") %>
-  Open
+  <%= t("memories.actions.open") %>
 <% end %>
 
-<% if memory.pinned_by?(Current.user) %>
+<% if is_pinned %>
   <%= render "components/dropdown_menu/item",
       href: destroy_pin_path(pinnable_type: memory.class.name, pinnable_id: memory.id),
-      data: { turbo_method: :delete, turbo_stream: true } do %>
+      data: { turbo_method: :delete, turbo_stream: true, pin_focus_target: "unpin" } do %>
     <%= icon_for(:pin, class: "w-4 h-4") %>
-    Unpin
+    <%= t("memories.actions.unpin") %>
   <% end %>
 <% else %>
   <%= render "components/dropdown_menu/item",
       href: create_pin_path(pinnable_type: memory.class.name, pinnable_id: memory.id),
       data: { turbo_method: :post, turbo_stream: true } do %>
     <%= icon_for(:pin, class: "w-4 h-4") %>
-    Pin
+    <%= t("memories.actions.pin") %>
   <% end %>
 <% end %>
 
@@ -25,7 +28,7 @@
   <%= render "components/dropdown_menu/item",
       href: workspace_memory_versions_path(workspace, memory) do %>
     <%= icon_for(:git_branch, class: "w-4 h-4") %>
-    Versions
+    <%= t("memories.actions.versions") %>
   <% end %>
 <% end %>
 
@@ -35,14 +38,14 @@
   <%= render "components/dropdown_menu/item",
       href: edit_workspace_memory_path(workspace, memory) do %>
     <%= icon_for(:edit, class: "w-4 h-4") %>
-    Edit
+    <%= t("memories.actions.edit") %>
   <% end %>
 
   <%= render "components/dropdown_menu/item",
       href: workspace_memory_path(workspace, memory),
       variant: :destructive,
-      data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this memory?" } do %>
+      data: { turbo_method: :delete, turbo_confirm: t("memories.actions.delete_confirm") } do %>
     <%= icon_for(:trash_2, class: "w-4 h-4") %>
-    Delete
+    <%= t("memories.actions.delete") %>
   <% end %>
 <% end %>

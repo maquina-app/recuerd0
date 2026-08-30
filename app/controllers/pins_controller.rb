@@ -8,7 +8,7 @@ class PinsController < ApplicationController
     @pin = @pinnable.pin!(Current.user)
     track_event("pin.create", resource: @pinnable)
 
-    redirect_back(fallback_location: workspaces_path, notice: t(".created"), status: :see_other)
+    redirect_back(fallback_location: workspaces_path, notice: t(".created", title: pinnable_title), status: :see_other)
   rescue ActiveRecord::RecordInvalid => e
     redirect_back(fallback_location: workspaces_path, alert: e.message, status: :see_other)
   end
@@ -17,7 +17,12 @@ class PinsController < ApplicationController
     @unpinned = @pinnable.unpin!(Current.user)
     track_event("pin.destroy", resource: @pinnable)
 
-    redirect_back(fallback_location: workspaces_path, notice: t(".destroyed"), status: :see_other)
+    # The toast names what left and carries a one-click way back. Unpinning is
+    # the act that discards the only cross-workspace index the user has, and it
+    # used to say nothing but "Unpinned."
+    flash[:undo_pin] = {"type" => @pinnable.class.name, "id" => @pinnable.id.to_s} if @unpinned
+
+    redirect_back(fallback_location: workspaces_path, notice: t(".destroyed", title: pinnable_title), status: :see_other)
   end
 
   private
@@ -37,6 +42,14 @@ class PinsController < ApplicationController
       Current.account.workspaces.find(params[:pinnable_id])
     when "Memory"
       Memory.joins(:workspace).where(workspaces: {account_id: Current.account.id}).find(params[:pinnable_id])
+    end
+  end
+
+  def pinnable_title
+    if @pinnable.respond_to?(:display_title)
+      @pinnable.display_title
+    else
+      @pinnable.name
     end
   end
 

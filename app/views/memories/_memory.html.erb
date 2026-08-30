@@ -1,9 +1,16 @@
-<%# locals: (memory:, workspace:, show_pinned: false) %>
+<%# locals: (memory:, workspace:, show_pinned: false, pinned: nil, show_pin_badge: true, tag_scope: nil, tag_view: nil) %>
 <% display_version = memory.versioned? ? memory.current_version : memory %>
 <% category_variant = { "decision" => :default, "discovery" => :secondary, "preference" => :warning, "general" => :outline }[display_version.category] || :outline %>
-<% is_pinned = show_pinned || memory.pinned_by?(Current.user) %>
+<%# `pinned` is the known state passed by a caller that already has it (and
+    spares a per-row query); `show_pinned` is the older boolean that only ever
+    forced it true. `show_pin_badge: false` suppresses the indicator on a list
+    where every row is pinned by definition. %>
+<% is_pinned = pinned.nil? ? (show_pinned || memory.pinned_by?(Current.user)) : pinned %>
 
-<%= render "components/card", css_classes: "memory-card group hover:shadow-md transition-shadow" do %>
+<%# No hover:shadow-md: DESIGN.md's Flat-By-Default Rule keeps surfaces flat at
+    rest and shadow_md is not in the three-item shadow vocabulary. The hover
+    response is a border shift, applied in application.css. %>
+<%= render "components/card", css_classes: "memory-card group" do %>
   <%= render "components/card/header" do %>
     <div class="flex items-start justify-between gap-2">
       <div class="mc-title min-w-0">
@@ -11,8 +18,12 @@
       </div>
 
       <div class="flex flex-shrink-0 items-center gap-1.5">
-        <% if workspace.active? && is_pinned %>
-          <span class="inline-flex text-primary" title="<%= t("workspaces.show.pinned_badge") %>">
+        <% if workspace.active? && is_pinned && show_pin_badge %>
+          <%# .pin-badge, not a bare text-primary utility: the gem's
+              [data-card-part="header"] svg { color: var(--muted-foreground) }
+              wins over a colour utility on the parent span, so this icon
+              rendered grey everywhere until the class gave it a target. %>
+          <span class="pin-badge inline-flex" title="<%= t("workspaces.show.pinned_badge") %>">
             <%= icon_for(:pin, class: "size-3.5") %>
             <span class="sr-only"><%= t("workspaces.show.pinned_badge") %></span>
           </span>
@@ -29,14 +40,14 @@
               data-action="dropdown-menu#toggle"
               aria-haspopup="menu"
               aria-expanded="false"
-              aria-label="Memory actions"
+              aria-label="<%= t("memories.actions.menu_label") %>"
             >
               <%= icon_for(:more_vertical, class: "size-4") %>
             </button>
           <% end %>
 
           <%= render "components/dropdown_menu/content", align: :end, css_classes: "w-48" do %>
-            <%= render "memories/memory_actions", memory: memory, workspace: workspace %>
+            <%= render "memories/memory_actions", memory: memory, workspace: workspace, pinned: is_pinned %>
           <% end %>
         <% end %>
       </div>
@@ -64,7 +75,7 @@
     <% if display_version.source.present? %>
       <div class="mc-source">
         <%= icon_for(:file_text) %>
-        <span class="min-w-0">Source: <span class="src-val"><%= display_version.source %></span></span>
+        <span class="min-w-0"><%= t("memories.memory.source_label") %> <span class="src-val"><%= display_version.source %></span></span>
       </div>
     <% end %>
   <% end %>
@@ -76,10 +87,16 @@
     <% if display_version.tags.any? %>
       <div class="flex flex-wrap gap-1.5 pt-3">
         <% display_version.tags.each do |tag| %>
-          <%= link_to workspace_show_path(workspace, tag: tag, view: @memory_view),
+          <%# A tag link leaves for one workspace's filtered view. On a
+              cross-workspace list that is a silent jump, so when the caller
+              names the scope the label says which workspace you land in.
+              `view:` comes from a local rather than @memory_view — a shared
+              partial reading a controller ivar is how it ended up always nil
+              on the pinned page. %>
+          <%= link_to workspace_show_path(workspace, tag: tag, view: tag_view),
                 class: "tag-badge",
                 data: { turbo_action: "advance" },
-                "aria-label": t("workspaces.show.toolbar.tag_filter_aria", tag: tag) do %>
+                "aria-label": (tag_scope ? t("memories.actions.tag_filter_scoped_aria", workspace: tag_scope.name, tag: tag) : t("workspaces.show.toolbar.tag_filter_aria", tag: tag)) do %>
             <%= icon_for(:tag) %>
             <span class="tag-label"><%= tag %></span>
           <% end %>
@@ -93,7 +110,12 @@
       <%= icon_for(:clock) %>
       <%= t("memories.show.updated_ago", time: time_ago_in_words(memory.updated_at)) %>
     </span>
-    <%= link_to workspace_memory_path(workspace, display_version), class: "mc-detail" do %>
+    <%# Redundant link: same href as the card title above it, so it was a second
+        tab stop and a second announcement per card for one destination — ten of
+        each on a full page. Kept as a visible click affordance, removed from the
+        tab order and the accessibility tree; the title link is the real one. %>
+    <%= link_to workspace_memory_path(workspace, display_version),
+          class: "mc-detail", tabindex: -1, "aria-hidden": true do %>
       <%= t("memories.memory.view_details") %>
       <%= icon_for(:chevron_right) %>
     <% end %>

@@ -36,10 +36,12 @@ en:
 
   pins:
     create:
-      created: "Pinned."
+      created: "Pinned \"%{title}\"."
       error: "Could not pin this item."
     destroy:
-      destroyed: "Unpinned."
+      destroyed: "Unpinned \"%{title}\"."
+      undo: "Undo"
+      undo_unavailable: "You're at the %{limit}-pin limit — pin something else and this one can't come back."
     not_found: "Item not found."
     limit_reached: "You've reached the maximum number of pins (%{limit})."
 
