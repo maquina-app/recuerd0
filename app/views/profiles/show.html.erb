@@ -1,3 +1,12 @@
+<%# no-cache is load-bearing here, not hygiene. A freshly created access
+    token is rendered into an input's value= attribute, and attributes are
+    serialized into Turbo's page snapshot — so a Drive visit away and a Back
+    press re-rendered the full plaintext secret the page had just promised the
+    user would never be shown again. A hard reload discards the snapshot and
+    hides this, so it only reproduces via a real in-app link click. %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
 <% content_for :page_title, t("profiles.show.page_title") %>
 
 <% content_for :breadcrumb do %>

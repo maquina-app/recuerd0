@@ -1297,6 +1297,22 @@ a {
   height: 0.5625rem;
 }
 
+/* Inline form errors must be readable.
+   The gem sets `[data-form-part="error"] { color: var(--destructive-foreground) }`
+   UNLAYERED in form.css, and --destructive-foreground is near-white because the
+   token is meant for text sitting ON a filled destructive surface. Under an
+   input it renders white-on-white: measured 1.05:1, i.e. invisible.
+
+   CLAUDE.md prescribes adding `class="text-destructive"` at the call site, and
+   that cannot work — Tailwind utilities live in @layer utilities, and an
+   unlayered declaration outranks every layer regardless of specificity. So this
+   override is deliberately UNLAYERED too, and carries a doubled attribute
+   selector so it also wins on specificity rather than relying on source order.
+   Fixes all 16 call sites at once. */
+[data-form-part="error"][data-form-part] {
+  color: var(--destructive);
+}
+
 /* card-danger — a card that must not be mistaken for its neighbours.
    Declared here rather than as a `border-destructive` utility because the gem's
    card.css sets `border-color: var(--border)` unlayered, and an unlayered
