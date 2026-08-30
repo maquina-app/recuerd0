@@ -44,7 +44,8 @@
               type="button"
               data-action="search-command#open"
               aria-label="<%= t("search.placeholder") %>"
-              class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground size-8 md:hidden"
+              aria-keyshortcuts="Meta+K Control+K"
+              class="palette-trigger inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground size-9 md:hidden"
             >
               <%= icon_for(:search, class: "size-4") %>
             </button>
@@ -54,7 +55,8 @@
               type="button"
               data-action="search-command#open"
               aria-label="<%= t("search.placeholder") %>"
-              class="hidden md:inline-flex items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors"
+              aria-keyshortcuts="Meta+K Control+K"
+              class="palette-trigger hidden md:inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors"
             >
               <%= icon_for(:search, class: "size-3.5") %>
               <span class="hidden lg:inline"><%= t("search.placeholder") %></span>

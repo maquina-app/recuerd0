@@ -1,24 +1,58 @@
+<%# locals: (scoped_workspace: nil) -%>
+<%# The dialog is a sibling of the page content in the layout, so its own
+    controller lives on the sidebar trigger and reaches in by id. `open` is not
+    serialised into the morph snapshot, which is why search_command_controller
+    re-opens it on turbo:morph rather than trusting the attribute. %>
 <dialog
   id="search-command-dialog"
-  aria-label="<%= t("search.placeholder") %>"
-  class="p-0 m-0 backdrop:bg-black/50 max-w-none bg-transparent"
+  aria-label="<%= t("search.command.label") %>"
+  class="p-0 m-0 max-w-none bg-transparent search-command-dialog"
 >
   <div class="fixed inset-0 z-50 flex justify-center pt-[12vh] sm:pt-[14vh] px-3 sm:px-4">
-    <div data-search-command-panel class="w-full max-w-xl sm:max-w-2xl h-fit rounded-lg border bg-background shadow-lg">
-      <form class="flex items-center gap-2 px-3">
+    <div data-search-command-panel class="search-command-panel w-full max-w-xl sm:max-w-2xl h-fit rounded-lg border">
+      <form class="flex items-center gap-2 px-3" role="search">
         <%= icon_for(:search, class: "size-4 shrink-0 text-muted-foreground") %>
+        <label for="search-command-input" class="sr-only"><%= t("search.command.input_label") %></label>
         <input
           type="search"
           name="q"
           id="search-command-input"
           placeholder="<%= t("search.placeholder") %>"
-          maxlength="100"
+          maxlength="<%= SearchController::QUERY_MAX_LENGTH %>"
           autocomplete="off"
-          class="flex-1 h-12 bg-transparent text-sm text-foreground placeholder:text-muted-foreground border-0 outline-none focus:outline-none focus:ring-0"
+          role="combobox"
+          aria-expanded="false"
+          aria-controls="search_command_results"
+          aria-describedby="search-command-hint"
+          class="search-command-input flex-1 h-12 bg-transparent text-sm text-foreground placeholder:text-muted-foreground border-0"
         />
       </form>
-      <div class="border-t px-3 py-2">
-        <p class="text-xs text-muted-foreground"><%= t("search.command.hint") %></p>
+
+      <% if scoped_workspace %>
+        <%# The palette opens scoped to the workspace you are standing in —
+            "does this project still say X?" is the question people actually
+            arrive with — but never silently: the chip is a visible toggle. %>
+        <%# Ids, not Stimulus targets: the dialog is a layout sibling of the
+            controller element, so targets and actions would never bind. The
+            controller reaches in by id, exactly as it does for the input. %>
+        <div class="search-command-scope">
+          <button type="button" id="search-command-scope" class="scope-chip" aria-pressed="true"
+                  data-workspace-id="<%= scoped_workspace.id %>"
+                  data-scope-on="<%= t("search.command.scope_workspace", workspace: scoped_workspace.name) %>"
+                  data-scope-off="<%= t("search.command.scope_everywhere") %>">
+            <%= icon_for(:folders, class: "size-3.5") %>
+            <span data-scope-label><%= t("search.command.scope_workspace", workspace: scoped_workspace.name) %></span>
+          </button>
+        </div>
+      <% end %>
+
+      <%= turbo_frame_tag SearchController::PALETTE_FRAME_ID %>
+
+      <div class="search-command-hint">
+        <p id="search-command-hint" class="text-xs">
+          <%= t("search.command.hint", count: Searchable::MIN_QUERY_LENGTH) %>
+        </p>
+        <p class="text-xs mt-0.5 opacity-80"><%= t("search.command.hint_operators") %></p>
       </div>
     </div>
   </div>

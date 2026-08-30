@@ -1,0 +1,54 @@
+<%# The ⌘K palette's result frame. Rendered for turbo-frame requests to
+    search#index, so the palette and the full results page can never disagree:
+    same query, same scopes, same ordering. With JS off no frame exists, the
+    form submits normally, and /search renders the full page instead. %>
+<%= turbo_frame_tag SearchController::PALETTE_FRAME_ID do %>
+  <% if @invalid_query %>
+    <p class="palette-note" role="status">
+      <%= icon_for(:alert_triangle, class: "size-3.5 shrink-0") %>
+      <span><%= t("search.command.invalid_query") %></span>
+    </p>
+  <% elsif @query.blank? || @query.length < Searchable::MIN_QUERY_LENGTH %>
+    <%# Nothing to say: the hint under the input already states the minimum. %>
+  <% elsif @workspaces.any? || @memories.any? %>
+    <ul class="palette-results" role="listbox" aria-label="<%= t("search.command.results_label") %>">
+      <% if @workspaces.any? %>
+        <li role="presentation" class="palette-group"><%= t("search.index.workspaces_heading") %></li>
+        <% @workspaces.each do |workspace| %>
+          <li role="presentation">
+            <%= link_to workspace_path(workspace), role: "option", "aria-selected": "false",
+                  class: "palette-item", data: {palette_result: true, turbo_frame: "_top"} do %>
+              <%= icon_for(:folders, class: "size-4 shrink-0 text-muted-foreground") %>
+              <span class="palette-item-label"><%= workspace.name %></span>
+              <% if workspace.archived? %>
+                <span class="palette-item-meta"><%= t("workspaces.show.archived_badge") %></span>
+              <% elsif workspace.deleted? %>
+                <span class="palette-item-meta"><%= t("workspaces.show.deleted_badge") %></span>
+              <% end %>
+            <% end %>
+          </li>
+        <% end %>
+      <% end %>
+
+      <% if @memories.any? %>
+        <li role="presentation" class="palette-group"><%= t("search.index.memories_heading") %></li>
+        <% @memories.each do |memory| %>
+          <li role="presentation">
+            <%= link_to workspace_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
+                  class: "palette-item", data: {palette_result: true, turbo_frame: "_top"} do %>
+              <%= icon_for(:file_text, class: "size-4 shrink-0 text-muted-foreground") %>
+              <span class="palette-item-label"><%= memory.display_title %></span>
+              <span class="palette-item-meta"><%= memory.workspace.name %></span>
+            <% end %>
+          </li>
+        <% end %>
+      <% end %>
+    </ul>
+
+    <%# Enter with nothing selected falls through to the full page, which pages
+        through everything the palette only shows the head of. %>
+    <p class="palette-note"><%= t("search.command.see_all", count: @pagy.count) %></p>
+  <% else %>
+    <p class="palette-note" role="status"><%= t("search.index.no_results_title") %></p>
+  <% end %>
+<% end %>

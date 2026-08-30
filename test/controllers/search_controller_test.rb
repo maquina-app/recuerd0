@@ -8,6 +8,79 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     [memories(:one), memories(:two), memories(:versioned_parent)].each(&:rebuild_search_index)
   end
 
+  # --- ⌘K palette -----------------------------------------------------------
+
+  test "palette frame request renders only the frame, without the layout" do
+    sign_in_as(@user)
+    get search_url, params: {q: "Meeting"},
+      headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+
+    assert_response :success
+    assert_select "turbo-frame#" + SearchController::PALETTE_FRAME_ID
+    # No layout: the palette renders inside an already-open dialog.
+    assert_select "h1", count: 0
+    assert_select "[data-palette-result]", minimum: 1
+  end
+
+  test "palette frame renders nothing for a query under the minimum length" do
+    sign_in_as(@user)
+    get search_url, params: {q: "ab"},
+      headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+
+    assert_response :success
+    assert_select "[data-palette-result]", count: 0
+  end
+
+  test "results page carries a search field prefilled with the query" do
+    sign_in_as(@user)
+    get search_url, params: {q: "Meeting"}
+
+    assert_response :success
+    assert_select "input[type=search][name=q][value=?]", "Meeting"
+  end
+
+  test "browser search supports FTS5 operators" do
+    sign_in_as(@user)
+    memory = memories(:one)
+    title = memory.display_title
+
+    get search_url, params: {q: "#{title.split.first} OR zzzznomatch"}
+    assert_response :success
+    assert_select "[data-component='empty']", count: 0
+  end
+
+  test "invalid FTS5 syntax renders a warning instead of raising" do
+    sign_in_as(@user)
+    get search_url, params: {q: "broken(("}
+
+    assert_response :success
+    assert_select "strong", text: I18n.t("search.index.invalid_query_title")
+  end
+
+  test "invalid FTS5 syntax in a palette frame does not raise" do
+    sign_in_as(@user)
+    get search_url, params: {q: "broken(("},
+      headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+
+    assert_response :success
+    assert_select "[data-palette-result]", count: 0
+  end
+
+  test "html search honours workspace_id scoping" do
+    sign_in_as(@user)
+    scoped = workspaces(:one)
+
+    get search_url, params: {q: "Meeting", workspace_id: scoped.id}
+    assert_response :success
+    # Scoped searches drop the workspace jump-list; only memories remain.
+    assert_select "#search-workspaces-heading", count: 0
+  end
+
+  test "html query is no longer truncated to 30 characters" do
+    sign_in_as(@user)
+    assert_equal 100, SearchController::QUERY_MAX_LENGTH
+  end
+
   test "index requires authentication" do
     get search_url
     assert_redirected_to new_session_url
