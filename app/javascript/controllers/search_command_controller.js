@@ -88,9 +88,10 @@ export default class extends Controller {
     }
 
     this._input.value = ""
-    this.clearResults()
     this._dialog.showModal()
     this._input.focus()
+    // Open onto pinned projects and recent work rather than a blank panel.
+    this.loadDefaults()
   }
 
   // --- querying -----------------------------------------------------------
@@ -105,7 +106,7 @@ export default class extends Controller {
     const query = this._input.value.trim()
 
     if (query.length < this.constructor.MIN_QUERY_LENGTH) {
-      this.clearResults()
+      this.loadDefaults()
       return
     }
 
@@ -114,7 +115,7 @@ export default class extends Controller {
 
   searchUrl(query) {
     const url = new URL(this.searchUrlValue, window.location.origin)
-    url.searchParams.set("q", query)
+    if (query) url.searchParams.set("q", query)
     if (this.scopedWorkspaceId) url.searchParams.set("workspace_id", this.scopedWorkspaceId)
     return url.toString()
   }
@@ -136,6 +137,13 @@ export default class extends Controller {
     }
     this.search()
     this._input.focus()
+  }
+
+  // No q: the server answers a blank palette query with suggestions.
+  loadDefaults() {
+    if (!this._frame) return
+    this._selected = null
+    this._frame.src = this.searchUrl("")
   }
 
   clearResults() {

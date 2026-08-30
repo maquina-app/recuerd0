@@ -22,6 +22,25 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-palette-result]", minimum: 1
   end
 
+  test "palette frame opens onto suggestions when the query is blank" do
+    sign_in_as(@user)
+    get search_url, headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+
+    assert_response :success
+    # Not a blank panel: recent work is offered even with nothing pinned.
+    assert_select "[data-palette-result]", minimum: 1
+    assert_select ".palette-group", text: I18n.t("search.command.jump_back_in")
+  end
+
+  test "palette suggestions never cross accounts" do
+    sign_in_as(@user)
+    get search_url, headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+
+    assert_response :success
+    other_workspace = workspaces(:two)
+    assert_select "a[href=?]", workspace_path(other_workspace), count: 0
+  end
+
   test "palette frame renders nothing for a query under the minimum length" do
     sign_in_as(@user)
     get search_url, params: {q: "ab"},
