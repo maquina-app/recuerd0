@@ -9,6 +9,12 @@ class SearchController < ApplicationController
       return render_validation_error("Query must be at least #{Searchable::MIN_QUERY_LENGTH} characters") if @query.length < Searchable::MIN_QUERY_LENGTH
     end
 
+    # An empty palette used to open onto a blank field, so every visit started
+    # from recall: you had to already know what a memory was called. The things
+    # a user has deliberately pinned, plus what they touched most recently, are
+    # better defaults than nothing and cost two small account-scoped queries.
+    return render_palette_suggestions if palette_frame? && @query.blank?
+
     memories = build_search_scope
     @workspaces = matching_workspaces
 
@@ -53,6 +59,32 @@ class SearchController < ApplicationController
   # "open the workspace for the repo I'm in". Workspace hits are cheap (a LIKE
   # over a small, account-scoped table) and are shown above the memory results.
   WORKSPACE_RESULT_LIMIT = 5
+
+  SUGGESTION_LIMIT = 5
+
+  def render_palette_suggestions
+    @suggested_workspaces = Current.user.pinned_workspaces
+      .where(account_id: Current.account.id)
+      .limit(SUGGESTION_LIMIT)
+
+    pinned = Current.user.pinned_memories.includes(:workspace).limit(SUGGESTION_LIMIT).to_a
+    @suggested_memories = if pinned.size >= SUGGESTION_LIMIT
+      pinned
+    else
+      # Top up with recent work so a user who has pinned nothing still opens
+      # onto something actionable rather than an empty panel.
+      recent = Memory.joins(:workspace)
+        .where(workspaces: {account_id: Current.account.id, archived_at: nil, deleted_at: nil})
+        .latest_versions
+        .where.not(id: pinned.map(&:id))
+        .includes(:content, :workspace, :child_versions)
+        .order("memories.updated_at DESC")
+        .limit(SUGGESTION_LIMIT - pinned.size)
+      pinned + recent.to_a
+    end
+
+    render :palette, layout: false
+  end
 
   # Frame id lives in shared/_search_command_dialog; keep the two in step.
   PALETTE_FRAME_ID = "search_command_results"

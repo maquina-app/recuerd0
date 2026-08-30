@@ -8,6 +8,38 @@
       <%= icon_for(:alert_triangle, class: "size-3.5 shrink-0") %>
       <span><%= t("search.command.invalid_query") %></span>
     </p>
+  <% elsif @suggested_workspaces || @suggested_memories %>
+    <%# Opening state: what the user pinned, then what they touched last. %>
+    <% if @suggested_workspaces&.any? || @suggested_memories&.any? %>
+      <ul class="palette-results" role="listbox" aria-label="<%= t("search.command.suggestions_label") %>">
+        <% if @suggested_workspaces&.any? %>
+          <li role="presentation" class="palette-group"><%= t("search.command.pinned_workspaces") %></li>
+          <% @suggested_workspaces.each do |workspace| %>
+            <li role="presentation">
+              <%= link_to workspace_path(workspace), role: "option", "aria-selected": "false",
+                    class: "palette-item", data: {palette_result: true, turbo_frame: "_top"} do %>
+                <%= icon_for(:folders, class: "size-4 shrink-0 text-muted-foreground") %>
+                <span class="palette-item-label"><%= workspace.name %></span>
+              <% end %>
+            </li>
+          <% end %>
+        <% end %>
+
+        <% if @suggested_memories&.any? %>
+          <li role="presentation" class="palette-group"><%= t("search.command.jump_back_in") %></li>
+          <% @suggested_memories.each do |memory| %>
+            <li role="presentation">
+              <%= link_to workspace_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
+                    class: "palette-item", data: {palette_result: true, turbo_frame: "_top"} do %>
+                <%= icon_for(:file_text, class: "size-4 shrink-0 text-muted-foreground") %>
+                <span class="palette-item-label"><%= memory.display_title %></span>
+                <span class="palette-item-meta"><%= memory.workspace.name %></span>
+              <% end %>
+            </li>
+          <% end %>
+        <% end %>
+      </ul>
+    <% end %>
   <% elsif @query.blank? || @query.length < Searchable::MIN_QUERY_LENGTH %>
     <%# Nothing to say: the hint under the input already states the minimum. %>
   <% elsif @workspaces.any? || @memories.any? %>
