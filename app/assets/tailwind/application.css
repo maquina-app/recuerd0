@@ -1449,13 +1449,17 @@ a {
 }
 
 /* mc-detail — "View details" link in the card footer */
+/* De-accented deliberately. This is a redundant link to the card title's own
+   href, and it is aria-hidden + tabindex="-1", so spending Memory Green on it
+   made the loudest thing in the column the one control a keyboard user cannot
+   reach — the opposite of the One Green Rule's "load-bearing, never a wash". */
 .mc-detail {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--primary);
+  color: var(--muted-foreground);
   white-space: nowrap;
 }
 .mc-detail:hover {

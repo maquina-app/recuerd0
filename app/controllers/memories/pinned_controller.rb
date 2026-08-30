@@ -25,7 +25,11 @@ class Memories::PinnedController < ApplicationController
     # unreachable in normal use — the control was dead UI. Rendering the whole
     # set is both correct and shorter.
     @memories = sort_memories(memories)
-    @grouped = @memories.group_by(&:workspace)
+    # group_by alone leaves group order as "whichever workspace's first item
+    # happened to land first", so ?sort=title rendered headings B, S, F, S, R
+    # directly under an alphabetical chip row. Order the groups by the same key
+    # the items are sorted by.
+    @grouped = sort_groups(@memories.group_by(&:workspace))
 
     # The set a user curates here is the one thing an agent would actually want
     # to fetch, and it had no JSON representation at all — the page assembled a
@@ -52,6 +56,14 @@ class Memories::PinnedController < ApplicationController
     when "updated" then memories.sort_by { |m| -m.updated_at.to_i }
     when "title" then memories.sort_by { |m| display_version_of(m).display_title.to_s.downcase }
     else memories # pins.created_at DESC, from the association
+    end
+  end
+
+  def sort_groups(grouped)
+    case @sort
+    when "title" then grouped.sort_by { |workspace, _| workspace.name.downcase }.to_h
+    when "updated" then grouped.sort_by { |_, memories| -memories.map { |m| m.updated_at.to_i }.max }.to_h
+    else grouped # most-recently-pinned first, inherited from the item order
     end
   end
 

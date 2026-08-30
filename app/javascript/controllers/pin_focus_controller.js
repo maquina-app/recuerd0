@@ -17,11 +17,18 @@ export default class extends Controller {
 
   connect() {
     this.onUnpin = this.onUnpin.bind(this)
+    this.onUndo = this.onUndo.bind(this)
     this.onLoad = this.onLoad.bind(this)
 
     // Capture phase: the dropdown closes on click and removes the item from
     // the DOM, so a bubbling listener can arrive after the target is detached.
     this.element.addEventListener("click", this.onUnpin, true)
+
+    // The Undo link lives in the toaster, which is a sibling of this element
+    // rather than a descendant, so the listener above never sees it. Without
+    // this, unpinning restored focus correctly and undoing dropped it back to
+    // <body> one keystroke later.
+    document.addEventListener("click", this.onUndo, true)
 
     // The layout refreshes with `morph`, so the redirect back to this page
     // reuses this very element and Stimulus never calls connect() again.
@@ -34,6 +41,7 @@ export default class extends Controller {
 
   disconnect() {
     this.element.removeEventListener("click", this.onUnpin, true)
+    document.removeEventListener("click", this.onUndo, true)
     document.removeEventListener("turbo:load", this.onLoad)
   }
 
@@ -46,7 +54,17 @@ export default class extends Controller {
     if (!item) return
 
     const index = this.#triggers().findIndex((trigger) => trigger.closest("li") === item.closest("li"))
-    if (index >= 0) sessionStorage.setItem(KEY, String(index))
+    if (index >= 0) {
+      this.lastIndex = index
+      sessionStorage.setItem(KEY, String(index))
+    }
+  }
+
+  // Undoing puts the card back roughly where it was, so aim at the same slot.
+  onUndo(event) {
+    if (!event.target.closest("[data-pin-focus-target='undo']")) return
+
+    sessionStorage.setItem(KEY, String(this.lastIndex ?? 0))
   }
 
   // Private
@@ -61,7 +79,17 @@ export default class extends Controller {
     sessionStorage.removeItem(KEY)
 
     const triggers = this.#triggers()
-    if (triggers.length === 0) return
+    if (triggers.length === 0) {
+      // Nothing left to focus — the last item in this view was removed. Fall
+      // back to the heading so a keyboard user lands somewhere meaningful
+      // instead of at the top of the document.
+      const heading = this.element.querySelector("h1")
+      if (heading) {
+        heading.setAttribute("tabindex", "-1")
+        heading.focus()
+      }
+      return
+    }
 
     const target = triggers[Math.min(Number(stored), triggers.length - 1)]
     target?.focus()

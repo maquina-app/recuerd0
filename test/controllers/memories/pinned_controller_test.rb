@@ -20,6 +20,31 @@ class Memories::PinnedControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-component='empty']"
   end
 
+  # t(".key") inside a block passed to a gem partial resolves the lazy scope
+  # against the GEM's path, so the key misses and Rails renders the humanized
+  # key instead. This shipped "Empty Title" / "Empty Description" to the
+  # first-run state of a top-level nav destination.
+  test "empty state renders real copy, not humanized key fallbacks" do
+    sign_in_as(users(:two))
+    get pinned_memories_url
+
+    assert_select "[data-component='empty']" do
+      assert_select "*", text: /#{Regexp.escape(I18n.t("memories.pinned.index.empty_title"))}/
+      assert_select "*", text: /Open any memory/
+    end
+    assert_no_match(/Empty Title|Empty Description/, response.body)
+  end
+
+  test "clearing a project filter keeps sort and density" do
+    sign_in_as(@user)
+    other = @user.account.workspaces.where.not(id: memories(:one).workspace_id).first
+    skip "fixtures have only one workspace for this account" if other.nil?
+
+    get pinned_memories_url(workspace_id: other.id, sort: "title", view: "compact")
+    assert_response :success
+    assert_select "a[href=?]", pinned_memories_path(sort: "title", view: "compact")
+  end
+
   test "index requires authentication" do
     get pinned_memories_url
     assert_redirected_to new_session_url
