@@ -30,9 +30,11 @@ class Workspaces::DeletedController < ApplicationController
 
   # DELETE /workspaces/deleted/:id
   def destroy
-    track_event("workspace.permanent_destroy", resource: @workspace)
+    # Analytics after the fact, not before: this used to record a permanent
+    # destruction that then raised InvalidForeignKey and destroyed nothing.
     name = @workspace.name
     @workspace.destroy!
+    track_event("workspace.permanent_destroy", metadata: {workspace_name: name})
     redirect_to deleted_workspaces_path, notice: t("workspaces/deleted.destroy.destroyed", name: name), status: :see_other
   end
 end

@@ -13,7 +13,7 @@ class AccountsController < ApplicationController
     @account = Current.account
 
     if @account.update(account_params)
-      redirect_to account_path, notice: t(".updated")
+      redirect_to account_path, notice: t(".updated"), status: :see_other
     else
       @users = @account.active_users.order(:created_at)
       load_export_data if Current.user.admin?
@@ -29,7 +29,7 @@ class AccountsController < ApplicationController
 
     reset_session
     cookies.delete(:session_id)
-    redirect_to root_path, notice: t(".deleted")
+    redirect_to root_path, notice: t(".deleted"), status: :see_other
   end
 
   private

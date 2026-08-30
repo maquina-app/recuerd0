@@ -31,17 +31,31 @@ module SoftDeletable
 
   # Override destroy to perform soft delete
   def destroy
-    if persisted?
+    if persisted? && !@performing_hard_delete
       soft_delete
     else
       super
     end
   end
 
-  # Really destroy the record (bypass soft delete)
+  # Really destroy the record (bypass soft delete).
+  #
+  # This used to be `self.class.where(id: id).delete_all`, which issues a bare
+  # DELETE and so skips every `dependent: :destroy` association. `memories`
+  # references `workspaces` with no ON DELETE CASCADE and SQLite runs with
+  # `PRAGMA foreign_keys = 1`, so "Delete permanently" raised
+  # ActiveRecord::InvalidForeignKey — a 500 — for any workspace that actually
+  # held memories. Every soft-deleted workspace in the seed data has zero
+  # memories, which is why it never showed up.
+  #
+  # Routing through the real destroy runs the dependent callbacks; the flag is
+  # what stops the override above from turning it back into a soft delete.
   def destroy!
     with_lock do
-      self.class.where(id: id).delete_all
+      @performing_hard_delete = true
+      super
+    ensure
+      @performing_hard_delete = false
     end
   end
 

@@ -26,6 +26,10 @@ class User < ApplicationRecord
   scope :active, -> { where.not("email_address LIKE 'deleted-%'") }
 
   validates :role, presence: true, inclusion: {in: ROLES}
+  # The only 8-character floor was minlength: 8 on the form fields, which any
+  # non-browser client ignores — on the page whose whole job is credential
+  # hygiene. allow_nil so records that are not setting a password still save.
+  validates :password, length: {minimum: 8}, allow_nil: true
   validates :name, length: {maximum: 80}, allow_blank: true
 
   after_create :pin_account_defaults
