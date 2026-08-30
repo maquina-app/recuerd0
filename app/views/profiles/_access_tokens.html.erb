@@ -64,13 +64,22 @@
             </div>
 
             <div class="shrink-0">
+              <%# Icon-only and unnamed, on the control that irreversibly destroys
+                  a credential. Two rows whose descriptions truncate identically
+                  on mobile were previously indistinguishable, as were their
+                  delete buttons. %>
+              <% token_name = token.description.presence || t("profiles.access_tokens.untitled") %>
               <%= button_to profile_access_token_path(token),
                   method: :delete,
+                  "aria-label": t("profiles.access_tokens.delete_aria", name: token_name),
                   data: {
                     component: "button",
                     variant: "ghost",
                     size: "icon-sm",
-                    turbo_confirm: t("profiles.access_tokens.delete_confirm")
+                    turbo_confirm: t("profiles.access_tokens.delete_confirm", name: token_name),
+                    confirm_severity: "destructive",
+                    confirm_title: t("profiles.access_tokens.delete_title", name: token_name),
+                    confirm_button: t("profiles.access_tokens.delete_button")
                   },
                   class: "text-destructive hover:text-destructive" do %>
                 <%= icon_for(:trash_2, class: "size-4") %>

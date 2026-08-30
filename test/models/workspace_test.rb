@@ -241,4 +241,35 @@ class WorkspaceTest < ActiveSupport::TestCase
     assert workspace.has_attribute?(:last_activity_at)
     assert_kind_of Time, workspace.last_activity
   end
+
+  # destroy! used to be `where(id: id).delete_all`, which skips every
+  # dependent: :destroy association. memories references workspaces with no
+  # ON DELETE CASCADE and SQLite runs with PRAGMA foreign_keys = 1, so "Delete
+  # permanently" raised InvalidForeignKey for any workspace that held memories.
+  # Every soft-deleted workspace in the seed data has zero memories, which is
+  # why nothing caught it.
+  test "destroy! removes a workspace that still has memories" do
+    workspace = workspaces(:one)
+    assert_predicate workspace.memories.count, :positive?
+
+    assert_nothing_raised { workspace.destroy! }
+
+    refute Workspace.exists?(workspace.id)
+    assert_empty Memory.where(workspace_id: workspace.id)
+  end
+
+  test "destroy! is a hard delete, not a soft delete" do
+    workspace = workspaces(:two)
+    workspace.destroy!
+
+    refute Workspace.exists?(workspace.id)
+  end
+
+  test "destroy still soft deletes" do
+    workspace = workspaces(:two)
+    workspace.destroy
+
+    assert Workspace.exists?(workspace.id)
+    assert_predicate workspace.reload, :deleted?
+  end
 end

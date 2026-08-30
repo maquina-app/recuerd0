@@ -9,7 +9,7 @@ class Profile::AccessTokensController < ApplicationController
       flash[:alert] = @access_token.errors.full_messages.to_sentence
     end
 
-    redirect_to profile_path
+    redirect_to profile_path, status: :see_other
   end
 
   def destroy
@@ -18,10 +18,10 @@ class Profile::AccessTokensController < ApplicationController
     # OAuth-issued tokens are revoked (kept for audit); manual tokens are deleted.
     if @access_token.oauth_client_id?
       @access_token.revoke!
-      redirect_to profile_path, notice: t(".disconnected")
+      redirect_to profile_path, notice: t(".disconnected"), status: :see_other
     else
       @access_token.destroy
-      redirect_to profile_path, notice: t(".deleted")
+      redirect_to profile_path, notice: t(".deleted"), status: :see_other
     end
   end
 

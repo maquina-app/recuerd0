@@ -29,19 +29,27 @@
 
           <div class="flex items-center gap-2 shrink-0">
             <% if user.admin? %>
-              <%= render "components/badge", variant: :default do %><%= t("accounts.users.role_admin") %><% end %>
+              <%= render "components/badge", variant: :secondary do %><%= t("accounts.users.role_admin") %><% end %>
             <% else %>
-              <%= render "components/badge", variant: :secondary do %><%= t("accounts.users.role_member") %><% end %>
+              <%= render "components/badge", variant: :outline do %><%= t("accounts.users.role_member") %><% end %>
             <% end %>
 
             <% if Current.user.admin? && !user.admin? && user != Current.user %>
+              <%# An icon-only button announced as just "button" while doing the
+                  irreversible thing on this page: anonymize_email! overwrites the
+                  address, purges sessions, and cannot be undone. Name the control
+                  and name the person in the confirm. %>
               <%= button_to account_user_path(user),
                   method: :delete,
+                  "aria-label": t("accounts.users.remove_aria", email: user.email_address),
                   data: {
                     component: "button",
                     variant: "ghost",
                     size: "icon-sm",
-                    turbo_confirm: t("accounts.users.remove_confirm")
+                    turbo_confirm: t("accounts.users.remove_confirm", email: user.email_address),
+                    confirm_severity: "destructive",
+                    confirm_title: t("accounts.users.remove_title", email: user.email_address),
+                    confirm_button: t("accounts.users.remove_button")
                   },
                   class: "text-destructive hover:text-destructive" do %>
                 <%= icon_for :x, class: "size-4" %>
