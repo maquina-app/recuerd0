@@ -29,7 +29,12 @@
 
   <%# Controls: within-workspace search · sort · view density %>
   <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <%= form_with url: workspace_show_path(workspace), method: :get, class: "search-field w-full sm:max-w-xs", data: { turbo_action: "advance" } do %>
+    <%# Same accelerators as the workspaces-list filter: "/" focuses, Esc clears,
+        typing submits debounced. turbo_action is "replace", not "advance", so a
+        keystroke burst does not push one history entry per submit and so the
+        morph (see the layout's turbo-refresh-method meta) can preserve focus and
+        caret while the list re-renders under the cursor. %>
+    <%= form_with url: workspace_show_path(workspace), method: :get, class: "search-field w-full sm:max-w-xs", data: { controller: "ws-filter", turbo_action: "replace", ws_filter_target: "form" } do %>
       <%= icon_for(:search) %>
       <label for="memory-toolbar-search" class="sr-only"><%= t("workspaces.show.toolbar.search_label") %></label>
       <input
@@ -40,10 +45,13 @@
         data-component="input"
         placeholder="<%= t("workspaces.show.toolbar.search_placeholder") %>"
         autocomplete="off"
+        data-ws-filter-target="input"
+        data-action="input->ws-filter#submit search->ws-filter#submit keydown.esc->ws-filter#clear"
       >
       <% if @category.present? %><input type="hidden" name="category" value="<%= @category %>"><% end %>
       <% if @memory_sort_param.present? %><input type="hidden" name="sort" value="<%= @memory_sort_param %>"><% end %>
       <% if @memory_view.present? %><input type="hidden" name="view" value="<%= @memory_view %>"><% end %>
+      <kbd aria-hidden="true">/</kbd>
     <% end %>
 
     <div class="flex items-center gap-2">

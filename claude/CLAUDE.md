@@ -72,7 +72,12 @@ bin/rubocop -a                   # Auto-fix
 bin/brakeman                     # Static security analysis
 bin/rails db:migrate             # Run migrations
 bin/rails search:reindex         # Rebuild FTS5 search index
+bin/rails tailwindcss:build      # Build app/assets/builds/tailwind.css
 ```
+
+`bin/setup` does not build Tailwind, so on a fresh checkout every view-rendering test
+errors with `The asset 'tailwind.css' was not found in the load path`. Run
+`bin/rails tailwindcss:build` once before `bin/rails test` (`bin/ci` does it for you).
 
 ## Architecture
 
@@ -175,6 +180,8 @@ View-level locale keys go in `config/locales/views/en.yml`. Partial key paths st
 - **Teardown pattern**: Controllers with a `teardown()` method get called on `turbo:before-cache` (via `app/javascript/controllers/application.js`). Gem controllers handle their own teardown. Note that a page carrying `turbo-cache-control: no-cache` is never snapshotted, so `turbo:before-cache` — and therefore `teardown()` — never fires there; don't rely on it for cleanup on those pages.
 - **Dropdown `auto_close: true`**: All dropdown menus with navigation items use this.
 - **Sidebar `cookie_name:`**: Must be `"recuerd0_sidebar_state"` to match server-side helper.
+- **`ws-filter` on a bare form**: the controller can be mounted directly on the `<form>` it drives — Stimulus target lookup matches the controller element itself, so `data-controller="ws-filter"` and `data-ws-filter-target="form"` on the same tag resolve fine, no wrapper `div` needed. Do **not** also wrap an ancestor in `data-controller="ws-filter"`: it binds a document-level `keydown` listener, so two instances on one page fight over `/`.
+- **Debounced filters need `turbo_action: "replace"`**: with `"advance"` every debounced submit pushes a history entry (Back walks through half-typed queries) and the morph that preserves focus and caret never happens, which makes the input unusable mid-typing.
 
 ## Rails MCP Server
 
