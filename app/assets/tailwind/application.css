@@ -1095,9 +1095,6 @@ house-md-toolbar button svg {
 .ws-filter input[type="search"]::placeholder {
   color: var(--muted-foreground);
 }
-.ws-filter input[type="search"]::-webkit-search-cancel-button {
-  appearance: none;
-}
 .ws-filter input[type="search"]:focus-visible {
   outline: none;
   border-color: var(--primary);
@@ -1127,6 +1124,14 @@ house-md-toolbar button svg {
 ::selection {
   background: color-mix(in oklch, var(--primary) 22%, transparent);
   color: var(--foreground);
+}
+
+/* One filter-input treatment everywhere: no native clear button on any search
+   field. "/" focuses and Escape clears instead, which every search input in the
+   app wires up. Scoping this to a single class is what let the memories filter
+   inherit WebKit's X while the workspaces filter suppressed it. */
+input[type="search"]::-webkit-search-cancel-button {
+  appearance: none;
 }
 
 :root {

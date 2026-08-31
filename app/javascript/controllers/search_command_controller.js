@@ -25,14 +25,7 @@ export default class extends Controller {
   static classes = ["selected"]
 
   connect() {
-    this.isMac = navigator.userAgentData
-      ? /mac/i.test(navigator.userAgentData.platform)
-      : /Mac|iPhone|iPad|iPod/.test(navigator.platform)
-    const shortcutLabel = this.isMac ? "⌘K" : "Ctrl+K"
-
-    // Guarded: without this, removing the desktop trigger would throw here and
-    // silently kill the whole palette, ⌘K included.
-    if (this.hasShortcutHintTarget) this.shortcutHintTarget.textContent = shortcutLabel
+    this.renderShortcutHint()
 
     this._dialog = document.getElementById(this.dialogIdValue)
     this._input = document.getElementById(this.inputIdValue)
@@ -223,6 +216,21 @@ export default class extends Controller {
     Turbo.visit(this.searchUrl(query))
   }
 
+  // The <kbd> ships empty and is filled here, because the label is platform-
+  // derived and the server cannot know the platform. Re-run on every morph:
+  // morphing syncs the node against that empty server markup and blanks it.
+  renderShortcutHint() {
+    this.isMac = navigator.userAgentData
+      ? /mac/i.test(navigator.userAgentData.platform)
+      : /Mac|iPhone|iPad|iPod/.test(navigator.platform)
+
+    // Guarded: without this, removing the desktop trigger would throw here and
+    // silently kill the whole palette, ⌘K included.
+    if (this.hasShortcutHintTarget) {
+      this.shortcutHintTarget.textContent = this.isMac ? "⌘K" : "Ctrl+K"
+    }
+  }
+
   // --- lifecycle ----------------------------------------------------------
 
   // Recorded before the render, because by the time turbo:morph fires the
@@ -232,6 +240,11 @@ export default class extends Controller {
   }
 
   handleMorph() {
+    // Before the early return: the hint is blank in the server's markup, so
+    // every morph wipes it — including the ordinary filter keystroke, where no
+    // dialog is open and the guard below would skip us.
+    this.renderShortcutHint()
+
     if (!this._dialog || this._dialog.open || !this._wasOpen) return
     const { value } = this._wasOpen
     this._wasOpen = null

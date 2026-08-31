@@ -42,6 +42,23 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_select "form.ws-filter[data-turbo-frame]", count: 0
   end
 
+  # -- the palette shortcut badge --
+  #
+  # The <kbd> ships empty and is filled by JavaScript, so a morph (which every
+  # filter/sort submit triggers) syncs it back to this empty server markup and
+  # blanks it. The controller re-renders the label on turbo:morph, which only
+  # works while both the target and that action binding survive in the markup.
+
+  test "index renders the palette trigger with a morph-rebound shortcut hint" do
+    get workspaces_url
+    assert_response :success
+
+    assert_select "[data-controller=search-command]" do
+      assert_select "[data-action*=?]", "turbo:morph@document->search-command#handleMorph"
+      assert_select "kbd[data-search-command-target=shortcutHint]", count: 1
+    end
+  end
+
   test "index filters workspaces by query" do
     match = Workspace.create!(account: @user.account, name: "Zebra Notes")
 
