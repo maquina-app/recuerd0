@@ -65,6 +65,18 @@
   /* Modal scrim. Not derived from --background: a scrim mixed from the page's
      own background composites to the page colour and dims nothing. */
   --scrim: oklch(0.17 0.01 150);
+
+  /* Status accents — the saturated glyph tone for status icons, and the tint
+     behind them. Distinct from --warning / --info, which are pale *surface*
+     fills, and from --warning-foreground / --info-foreground, which are dark
+     ink meant to sit on those fills. Success and error already had a saturated
+     token to reach for (--primary, --destructive); warning and info did not,
+     which is why they were the only two variants hard-coding literals. */
+  --success-accent: oklch(0.480 0.190 150);
+  --warning-accent: oklch(0.56 0.14 85);
+  --warning-accent-surface: oklch(0.68 0.16 85 / 0.15);
+  --info-accent: oklch(0.52 0.14 230);
+  --info-accent-surface: oklch(0.58 0.15 230 / 0.15);
 }
 
 @theme {
@@ -157,6 +169,14 @@
   /* The page is already near the light theme's scrim, so dark needs its own,
      darker value or the overlay is again a no-op. */
   --scrim: oklch(0.040 0.004 150);
+
+  /* Brighter glyphs and a heavier tint: a status icon that reads on white is
+     under-lit on a dark frosted surface. */
+  --success-accent: oklch(0.74 0.19 150);
+  --warning-accent: oklch(0.82 0.15 85);
+  --warning-accent-surface: oklch(0.74 0.16 85 / 0.26);
+  --info-accent: oklch(0.76 0.14 230);
+  --info-accent-surface: oklch(0.66 0.15 230 / 0.26);
 }
 
 @layer base {
@@ -636,13 +656,13 @@ house-md-toolbar button svg {
 }
 
 [data-component="toast"][data-variant="warning"] [data-toast-part="icon"] {
-  background-color: oklch(0.68 0.16 85 / 0.15);
-  color: oklch(0.56 0.14 85);
+  background-color: var(--warning-accent-surface);
+  color: var(--warning-accent);
 }
 
 [data-component="toast"][data-variant="info"] [data-toast-part="icon"] {
-  background-color: oklch(0.58 0.15 230 / 0.15);
-  color: oklch(0.52 0.14 230);
+  background-color: var(--info-accent-surface);
+  color: var(--info-accent);
 }
 
 /* --- Dark Mode: dark frosted glass surface (neutral across all variants) --- */
@@ -669,7 +689,7 @@ house-md-toolbar button svg {
 /* Dark tonal badges — a touch more fill + brighter glyph for legibility */
 .dark [data-component="toast"][data-variant="success"] [data-toast-part="icon"] {
   background-color: color-mix(in oklch, var(--primary) 26%, transparent);
-  color: oklch(0.74 0.19 150);
+  color: var(--success-accent);
 }
 
 .dark [data-component="toast"][data-variant="error"] [data-toast-part="icon"] {
@@ -678,13 +698,13 @@ house-md-toolbar button svg {
 }
 
 .dark [data-component="toast"][data-variant="warning"] [data-toast-part="icon"] {
-  background-color: oklch(0.74 0.16 85 / 0.26);
-  color: oklch(0.82 0.15 85);
+  background-color: var(--warning-accent-surface);
+  color: var(--warning-accent);
 }
 
 .dark [data-component="toast"][data-variant="info"] [data-toast-part="icon"] {
-  background-color: oklch(0.66 0.15 230 / 0.26);
-  color: oklch(0.76 0.14 230);
+  background-color: var(--info-accent-surface);
+  color: var(--info-accent);
 }
 
 /* ===== Workspace index: folder tile, stat chips, segmented controls, rows ===== */

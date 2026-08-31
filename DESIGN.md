@@ -90,6 +90,7 @@ rounded:
   md: "6px"
   lg: "8px"
   xl: "12px"
+  full: "9999px"
 spacing:
   xs: "4px"
   sm: "8px"
