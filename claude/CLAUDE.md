@@ -9,6 +9,52 @@ See `docs/technical-guide.md` for architecture, `docs/ui-patterns.md` for UI pat
 - When implementing a feature from a plan, ALWAYS re-read the full plan before starting and check off each requirement as you complete it. Before declaring done, verify every planned item was addressed.
 - After implementing UI components or interactive elements, verify they work end-to-end by running relevant tests before considering the task complete.
 - After making changes, always run `bin/ci` to verify nothing is broken. For quick iteration, `bin/rails test path/to/test.rb` is fine, but always finish with `bin/ci` before declaring done. Run `bin/rubocop` to check lint violations in changed files.
+
+### Definition of Done — REQUIRED, in this order
+
+Work is not done when the tests pass. All four steps below are mandatory; skipping
+step 1 means conventions land as an embarrassing self-correcting commit after review
+has started, and skipping step 4 means "CI is green" is a claim you have not earned.
+
+1. **Run the convention skills BEFORE pushing.** Conventions are owned by skills, not
+   by judgement. Invoke with the **Skill** tool using the full `plugin:skill` name —
+   passing one to the Agent tool as `subagent_type` fails with "Agent type not found".
+   The naming is not uniform (two repeat the plugin name, two do not), so read it,
+   do not infer it:
+
+   | Touched | Skill |
+   |---|---|
+   | UI, components, ERB | `maquina-ui-standards:ui` |
+   | Ruby / Rails structure | `rails-simplifier:simplify` |
+   | Stimulus controllers | `better-stimulus:better-stimulus` |
+   | Turbo / deep Hotwire | `hotwire-patterns:hotwire-patterns` |
+
+   `bin/rails maquina:doctor` (the gate `maquina-ui-standards` names) does **not**
+   exist on maquina-components 0.5.1 — it ships in 0.6.x. Report it as unavailable
+   rather than claiming it passed.
+
+2. **Verify interactive work in a browser.** Tests do not exercise JavaScript. A
+   Stimulus or Turbo change is unverified until it has been driven for real,
+   *including after a refactor of code that already worked*.
+
+3. **Commit and push.**
+
+4. **Run `bin/ci` AGAIN, after the push, and require the Signoff stage to pass.**
+   The final stage is `gh signoff`, and it fails with `repository has uncommitted or
+   unpushed changes` whenever anything is uncommitted **or** committed-but-unpushed.
+   So every mid-work `bin/ci` ends on a red `❌ Continuous Integration failed` even
+   when every check before it passed.
+
+   **Do not call that "CI green."** Mid-work, `bin/ci` is a check-runner: say "all
+   checks pass, signoff pending — not yet pushed." Only the post-push run can print,
+   and only this counts as done:
+
+   ```
+   ✓ Signed off on <sha>
+   ✅ Continuous Integration passed
+   ```
+
+   Signoff records a specific commit SHA, so it must be run against the pushed HEAD.
 - After bulk find/replace operations (`replace_all`), always grep the codebase for partial-word matches or typos introduced by the replacement.
 - When the user says "continue" or references a Fizzy card, confirm which specific card/task before starting implementation — do NOT assume based on recently viewed cards.
 - When opening pull requests, do NOT add a "Generated with Claude Code" line (or any similar attribution footer) to the PR body or commit messages.
