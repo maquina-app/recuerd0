@@ -182,6 +182,15 @@ View-level locale keys go in `config/locales/views/en.yml`. Partial key paths st
 - **Sidebar `cookie_name:`**: Must be `"recuerd0_sidebar_state"` to match server-side helper.
 - **`ws-filter` on a bare form**: the controller can be mounted directly on the `<form>` it drives — Stimulus target lookup matches the controller element itself, so `data-controller="ws-filter"` and `data-ws-filter-target="form"` on the same tag resolve fine, no wrapper `div` needed. Do **not** also wrap an ancestor in `data-controller="ws-filter"`: it binds a document-level `keydown` listener, so two instances on one page fight over `/`.
 - **Debounced filters need `turbo_action: "replace"`**: with `"advance"` every debounced submit pushes a history entry (Back walks through half-typed queries) and the morph that preserves focus and caret never happens, which makes the input unusable mid-typing.
+- **Anything JavaScript writes into the DOM must survive a morph.** A one-shot write in `connect()` against a node the server renders empty gets erased by the next morph, and the controller element usually survives the morph, so `connect()` never re-runs to redo it. The palette's `⌘K` badge lost its text on every filter keystroke this way. Re-render such nodes from the controller's `turbo:morph@document` handler, above any early-return guard in it, or mark the node `data-turbo-permanent`.
+- **Browser-drawn chrome is styled once, globally.** `::-webkit-search-cancel-button` (the X in a `type="search"` field) is suppressed by a single unscoped rule in the "Browser surfaces" section of `app/assets/tailwind/application.css`. Scoping that kind of rule to one component class is how the workspaces filter and the memories filter drifted apart. `test/assets/search_input_css_test.rb` guards it.
+
+### System tests
+
+- `bin/ci` does **not** run them (`config/ci.rb` has the step commented out) — run `bin/rails test test/system/...` by hand when you touch JS.
+- Headless Chrome cannot start in the container without `--no-sandbox`; the flags live in `test/application_system_test_case.rb`. Without them every system test fails with `SessionNotCreatedError: Chrome instance exited`.
+- Rebuild CSS (`bin/rails tailwindcss:build`) after editing `app/assets/tailwind/application.css` or system tests exercise the stale build.
+- `getComputedStyle(el, "::-webkit-search-cancel-button")` returns the **host element's** style in headless Chrome, not the pseudo-element's — it reports `appearance: auto` even when the rule applies. Don't assert on it; assert on the CSS source and check the rendering in a screenshot.
 
 ## Rails MCP Server
 
