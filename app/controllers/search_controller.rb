@@ -73,12 +73,11 @@ class SearchController < ApplicationController
     else
       # Top up with recent work so a user who has pinned nothing still opens
       # onto something actionable rather than an empty panel.
-      recent = Memory.joins(:workspace)
-        .where(workspaces: {account_id: Current.account.id, archived_at: nil, deleted_at: nil})
+      recent = Memory.in_active_workspaces_of(Current.account)
         .latest_versions
         .where.not(id: pinned.map(&:id))
-        .includes(:content, :workspace, :child_versions)
-        .order("memories.updated_at DESC")
+        .preloaded
+        .recently_updated
         .limit(SUGGESTION_LIMIT - pinned.size)
       pinned + recent.to_a
     end

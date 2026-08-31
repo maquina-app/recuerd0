@@ -7,10 +7,22 @@ import { Turbo } from "@hotwired/turbo-rails"
 // that boundary.
 export default class extends Controller {
   static targets = ["shortcutHint"]
-  static values = { searchUrl: String }
 
-  static DEBOUNCE_MS = 200
-  static MIN_QUERY_LENGTH = 3
+  // Late-bound rather than hardcoded: the dialog is a layout sibling, so this
+  // controller has to reach it by id, and burying those ids (and the debounce
+  // and minimum-length tuning) in the class would make the controller usable on
+  // exactly one page. Markup supplies them.
+  static values = {
+    searchUrl: String,
+    dialogId: { type: String, default: "search-command-dialog" },
+    inputId: { type: String, default: "search-command-input" },
+    scopeId: { type: String, default: "search-command-scope" },
+    frameId: { type: String, default: "search_command_results" },
+    debounce: { type: Number, default: 200 },
+    minLength: { type: Number, default: 3 }
+  }
+
+  static classes = ["selected"]
 
   connect() {
     this.isMac = navigator.userAgentData
@@ -22,10 +34,10 @@ export default class extends Controller {
     // silently kill the whole palette, ⌘K included.
     if (this.hasShortcutHintTarget) this.shortcutHintTarget.textContent = shortcutLabel
 
-    this._dialog = document.getElementById("search-command-dialog")
-    this._input = document.getElementById("search-command-input")
-    this._scope = document.getElementById("search-command-scope")
-    this._frame = document.getElementById("search_command_results")
+    this._dialog = document.getElementById(this.dialogIdValue)
+    this._input = document.getElementById(this.inputIdValue)
+    this._scope = document.getElementById(this.scopeIdValue)
+    this._frame = document.getElementById(this.frameIdValue)
     if (!this._dialog) return
 
     this.handleDialogClick = this.handleDialogClick.bind(this)
@@ -33,8 +45,6 @@ export default class extends Controller {
     this.handleInputKeydown = this.handleInputKeydown.bind(this)
     this.handleInput = this.handleInput.bind(this)
     this.handleScopeToggle = this.handleScopeToggle.bind(this)
-    this.handleMorph = this.handleMorph.bind(this)
-    this.handleBeforeRender = this.handleBeforeRender.bind(this)
     this.handleFrameLoad = this.handleFrameLoad.bind(this)
 
     this._dialog.addEventListener("click", this.handleDialogClick)
@@ -42,18 +52,13 @@ export default class extends Controller {
     this._input.addEventListener("keydown", this.handleInputKeydown)
     this._input.addEventListener("input", this.handleInput)
     this._scope?.addEventListener("click", this.handleScopeToggle)
-
-    // A morph refresh pulls the dialog out of the top layer: `open` is not
-    // serialised, so the palette silently vanishes mid-typing and the query is
-    // stranded in a hidden input. Re-open and restore what was typed.
-    document.addEventListener("turbo:before-render", this.handleBeforeRender)
-    document.addEventListener("turbo:morph", this.handleMorph)
+    // turbo:before-render and turbo:morph are declared as @document actions in
+    // the markup so Stimulus owns their lifecycle. Everything above is on an
+    // element outside this controller's subtree, where data-action cannot reach.
     this._frame?.addEventListener("turbo:frame-load", this.handleFrameLoad)
   }
 
   disconnect() {
-    document.removeEventListener("turbo:before-render", this.handleBeforeRender)
-    document.removeEventListener("turbo:morph", this.handleMorph)
     this._frame?.removeEventListener("turbo:frame-load", this.handleFrameLoad)
     clearTimeout(this._debounce)
 
@@ -98,14 +103,14 @@ export default class extends Controller {
 
   handleInput() {
     clearTimeout(this._debounce)
-    this._debounce = setTimeout(() => this.search(), this.constructor.DEBOUNCE_MS)
+    this._debounce = setTimeout(() => this.search(), this.debounceValue)
   }
 
   search() {
     if (!this._frame) return
     const query = this._input.value.trim()
 
-    if (query.length < this.constructor.MIN_QUERY_LENGTH) {
+    if (query.length < this.minLengthValue) {
       this.loadDefaults()
       return
     }
@@ -184,12 +189,12 @@ export default class extends Controller {
   select(element) {
     this.results.forEach((el) => {
       el.setAttribute("aria-selected", "false")
-      el.classList.remove("is-selected")
+      el.classList.remove(this.selectedClass)
     })
     this._selected = element
     if (!element) return
     element.setAttribute("aria-selected", "true")
-    element.classList.add("is-selected")
+    element.classList.add(this.selectedClass)
     element.scrollIntoView({ block: "nearest" })
     this._input?.setAttribute("aria-expanded", "true")
   }
@@ -207,7 +212,7 @@ export default class extends Controller {
     }
 
     const query = this._input.value.trim()
-    if (query.length < this.constructor.MIN_QUERY_LENGTH) {
+    if (query.length < this.minLengthValue) {
       // Closing on an unusable query used to look identical to a successful
       // search. Keep the palette open and let the hint do its job.
       this._input.focus()
