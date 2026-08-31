@@ -20,6 +20,18 @@
         "value": "geist mono",
         "createdAt": "2026-08-30T20:52:22.001Z",
         "reason": "DESIGN.md commits to Jura / Instrument Sans / Geist Mono as the brand type system; documented decision, predates this change."
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "3px)",
+        "createdAt": "2026-08-31T02:51:39.223Z",
+        "reason": "Parse artifact: detector splits calc(var(--radius) - Npx) and reads the tail as a literal radius. Token-derived; no bare Npx radius exists in the file (--radius-sm is defined this way in @theme)."
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "4px)",
+        "createdAt": "2026-08-31T02:51:39.251Z",
+        "reason": "Parse artifact: detector splits calc(var(--radius) - Npx) and reads the tail as a literal radius. Token-derived; no bare Npx radius exists in the file (--radius-sm is defined this way in @theme)."
       }
     ]
   }
