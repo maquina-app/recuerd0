@@ -98,7 +98,10 @@ class FirstRunControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select ".text-destructive"
+    # The error text is the engine's [data-form-part="error"], painted by
+    # --destructive-text since 0.7.1. It used to need a text-destructive utility
+    # on top, which never actually rendered.
+    assert_select "[data-form-part='error']"
   end
 
   test "POST create redirects when account already exists" do

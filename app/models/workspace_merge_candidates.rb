@@ -11,7 +11,7 @@ class WorkspaceMergeCandidates
   TITLE_WEIGHT = 0.6
   TAG_WEIGHT = 0.4
 
-  Cluster = Struct.new(:score, :reasons, :memories, keyword_init: true)
+  Cluster = Struct.new(:score, :reasons, :memories)
 
   def initialize(workspace, min_score: DEFAULT_MIN_SCORE)
     @workspace = workspace

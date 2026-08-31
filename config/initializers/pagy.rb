@@ -1,18 +1,14 @@
-# config/initializers/pagy.rb
-require "pagy/extras/overflow"
+# Pagy 43 resolves nearly everything from the request, so this file only carries
+# what differs from its defaults.
+#
+# There is no :overflow option any more. An out-of-range page is no longer an
+# error to catch: Offset#initialize assigns empty page variables and points
+# #previous at the last page, which is the graceful degradation the old
+# `overflow = :last_page` was reaching for.
 
-# Handle overflow by showing the last page
-Pagy::DEFAULT[:overflow] = :last_page
+# Default records per page (Pagy's own default is 20).
+Pagy::OPTIONS[:limit] = 10
 
-# Default items per page
-Pagy::DEFAULT[:limit] = 10
-
-# Control how many page links are shown
-# The size can be a single number or an array for responsive behavior
-# Format: [start_links, before_current, current, after_current, end_links]
-# Example: [1, 4, 4, 4, 1] means:
-# - 1 link at the start
-# - 4 links before current page
-# - 4 links after current page
-# - 1 link at the end
-Pagy::DEFAULT[:size] = 7  # [1, 4, 4, 4, 1]
+# Page links in the series, current page included: [1, :gap, 8, "9", 10, :gap, 36].
+# Renamed from :size in 43 — a count of slots, not a size.
+Pagy::OPTIONS[:slots] = 7

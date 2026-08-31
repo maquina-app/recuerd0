@@ -459,10 +459,10 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       assert_select "[data-drawer-cookie-name-value='recuerd0_onboarding_drawer_state']"
       assert_select "[data-drawer-cookie-max-age-value='0']"
       assert_select "#onboarding-drawer[data-drawer-part='root'][data-state='closed'][data-side='right']", count: 1 do |drawers|
-        assert_includes drawers.first["class"], "[&_[data-drawer-part=backdrop]]:!fixed"
-        assert_includes drawers.first["class"], "[&_[data-drawer-part=backdrop]]:!z-[60]"
-        assert_includes drawers.first["class"], "[&_[data-drawer-part=panel]]:!z-[70]"
-        assert_includes drawers.first["class"], "[&_[data-drawer-part=panel]]:!w-[480px]"
+        assert_includes drawers.first["class"], "[&_[data-drawer-part=backdrop]]:fixed"
+        assert_includes drawers.first["class"], "[&_[data-drawer-part=backdrop]]:z-[60]"
+        assert_includes drawers.first["class"], "[&_[data-drawer-part=panel]]:z-[70]"
+        assert_includes drawers.first["class"], "[&_[data-drawer-part=panel]]:w-[480px]"
       end
       assert_select "#onboarding-drawer-panel[role='dialog'][aria-label='Connect your agent'][aria-hidden='true'][inert]"
     end

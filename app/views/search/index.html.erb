@@ -76,7 +76,7 @@
           <% end %>
         </div>
 
-        <%= pagination_nav(@pagy, :search_path, params: { q: @query }) %>
+        <%= paginate_nav(@pagy, :search_path, params: { q: @query }) %>
       </section>
     <% end %>
   <% elsif @query.present? %>

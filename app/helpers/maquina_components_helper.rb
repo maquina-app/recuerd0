@@ -1,6 +1,5 @@
 module MaquinaComponentsHelper
   include MaquinaComponents::IconsHelper
-  include MaquinaComponents::PaginationHelper
   include MaquinaComponents::BreadcrumbsHelper
   include MaquinaComponents::ToastHelper
   include MaquinaComponents::SidebarHelper
@@ -325,6 +324,30 @@ module MaquinaComponentsHelper
           <line x1="4" x2="20" y1="12" y2="12"></line>
           <line x1="4" x2="20" y1="6" y2="6"></line>
           <line x1="4" x2="20" y1="18" y2="18"></line>
+        </svg>
+      SVG
+    # Both of these were in use while the engine silently rendered nothing for an
+    # unknown name: the export card had an invisible spinner and the memory
+    # source link had no glyph. 0.7.x raises instead, which is how they surfaced.
+    when :loader
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <path d="M12 2v4"></path>
+          <path d="m16.2 7.8 2.9-2.9"></path>
+          <path d="M18 12h4"></path>
+          <path d="m16.2 16.2 2.9 2.9"></path>
+          <path d="M12 18v4"></path>
+          <path d="m4.9 19.1 2.9-2.9"></path>
+          <path d="M2 12h4"></path>
+          <path d="m4.9 4.9 2.9 2.9"></path>
+        </svg>
+      SVG
+    when :external_link
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <path d="M15 3h6v6"></path>
+          <path d="M10 14 21 3"></path>
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
         </svg>
       SVG
     when :chevron_left

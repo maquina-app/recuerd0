@@ -16,9 +16,10 @@
               required: true,
               maxlength: 100,
               autocomplete: "off",
+              aria: { invalid: account.errors[:name].any?, describedby: ("account_name_error" if account.errors[:name].any?) },
               data: { component: "input" } %>
           <% if account.errors[:name].any? %>
-            <p data-form-part="error" class="text-destructive"><%= account.errors[:name].first %></p>
+            <p data-form-part="error" id="account_name_error"><%= account.errors[:name].first %></p>
           <% end %>
         </div>
 

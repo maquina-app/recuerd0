@@ -24,7 +24,10 @@
 
         <%= render "components/separator", orientation: :vertical %>
 
-        <div class="min-w-0 flex-1 overflow-hidden [&_[data-breadcrumb-part=list]]:flex-nowrap">
+        <%# No flex-nowrap on the breadcrumb list here: 0.7.0 collapses on measured
+            space, and the list has to keep the shrink/overflow pair the engine sets
+            (breadcrumbs.css) for that measurement to mean anything. %>
+        <div class="min-w-0 flex-1 overflow-hidden">
           <% if content_for?(:breadcrumb) %>
             <%= yield :breadcrumb %>
           <% else %>

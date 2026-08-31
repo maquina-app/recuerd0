@@ -29,9 +29,18 @@ has started, and skipping step 4 means "CI is green" is a claim you have not ear
    | Stimulus controllers | `better-stimulus:better-stimulus` |
    | Turbo / deep Hotwire | `hotwire-patterns:hotwire-patterns` |
 
-   `bin/rails maquina:doctor` (the gate `maquina-ui-standards` names) does **not**
-   exist on maquina-components 0.5.1 — it ships in 0.6.x. Report it as unavailable
-   rather than claiming it passed.
+   `bin/rails maquina:doctor` (the gate `maquina-ui-standards` names) is the
+   fourth check. It must come back with **0 cleanup**. Three findings are known
+   false positives and stay in the report — do not "fix" them:
+
+   - 2× `destructive-error-invisible`. The rule only inspects the palette shape
+     (`--destructive-foreground` lightness vs `--card`), which is permanently
+     true for a saturated palette. It never looks for the remediation, which is
+     the `--destructive-text` / `--destructive-border` pair we already set.
+   - `restated-svg-uri` at `marketing.css:98`. That data-URI is the marketing
+     page's grain overlay, not a checkbox/radio/switch mark.
+   - `hardcoded-radius`. The rule flags any `border-radius:` on a component
+     selector, including one that already reads `--control-radius`.
 
 2. **Verify interactive work in a browser.** Tests do not exercise JavaScript. A
    Stimulus or Turbo change is unverified until it has been driven for real,
@@ -106,20 +115,11 @@ Components live in the gem (`app/views/components/`), not the app. App-specific 
 
 Before using or adding an icon, check `app/helpers/maquina_components_helper.rb` → `main_icon_svg_for(name)`. Add new icons as `when :icon_name` cases. Never use inline SVGs in views — always use `icon_for(:name)`.
 
+Since 0.7.x an unknown name **raises** rather than rendering nothing, so a missing icon fails a test instead of silently leaving a hole in the page.
+
 ### Sub-component content pattern — CRITICAL
 
-Gem sub-components (card/title, card/description, alert/title, toast/title, etc.) use `text || content` — NOT `yield`. Blocks are silently dropped:
-
-```erb
-<%# GOOD %>
-<%= render "components/toast/title", text: "Saved!" %>
-<%= render "components/card/title", content: capture { %><span>Custom</span><% } %>
-
-<%# BAD — silently drops content %>
-<%= render "components/toast/title" do %>This won't render<% end %>
-```
-
-Same for container components like toaster — use `content:` parameter, not a block.
+Since 0.7.1 gem sub-components (card/title, card/description, alert/title, toast/title, etc.) accept `text:`, `content:` **or** a block interchangeably — all three are equivalent. On 0.5.1 a block was silently dropped, which is why most call sites here still pass `text:`/`content:`; both remain correct.
 
 ### Component variants
 
@@ -146,9 +146,19 @@ Use the built-in `icon:` local — the component handles `data-has-icon` and CSS
 
 ### Form data attributes
 
-The gem styles forms via `[data-component]` and `[data-form-part]` selectors. Key attributes: `data-component="form|label|input|textarea|button"`, `data-form-part="group|error"`. Note: `data-form-part="error"` uses `--destructive-foreground` (near-white); for inline error text add `class="text-destructive"`.
+The gem styles forms via `[data-component]` and `[data-form-part]` selectors. Key attributes: `data-component="form|label|input|textarea|button"`, `data-form-part="group|error"`.
 
-When creating compound input components, match the gem's focus ring: `box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent)`.
+`data-form-part="error"` paints itself — it reads `--destructive-text`, which this app sets. Do **not** add `class="text-destructive"` on top; that was a workaround for a gem bug fixed in 0.7.1, and it never worked anyway (Tailwind utilities live in `@layer utilities` and lost to the gem's then-unlayered rule).
+
+**Every field that can render an error needs `aria: { invalid: model.errors[:field].any? }`.** Since 0.7.1 the invalid border keys on `:user-invalid`, which does not match a server-rendered error on an untouched form. Without the ARIA attribute the field renders an error message with no border. For a radio group, put `aria-invalid` on the element carrying `role="radiogroup"`.
+
+Focus rings are tokens: `--focus-ring-width` / `-style` / `-color` / `-offset`, applied as an `outline` on `:focus-visible`. Read those on compound controls rather than restating a `box-shadow` ring; measure the ring on the container (`:focus-within` on the wrapper is the deliberate pattern), not the inner control.
+
+### Pagination is the app's, not the gem's
+
+Render page navs with `paginate_nav` from `app/helpers/pagination_helper.rb`, never the gem's `pagination_nav`. The gem's helper reads Pagy internals that Pagy 43 removed (`pagy.vars`, `Pagy::DEFAULT[:page_param]`) and declares no Pagy dependency, so it resolves cleanly and raises at render time. `MaquinaComponents::PaginationHelper` is deliberately not included. The `components/pagination/*` partials are plain markup and are still the gem's.
+
+Pagy 43 attribute names: `#previous` (not `#prev`), `#last` (`#pages` is an alias), `#series` is **protected**, and the current page arrives in the series as a `String` while every other page is an `Integer`.
 
 ### I18n lazy lookup gotcha — CRITICAL
 

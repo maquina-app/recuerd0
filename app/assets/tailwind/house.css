@@ -74,7 +74,8 @@
     &:where(:focus-visible) {
       background-color: var(--house-color-bg);
       color: var(--house-color-fg);
-      outline: none;
+      outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+      outline-offset: var(--focus-ring-offset);
     }
 
     @media (hover: hover) {

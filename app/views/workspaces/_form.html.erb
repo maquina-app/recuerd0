@@ -18,9 +18,10 @@
             placeholder: t("workspaces.form.name_placeholder"),
             required: true,
             maxlength: 100,
-            autocomplete: "off" %>
+            autocomplete: "off",
+            aria: { invalid: workspace.errors[:name].any?, describedby: ("workspace_name_error" if workspace.errors[:name].any?) } %>
         <% if workspace.errors[:name].any? %>
-          <p data-form-part="error" class="mt-1 text-destructive"><%= workspace.errors[:name].first %></p>
+          <p data-form-part="error" class="mt-1" id="workspace_name_error"><%= workspace.errors[:name].first %></p>
         <% end %>
       </div>
     </div>
@@ -43,9 +44,10 @@
         maxlength: 500,
         autocomplete: "off",
         class: "resize-none",
+        aria: { invalid: workspace.errors[:description].any?, describedby: ("workspace_description_error" if workspace.errors[:description].any?) },
         data: { component: "textarea" } %>
     <% if workspace.errors[:description].any? %>
-      <p data-form-part="error" class="mt-1 text-destructive"><%= workspace.errors[:description].first %></p>
+      <p data-form-part="error" class="mt-1" id="workspace_description_error"><%= workspace.errors[:description].first %></p>
     <% end %>
   </div>
 

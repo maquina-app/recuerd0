@@ -43,9 +43,9 @@ gem "thruster", require: false
 # gem "image_processing", "~> 1.2"
 
 gem "redcarpet", "~> 3.6"
-gem "rouge", "~> 4.5"
-gem "pagy", "~> 9.3"
-gem "maquina-components", "~> 0.5.1"
+gem "rouge", "~> 5.1"
+gem "pagy", "~> 43.6"
+gem "maquina-components", "~> 0.7.1"
 gem "informers", "~> 1.3.0"
 gem "rubyzip", "~> 3.0", require: "zip"
 
@@ -72,7 +72,7 @@ group :development do
   gem "letter_opener"
   # gem "log_bench"
   # gem "reactionview"
-  gem "standard", "~> 1.54.0"
+  gem "standard", "~> 1.56.0"
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 end

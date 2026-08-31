@@ -6,7 +6,7 @@
 <%= render "components/alert",
   variant: :default,
   icon: :info,
-  css_classes: "mb-8 !px-3.5 !py-[11px]",
+  css_classes: "mb-8 px-3.5 py-[11px]",
   data: { onboarding_banner: true } do %>
   <div
     class="flex flex-wrap items-center gap-x-3 gap-y-2"
@@ -45,7 +45,7 @@
 
       <%= render "components/separator",
         orientation: :vertical,
-        css_classes: "!mx-1" %>
+        css_classes: "mx-1" %>
 
       <div class="flex items-center gap-1">
         <%= render "components/drawer/trigger",

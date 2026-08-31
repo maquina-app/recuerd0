@@ -31,6 +31,14 @@
   --accent-foreground: oklch(0.280 0.030 150);
   --destructive: oklch(0.580 0.237 28.43);
   --destructive-foreground: oklch(0.985 0.010 25);
+  /* This palette is the saturated convention: --destructive is a fill and
+     --destructive-foreground is the near-white that sits on it. Error text sits
+     on --card, not on a fill, and an invalid border has to be visible against
+     --border, so 0.7.1 gives both their own token rather than borrowing the
+     on-fill colour. Without these two lines [data-form-part="error"] paints
+     0.985 lightness on 1.0 — the 1.05:1 that made every form error invisible. */
+  --destructive-text: var(--destructive);
+  --destructive-border: var(--destructive);
   --success: oklch(0.940 0.035 150);
   --success-foreground: oklch(0.300 0.065 150);
   --warning: oklch(0.940 0.030 85);
@@ -77,6 +85,38 @@
   --warning-accent-surface: oklch(0.68 0.16 85 / 0.15);
   --info-accent: oklch(0.52 0.14 230);
   --info-accent-surface: oklch(0.58 0.15 230 / 0.15);
+
+  /* Focus ring. 0.6.0 moved every engine ring from a :focus box-shadow pair to
+     an outline on :focus-visible, driven by these four. They are declared here,
+     not left to the engine's fallbacks, because app chrome (the command palette,
+     the memory cards, the filter chips) rings itself and has to agree with the
+     components beside it. --focus-ring-color resolves through --ring, so the
+     dark block below re-points it for free. */
+  /* Toast — a frosted, neutral surface with the variant colour carried only by
+     the icon badge. The engine reads --toast-radius / --toast-shadow /
+     --toast-hover-shadow; the surface and badge tokens are ours, and exist so
+     dark mode is a token swap in the .dark block below rather than a parallel
+     set of `.dark [data-component="toast"]` rules restating the same design. */
+  --toast-radius: 0.75rem;
+  --toast-shadow: 0 8px 32px rgb(0 0 0 / 0.08), 0 2px 8px rgb(0 0 0 / 0.05);
+  --toast-hover-shadow: 0 12px 40px rgb(0 0 0 / 0.10), 0 4px 12px rgb(0 0 0 / 0.06);
+  --toast-surface: oklch(1 0 0 / 0.82);
+  --toast-surface-border: color-mix(in oklch, var(--border) 70%, transparent);
+  --toast-icon-surface: var(--muted);
+  --toast-icon-color: var(--muted-foreground);
+  --toast-success-surface: color-mix(in oklch, var(--primary) 15%, transparent);
+  --toast-success-color: var(--primary);
+  --toast-error-surface: color-mix(in oklch, var(--destructive) 15%, transparent);
+  --toast-error-color: var(--destructive);
+  --toast-warning-surface: var(--warning-accent-surface);
+  --toast-warning-color: var(--warning-accent);
+  --toast-info-surface: var(--info-accent-surface);
+  --toast-info-color: var(--info-accent);
+
+  --focus-ring-width: 3px;
+  --focus-ring-style: solid;
+  --focus-ring-color: var(--ring);
+  --focus-ring-offset: 2px;
 }
 
 @theme {
@@ -144,6 +184,9 @@
   --accent-foreground: oklch(0.920 0.015 150);
   --destructive: oklch(0.650 0.200 28.43);
   --destructive-foreground: oklch(0.170 0.010 25);
+  /* Same inversion in dark, and worse: 0.17 ink on a 0.21 card. */
+  --destructive-text: var(--destructive);
+  --destructive-border: var(--destructive);
   --success: oklch(0.250 0.030 150);
   --success-foreground: oklch(0.850 0.045 150);
   --warning: oklch(0.250 0.025 85);
@@ -177,6 +220,19 @@
   --warning-accent-surface: oklch(0.74 0.16 85 / 0.26);
   --info-accent: oklch(0.76 0.14 230);
   --info-accent-surface: oklch(0.66 0.15 230 / 0.26);
+
+  /* Dark toast: a darker frosted plane, heavier drop, and badges with more fill
+     and a brighter glyph — a status icon that reads on white is under-lit on a
+     dark frosted surface. */
+  --toast-shadow: 0 8px 32px rgb(0 0 0 / 0.35), 0 2px 8px rgb(0 0 0 / 0.25);
+  --toast-hover-shadow: 0 12px 40px rgb(0 0 0 / 0.40), 0 4px 12px rgb(0 0 0 / 0.30);
+  --toast-surface: oklch(0.22 0.015 150 / 0.9);
+  --toast-surface-border: color-mix(in oklch, var(--border) 85%, transparent);
+  --toast-icon-surface: color-mix(in oklch, var(--foreground) 10%, transparent);
+  --toast-success-surface: color-mix(in oklch, var(--primary) 26%, transparent);
+  --toast-success-color: var(--success-accent);
+  --toast-error-surface: color-mix(in oklch, var(--destructive) 28%, transparent);
+  --toast-error-color: oklch(0.72 0.20 28);
 }
 
 @layer base {
@@ -213,9 +269,9 @@
 }
 .tag-input-container:focus-within {
   border-color: var(--ring);
-  box-shadow:
-    var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05)),
-    0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 .dark .tag-input-container {
   background-color: color-mix(in oklch, var(--input) 30%, transparent);
@@ -248,14 +304,17 @@
   border-radius: var(--radius);
   padding-inline: 0.25rem;
   margin-inline: -0.25rem;
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* Opt a textarea out of resizing. The gem defaults [data-component="textarea"]
    to resize: vertical (unlayered), which outranks the layered `.resize-none`
    utility — this higher-specificity rule wins. */
-[data-component="textarea"].resize-none {
-  resize: none;
+@layer components {
+  [data-component="textarea"].resize-none {
+    resize: none;
+  }
 }
 
 /* Onboarding alert actions are one line tall; offset the shared top-aligned icon
@@ -298,8 +357,9 @@
   background: color-mix(in oklch, var(--background) 60%, transparent);
 }
 .seg-item:has(> input[type="radio"]:focus-visible) {
-  outline: none;
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* tag-x — muted icon button that removes a tag chip */
@@ -373,9 +433,9 @@ house-md-toolbar button svg {
    (mirrors the .tag-input-container pattern). */
 .house-md-shell:focus-within {
   border-color: var(--ring);
-  box-shadow:
-    var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05)),
-    0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 .house-md-content:focus,
 .house-md-content:focus-visible {
@@ -550,161 +610,115 @@ house-md-toolbar button svg {
   text-underline-offset: 2px;
 }
 
-/* ===== Toast: neutral frosted surface with tonal icon badge ===== */
+/* Layered so a css_classes: utility on a toast still wins: since 0.6.0 the
+   engine's own rules live in @layer components, and an unlayered app rule here
+   would outrank every utility. */
+@layer components {
+  /* ===== Toast: neutral frosted surface with tonal icon badge ===== */
 
-/* Base toast — frosted glass, neutral surface.
-   The variant color lives in the icon badge below, not in a border accent. */
-[data-component="toast"] {
-  background-color: oklch(1 0 0 / 0.82);
-  color: var(--foreground);
-  border-color: color-mix(in oklch, var(--border) 70%, transparent);
-  border-radius: 0.75rem;
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  box-shadow:
-    0 8px 32px rgb(0 0 0 / 0.08),
-    0 2px 8px rgb(0 0 0 / 0.05);
-}
+  /* Base toast — frosted glass, neutral surface.
+     The variant color lives in the icon badge below, not in a border accent. */
+  [data-component="toast"] {
+    background-color: var(--toast-surface);
+    color: var(--foreground);
+    border-color: var(--toast-surface-border);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  }
 
-[data-component="toast"]:hover {
-  box-shadow:
-    0 12px 40px rgb(0 0 0 / 0.10),
-    0 4px 12px rgb(0 0 0 / 0.06);
-}
+  /* Tonal icon badge — rounded chip that carries the variant color */
+  [data-toast-part="icon"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--control-radius, 0.5rem);
+    background-color: var(--toast-icon-surface);
+    color: var(--toast-icon-color);
+  }
 
-/* Tonal icon badge — rounded chip that carries the variant color */
-[data-toast-part="icon"] {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.5rem;
-  background-color: var(--muted);
-  color: var(--muted-foreground);
-}
+  [data-toast-part="title"] {
+    font-family: var(--font-display);
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--foreground);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 
-[data-toast-part="title"] {
-  font-family: var(--font-display);
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--foreground);
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
+  [data-toast-part="description"] {
+    line-height: 1.5;
+    color: var(--muted-foreground);
+    opacity: 1;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 
-[data-toast-part="description"] {
-  line-height: 1.5;
-  color: var(--muted-foreground);
-  opacity: 1;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
+  [data-toast-part="close"] {
+    color: var(--muted-foreground);
+  }
 
-[data-toast-part="close"] {
-  color: var(--muted-foreground);
-}
+  [data-toast-part="close"]:hover {
+    color: var(--foreground);
+  }
 
-[data-toast-part="close"]:hover {
-  color: var(--foreground);
-}
+  [data-toast-part="action"] {
+    border-color: var(--border);
+    color: var(--foreground);
+    background-color: transparent;
+  }
 
-[data-toast-part="action"] {
-  border-color: var(--border);
-  color: var(--foreground);
-  background-color: transparent;
-}
+  [data-toast-part="action"]:hover {
+    background-color: var(--muted);
+    color: var(--foreground);
+  }
 
-[data-toast-part="action"]:hover {
-  background-color: var(--muted);
-  color: var(--foreground);
-}
+  /* --- Keep every variant on the same neutral surface.
+     (The gem tints the whole toast per variant; these override it back to neutral
+     and force neutral text, so color is carried only by the icon badge.) --- */
+  [data-component="toast"][data-variant] {
+    background-color: var(--toast-surface);
+    border-color: var(--toast-surface-border);
+  }
 
-/* --- Keep every variant on the same neutral surface.
-   (The gem tints the whole toast per variant; these override it back to neutral
-   and force neutral text, so color is carried only by the icon badge.) --- */
-[data-component="toast"][data-variant] {
-  background-color: oklch(1 0 0 / 0.82);
-  border-color: color-mix(in oklch, var(--border) 70%, transparent);
-}
+  [data-component="toast"][data-variant] [data-toast-part="title"] {
+    color: var(--foreground);
+  }
 
-[data-component="toast"][data-variant] [data-toast-part="title"] {
-  color: var(--foreground);
-}
+  [data-component="toast"][data-variant] [data-toast-part="description"] {
+    color: var(--muted-foreground);
+  }
 
-[data-component="toast"][data-variant] [data-toast-part="description"] {
-  color: var(--muted-foreground);
-}
+  [data-component="toast"][data-variant] [data-toast-part="close"] {
+    color: var(--muted-foreground);
+  }
 
-[data-component="toast"][data-variant] [data-toast-part="close"] {
-  color: var(--muted-foreground);
-}
+  [data-component="toast"][data-variant] [data-toast-part="close"]:hover {
+    color: var(--foreground);
+  }
 
-[data-component="toast"][data-variant] [data-toast-part="close"]:hover {
-  color: var(--foreground);
-}
+  /* --- Tonal icon badges (one per variant) --- */
+  [data-component="toast"][data-variant="success"] [data-toast-part="icon"] {
+    background-color: var(--toast-success-surface);
+    color: var(--toast-success-color);
+  }
 
-/* --- Tonal icon badges (one per variant) --- */
-[data-component="toast"][data-variant="success"] [data-toast-part="icon"] {
-  background-color: color-mix(in oklch, var(--primary) 15%, transparent);
-  color: var(--primary);
-}
+  [data-component="toast"][data-variant="error"] [data-toast-part="icon"] {
+    background-color: var(--toast-error-surface);
+    color: var(--toast-error-color);
+  }
 
-[data-component="toast"][data-variant="error"] [data-toast-part="icon"] {
-  background-color: color-mix(in oklch, var(--destructive) 15%, transparent);
-  color: var(--destructive);
-}
+  [data-component="toast"][data-variant="warning"] [data-toast-part="icon"] {
+    background-color: var(--toast-warning-surface);
+    color: var(--toast-warning-color);
+  }
 
-[data-component="toast"][data-variant="warning"] [data-toast-part="icon"] {
-  background-color: var(--warning-accent-surface);
-  color: var(--warning-accent);
-}
+  [data-component="toast"][data-variant="info"] [data-toast-part="icon"] {
+    background-color: var(--toast-info-surface);
+    color: var(--toast-info-color);
+  }
 
-[data-component="toast"][data-variant="info"] [data-toast-part="icon"] {
-  background-color: var(--info-accent-surface);
-  color: var(--info-accent);
-}
-
-/* --- Dark Mode: dark frosted glass surface (neutral across all variants) --- */
-.dark [data-component="toast"],
-.dark [data-component="toast"][data-variant] {
-  background-color: oklch(0.22 0.015 150 / 0.9);
-  border-color: color-mix(in oklch, var(--border) 85%, transparent);
-  box-shadow:
-    0 8px 32px rgb(0 0 0 / 0.35),
-    0 2px 8px rgb(0 0 0 / 0.25);
-}
-
-.dark [data-component="toast"]:hover {
-  box-shadow:
-    0 12px 40px rgb(0 0 0 / 0.40),
-    0 4px 12px rgb(0 0 0 / 0.30);
-}
-
-.dark [data-toast-part="icon"] {
-  background-color: color-mix(in oklch, var(--foreground) 10%, transparent);
-  color: var(--muted-foreground);
-}
-
-/* Dark tonal badges — a touch more fill + brighter glyph for legibility */
-.dark [data-component="toast"][data-variant="success"] [data-toast-part="icon"] {
-  background-color: color-mix(in oklch, var(--primary) 26%, transparent);
-  color: var(--success-accent);
-}
-
-.dark [data-component="toast"][data-variant="error"] [data-toast-part="icon"] {
-  background-color: color-mix(in oklch, var(--destructive) 28%, transparent);
-  color: oklch(0.72 0.20 28);
-}
-
-.dark [data-component="toast"][data-variant="warning"] [data-toast-part="icon"] {
-  background-color: var(--warning-accent-surface);
-  color: var(--warning-accent);
-}
-
-.dark [data-component="toast"][data-variant="info"] [data-toast-part="icon"] {
-  background-color: var(--info-accent-surface);
-  color: var(--info-accent);
 }
 
 /* ===== Workspace index: folder tile, stat chips, segmented controls, rows ===== */
@@ -742,8 +756,9 @@ house-md-toolbar button svg {
 }
 
 .version-switch:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .version-switch svg {
@@ -857,56 +872,29 @@ house-md-toolbar button svg {
   height: 1rem;
 }
 
-/* Focus ring restoration.
-   The gem defines [data-component="button"]:focus-visible with a ring, then
-   overrides box-shadow in every variant rule at EQUAL specificity and later
-   source order — ghost resolves to `none`, default/outline/secondary to
-   --shadow-sm. The ring is therefore absent on every button that is not
-   destructive. Reinstating it one specificity step up (an extra attribute
-   selector) puts it back without touching the gem. */
-[data-component="button"][data-variant]:focus-visible,
-[data-component="button"]:not([data-variant]):focus-visible {
-  box-shadow:
-    0 0 0 2px var(--background),
-    0 0 0 4px var(--ring);
-}
-[data-component="button"][data-variant="destructive"]:focus-visible {
-  box-shadow:
-    0 0 0 2px var(--background),
-    0 0 0 4px var(--destructive);
-}
-
-/* The gem's ghost variant sets `color: var(--foreground)` unlayered, which beats
-   the .text-destructive utility — so every destructive icon button (remove user,
-   revoke app, delete token) rendered in plain ink. Same specificity, later
-   source order, so this restores the intent without touching the gem. */
-[data-component="button"].text-destructive,
-[data-component="button"].text-destructive:hover,
-[data-component="button"].hover\:text-destructive:hover {
-  color: var(--destructive);
-}
-
 /* Coarse pointers get a 44px hit target without the control growing visually:
    the box stays at its designed size, a pseudo-element carries the touch area.
    Applied only under (pointer: coarse) so desktop density is untouched. */
-@media (pointer: coarse) {
-  [data-component="button"][data-size="sm"],
-  [data-component="button"][data-size="icon-sm"],
-  .seg-item {
-    position: relative;
-  }
-  [data-component="button"][data-size="sm"]::after,
-  [data-component="button"][data-size="icon-sm"]::after,
-  .seg-item::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    min-width: 44px;
-    min-height: 44px;
-    width: 100%;
-    height: 100%;
+@layer components {
+  @media (pointer: coarse) {
+    [data-component="button"][data-size="sm"],
+    [data-component="button"][data-size="icon-sm"],
+    .seg-item {
+      position: relative;
+    }
+    [data-component="button"][data-size="sm"]::after,
+    [data-component="button"][data-size="icon-sm"]::after,
+    .seg-item::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 44px;
+      min-height: 44px;
+      width: 100%;
+      height: 100%;
+    }
   }
 }
 
@@ -984,7 +972,9 @@ house-md-toolbar button svg {
 }
 .ws-row:focus-within {
   background: color-mix(in oklch, var(--accent) 50%, transparent);
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* Segmented control — links styled as a toggle group */
@@ -1024,8 +1014,9 @@ house-md-toolbar button svg {
   box-shadow: inset 0 0 0 1px var(--border);
 }
 .seg-item:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 .dark .seg-item[data-state="on"] {
   background: color-mix(in oklch, var(--background) 60%, transparent);
@@ -1041,15 +1032,17 @@ house-md-toolbar button svg {
 /* First paint on a phone must not be a nav drawer over the content. The server
    only knows the desktop cookie, and the sidebar controller can only correct
    the state once it connects — so hold the sheet off-canvas until then. */
-@media (max-width: 767px) {
-  [data-sidebar-part="root"].sidebar-loading[data-side="left"] [data-sidebar-part="container"] {
-    left: calc(var(--sidebar-width) * -1);
-  }
-  [data-sidebar-part="root"].sidebar-loading[data-side="right"] [data-sidebar-part="container"] {
-    right: calc(var(--sidebar-width) * -1);
-  }
-  [data-sidebar-part="root"].sidebar-loading [data-sidebar-part="backdrop"] {
-    display: none;
+@layer components {
+  @media (max-width: 767px) {
+    [data-sidebar-part="root"].sidebar-loading[data-side="left"] [data-sidebar-part="container"] {
+      left: calc(var(--sidebar-width) * -1);
+    }
+    [data-sidebar-part="root"].sidebar-loading[data-side="right"] [data-sidebar-part="container"] {
+      right: calc(var(--sidebar-width) * -1);
+    }
+    [data-sidebar-part="root"].sidebar-loading [data-sidebar-part="backdrop"] {
+      display: none;
+    }
   }
 }
 
@@ -1099,9 +1092,10 @@ house-md-toolbar button svg {
   appearance: none;
 }
 .ws-filter input[type="search"]:focus-visible {
-  outline: none;
   border-color: var(--primary);
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 .ws-filter kbd {
   position: absolute;
@@ -1182,8 +1176,10 @@ a {
   color: var(--muted-foreground);
   pointer-events: none;
 }
-.search-field input[data-component="input"] {
-  padding-left: 2rem;
+@layer components {
+  .search-field input[data-component="input"] {
+    padding-left: 2rem;
+  }
 }
 
 /* category-bar — horizontally scrollable chip row (its own scroll, never widens page) */
@@ -1219,8 +1215,9 @@ a {
   color: var(--accent-foreground);
 }
 .category-chip:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 .category-chip[data-state="on"],
 .category-chip[aria-current="true"] {
@@ -1293,8 +1290,9 @@ a {
   color: var(--foreground);
 }
 .filter-token:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* category-dot — small color dot keyed to the category badge color */
@@ -1324,53 +1322,34 @@ a {
   height: 0.5625rem;
 }
 
-/* Inline form errors must be readable.
-   The gem sets `[data-form-part="error"] { color: var(--destructive-foreground) }`
-   UNLAYERED in form.css, and --destructive-foreground is near-white because the
-   token is meant for text sitting ON a filled destructive surface. Under an
-   input it renders white-on-white: measured 1.05:1, i.e. invisible.
-
-   CLAUDE.md prescribes adding `class="text-destructive"` at the call site, and
-   that cannot work — Tailwind utilities live in @layer utilities, and an
-   unlayered declaration outranks every layer regardless of specificity. So this
-   override is deliberately UNLAYERED too, and carries a doubled attribute
-   selector so it also wins on specificity rather than relying on source order.
-   Fixes all 16 call sites at once. */
-[data-form-part="error"][data-form-part] {
-  color: var(--destructive);
-}
-
-/* card-danger — a card that must not be mistaken for its neighbours.
-   Declared here rather than as a `border-destructive` utility because the gem's
-   card.css sets `border-color: var(--border)` unlayered, and an unlayered
-   declaration beats anything in @layer utilities regardless of specificity. */
+/* card-danger — a card that must not be mistaken for its neighbours. The tonal
+   wash has no utility equivalent, so it stays a class; the border and the flat
+   rest no longer need to out-specify anything. */
 @layer components {
-  .card-danger[data-component="card"] {
-    border-color: var(--destructive);
+  .card-danger {
+    --card-shadow: none;
+    border-color: var(--destructive-border);
     background-color: color-mix(in oklch, var(--destructive) 4%, var(--card));
-    box-shadow: none;
   }
 }
 
 /* memory-card — composed from data-card-part, redesigned for memories */
 
-/* The gem's card.css:9 does `@apply rounded-xl border shadow`, giving every
-   card a RESTING drop shadow. DESIGN.md's Flat-By-Default Rule: surfaces are
-   flat at rest and shadow is a response to state, so separate with a border or
-   a tonal plane instead. The hover response is the border, not a lift. */
+/* DESIGN.md's Flat-By-Default Rule: surfaces are flat at rest and shadow is a
+   response to state, so separate with a border or a tonal plane instead. The
+   hover response is the border, not a lift. 0.6.0 reads --card-shadow, so this
+   is a token override on the one family that opts out rather than an override
+   of the engine's rule. */
 .memory-card {
-  box-shadow: none;
+  --card-shadow: none;
   transition: border-color 150ms ease-out;
 }
 .memory-card:hover {
   border-color: color-mix(in oklch, var(--ring) 35%, var(--border));
 }
 
-/* The pin indicator has to out-specify the gem's
-   `[data-component="card"] [data-card-part="header"] svg { color: var(--muted-foreground) }`,
-   which beat a `text-primary` utility on the parent span and rendered this
-   icon grey everywhere memory cards appear. */
-.memory-card [data-card-part="header"] .pin-badge svg,
+/* The pin indicator reads as an accent, not as header chrome. */
+.memory-card .pin-badge svg,
 .memory-row .pin-badge svg {
   color: var(--primary);
 }
@@ -1381,9 +1360,10 @@ a {
 .memory-card a:focus-visible,
 .memory-row a:focus-visible,
 .ws-group-link:focus-visible {
-  outline: none;
   border-radius: var(--radius-sm, 0.375rem);
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* Pinned index: the workspace name is a group heading now, not a caption. */
@@ -1397,8 +1377,10 @@ a {
   text-underline-offset: 2px;
 }
 
-.memory-card [data-card-part="header"] {
-  gap: 0.5rem;
+@layer components {
+  .memory-card [data-card-part="header"] {
+    gap: 0.5rem;
+  }
 }
 .memory-card .mc-title {
   font-family: var(--font-display, "Jura", system-ui, sans-serif);
@@ -1565,9 +1547,10 @@ a {
   text-underline-offset: 2px;
 }
 .memory-row a.mr-title:focus-visible {
-  outline: none;
   border-radius: calc(var(--radius) - 4px);
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* Cross-workspace marker. Rendered ONLY when the link leaves the current
@@ -1601,8 +1584,9 @@ a {
   border-color: color-mix(in oklch, var(--border) 60%, var(--foreground));
 }
 .mr-elsewhere:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* Remove-link control. Quiet until the row is hovered or it takes focus, so a
@@ -1631,8 +1615,8 @@ a {
   color: var(--destructive);
 }
 .mr-remove:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 /* Touch has no hover, so the control must always be visible there. */
 @media (pointer: coarse) {
@@ -1643,9 +1627,9 @@ a {
 .stat-chip-link { text-decoration: none; }
 .stat-chip-link:hover { color: var(--foreground); }
 .stat-chip-link:focus-visible {
-  outline: none;
   border-radius: calc(var(--radius) - 4px);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* Link picker — a <details> so the server can render it open when a search is
@@ -1673,8 +1657,8 @@ a {
 .link-picker-summary svg { width: 0.875rem; height: 0.875rem; }
 .link-picker-summary:hover { color: var(--foreground); }
 .link-picker-summary:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 .link-picker-body { padding: 0 0.75rem 0.75rem; }
 .memory-row.is-deleted {
@@ -1752,7 +1736,9 @@ a {
 }
 .search-command-panel:focus-within {
   border-color: var(--ring);
-  box-shadow: var(--shadow-md), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-md);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .search-command-scope {
@@ -1778,8 +1764,8 @@ a {
   color: var(--foreground);
 }
 .scope-chip:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .palette-results {
@@ -1816,8 +1802,8 @@ a {
 /* Keyboard selection is driven by aria-selected, but a mouse user who never
    arrows still needs a real focus ring when tabbing into the list. */
 .palette-item:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .palette-item-label {
@@ -1855,8 +1841,8 @@ a {
    composited to 2.24:1 — the half-alpha is what sank it. Same formula, full
    alpha, 5.69:1. */
 .palette-trigger:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* The results page's own search field. Same shell treatment as the palette:
@@ -1872,7 +1858,9 @@ a {
 }
 .search-page-field:focus-within {
   border-color: var(--ring);
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--shadow-xs);
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 .search-page-field input[type="search"] {
   flex: 1 1 auto;

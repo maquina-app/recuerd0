@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-31T02:53:20Z",
+  "generatedAt": "2026-08-31",
   "title": "Design System: Recuerd0",
   "extensions": {
     "colorMeta": {
@@ -118,6 +118,24 @@
         "displayName": "Scrim",
         "canonical": "oklch(0.17 0.01 150)",
         "note": "Modal backdrop. Deliberately NOT derived from --background: a scrim mixed from the page's own background composites to the page colour and dims nothing (measured 1.00:1 light, 1.44:1 dark). Dark needs its own darker value oklch(0.040 0.004 150), because the page already sits at the light scrim's value."
+      },
+      "destructive-text": {
+        "role": "status",
+        "displayName": "Error Ink",
+        "canonical": "var(--destructive)",
+        "note": "Exists because this palette is the saturated convention: --destructive is a fill and --destructive-foreground is the near-white that sits on it. Field error text sits on --card, not on a fill, so borrowing the on-fill colour rendered it at 1.05:1 -- invisible. maquina-components 0.7.1 routes [data-form-part=\"error\"] through this token instead. Dark repeats the same indirection: 0.17 ink on a 0.21 card was no better."
+      },
+      "destructive-border": {
+        "role": "status",
+        "displayName": "Error Stroke",
+        "canonical": "var(--destructive)",
+        "note": "The invalid-field border, split from --destructive for the same reason as destructive-text. It keys on :user-invalid since 0.7.1, so a server-rendered error needs aria-invalid on the field or the border never appears."
+      },
+      "ring": {
+        "role": "focus",
+        "displayName": "Focus Green",
+        "canonical": "oklch(0.480 0.190 150)",
+        "note": "Reached through --focus-ring-color, which the engine reads directly, so components and app chrome ring identically. Dark re-points --ring to oklch(0.700 0.180 150) and the ring follows without a second rule."
       }
     },
     "typographyMeta": {
@@ -173,14 +191,9 @@
         "purpose": "Inputs at rest and checked segmented-control items. The --shadow-xs workhorse."
       },
       {
-        "name": "focus-ring",
-        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 3px color-mix(in oklch, oklch(0.600 0.190 150) 50%, transparent)",
-        "purpose": "Universal focus treatment on every focusable control. A 3px Memory-Green halo."
-      },
-      {
         "name": "frosted-float",
         "value": "0 8px 32px rgb(0 0 0 / 0.08), 0 2px 8px rgb(0 0 0 / 0.05)",
-        "purpose": "Toasts only, paired with backdrop-filter: blur(16px) saturate(1.4). The single frosted exception."
+        "purpose": "Toasts only, paired with backdrop-filter: blur(16px) saturate(1.4). The single frosted exception. Read through --toast-shadow / --toast-hover-shadow so dark mode is a token swap, not a parallel .dark rule."
       }
     ],
     "motion": [
@@ -212,7 +225,17 @@
         "name": "header-height",
         "value": "3.5rem"
       }
-    ]
+    ],
+    "focusRing": {
+      "tokens": {
+        "--focus-ring-width": "3px",
+        "--focus-ring-style": "solid",
+        "--focus-ring-color": "var(--ring)",
+        "--focus-ring-offset": "2px"
+      },
+      "purpose": "The universal focus treatment, as an outline on :focus-visible. It replaced a box-shadow pair that every component had to restate; maquina-components 0.6.0 reads these four directly, which is why they are declared rather than left to the engine's fallbacks. :focus-visible means a mouse click no longer leaves a halo.",
+      "measurement": "Measure on the container -- :focus-within on the wrapper is the deliberate pattern for compound controls, and measuring the inner control reports false WCAG 2.4.7 failures."
+    }
   },
   "components": [
     {

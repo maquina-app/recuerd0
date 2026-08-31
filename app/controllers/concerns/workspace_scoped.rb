@@ -49,7 +49,7 @@ module WorkspaceScoped
     @memory_sort = Memory.resolve_sort(@memory_sort_param, query: @memory_query)
     scope = scope.ordered_by(@memory_sort)
 
-    @pagy, @memories = pagy(scope, items: 10)
+    @pagy, @memories = pagy(scope, limit: 10)
     @pinned_memories, @regular_memories = @memories.partition { |m| m.pinned_by?(Current.user) }
   end
 end

@@ -11,6 +11,12 @@ module ApiHelpers
     headers["Link"] = pagination_link_header(pagy)
   end
 
+  # Hand-rolled rather than Pagy#headers_hash: that helper names its headers
+  # current-page / page-limit / total-count / total-pages and its links
+  # rel="previous", while docs/API.md publishes X-Page / X-Per-Page / X-Total /
+  # X-Total-Pages and RFC 8288 registers "prev", not "previous". Adopting it
+  # would be a breaking change to clients for no gain — it composes the same URLs
+  # this does, query parameters included.
   def pagination_link_header(pagy)
     links = []
     base_url = request.path
@@ -18,7 +24,7 @@ module ApiHelpers
     joiner = extra.present? ? "#{extra}&" : ""
 
     links << %(<#{base_url}?#{joiner}page=1>; rel="first")
-    links << %(<#{base_url}?#{joiner}page=#{pagy.prev}>; rel="prev") if pagy.prev
+    links << %(<#{base_url}?#{joiner}page=#{pagy.previous}>; rel="prev") if pagy.previous
     links << %(<#{base_url}?#{joiner}page=#{pagy.next}>; rel="next") if pagy.next
     links << %(<#{base_url}?#{joiner}page=#{pagy.pages}>; rel="last")
 

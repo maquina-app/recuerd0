@@ -39,6 +39,6 @@
   <div class="mt-8">
     <%# Carry every filter/view param, or paging silently drops you back to the
         default list of everything. %>
-    <%= pagination_nav(pagy, path_helper, params: { sort: params[:sort], view: params[:view], q: params[:q] }.compact_blank) %>
+    <%= paginate_nav(pagy, path_helper, params: { sort: params[:sort], view: params[:view], q: params[:q] }.compact_blank) %>
   </div>
 </div>

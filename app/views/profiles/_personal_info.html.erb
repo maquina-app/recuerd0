@@ -13,9 +13,10 @@
             placeholder: t("profiles.personal_info.name_placeholder"),
             maxlength: 80,
             autocomplete: "name",
+            aria: { invalid: user.errors[:name].any?, describedby: ("user_name_error" if user.errors[:name].any?) },
             data: { component: "input" } %>
         <% if user.errors[:name].any? %>
-          <p data-form-part="error" class="text-destructive"><%= user.errors[:name].first %></p>
+          <p data-form-part="error" id="user_name_error"><%= user.errors[:name].first %></p>
         <% end %>
       </div>
 

@@ -15,9 +15,10 @@
           <%= form.label :email_address, t("invitations.show.email_label"), data: { component: "label" } %>
           <%= form.email_field :email_address, required: true, autofocus: true,
               autocomplete: "email", placeholder: t("invitations.show.email_placeholder"),
+              aria: { invalid: @user.errors[:email_address].any?, describedby: ("user_email_address_error" if @user.errors[:email_address].any?) },
               data: { component: "input" } %>
           <% if @user.errors[:email_address].any? %>
-            <p data-form-part="error" class="text-destructive"><%= @user.errors[:email_address].first %></p>
+            <p data-form-part="error" id="user_email_address_error"><%= @user.errors[:email_address].first %></p>
           <% end %>
         </div>
 
@@ -25,9 +26,10 @@
           <%= form.label :password, data: { component: "label" } %>
           <%= form.password_field :password, required: true,
               autocomplete: "new-password", placeholder: t("invitations.show.password_placeholder"),
+              aria: { invalid: @user.errors[:password].any?, describedby: ("user_password_error" if @user.errors[:password].any?) },
               data: { component: "input" } %>
           <% if @user.errors[:password].any? %>
-            <p data-form-part="error" class="text-destructive"><%= @user.errors[:password].first %></p>
+            <p data-form-part="error" id="user_password_error"><%= @user.errors[:password].first %></p>
           <% end %>
         </div>
 
@@ -35,9 +37,10 @@
           <%= form.label :password_confirmation, t("invitations.show.password_confirmation_label"), data: { component: "label" } %>
           <%= form.password_field :password_confirmation, required: true,
               autocomplete: "new-password", placeholder: t("invitations.show.password_confirmation_placeholder"),
+              aria: { invalid: @user.errors[:password_confirmation].any?, describedby: ("user_password_confirmation_error" if @user.errors[:password_confirmation].any?) },
               data: { component: "input" } %>
           <% if @user.errors[:password_confirmation].any? %>
-            <p data-form-part="error" class="text-destructive"><%= @user.errors[:password_confirmation].first %></p>
+            <p data-form-part="error" id="user_password_confirmation_error"><%= @user.errors[:password_confirmation].first %></p>
           <% end %>
         </div>
 

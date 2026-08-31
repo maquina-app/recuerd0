@@ -292,11 +292,31 @@ controls. There is exactly one deliberate exception (see below).
 ### Shadow Vocabulary
 - **Hairline** (`box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05)`): Inputs at rest, checked
   segmented-control items. Barely-there separation.
-- **Focus Ring** (`box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent)`):
-  The universal focus treatment. A 3px Memory-Green halo at 50% mix. Every focusable
-  control uses this exact formula — consistency is the accessibility guarantee.
-- **Frosted Float** (`box-shadow: 0 8px 32px rgb(0 0 0 / 0.08), 0 2px 8px rgb(0 0 0 / 0.05)`
-  + `backdrop-filter: blur(16px) saturate(1.4)`): Toasts only.
+- **Frosted Float** (`--toast-shadow` / `--toast-hover-shadow`, plus
+  `backdrop-filter: blur(16px) saturate(1.4)`): Toasts only. Dark mode re-points the
+  same tokens rather than restating the rules.
+
+The focus ring is no longer a shadow (see below).
+
+### Focus Ring
+A 3px Memory-Green **outline** on `:focus-visible`, offset 2px, driven by four tokens:
+
+```css
+--focus-ring-width: 3px;
+--focus-ring-style: solid;
+--focus-ring-color: var(--ring);   /* re-points itself in dark */
+--focus-ring-offset: 2px;
+```
+
+maquina-components reads these directly, so every engine control and every piece of
+app chrome rings identically — consistency is the accessibility guarantee. It replaced
+a `box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(...)` pair that had to be restated
+at every call site, and it rings on `:focus-visible` only, so a mouse click no longer
+leaves a halo behind.
+
+Measure the ring on the **container**: `:focus-within` on the wrapper is the deliberate
+pattern for compound controls, and measuring the inner control reports false WCAG 2.4.7
+failures.
 
 ### Named Rules
 **The Flat-By-Default Rule.** Surfaces are flat at rest. Shadow appears only as a
@@ -341,11 +361,14 @@ Precise and quietly confident — solid, compact, no gloss.
 ### Inputs / Fields
 - **Style:** Paper background, 1px Border/Input stroke, `var(--radius)` corners,
   `--shadow-xs` hairline at rest, ~36px tall.
-- **Focus:** Border shifts to Memory Green and the Focus Ring halo appears — the exact
-  `box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent)`.
-- **Error:** Inline error text uses `text-destructive`; `[data-form-part="error"]` is
-  near-white on filled destructive surfaces. **Placeholder:** Muted Ink at 0.75 opacity,
-  held to body-text contrast — never a faint gray.
+- **Focus:** Border shifts to Memory Green and the Focus Ring appears — the
+  `--focus-ring-*` outline, on `:focus-visible` only.
+- **Error:** `[data-form-part="error"]` paints itself from `--destructive-text`; no
+  utility class on top. The invalid border comes from `--destructive-border` and keys on
+  `:user-invalid`, so a server-rendered error also needs
+  `aria: { invalid: model.errors[:field].any? }` on the field or it draws no border.
+- **Placeholder:** Muted Ink at 0.75 opacity, held to body-text contrast — never a
+  faint gray.
 
 ### Navigation (Sidebar app shell)
 - **Style:** Left rail on the Sidebar plane (`oklch(0.975 0.006 150)`), collapsible to a
@@ -371,8 +394,8 @@ content over form. The bordered editor shell owns the focus frame.
 - **Do** keep Memory Green load-bearing and rare — ≤10% of any screen (The One Green Rule).
 - **Do** build depth from tonal planes (Paper / Muted / Sidebar) and transparency, not
   from resting shadows (The Flat-By-Default Rule).
-- **Do** use the exact Focus Ring formula on every focusable control:
-  `var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent)`.
+- **Do** let the `--focus-ring-*` tokens carry focus on every focusable control, rather
+  than restating a ring per component.
 - **Do** keep the three fonts in their lanes: Jura 500 for all headings, Instrument Sans
   for body, Geist Mono for labels/tags/code.
 - **Do** hold body and placeholder text to ≥4.5:1 (target 7:1 / AAA where feasible);

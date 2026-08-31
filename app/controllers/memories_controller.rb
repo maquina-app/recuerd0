@@ -16,7 +16,7 @@ class MemoriesController < ApplicationController
 
     respond_to do |format|
       format.html do
-        @pagy, @memories = pagy(scope, items: 25)
+        @pagy, @memories = pagy(scope, limit: 25)
         redirect_to workspace_path(@workspace)
       end
       format.json do

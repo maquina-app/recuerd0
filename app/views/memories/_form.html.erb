@@ -38,6 +38,7 @@
             autocomplete: "off",
             autofocus: !memory.persisted?,
             class: "form-title",
+            aria: { invalid: memory.errors[:title].any?, describedby: ("memory_title_error" if memory.errors[:title].any?) },
             data: {
               memory_editor_target: "title",
               action: "input->memory-editor#titleInput"
@@ -46,7 +47,7 @@
             accepting keystrokes with no explanation. %>
         <span class="title-count" data-memory-editor-target="titleCount" aria-live="polite" hidden></span>
         <% if memory.errors[:title].any? %>
-          <p data-form-part="error" class="text-destructive"><%= memory.errors[:title].first %></p>
+          <p data-form-part="error" id="memory_title_error"><%= memory.errors[:title].first %></p>
         <% end %>
       </div>
     </div>
@@ -59,9 +60,10 @@
           <%= form.text_field :source,
               placeholder: t("memories.form.source_placeholder"),
               autocomplete: "off",
+              aria: { invalid: memory.errors[:source].any?, describedby: ("memory_source_error" if memory.errors[:source].any?) },
               data: { component: "input" } %>
           <% if memory.errors[:source].any? %>
-            <p data-form-part="error" class="text-destructive"><%= memory.errors[:source].first %></p>
+            <p data-form-part="error" id="memory_source_error"><%= memory.errors[:source].first %></p>
           <% end %>
         </div>
 
@@ -70,7 +72,9 @@
             phones; .seg itself scrolls if the labels ever outgrow the row. %>
         <div class="min-w-0" data-form-part="group">
           <span data-component="label" id="memory-category-label"><%= t("memories.form.category_label") %></span>
-          <div class="seg seg-scroll" role="radiogroup" aria-labelledby="memory-category-label">
+          <div class="seg seg-scroll" role="radiogroup" aria-labelledby="memory-category-label"
+               aria-invalid="<%= memory.errors[:category].any? %>"
+               aria-describedby="<%= 'memory_category_error' if memory.errors[:category].any? %>">
             <% selected_category = memory.category.presence || Memory::DEFAULT_CATEGORY %>
             <% Memory::CATEGORIES.each do |c| %>
               <label class="seg-item">
@@ -82,7 +86,7 @@
             <% end %>
           </div>
           <% if memory.errors[:category].any? %>
-            <p data-form-part="error" class="text-destructive"><%= memory.errors[:category].first %></p>
+            <p data-form-part="error" id="memory_category_error"><%= memory.errors[:category].first %></p>
           <% end %>
         </div>
       </div>

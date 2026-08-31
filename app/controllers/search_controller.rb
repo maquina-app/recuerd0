@@ -18,7 +18,7 @@ class SearchController < ApplicationController
     memories = build_search_scope
     @workspaces = matching_workspaces
 
-    @pagy, @memories = pagy(memories, items: 10)
+    @pagy, @memories = pagy(memories, limit: 10)
 
     if @query.present?
       track_event("search.query", metadata: {
@@ -45,7 +45,7 @@ class SearchController < ApplicationController
 
     @invalid_query = true
     @workspaces = Workspace.none
-    @pagy, @memories = pagy(Memory.none, items: 10)
+    @pagy, @memories = pagy(Memory.none, limit: 10)
     if palette_frame?
       render :palette, layout: false
     else

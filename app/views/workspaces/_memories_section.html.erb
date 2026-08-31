@@ -71,7 +71,7 @@
     <% end %>
 
     <div class="mt-8">
-      <%= pagination_nav(pagy, pagination_helper, params: { id: workspace.id }.merge(memory_filter_params)) %>
+      <%= paginate_nav(pagy, pagination_helper, params: { id: workspace.id }.merge(memory_filter_params)) %>
     </div>
   </div>
 

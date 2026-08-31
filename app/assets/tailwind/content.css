@@ -11,10 +11,12 @@
 
 /* The reading panel uses card/content WITHOUT a card/header, so the gem's
    top padding (normally supplied by the header) is missing — restore it so the
-   content has symmetric padding on all sides. Higher specificity than the gem's
-   [data-card-part="content"] rule, so it wins regardless of import order. */
-[data-card-part="content"]:has(> .memory-content) {
-  padding-top: 1.5rem;
+   content has symmetric padding on all sides. Layered like the engine's own
+   rule, so the tie is broken by import order (this file comes after). */
+@layer components {
+  [data-card-part="content"]:has(> .memory-content) {
+    padding-top: 1.5rem;
+  }
 }
 
 .memory-content {

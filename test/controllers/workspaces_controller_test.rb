@@ -109,6 +109,36 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_equal unpinned_names.sort_by(&:downcase), unpinned_names
   end
 
+  # -- pagination --
+  #
+  # The nav is rendered by the app's own PaginationHelper, not the engine's:
+  # maquina-components reads Pagy internals that Pagy 43 removed. Nothing else in
+  # the suite paginates past one page, so this is the only place that exercises
+  # the series, the current-page marker and the carried query parameters.
+
+  test "index renders a pagination nav once there is more than one page" do
+    account = accounts(:one)
+    12.times { |i| account.workspaces.create!(name: "Paged Workspace #{i}") }
+
+    get workspaces_url
+    assert_response :success
+
+    assert_select "[data-component='pagination']", count: 1
+    assert_select "[data-pagination-part='link'][href*='page=2']"
+    assert_select "[data-pagination-part='next'][href*='page=2']"
+    assert_select "[data-pagination-part='link'][data-active='true']", text: "1"
+  end
+
+  test "pagination links carry the sort and query params" do
+    account = accounts(:one)
+    12.times { |i| account.workspaces.create!(name: "Paged Workspace #{i}") }
+
+    get workspaces_url(sort: "name")
+    assert_response :success
+
+    assert_select "[data-pagination-part='next'][href*='sort=name']"
+  end
+
   test "index sort param defaults to nil for invalid value" do
     get workspaces_url(sort: "bogus")
     assert_response :success
