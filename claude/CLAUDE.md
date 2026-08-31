@@ -192,6 +192,11 @@ View-level locale keys go in `config/locales/views/en.yml`. Partial key paths st
 - Rebuild CSS (`bin/rails tailwindcss:build`) after editing `app/assets/tailwind/application.css` or system tests exercise the stale build.
 - `getComputedStyle(el, "::-webkit-search-cancel-button")` returns the **host element's** style in headless Chrome, not the pseudo-element's — it reports `appearance: auto` even when the rule applies. Don't assert on it; assert on the CSS source and check the rendering in a screenshot.
 
+## Testing Gotchas
+
+- **Two users in one integration test**: `sign_in_as` posts to `SessionsController#create`, which has `before_action :redirect_authenticated_user` — a second `sign_in_as` in the same test is silently redirected and you keep the FIRST user's session (and its response bodies/ETags). Always `delete session_url` before signing in as somebody else.
+- **`assert_no_queries` and fixtures**: `users(:one)` inside the block issues its own SELECT. Resolve every fixture into a local before the block or the assertion fails on the fixture lookup, not on the code under test.
+
 ## Rails MCP Server
 
 Use `mcp__rails__execute_tool` to call tools, `mcp__rails__search_tools` to discover them.

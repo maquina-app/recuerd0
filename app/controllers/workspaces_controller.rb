@@ -53,7 +53,10 @@ class WorkspacesController < ApplicationController
         @stale_after = Workspace.stale_threshold_for(Current.account)
         load_workspace_memories
       end
-      format.json { stale?(@workspace) }
+      # Keyed on the viewer too: the JSON renders per-user pin state outside
+      # the record-keyed cache block, so a record-only validator would serve
+      # one user the pin state cached for another.
+      format.json { stale?(etag: [@workspace, Current.user]) }
     end
   end
 

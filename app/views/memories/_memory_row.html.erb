@@ -1,8 +1,9 @@
-<%# locals: (memory:, workspace:, pinned: nil, show_pin_badge: true, tag_view: nil) %>
+<%# locals: (memory:, workspace:, pinned: nil, show_pin_badge: true, tag_view: nil, pin_origin: nil) %>
 <% display_version = memory.versioned? ? memory.current_version : memory %>
 <% category_variant = { "decision" => :default, "discovery" => :secondary, "preference" => :warning, "general" => :outline }[display_version.category] || :outline %>
 <% known_pinned = pinned.nil? ? memory.pinned_by?(Current.user) : pinned %>
 <% is_pinned = workspace.active? && known_pinned && show_pin_badge %>
+<% pin_origin_value = pin_origin.nil? ? memory.pin_origin_for(Current.user) : pin_origin %>
 
 <div class="memory-row<%= " is-deleted" unless workspace.active? %>">
   <span class="category-dot" data-cat="<%= display_version.category %>" title="<%= t("memories.categories.#{display_version.category}") %>"></span>
@@ -26,6 +27,12 @@
       <span class="mc-ind" title="<%= pluralize(memory.links_count, "linked memory", "linked memories") %>">
         <%= icon_for(:link) %><%= memory.links_count %>
       </span>
+    <% end %>
+
+    <% if pin_origin_value == "system" %>
+      <%= render "components/badge", variant: :outline, size: :sm, title: t("memories.pinned.index.system_pin_title") do %>
+        <%= t("memories.pinned.index.system_pin_badge") %>
+      <% end %>
     <% end %>
 
     <% if is_pinned %>

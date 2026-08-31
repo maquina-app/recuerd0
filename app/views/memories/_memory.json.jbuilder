@@ -26,4 +26,5 @@ end
 if defined?(include_pin_state) ? include_pin_state : true
   json.pinned pinned_for?(memory)
   json.pinned_at pinned_at_for(memory)
+  json.pin_origin pin_origin_for_record(memory)
 end

@@ -112,7 +112,7 @@ class Workspace < ApplicationRecord
     )
     starter_map.create_content!(body: attributes[:content])
 
-    account.active_users.find_each { |user| starter_map.pin!(user) } if active?
+    account.active_users.find_each { |user| starter_map.pin!(user, origin: "system") } if active?
   end
 
   # Unpin from all users when workspace becomes inactive.

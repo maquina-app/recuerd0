@@ -16,6 +16,10 @@ class Memories::PinnedController < ApplicationController
     @total_count = all_pinned.size
     @pin_budget = User::PIN_LIMIT
     @pins_used = Current.user.pinned_items_count
+    @system_pins_used = Current.user.system_pinned_items_count
+    # One lookup for the whole page rather than a per-row origin read: a user
+    # holds few pins, and the rows are grouped and re-sorted before rendering.
+    @pin_origins = Current.user.pins.for_memories.pluck(:pinnable_id, :origin).to_h
 
     @workspace_filter = Current.account.workspaces.find_by(id: params[:workspace_id])
     memories = @workspace_filter ? all_pinned.select { |m| m.workspace_id == @workspace_filter.id } : all_pinned

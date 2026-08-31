@@ -272,4 +272,34 @@ class WorkspaceTest < ActiveSupport::TestCase
     assert Workspace.exists?(workspace.id)
     assert_predicate workspace.reload, :deleted?
   end
+
+  # A workspace one person creates pins its starter map for everyone in the
+  # account. That pin is the app's doing, so it is system-origin and spends
+  # nobody else's budget.
+  test "create_starter_map pins the starter map as a system pin for every active user" do
+    alice = users(:one)
+    bob = users(:member)
+    alice_budget = alice.pinned_items_count
+    bob_budget = bob.pinned_items_count
+
+    workspace = alice.account.workspaces.create!(name: "Fresh")
+    map = workspace.starter_map
+
+    assert_equal %w[system system], [alice, bob].map { |user| map.pin_origin_for(user) }
+    assert_equal alice_budget, alice.pinned_items_count
+    assert_equal bob_budget, bob.pinned_items_count
+  end
+
+  test "a user at the pin limit still receives the starter map" do
+    bob = users(:member)
+    User::PIN_LIMIT.times do |i|
+      Memory.create_with_content(workspaces(:one), title: "Mine #{i}", content: "Body").pin!(bob)
+    end
+    assert_not bob.can_pin_more?
+
+    workspace = bob.account.workspaces.create!(name: "Teammate's workspace")
+
+    assert_equal "system", workspace.starter_map.pin_origin_for(bob)
+    assert_equal User::PIN_LIMIT, bob.pinned_items_count
+  end
 end

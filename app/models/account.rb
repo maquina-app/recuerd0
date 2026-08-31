@@ -79,7 +79,7 @@ class Account < ApplicationRecord
     workspace = workspaces.create!(name: "My Workspace")
     map_data, *remaining_memories = StartHereContent::MEMORIES
     map = workspace.starter_map
-    map.pin!(user)
+    map.pin!(user, origin: "system")
 
     remaining_memories.each do |memory_data|
       memory = Memory.create_with_content(workspace,
@@ -90,7 +90,7 @@ class Account < ApplicationRecord
         source: "system",
         default_pinned: memory_data[:pinned])
 
-      memory.pin!(user) if memory_data[:pinned]
+      memory.pin!(user, origin: "system") if memory_data[:pinned]
     end
 
     map.update_with_content(

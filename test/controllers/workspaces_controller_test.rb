@@ -540,4 +540,24 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_equal I18n.t("workspaces.inactive_workspace"), flash[:alert]
     assert_equal "Deleted Project", @deleted_workspace.reload.name
   end
+
+  # The JSON body renders pinned/pinned_at outside the record-keyed cache
+  # block, so a record-only validator would hand one user another's pin state.
+  test "show.json etag varies by viewer" do
+    workspace = workspaces(:one)
+    assert workspace.pinned_by?(users(:one))
+    assert_not workspace.pinned_by?(users(:member))
+
+    sign_in_as(users(:one))
+    get workspace_url(workspace, format: :json)
+    assert_response :success
+    alice_etag = response.headers["ETag"]
+
+    delete session_url
+    sign_in_as(users(:member))
+    get workspace_url(workspace, format: :json)
+    assert_response :success
+
+    assert_not_equal alice_etag, response.headers["ETag"]
+  end
 end

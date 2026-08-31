@@ -1,4 +1,4 @@
-<%# locals: (memory:, workspace:, show_pinned: false, pinned: nil, show_pin_badge: true, tag_scope: nil, tag_view: nil) %>
+<%# locals: (memory:, workspace:, show_pinned: false, pinned: nil, show_pin_badge: true, tag_scope: nil, tag_view: nil, pin_origin: nil) %>
 <% display_version = memory.versioned? ? memory.current_version : memory %>
 <% category_variant = { "decision" => :default, "discovery" => :secondary, "preference" => :warning, "general" => :outline }[display_version.category] || :outline %>
 <%# `pinned` is the known state passed by a caller that already has it (and
@@ -6,6 +6,9 @@
     forced it true. `show_pin_badge: false` suppresses the indicator on a list
     where every row is pinned by definition. %>
 <% is_pinned = pinned.nil? ? (show_pinned || memory.pinned_by?(Current.user)) : pinned %>
+<%# Resolved like `pinned`: the caller passes it when it already has it, and
+    the partial falls back to the record when it does not. %>
+<% pin_origin_value = pin_origin.nil? ? memory.pin_origin_for(Current.user) : pin_origin %>
 
 <%# No hover:shadow-md: DESIGN.md's Flat-By-Default Rule keeps surfaces flat at
     rest and shadow_md is not in the three-item shadow vocabulary. The hover
@@ -69,6 +72,12 @@
         <span class="mc-ind" title="<%= pluralize(memory.links_count, "linked memory", "linked memories") %>">
           <%= icon_for(:link) %><%= memory.links_count %>
         </span>
+      <% end %>
+
+      <% if pin_origin_value == "system" %>
+        <%= render "components/badge", variant: :outline, size: :sm, title: t("memories.pinned.index.system_pin_title") do %>
+          <%= t("memories.pinned.index.system_pin_badge") %>
+        <% end %>
       <% end %>
     </div>
 
