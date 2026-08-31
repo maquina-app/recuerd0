@@ -77,6 +77,9 @@ GEM
       uri (>= 0.13.1)
     addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
+    archspec (1.1.0)
+      prism (>= 1.0)
+      rubydex (~> 0.4.0)
     ast (2.4.3)
     base64 (0.3.0)
     bcrypt (3.1.22)
@@ -319,6 +322,10 @@ GEM
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.47.1, < 2.0)
     ruby-progressbar (1.13.0)
+    rubydex (0.4.0)
+    rubydex (0.4.0-aarch64-linux)
+    rubydex (0.4.0-arm64-darwin)
+    rubydex (0.4.0-x86_64-linux)
     rubyzip (3.5.0)
     securerandom (0.4.1)
     selenium-webdriver (4.48.0)
@@ -431,6 +438,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  archspec
   bcrypt (~> 3.1.7)
   bootsnap
   brakeman

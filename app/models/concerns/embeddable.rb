@@ -59,7 +59,7 @@ module Embeddable
     root_id = root_version? ? id : parent_memory_id
     if root_version?
       MemoryEmbedding.where(memory_id: root_id).delete_all
-    elsif (root = Memory.find_by(id: root_id))
+    elsif (root = self.class.find_by(id: root_id))
       provider = EmbeddingProviders.application
       provider_model = provider.model
       root.rebuild_embedding(provider: provider)

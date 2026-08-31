@@ -59,6 +59,9 @@ group :development, :test do
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
 
+  # Executable architecture contract [https://github.com/basecamp/archspec]
+  gem "archspec", require: false
+
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
 
   # Pin minitest to v5 for Rails 8.0 compatibility with Ruby 4.0
