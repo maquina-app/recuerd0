@@ -1185,6 +1185,33 @@ a {
 .search-field input[data-component="input"] {
   padding-left: 2rem;
 }
+/* Room for the "/" badge, so a long query never runs underneath it — only where
+   a badge is actually rendered. */
+.search-field:has(kbd) input[data-component="input"] {
+  padding-right: 2rem;
+}
+/* The "/" shortcut badge — same treatment as .ws-filter kbd, but centred with a
+   translate because .search-field is a block, not a flex row. */
+.search-field kbd {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  height: 1.125rem;
+  padding: 0 0.3125rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 3px);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-family: var(--font-mono, "Geist Mono", ui-monospace, monospace);
+  font-size: 0.625rem;
+  pointer-events: none;
+}
+.search-field:has(input[type="search"]:not(:placeholder-shown)) kbd {
+  display: none;
+}
 
 /* category-bar — horizontally scrollable chip row (its own scroll, never widens page) */
 .category-bar {

@@ -344,6 +344,18 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a.seg-item[data-state='on']", text: "Relevance"
   end
 
+  test "show wires the memory filter to the ws-filter accelerators" do
+    get workspace_url(@workspace)
+
+    assert_response :success
+    assert_select "form.search-field[data-controller='ws-filter'][data-turbo-action='replace']" do
+      assert_select "input#memory-toolbar-search[data-ws-filter-target='input']" \
+        "[data-action='input->ws-filter#submit search->ws-filter#submit keydown.esc->ws-filter#clear']",
+        count: 1
+      assert_select "kbd", text: "/", count: 1
+    end
+  end
+
   test "show uses relevance and an exact-tag hint for short queries" do
     match = Memory.create_with_content(@workspace, title: "Short tag", content: "body", tags: ["Go"])
 
