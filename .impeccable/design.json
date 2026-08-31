@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-29T18:39:10Z",
+  "generatedAt": "2026-08-31T02:53:20Z",
   "title": "Design System: Recuerd0",
   "extensions": {
     "colorMeta": {
@@ -94,6 +94,30 @@
           "oklch(0.840 0.100 28.43)",
           "oklch(0.940 0.045 28.43)"
         ]
+      },
+      "warning-accent": {
+        "role": "status",
+        "displayName": "Warning Accent",
+        "canonical": "oklch(0.56 0.14 85)",
+        "note": "Saturated glyph tone for warning status icons, with --warning-accent-surface oklch(0.68 0.16 85 / 0.15) behind it. Distinct from --warning (a pale surface fill) and --warning-foreground (dark ink for that fill); neither is a glyph colour. Dark: oklch(0.82 0.15 85) on surface oklch(0.74 0.16 85 / 0.26)."
+      },
+      "info-accent": {
+        "role": "status",
+        "displayName": "Info Accent",
+        "canonical": "oklch(0.52 0.14 230)",
+        "note": "Saturated glyph tone for info status icons, with --info-accent-surface oklch(0.58 0.15 230 / 0.15). Dark: oklch(0.76 0.14 230) on surface oklch(0.66 0.15 230 / 0.26)."
+      },
+      "success-accent": {
+        "role": "status",
+        "displayName": "Success Accent",
+        "canonical": "oklch(0.480 0.190 150)",
+        "note": "Tracks Memory Green in light. Dark brightens to oklch(0.74 0.19 150), because an icon that reads on white is under-lit on the dark frosted toast surface."
+      },
+      "scrim": {
+        "role": "overlay",
+        "displayName": "Scrim",
+        "canonical": "oklch(0.17 0.01 150)",
+        "note": "Modal backdrop. Deliberately NOT derived from --background: a scrim mixed from the page's own background composites to the page colour and dims nothing (measured 1.00:1 light, 1.44:1 dark). Dark needs its own darker value oklch(0.040 0.004 150), because the page already sits at the light scrim's value."
       }
     },
     "typographyMeta": {
@@ -112,6 +136,30 @@
       "body": {
         "displayName": "Body — Instrument Sans 400",
         "purpose": "All prose and UI text. Measure capped at 65–75ch."
+      },
+      "cardTitle": {
+        "displayName": "Card Title — Jura 500",
+        "purpose": "Memory card titles. The display face at UI scale, one step above body."
+      },
+      "reading": {
+        "displayName": "Reading — Instrument Sans 400",
+        "purpose": "House MD editor content and its placeholder, which must match exactly or text shifts on the first keystroke."
+      },
+      "ui": {
+        "displayName": "UI — Instrument Sans 400",
+        "purpose": "Default control, list and table text."
+      },
+      "small": {
+        "displayName": "Small — Instrument Sans 400",
+        "purpose": "Dense secondary text where body would crowd."
+      },
+      "caption": {
+        "displayName": "Caption — Instrument Sans 400",
+        "purpose": "Meta lines, hints, badge text."
+      },
+      "micro": {
+        "displayName": "Micro — Instrument Sans 500",
+        "purpose": "Uppercase group labels and section headings in lists."
       },
       "label": {
         "displayName": "Label — Geist Mono 400",
