@@ -33,7 +33,14 @@
             failed pin on some other page. Shown as a budget it becomes a
             curation prompt instead of an ambush. %>
         <span class="<%= "text-foreground font-medium" unless Current.user.can_pin_more? %>">
-          <%= t(".budget", used: @pins_used, limit: @pin_budget) %>
+          <%# System pins do not spend the budget, so a viewer holding some
+              would otherwise see more rows below than the count above. The
+              suffix reconciles the two instead of leaving the gap unexplained. %>
+          <%= if @system_pins_used.positive?
+                t(".budget_with_system", used: @pins_used, limit: @pin_budget, system: @system_pins_used)
+              else
+                t(".budget", used: @pins_used, limit: @pin_budget)
+              end %>
         </span>
       </p>
     <% end %>
@@ -78,7 +85,7 @@
               <% memories.each do |memory| %>
                 <li>
                   <%= render "memories/memory_row", memory: memory, workspace: workspace,
-                        pinned: true, show_pin_badge: false %>
+                        pinned: true, show_pin_badge: false, pin_origin: @pin_origins[memory.id] %>
                 </li>
               <% end %>
             </ul>
@@ -91,7 +98,8 @@
                       spend the accent to say nothing. pinned: true also spares
                       the per-row pinned_by? query. %>
                   <%= render "memories/memory", memory: memory, workspace: workspace,
-                        pinned: true, show_pin_badge: false, tag_scope: workspace %>
+                        pinned: true, show_pin_badge: false, tag_scope: workspace,
+                        pin_origin: @pin_origins[memory.id] %>
                 </li>
               <% end %>
             </ul>

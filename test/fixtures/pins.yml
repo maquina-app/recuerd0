@@ -2,8 +2,18 @@ workspace_pin:
   user: one
   pinnable: one (Workspace)
   position: 0
+  origin: user
 
 memory_pin:
   user: one
   pinnable: one (Memory)
   position: 1
+  origin: user
+
+# A pin recuerd0 placed for the member: it shows on their board but spends none
+# of their ten-pin budget.
+member_system_memory_pin:
+  user: member
+  pinnable: versioned_parent (Memory)
+  position: 0
+  origin: system

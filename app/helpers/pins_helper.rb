@@ -12,8 +12,8 @@ module PinsHelper
 
     @user_pins_index =
       if Current.user
-        Current.user.pins.pluck(:pinnable_type, :pinnable_id, :created_at)
-          .each_with_object({}) { |(type, id, at), index| index[[type, id]] = at }
+        Current.user.pins.pluck(:pinnable_type, :pinnable_id, :created_at, :origin)
+          .each_with_object({}) { |(type, id, at, origin), index| index[[type, id]] = {at: at, origin: origin} }
       else
         {}
       end
@@ -24,13 +24,22 @@ module PinsHelper
   # current version before rendering, so resolving against the record's own id
   # would report every versioned memory as unpinned.
   def pinned_at_for(record)
-    id = record.respond_to?(:parent_memory_id) ? (record.parent_memory_id || record.id) : record.id
-
-    user_pins_index[[record.class.name, id]]&.utc
+    user_pins_index.dig(pin_index_key(record), :at)&.utc
   end
 
   def pinned_for?(record)
     pinned_at_for(record).present?
+  end
+
+  # "user", "system", or nil when unpinned — off the same single query.
+  def pin_origin_for_record(record)
+    user_pins_index.dig(pin_index_key(record), :origin)
+  end
+
+  def pin_index_key(record)
+    id = record.respond_to?(:parent_memory_id) ? (record.parent_memory_id || record.id) : record.id
+
+    [record.class.name, id]
   end
 
   # An unpin toast that carries its own way back.

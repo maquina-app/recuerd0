@@ -10,13 +10,17 @@ class User < ApplicationRecord
 
   # Pin associations
   has_many :pins, dependent: :destroy
+  # No joins(:pins) in the scope: the through association already joins pins on
+  # THIS user, and a second join brought in every other user's pin on the same
+  # record — so a teammate pinning what you pinned duplicated the row on your
+  # own board. Ordering reads the through join.
   has_many :pinned_workspaces,
-    -> { joins(:pins).merge(Workspace.active).order("pins.created_at DESC") },
+    -> { merge(Workspace.active).order("pins.created_at DESC") },
     through: :pins,
     source: :pinnable,
     source_type: "Workspace"
   has_many :pinned_memories,
-    -> { joins(:pins).order("pins.created_at DESC") },
+    -> { order("pins.created_at DESC") },
     through: :pins,
     source: :pinnable,
     source_type: "Memory"
@@ -52,8 +56,14 @@ class User < ApplicationRecord
   end
 
   # Helper methods
+  # The budget counts only what the person pinned themselves. Pins recuerd0
+  # placed for them (starter maps, account defaults) are free.
   def pinned_items_count
-    pins.count
+    pins.user_origin.count
+  end
+
+  def system_pinned_items_count
+    pins.system_origin.count
   end
 
   def can_pin_more?
@@ -78,6 +88,6 @@ class User < ApplicationRecord
         deleted_at: nil
       })
       .order(:id)
-      .each { |memory| memory.pin!(self) }
+      .each { |memory| memory.pin!(self, origin: "system") }
   end
 end

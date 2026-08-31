@@ -128,13 +128,14 @@ class Memories::PinnedControllerTest < ActionDispatch::IntegrationTest
   test "json pinned set is scoped to the user, not the account" do
     other = users(:member)
     assert_equal @user.account_id, other.account_id, "fixture precondition: same account"
-    assert_empty other.pinned_memories, "fixture precondition: other user has no pins"
+    assert_equal [memories(:versioned_parent).id], other.pinned_memories.pluck(:id),
+      "fixture precondition: other user pinned something else"
 
     sign_in_as(other)
     get pinned_memories_url(format: :json)
 
     assert_response :success
-    assert_empty JSON.parse(response.body)
+    assert_equal [memories(:versioned_parent).id], JSON.parse(response.body).map { |m| m["id"] }
   end
 
   # PIN_LIMIT caps a user at ten pins across workspaces and memories combined,
@@ -143,5 +144,35 @@ class Memories::PinnedControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@user)
     get pinned_memories_url
     assert_select "[data-component='pagination']", count: 0
+  end
+
+  # 4 own + 3 placed used to read "7 of 10" against a board the person only
+  # chose four items of. The suffix makes the two numbers reconcile.
+  test "budget counts user-origin pins only and names the system ones" do
+    member = users(:member)
+    Memory.create_with_content(workspaces(:one), title: "Mine", content: "Body").pin!(member)
+
+    sign_in_as(member)
+    get pinned_memories_url
+
+    assert_response :success
+    assert_select "p", text: /#{Regexp.escape(I18n.t("memories.pinned.index.budget_with_system", used: 1, limit: User::PIN_LIMIT, system: 1))}/
+  end
+
+  test "budget omits the system clause for a viewer with no system pins" do
+    sign_in_as(@user)
+    get pinned_memories_url
+
+    assert_response :success
+    assert_select "p", text: /#{Regexp.escape(I18n.t("memories.pinned.index.budget", used: @user.pinned_items_count, limit: User::PIN_LIMIT))}/
+    assert_no_match(/added by recuerd0/, response.body)
+  end
+
+  test "a system-pinned row carries the auto-pinned badge" do
+    sign_in_as(users(:member))
+    get pinned_memories_url
+
+    assert_response :success
+    assert_select "[data-component='badge']", text: I18n.t("memories.pinned.index.system_pin_badge")
   end
 end

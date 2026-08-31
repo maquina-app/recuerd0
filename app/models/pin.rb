@@ -1,4 +1,9 @@
 class Pin < ApplicationRecord
+  # Who put this pin here. A "user" pin is one the person chose and it spends
+  # their PIN_LIMIT budget; a "system" pin is one recuerd0 placed for them
+  # (starter maps, account defaults) and it does not.
+  ORIGINS = %w[user system].freeze
+
   belongs_to :user
   belongs_to :pinnable, polymorphic: true
 
@@ -7,11 +12,14 @@ class Pin < ApplicationRecord
   validates :user_id, uniqueness: {
     scope: [:pinnable_type, :pinnable_id]
   }
+  validates :origin, presence: true, inclusion: {in: ORIGINS}
 
   # Scopes
   scope :ordered, -> { order(:position, created_at: :desc) }
   scope :for_workspaces, -> { where(pinnable_type: "Workspace") }
   scope :for_memories, -> { where(pinnable_type: "Memory") }
+  scope :user_origin, -> { where(origin: "user") }
+  scope :system_origin, -> { where(origin: "system") }
   scope :recent, -> { order(created_at: :desc) }
 
   # Callbacks

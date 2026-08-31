@@ -59,3 +59,4 @@ en:
       untitled: "Untitled Memory"
     pinnable:
       inactive: "Cannot pin inactive items."
+      limit_reached: "You've reached the maximum number of pins (%{limit})."

@@ -58,4 +58,26 @@ class UserTest < ActiveSupport::TestCase
     user.anonymize_email!
     assert user.anonymized?
   end
+
+  # The budget is a curation budget: only what the person pinned themselves
+  # spends it, so a teammate's workspace cannot quietly fill it.
+  test "pinned_items_count excludes system pins" do
+    member = users(:member)
+
+    assert_equal 1, member.pins.count
+    assert_equal 0, member.pinned_items_count
+    assert_equal 1, member.system_pinned_items_count
+  end
+
+  test "can_pin_more? is true with a full board of system pins" do
+    member = users(:member)
+    workspace = workspaces(:one)
+    (User::PIN_LIMIT - member.pins.count).times do |i|
+      Memory.create_with_content(workspace, title: "System #{i}", content: "Body").pin!(member, origin: "system")
+    end
+
+    assert_equal User::PIN_LIMIT, member.pins.count
+    assert_equal 0, member.pinned_items_count
+    assert member.can_pin_more?
+  end
 end

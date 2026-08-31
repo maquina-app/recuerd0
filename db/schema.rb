@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_055943) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_31_000000) do
   create_table "access_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
@@ -201,12 +201,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_055943) do
 
   create_table "pins", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "origin", default: "user", null: false
     t.integer "pinnable_id", null: false
     t.string "pinnable_type", null: false
     t.integer "position", default: 0, null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.index ["pinnable_type", "pinnable_id"], name: "index_pins_on_pinnable"
+    t.index ["user_id", "origin"], name: "index_pins_on_user_id_and_origin"
     t.index ["user_id", "pinnable_type", "pinnable_id"], name: "index_pins_uniqueness", unique: true
     t.index ["user_id", "pinnable_type", "position"], name: "index_pins_user_type_position"
     t.index ["user_id"], name: "index_pins_on_user_id"

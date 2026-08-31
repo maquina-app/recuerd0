@@ -10,3 +10,4 @@ end
 # json.cache! is keyed on the workspace, and pins are per user.
 json.pinned pinned_for?(workspace)
 json.pinned_at pinned_at_for(workspace)
+json.pin_origin pin_origin_for_record(workspace)

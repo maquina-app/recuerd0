@@ -39,7 +39,9 @@ class MemoriesController < ApplicationController
       format.json do
         @memory = @memory.resolve_current_version
         return validate_content_params if content_filtered?
-        return unless stale?(@memory)
+        # The viewer is part of the validator because pinned/pinned_at are
+        # rendered per user, outside the record-keyed json.cache! block.
+        return unless stale?(etag: [@memory, Current.user])
       end
     end
   end

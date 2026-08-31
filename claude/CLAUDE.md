@@ -183,6 +183,11 @@ View-level locale keys go in `config/locales/views/en.yml`. Partial key paths st
 - **`ws-filter` on a bare form**: the controller can be mounted directly on the `<form>` it drives — Stimulus target lookup matches the controller element itself, so `data-controller="ws-filter"` and `data-ws-filter-target="form"` on the same tag resolve fine, no wrapper `div` needed. Do **not** also wrap an ancestor in `data-controller="ws-filter"`: it binds a document-level `keydown` listener, so two instances on one page fight over `/`.
 - **Debounced filters need `turbo_action: "replace"`**: with `"advance"` every debounced submit pushes a history entry (Back walks through half-typed queries) and the morph that preserves focus and caret never happens, which makes the input unusable mid-typing.
 
+## Testing Gotchas
+
+- **Two users in one integration test**: `sign_in_as` posts to `SessionsController#create`, which has `before_action :redirect_authenticated_user` — a second `sign_in_as` in the same test is silently redirected and you keep the FIRST user's session (and its response bodies/ETags). Always `delete session_url` before signing in as somebody else.
+- **`assert_no_queries` and fixtures**: `users(:one)` inside the block issues its own SELECT. Resolve every fixture into a local before the block or the assertion fails on the fixture lookup, not on the code under test.
+
 ## Rails MCP Server
 
 Use `mcp__rails__execute_tool` to call tools, `mcp__rails__search_tools` to discover them.

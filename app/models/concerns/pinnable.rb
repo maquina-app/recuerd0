@@ -42,7 +42,15 @@ module Pinnable
     pin_target.pins.find_by(user: user)
   end
 
-  def pin!(user)
+  # `origin` records who placed the pin. A user-origin pin is one the person
+  # chose and it spends their PIN_LIMIT budget; a system-origin pin is one the
+  # app placed for them and it does not — so a teammate creating a workspace
+  # never eats someone else's budget, and a user at the cap still receives it.
+  #
+  # Idempotent, and deliberately origin-preserving: a memory a person pinned
+  # themselves is never downgraded to a system pin, and a system pin they kept
+  # is never upgraded.
+  def pin!(user, origin: "user")
     return nil unless user
     return pin_for(user) if pinned_by?(user)
 
@@ -52,7 +60,12 @@ module Pinnable
       raise ActiveRecord::RecordInvalid.new(self)
     end
 
-    pin_target.pins.create!(user: user)
+    if origin == "user" && !user.can_pin_more?
+      errors.add(:base, I18n.t("models.pinnable.limit_reached", limit: User::PIN_LIMIT))
+      raise ActiveRecord::RecordInvalid.new(self)
+    end
+
+    pin_target.pins.create!(user: user, origin: origin)
   end
 
   def unpin!(user)
@@ -71,6 +84,20 @@ module Pinnable
     else
       pin!(user)
       true
+    end
+  end
+
+  # "user", "system", or nil when unpinned. Reads the loaded association on
+  # the same fast path pinned_by? uses, so a preloaded list page spends no
+  # extra query per row.
+  def pin_origin_for(user)
+    return nil unless user
+
+    target = pin_target
+    if target.equal?(self) && pins.loaded?
+      pins.find { |p| p.user_id == user.id }&.origin
+    else
+      target.pins.find_by(user: user)&.origin
     end
   end
 

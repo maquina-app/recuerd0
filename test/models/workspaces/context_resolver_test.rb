@@ -89,13 +89,16 @@ class Workspaces::ContextResolverTest < ActiveSupport::TestCase
     @account.seed_start_here_workspace(@user)
     seeded_workspace = @account.workspaces.find_by!(name: "My Workspace")
 
+    # Fifteen pins on a ten-pin budget is only reachable the way it is in real
+    # life: the ones past the budget are pins recuerd0 placed, which do not
+    # spend it. The seeded workspace already contributes two of those.
     13.times do |index|
       memory = Memory.create_with_content(
         seeded_workspace,
         title: "Pinned #{index + 1}",
         content: "Pinned body #{index + 1}"
       )
-      memory.pin!(@user)
+      memory.pin!(@user, origin: (index < User::PIN_LIMIT) ? "user" : "system")
     end
 
     result = resolve(workspace: seeded_workspace, limit: 10)
