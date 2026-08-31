@@ -22,6 +22,15 @@ class Memory < ApplicationRecord
 
   # Scopes
   scope :latest_versions, -> { where(parent_memory_id: nil) }
+
+  # Account-scoped, and only workspaces a person can still work in — the set any
+  # cross-workspace list should start from. Qualified order because joining
+  # workspaces makes a bare updated_at ambiguous.
+  scope :in_active_workspaces_of, ->(account) {
+    joins(:workspace).where(workspaces: {account_id: account.id, archived_at: nil, deleted_at: nil})
+  }
+  scope :recently_updated, -> { order(Arel.sql("memories.updated_at DESC")) }
+  scope :preloaded, -> { includes(:content, :workspace, :child_versions) }
   scope :versions_of, ->(memory) { where(parent_memory_id: memory.id) }
   scope :by_category, ->(cat) { where(category: cat) if cat.present? && CATEGORIES.include?(cat) }
 

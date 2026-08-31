@@ -37,7 +37,8 @@
             class="ml-auto shrink-0"
             data-controller="search-command"
             data-search-command-search-url-value="<%= search_path %>"
-            data-action="keydown.meta+k@document->search-command#open keydown.ctrl+k@document->search-command#open"
+            data-action="keydown.meta+k@document->search-command#open keydown.ctrl+k@document->search-command#open turbo:before-render@document->search-command#handleBeforeRender turbo:morph@document->search-command#handleMorph"
+            data-search-command-selected-class="is-selected"
           >
             <%# Mobile: ghost icon button %>
             <button
