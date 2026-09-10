@@ -1,6 +1,6 @@
 class MemoryRetrieval
   SEMANTIC_TOP_K = 50
-  SUPERSEDED_DEMOTION = 0.5
+  OBSOLETE_DEMOTION = 0.5
 
   def initialize(relation:, provider: EmbeddingProviders.application)
     @relation = relation
@@ -27,7 +27,7 @@ class MemoryRetrieval
         )
         similarity = cosine_similarity(query_vector, vector)
         memory = metadata.fetch(embedding.memory_id)
-        similarity *= SUPERSEDED_DEMOTION if superseded?(memory[:tags])
+        similarity *= OBSOLETE_DEMOTION if obsolete?(memory[:tags])
 
         [embedding.memory_id, similarity]
       end
@@ -55,8 +55,10 @@ class MemoryRetrieval
     denominator.zero? ? 0.0 : dot_product / denominator
   end
 
-  def superseded?(tags)
-    normalize_tags(tags).any? { |tag| tag.to_s.casecmp?("superseded") }
+  # Obsolete rows only reach here when the caller passed include=obsolete;
+  # when they do, they rank below an equally similar current memory.
+  def obsolete?(tags)
+    normalize_tags(tags).any? { |tag| Memory::OBSOLETE_TAGS.include?(tag.to_s.downcase) }
   end
 
   def normalize_tags(tags)

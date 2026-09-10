@@ -1,6 +1,7 @@
 class MemoriesController < ApplicationController
   include WorkspaceScoped
   include MemoryFilterable
+  include ObsoleteFilterable
   include ContentRenderable
 
   before_action :set_workspace
@@ -20,6 +21,7 @@ class MemoriesController < ApplicationController
         redirect_to workspace_path(@workspace)
       end
       format.json do
+        scope = apply_obsolete_filter(scope)
         scope = apply_memory_filters(scope)
         @pagy, @memories = pagy(scope, limit: permitted_per_page)
         @memories = @memories.map { |m| m.versioned? ? m.current_version : m }

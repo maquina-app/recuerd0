@@ -53,6 +53,12 @@ Choose the narrowest category that fits:
 - `preference` for a durable user or team preference;
 - `general` only when none of the specific categories fit.
 
+Mark a memory superseded by adding an obsolete tag — `obsolete`, `superseded`, or
+`deprecated` — to its current version. Obsolete memories are excluded from search,
+listings, workspace context, stats, and merge candidates unless the call passes
+`include: ["obsolete"]`, so retiring knowledge is a tag, not a deletion: history stays
+readable when you deliberately ask for it.
+
 Search before creating. If a memory already covers the topic, create a version instead of
 a duplicate. Create a version for substantive title, body, tag, or category changes so
 history remains visible. Reserve updating a memory for correcting an accidental write,

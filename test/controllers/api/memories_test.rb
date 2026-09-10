@@ -626,6 +626,24 @@ class ApiMemoriesTest < ActionDispatch::IntegrationTest
     assert_not_includes titles, "CatFilter2"
   end
 
+  # --- obsolete memories ----------------------------------------------------
+
+  test "tags=obsolete alone returns nothing without the include flag" do
+    Memory.create_with_content(@workspace, title: "Retired", content: "b", tags: ["obsolete"])
+
+    get workspace_memories_url(@workspace, format: :json), params: {tags: "obsolete"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_empty JSON.parse(response.body)
+
+    get workspace_memories_url(@workspace, format: :json), params: {tags: "obsolete", include: "obsolete"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_equal ["Retired"], JSON.parse(response.body).map { |m| m["title"] }
+  end
+
   private
 
   def auth_headers(token)

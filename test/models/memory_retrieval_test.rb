@@ -80,7 +80,30 @@ class MemoryRetrievalTest < ActiveSupport::TestCase
     ids = retrieval(provider).ranked_ids(query: query)
 
     assert_equal memories.map(&:id).sort.reverse, ids
-    refute retrieval(provider).send(:superseded?, [])
+    refute retrieval(provider).send(:obsolete?, [])
+  end
+
+  test "every obsolete tag demotes the way superseded does" do
+    query = "same score"
+    provider = FakeEmbeddingProvider.new(vectors: {query => [1.0, 0.0, 0.0]})
+    retrieval = retrieval(provider)
+
+    Memory::OBSOLETE_TAGS.each do |tag|
+      assert retrieval.send(:obsolete?, [tag]), "#{tag} should be obsolete"
+      assert retrieval.send(:obsolete?, [tag.upcase]), "#{tag.upcase} should be obsolete"
+    end
+    refute retrieval.send(:obsolete?, ["deprecated-api"])
+
+    obsolete = Memory.create_with_content(@workspace, title: "Retired", content: "Body", tags: ["Obsolete"])
+    deprecated = Memory.create_with_content(@workspace, title: "Old", content: "Body", tags: ["deprecated"])
+    current = Memory.create_with_content(@workspace, title: "Current", content: "Body")
+    [obsolete, deprecated].each { |m| create_memory_embedding(m, vector: [1.0, 0.0, 0.0], model: provider.model) }
+    create_memory_embedding(current, vector: [0.6, 0.8, 0.0], model: provider.model)
+
+    ranked = retrieval.ranked_ids(query: query)
+
+    assert_equal current.id, ranked.first
+    assert_equal [deprecated.id, obsolete.id].sort, ranked.drop(1).sort
   end
 
   test "superseded demotion happens before the semantic top fifty cutoff" do

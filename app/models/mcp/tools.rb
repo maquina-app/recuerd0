@@ -18,6 +18,7 @@ module Mcp
     LIST_DEFAULT_LIMIT = 50
     LIST_MAX_LIMIT = 200
     RETRIEVAL_MODES = %w[lexical semantic].freeze
+    INCLUDE_TOKENS = %w[obsolete].freeze
 
     # Cap on ids accepted by read_memories in one call, to bound response size.
     BATCH_READ_LIMIT = 50
@@ -25,6 +26,7 @@ module Mcp
     def workspace_context(account, args = {}, user: nil)
       workspace = find_workspace(account, args["workspace_id"])
       validate_category!(args["category"])
+      include_obsolete = include_obsolete?(args)
       limit = clamp_int(args["limit"], default: 10, min: 1, max: 50)
       max_body_chars = clamp_int(
         args["max_body_chars"],
@@ -40,7 +42,8 @@ module Mcp
         workspace: workspace,
         user: user,
         limit: limit,
-        category: args["category"]
+        category: args["category"],
+        include_obsolete: include_obsolete
       )
 
       memories = result[:memories].map do |root|
@@ -72,6 +75,7 @@ module Mcp
     def list_memories(account, args = {}, user: nil)
       workspace = find_workspace(account, args["workspace_id"])
       validate_category!(args["category"])
+      include_obsolete = include_obsolete?(args)
       limit = clamp_limit(args["limit"])
       offset = [args["offset"].to_i, 0].max
       query = Memory.normalize_search_query(args["query"])
@@ -83,11 +87,13 @@ module Mcp
           args,
           query: query,
           limit: limit,
-          offset: offset
+          offset: offset,
+          include_obsolete: include_obsolete
         )
       end
 
       memories = workspace.memories.latest_versions
+      memories = memories.without_obsolete unless include_obsolete
       memories = memories.search(query) if query.present?
       memories = memories.by_category(args["category"]) if args["category"].present?
       sort = Memory.resolve_sort(args["sort"], query: query)
@@ -117,8 +123,9 @@ module Mcp
     end
     private_class_method :resolve_retrieval
 
-    def list_memories_experimentally(workspace, args, query:, limit:, offset:)
+    def list_memories_experimentally(workspace, args, query:, limit:, offset:, include_obsolete: false)
       roots = workspace.memories.latest_versions
+      roots = roots.without_obsolete unless include_obsolete
       ranked_ids = MemoryRetrieval.new(relation: roots).ranked_ids(query: query)
       candidates = roots.where(id: ranked_ids)
       candidates = candidates.by_category(args["category"]) if args["category"].present?
@@ -277,14 +284,21 @@ module Mcp
     def workspace_stats(account, args = {}, user: nil)
       workspace = find_workspace(account, args["workspace_id"])
       roots = workspace.memories.latest_versions
+      roots = roots.without_obsolete unless include_obsolete?(args)
 
       counts_by_category = Memory::CATEGORIES.index_with { 0 }.merge(roots.group(:category).count)
-      workspace_memory_ids = workspace.memories.select(:id)
+      # Version rows counted through their root's visibility, so every figure
+      # describes the same set of memories.
+      version_rows = workspace.memories.where(
+        "memories.id IN (:roots) OR memories.parent_memory_id IN (:roots)",
+        roots: roots.select(:id)
+      )
+      workspace_memory_ids = version_rows.select(:id)
 
       {
         workspace_id: workspace.id.to_s,
         total_memories: roots.count,
-        total_versions: workspace.memories.count,
+        total_versions: version_rows.count,
         counts_by_category: counts_by_category,
         total_links: MemoryLink
           .where(from_memory_id: workspace_memory_ids)
@@ -300,8 +314,13 @@ module Mcp
     def suggest_merge_candidates(account, args = {}, user: nil)
       workspace = find_workspace(account, args["workspace_id"])
       min_score = args["min_score"].presence&.to_f
+      include_obsolete = include_obsolete?(args)
 
-      finder = min_score ? WorkspaceMergeCandidates.new(workspace, min_score: min_score) : WorkspaceMergeCandidates.new(workspace)
+      finder = if min_score
+        WorkspaceMergeCandidates.new(workspace, min_score: min_score, include_obsolete: include_obsolete)
+      else
+        WorkspaceMergeCandidates.new(workspace, include_obsolete: include_obsolete)
+      end
       finder.clusters.map do |cluster|
         {
           score: cluster.score,
@@ -354,6 +373,24 @@ module Mcp
       raise ToolError, "Invalid category: #{category}"
     end
     private_class_method :validate_category!
+
+    # `include` is an array of tokens re-enabling something hidden by default —
+    # today only "obsolete". Rejected loudly, like an unadvertised category or
+    # retrieval mode, so a typo is an error rather than a silently filtered set.
+    def include_obsolete?(args)
+      return false unless args.key?("include")
+
+      tokens = args["include"]
+      raise ToolError, "Invalid include token" unless tokens.is_a?(Array)
+      tokens.each do |token|
+        unless token.is_a?(String) && INCLUDE_TOKENS.include?(token.downcase)
+          raise ToolError, "Invalid include token"
+        end
+      end
+
+      tokens.any? { |token| token.downcase == "obsolete" }
+    end
+    private_class_method :include_obsolete?
 
     def clamp_limit(value)
       limit = value.to_i

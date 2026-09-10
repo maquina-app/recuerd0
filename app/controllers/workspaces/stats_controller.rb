@@ -1,4 +1,6 @@
 class Workspaces::StatsController < ApplicationController
+  include ObsoleteFilterable
+
   before_action :set_workspace
   before_action :ensure_not_deleted
 
@@ -7,15 +9,17 @@ class Workspaces::StatsController < ApplicationController
   # Aggregate rollup computed server-side so callers get counts and trends
   # without paging the full memory list. Mirrors the workspace_stats MCP tool.
   def show
-    roots = @workspace.memories.latest_versions
+    roots = apply_obsolete_filter(@workspace.memories.latest_versions)
 
     @total_memories = roots.count
-    @total_versions = @workspace.memories.count
+    # Version rows are counted through their root's visibility: a figure that
+    # spans versions has no other coherent reading of "excludes obsolete".
+    @total_versions = version_rows(roots).count
     @counts_by_category = Memory::CATEGORIES.index_with { 0 }.merge(roots.group(:category).count)
     @top_tags = top_tags(roots)
     @memories_by_week = roots.group(Arel.sql("strftime('%Y-%W', memories.created_at)")).count
 
-    workspace_memory_ids = @workspace.memories.select(:id)
+    workspace_memory_ids = version_rows(roots).select(:id)
     @total_links = MemoryLink
       .where(from_memory_id: workspace_memory_ids)
       .or(MemoryLink.where(to_memory_id: workspace_memory_ids))
@@ -23,6 +27,14 @@ class Workspaces::StatsController < ApplicationController
   end
 
   private
+
+  # Every memory row (root or version) whose root is visible.
+  def version_rows(roots)
+    @workspace.memories.where(
+      "memories.id IN (:roots) OR memories.parent_memory_id IN (:roots)",
+      roots: roots.select(:id)
+    )
+  end
 
   def set_workspace
     @workspace = Current.account.workspaces.find(params[:workspace_id])

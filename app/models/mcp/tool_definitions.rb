@@ -4,6 +4,15 @@ module Mcp
   module ToolDefinitions
     CATEGORIES = Memory::CATEGORIES
 
+    OBSOLETE_NOTE = "Memories tagged obsolete, superseded or deprecated are excluded by " \
+      "default; pass include: [\"obsolete\"] to retrieve them.".freeze
+
+    INCLUDE_PROPERTY = {
+      type: "array",
+      items: {type: "string", enum: ["obsolete"]},
+      description: "Re-include memories hidden by default. Only [\"obsolete\"] is accepted."
+    }.freeze
+
     ALL = [
       {
         name: "workspace_context",
@@ -12,7 +21,7 @@ module Mcp
           "the caller's pinned memories when they have any, and the most recently updated " \
           "memories otherwise; `context_source` says which. Call this before searching or " \
           "writing, so later work is informed by what the workspace already holds and does " \
-          "not duplicate it.",
+          "not duplicate it. " + OBSOLETE_NOTE,
         annotations: {readOnlyHint: true, destructiveHint: false},
         inputSchema: {
           type: "object",
@@ -24,7 +33,8 @@ module Mcp
               type: "integer",
               description: "Maximum body characters per memory, 100–5000 (default 500)"
             },
-            category: {type: "string", enum: CATEGORIES, description: "Filter by memory category"}
+            category: {type: "string", enum: CATEGORIES, description: "Filter by memory category"},
+            include: INCLUDE_PROPERTY
           },
           required: ["workspace_id"]
         }
@@ -43,7 +53,7 @@ module Mcp
           "a memory matching both appears once as an FTS match. Queries under 3 characters " \
           "search exact tags only. Returns a paginated envelope: " \
           "{memories, total_count, has_more, next_offset}. Pass `offset: next_offset` " \
-          "to fetch the following page. Defaults to 50 per page (max 200).",
+          "to fetch the following page. Defaults to 50 per page (max 200). " + OBSOLETE_NOTE,
         annotations: {readOnlyHint: true, destructiveHint: false},
         inputSchema: {
           type: "object",
@@ -68,7 +78,8 @@ module Mcp
                    description: "Sort order. Defaults to relevance when query is present and " \
                      "updated otherwise. Relevance without a query resolves to updated."},
             limit: {type: "integer", description: "Page size, 1–200 (default 50)"},
-            offset: {type: "integer", description: "Rows to skip (default 0)"}
+            offset: {type: "integer", description: "Rows to skip (default 0)"},
+            include: INCLUDE_PROPERTY
           },
           required: ["workspace_id"]
         }
@@ -198,11 +209,15 @@ module Mcp
         name: "workspace_stats",
         description: "Aggregate rollup for a workspace without shipping memory bodies: " \
           "total_memories, total_versions, counts_by_category, total_links, top_tags, " \
-          "and memories_by_week. Use this instead of paging list_memories for counts/trends.",
+          "and memories_by_week. Use this instead of paging list_memories for counts/trends. " +
+          OBSOLETE_NOTE + " Every figure describes the same filtered set.",
         annotations: {readOnlyHint: true, destructiveHint: false},
         inputSchema: {
           type: "object",
-          properties: {workspace_id: {type: "string", description: "Workspace ID"}},
+          properties: {
+            workspace_id: {type: "string", description: "Workspace ID"},
+            include: INCLUDE_PROPERTY
+          },
           required: ["workspace_id"]
         }
       },
@@ -210,13 +225,14 @@ module Mcp
         name: "suggest_merge_candidates",
         description: "Suggest clusters of likely-duplicate memories in a workspace, scored " \
           "by shared tags and title similarity. Read-only — it only proposes clusters; " \
-          "merging stays a human decision. Returns [{score, reasons, memories}].",
+          "merging stays a human decision. Returns [{score, reasons, memories}]. " + OBSOLETE_NOTE,
         annotations: {readOnlyHint: true, destructiveHint: false},
         inputSchema: {
           type: "object",
           properties: {
             workspace_id: {type: "string", description: "Workspace ID"},
-            min_score: {type: "number", description: "Similarity threshold 0–1 (default 0.5)"}
+            min_score: {type: "number", description: "Similarity threshold 0–1 (default 0.5)"},
+            include: INCLUDE_PROPERTY
           },
           required: ["workspace_id"]
         }

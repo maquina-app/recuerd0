@@ -17,18 +17,36 @@
       fixed by reopening ⌘K and retyping from scratch — and the "too short" and
       "no results" states both said "enter a search term" on a page with nowhere
       to enter one. Prefilled, so correcting a query is an edit, not a retype. %>
-  <%= form_with url: search_path, method: :get, data: {turbo_action: "advance"}, class: "mb-6" do |f| %>
+  <%# turbo_action is "replace", not "advance", for the reason the workspaces
+      filter gives: a debounced keystroke burst must not push one history entry
+      per submit, and morph needs it to preserve focus and caret. %>
+  <%= form_with url: search_path, method: :get,
+        data: {controller: "ws-filter", turbo_action: "replace", ws_filter_target: "form"},
+        class: "mb-6" do |f| %>
     <div class="search-page-field">
       <%= icon_for(:search, class: "size-4 shrink-0 text-muted-foreground") %>
       <%= f.label :q, t("search.command.input_label"), class: "sr-only" %>
       <%= f.search_field :q, value: @query,
             placeholder: t("search.placeholder"),
             maxlength: SearchController::QUERY_MAX_LENGTH,
-            autocomplete: "off" %>
+            autocomplete: "off",
+            data: {
+              ws_filter_target: "input",
+              action: "input->ws-filter#submit search->ws-filter#submit keydown.esc->ws-filter#clear"
+            } %>
       <% if params[:workspace_id].present? %>
         <%= f.hidden_field :workspace_id, value: params[:workspace_id] %>
       <% end %>
     </div>
+
+    <%# A real checkbox in a GET form, so it still works with JS off: Enter in
+        the query field submits both fields. %>
+    <label class="search-page-toggle">
+      <%= check_box_tag :include, "obsolete", include_obsolete?,
+            id: "search_include_obsolete",
+            data: {action: "change->ws-filter#submit"} %>
+      <span><%= t("search.index.include_obsolete_label") %></span>
+    </label>
   <% end %>
 
   <% if @invalid_query %>
@@ -60,9 +78,20 @@
         <h2 id="search-memories-heading" class="ws-group-label mb-2 px-0.5">
           <%= t("search.index.memories_heading") %>
         </h2>
-        <p class="text-sm text-muted-foreground mb-4">
+        <% hidden_count = @obsolete_hidden_count.to_i %>
+        <p class="text-sm text-muted-foreground <%= hidden_count.positive? ? "mb-1" : "mb-4" %>">
           <%= t(".results_count", count: @pagy.count, query: @query) %>
         </p>
+        <%# Hiding must never feel like data loss: say what was withheld and
+            make the count the way back to it. %>
+        <% if hidden_count.positive? %>
+          <p class="text-sm text-muted-foreground mb-4">
+            <%= t("search.index.obsolete_hidden_prefix") %>
+            <%= link_to t("search.index.obsolete_hidden", count: hidden_count),
+                  search_path(request.query_parameters.merge("include" => "obsolete")),
+                  class: "font-medium underline underline-offset-2" %>
+          </p>
+        <% end %>
 
         <div class="grid gap-4">
           <% @memories.each do |memory| %>

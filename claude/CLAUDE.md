@@ -194,6 +194,14 @@ View-level locale keys go in `config/locales/views/en.yml`. Partial key paths st
 
 ## Testing Gotchas
 
+- **`check_box_tag` vs `f.check_box`**: only the form-builder version emits the paired
+  hidden "0" field. A GET filter checkbox that must send *nothing* when unchecked (the
+  search page's `include=obsolete`) has to be `check_box_tag`, or every unchecked submit
+  carries `include=0`.
+- **`Workspaces::ContextResolver` prefers pins**: a test that wants the *recent* branch
+  must clear pins first (`Pin.destroy_all`) — fixtures pin memories for `users(:one)`, so
+  a freshly created memory never appears in the returned context otherwise.
+
 - **Two users in one integration test**: `sign_in_as` posts to `SessionsController#create`, which has `before_action :redirect_authenticated_user` — a second `sign_in_as` in the same test is silently redirected and you keep the FIRST user's session (and its response bodies/ETags). Always `delete session_url` before signing in as somebody else.
 - **`assert_no_queries` and fixtures**: `users(:one)` inside the block issues its own SELECT. Resolve every fixture into a local before the block or the assertion fails on the fixture lookup, not on the code under test.
 

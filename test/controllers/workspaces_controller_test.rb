@@ -199,6 +199,20 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, counts["preference"]
   end
 
+  # Regression guard: hiding obsolete memories is a *retrieval* default. The
+  # workspace list is where you manage everything you own, so it stays whole.
+  test "show still lists obsolete memories and counts them" do
+    Memory.create_with_content(@workspace, title: "Retired decision", content: "b",
+      category: "decision", tags: ["obsolete"])
+
+    get workspace_url(@workspace)
+    assert_response :success
+
+    assert_match "Retired decision", response.body
+    assert_equal 1, @controller.view_assigns["category_counts"]["decision"]
+    assert_select "a.tag-badge[data-obsolete=true]", minimum: 1
+  end
+
   test "show category counts respect an active search filter" do
     Memory.create_with_content(@workspace, title: "Zebra decision", content: "b", category: "decision")
     @workspace.memories.each(&:rebuild_search_index)

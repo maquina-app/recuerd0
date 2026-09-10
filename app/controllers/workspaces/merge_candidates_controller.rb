@@ -1,4 +1,6 @@
 class Workspaces::MergeCandidatesController < ApplicationController
+  include ObsoleteFilterable
+
   before_action :set_workspace
   before_action :ensure_not_deleted
 
@@ -9,9 +11,9 @@ class Workspaces::MergeCandidatesController < ApplicationController
   # remains a human decision — this only proposes clusters.
   def show
     finder = if params[:min_score].present?
-      WorkspaceMergeCandidates.new(@workspace, min_score: params[:min_score].to_f)
+      WorkspaceMergeCandidates.new(@workspace, min_score: params[:min_score].to_f, include_obsolete: include_obsolete?)
     else
-      WorkspaceMergeCandidates.new(@workspace)
+      WorkspaceMergeCandidates.new(@workspace, include_obsolete: include_obsolete?)
     end
 
     @clusters = finder.clusters

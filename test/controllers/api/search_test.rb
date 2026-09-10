@@ -336,6 +336,47 @@ class ApiSearchTest < ActionDispatch::IntegrationTest
     assert_not_includes titles, "Meeting beta cat"
   end
 
+  # --- obsolete memories ----------------------------------------------------
+
+  test "search omits obsolete matches by default and reports what it withheld" do
+    obsolete = Memory.create_with_content(workspaces(:one), title: "Obsolete beacon", content: "beaconword body", tags: ["superseded"])
+    current = Memory.create_with_content(workspaces(:one), title: "Current beacon", content: "beaconword body")
+    [obsolete, current].each(&:rebuild_search_index)
+
+    get search_url(format: :json), params: {q: "beaconword"}, headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    titles = json["results"].map { |r| r["title"] }
+    assert_includes titles, "Current beacon"
+    refute_includes titles, "Obsolete beacon"
+    assert_equal 1, json["obsolete_hidden"]
+  end
+
+  test "include=obsolete returns the withheld matches" do
+    obsolete = Memory.create_with_content(workspaces(:one), title: "Obsolete beacon", content: "beaconword body", tags: ["Deprecated"])
+    obsolete.rebuild_search_index
+
+    get search_url(format: :json), params: {q: "beaconword", include: "obsolete"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_includes json["results"].map { |r| r["title"] }, "Obsolete beacon"
+    assert_equal 0, json["obsolete_hidden"]
+  end
+
+  test "unrecognized include tokens are ignored" do
+    obsolete = Memory.create_with_content(workspaces(:one), title: "Obsolete beacon", content: "beaconword body", tags: ["obsolete"])
+    obsolete.rebuild_search_index
+
+    get search_url(format: :json), params: {q: "beaconword", include: "obsolete,future_token"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_includes JSON.parse(response.body)["results"].map { |r| r["title"] }, "Obsolete beacon"
+  end
+
   private
 
   def auth_headers(token)

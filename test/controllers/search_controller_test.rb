@@ -187,4 +187,46 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_operator response.body.index(stronger.title), :<, response.body.index(weaker.title)
   end
+
+  # --- obsolete memories ----------------------------------------------------
+
+  test "the page reports what the obsolete filter withheld and links to it" do
+    sign_in_as(@user)
+    obsolete = Memory.create_with_content(workspaces(:one), title: "Obsolete beacon",
+      content: "beaconword body", tags: ["superseded"])
+    current = Memory.create_with_content(workspaces(:one), title: "Current beacon",
+      content: "beaconword body")
+    [obsolete, current].each(&:rebuild_search_index)
+
+    get search_url, params: {q: "beaconword"}
+
+    assert_response :success
+    assert_match "Current beacon", response.body
+    assert_no_match "Obsolete beacon", response.body
+    assert_select "a[href=?]", search_path(q: "beaconword", include: "obsolete"), text: /1 obsolete memory hidden/
+    assert_select "input[type=checkbox][name=include]:not([checked])", count: 1
+  end
+
+  test "no hidden-count line when nothing was withheld" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "Meeting"}
+
+    assert_response :success
+    assert_no_match(/obsolete memor(y|ies) hidden/, response.body)
+  end
+
+  test "the checkbox reflects an active include=obsolete and the results follow it" do
+    sign_in_as(@user)
+    obsolete = Memory.create_with_content(workspaces(:one), title: "Obsolete beacon",
+      content: "beaconword body", tags: ["Obsolete"])
+    obsolete.rebuild_search_index
+
+    get search_url, params: {q: "beaconword", include: "obsolete"}
+
+    assert_response :success
+    assert_match "Obsolete beacon", response.body
+    assert_select "input[type=checkbox][name=include][checked]", count: 1
+    assert_no_match(/obsolete memor(y|ies) hidden/, response.body)
+  end
 end

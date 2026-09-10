@@ -1,5 +1,6 @@
 class SearchController < ApplicationController
   include ContentRenderable
+  include ObsoleteFilterable
 
   def index
     @query = params[:q].to_s.strip.first(query_max_length)
@@ -16,6 +17,7 @@ class SearchController < ApplicationController
     return render_palette_suggestions if palette_frame? && @query.blank?
 
     memories = build_search_scope
+    @obsolete_hidden_count = obsolete_hidden_count
     @workspaces = matching_workspaces
 
     @pagy, @memories = pagy(memories, items: 10)
@@ -63,18 +65,22 @@ class SearchController < ApplicationController
   SUGGESTION_LIMIT = 5
 
   def render_palette_suggestions
+    @obsolete_hidden_count = 0
     @suggested_workspaces = Current.user.pinned_workspaces
       .where(account_id: Current.account.id)
       .limit(SUGGESTION_LIMIT)
 
-    pinned = Current.user.pinned_memories.includes(:workspace).limit(SUGGESTION_LIMIT).to_a
+    pinned = apply_obsolete_filter(Current.user.pinned_memories.includes(:workspace))
+      .limit(SUGGESTION_LIMIT)
+      .to_a
     @suggested_memories = if pinned.size >= SUGGESTION_LIMIT
       pinned
     else
       # Top up with recent work so a user who has pinned nothing still opens
       # onto something actionable rather than an empty panel.
-      recent = Memory.in_active_workspaces_of(Current.account)
-        .latest_versions
+      recent = apply_obsolete_filter(
+        Memory.in_active_workspaces_of(Current.account).latest_versions
+      )
         .where.not(id: pinned.map(&:id))
         .preloaded
         .recently_updated
@@ -107,6 +113,18 @@ class SearchController < ApplicationController
   end
 
   def build_search_scope
+    apply_obsolete_filter(unfiltered_search_scope)
+  end
+
+  # How many matches the default filter withheld. One extra query, and only
+  # when it can be non-zero: never when the flag is on, never without a query.
+  def obsolete_hidden_count
+    return 0 if include_obsolete? || @query.blank?
+
+    unfiltered_search_scope.only_obsolete.count
+  end
+
+  def unfiltered_search_scope
     scope = Memory.joins(:workspace)
       .where(workspaces: {account_id: Current.account.id})
       .latest_versions
