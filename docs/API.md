@@ -63,7 +63,13 @@ Fetching by identity is never filtered: `GET /memories.json?ids=1,2,3` returns o
 memories with no flag, as do the `read_memory` / `read_memories` MCP tools. Browsing a
 workspace in the UI is also unfiltered; obsolete tags are simply shown as such.
 
-`GET /search.json` reports what it withheld in `obsolete_hidden`.
+`GET /search.json` reports what it withheld in `obsolete_hidden` (`0` when nothing was
+hidden, and always `0` when `include=obsolete` is passed).
+
+One exception worth knowing: `stats.total_memories` on `GET /workspaces/:id/context.json`
+is the workspace's total memory count and does not change with `include`. The memories it
+returns, and `stats.total_pinned`, do. `GET /workspaces/:id/stats.json` filters every
+figure it reports.
 
 MCP tools take `include` as an array of strings (`include: ["obsolete"]`); any other
 token, or a non-array value, is a JSON-RPC error.
@@ -929,6 +935,7 @@ The search query supports full FTS5 syntax:
 {
   "query": "architecture AND design",
   "total_results": 3,
+  "obsolete_hidden": 1,
   "results": [
     {
       "id": 1,
@@ -961,6 +968,7 @@ When `mode=grep`, each result includes `matches` (line-level matches with contex
 {
   "query": "architecture",
   "total_results": 2,
+  "obsolete_hidden": 0,
   "results": [
     {
       "id": 1,
