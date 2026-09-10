@@ -37,6 +37,7 @@
       <a href="#cmd-version" class="sidebar-link" data-section="cmd-version" data-action="click->marketing-sidebar#closeSidebar">version</a>
       <a href="#cli-memory-links" class="sidebar-link" data-section="cli-memory-links" data-action="click->marketing-sidebar#closeSidebar">Memory Links</a>
       <a href="#cmd-search" class="sidebar-link" data-section="cmd-search" data-action="click->marketing-sidebar#closeSidebar">search</a>
+      <a href="#cli-obsolete" class="sidebar-link" data-section="cli-obsolete" data-action="click->marketing-sidebar#closeSidebar">Obsolete Memories</a>
       <a href="#cmd-skills" class="sidebar-link" data-section="cmd-skills" data-action="click->marketing-sidebar#closeSidebar">skills</a>
     </div>
     <div class="sidebar-group">
@@ -281,7 +282,7 @@ recuerd0 workspace unarchive &lt;id&gt;</code></div>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">usage</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">recuerd0 memory list --workspace &lt;id&gt; [--category CAT]
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 memory list --workspace &lt;id&gt; [--category CAT] [--include obsolete]
 recuerd0 memory show --workspace &lt;id&gt; &lt;memory_id&gt;
 recuerd0 memory create --workspace &lt;id&gt; --title &lt;title&gt; --content &lt;body|-&gt; [--category CAT]
 recuerd0 memory update --workspace &lt;id&gt; &lt;memory_id&gt; [--title &lt;title&gt;] [--content &lt;body|-&gt;] [--category CAT]
@@ -303,6 +304,7 @@ recuerd0 memory link remove &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--wo
             <tr><td><code>--tags</code></td><td>Comma-separated tags: <code>--tags "auth,rails,patterns"</code></td></tr>
             <tr><td><code>--source</code></td><td>Source identifier (e.g. <code>cli</code>, <code>claude-code</code>)</td></tr>
             <tr><td><code>--category</code></td><td>One of <code>decision</code>, <code>discovery</code>, <code>preference</code>, <code>general</code> (defaults to <code>general</code>). See <a href="#cli-categories">Categories</a>.</td></tr>
+            <tr><td><code>--include</code></td><td>On <code>list</code> and <code>search</code>: pass <code>obsolete</code> to include retired memories. See <a href="#cli-obsolete">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
       </div>
@@ -425,7 +427,7 @@ recuerd0 memory link list 42 --workspace 1</code></div>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">usage</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">recuerd0 search &lt;query&gt; [--workspace &lt;id&gt;] [--category CAT]</code></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 search &lt;query&gt; [--workspace &lt;id&gt;] [--category CAT] [--include obsolete]</code></div>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">examples</span><%= render "pages/code_copy" %></div>
@@ -439,7 +441,35 @@ recuerd0 search "auth AND rails NOT devise"
 recuerd0 search "deploy" --workspace 3
 
 <span class="cc"># Column filter</span>
-recuerd0 search "title:architecture"</code></div>
+recuerd0 search "title:architecture"
+
+<span class="cc"># Include memories you have retired</span>
+recuerd0 search "auth strategy" --include obsolete</code></div>
+        </div>
+      </div>
+
+      <%# — Obsolete memories — %>
+      <div class="endpoint" id="cli-obsolete">
+        <div class="endpoint-head">
+          <h3>Obsolete Memories</h3>
+          <p>A memory tagged <code>obsolete</code>, <code>superseded</code>, or <code>deprecated</code> is retired knowledge. <code>memory list</code> and <code>search</code> leave it out by default, so what you get back is what still applies. Pass <code>--include obsolete</code> to bring it back for an audit. Matching is case-insensitive and whole-tag: <code>Superseded</code> counts, <code>deprecated-api</code> is an ordinary tag.</p>
+        </div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">examples</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># Retire a decision that was reversed — tag it, do not delete it</span>
+recuerd0 version create --workspace 1 42 --tags "auth,superseded" \
+  --content "Superseded by the OAuth rollout in memory 87."
+
+<span class="cc"># Current memories only (the default)</span>
+recuerd0 memory list --workspace 1
+
+<span class="cc"># Everything, including what has been retired</span>
+recuerd0 memory list --workspace 1 --include obsolete
+recuerd0 search "auth" --include obsolete</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Tag the memory's <em>current</em> version — that is what retrieval reads. <code>memory show</code> is never filtered: fetching by id always returns the memory, retired or not. Nothing is deleted and the version history stays intact.</span>
         </div>
       </div>
 

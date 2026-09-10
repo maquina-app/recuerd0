@@ -51,6 +51,7 @@
       <a href="#categories" class="sidebar-link" data-section="categories" data-action="click->marketing-sidebar#closeSidebar">Categories</a>
       <a href="#cross-workspace-links" class="sidebar-link" data-section="cross-workspace-links" data-action="click->marketing-sidebar#closeSidebar">Cross-Workspace Links</a>
       <a href="#tag-conventions" class="sidebar-link" data-section="tag-conventions" data-action="click->marketing-sidebar#closeSidebar">Tag Conventions</a>
+      <a href="#retiring-memories" class="sidebar-link" data-section="retiring-memories" data-action="click->marketing-sidebar#closeSidebar">Retiring Memories</a>
     </div>
   </aside>
 
@@ -438,8 +439,32 @@ recuerd0 memory link list 42 --workspace 1</code></div>
             <tr><td>Type</td><td><code>decision</code>, <code>pattern</code>, <code>debug</code></td><td>Nature of the knowledge</td></tr>
             <tr><td>Source</td><td><code>transcript</code>, <code>manual</code>, <code>claude-code</code></td><td>How it was created</td></tr>
             <tr><td>Date</td><td><code>2026-02</code>, <code>q1-2026</code></td><td>When it was relevant</td></tr>
+            <tr><td>Status</td><td><code>obsolete</code>, <code>superseded</code>, <code>deprecated</code></td><td>Reserved — retires a memory from retrieval. See <a href="#retiring-memories">Retiring Memories</a></td></tr>
           </tbody>
         </table></div>
+      </div>
+
+      <%# — Retiring memories — %>
+      <div class="endpoint" id="retiring-memories">
+        <div class="endpoint-head">
+          <h3>Retiring memories</h3>
+          <p>Three tags are reserved: <code>obsolete</code>, <code>superseded</code>, and <code>deprecated</code>. Add one to a memory and it drops out of search, listings, workspace context, stats, and merge candidates — everywhere an agent goes looking for what is true now. Nothing is deleted and the version history stays intact; the memory simply stops turning up in retrieval.</p>
+        </div>
+        <div class="code-block" data-controller="clipboard">
+          <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
+          <div class="code-body"><code data-clipboard-target="source"><span class="cc"># The decision was reversed — retire it, do not delete it</span>
+recuerd0 version create --workspace 1 42 \
+  --category decision \
+  --tags "auth,superseded" \
+  --content "# Auth Strategy v3\n\nSuperseded by the OAuth rollout in memory 87."
+
+<span class="cc"># Audit what has been retired</span>
+recuerd0 search "auth strategy" --include obsolete</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Tag the memory's <em>current</em> version — that is what retrieval reads. Matching is case-insensitive and whole-tag, so <code>Superseded</code> counts and <code>deprecated-api</code> stays an ordinary topic tag. Reading a memory by id is never filtered, and the workspace UI keeps listing retired memories with a distinct badge.</span>
+        </div>
       </div>
 
       <div class="section-divider"></div>

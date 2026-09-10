@@ -40,6 +40,7 @@
     <div class="sidebar-group">
       <div class="sidebar-heading">Memories</div>
       <a href="#memory-categories" class="sidebar-link" data-section="memory-categories" data-action="click->marketing-sidebar#closeSidebar">Categories</a>
+      <a href="#obsolete-memories" class="sidebar-link" data-section="obsolete-memories" data-action="click->marketing-sidebar#closeSidebar">Obsolete Memories</a>
       <a href="#memory-links" class="sidebar-link" data-section="memory-links" data-action="click->marketing-sidebar#closeSidebar">Memory Links</a>
       <a href="#list-memory-links" class="sidebar-link" data-section="list-memory-links" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> List Links</a>
       <a href="#create-memory-link" class="sidebar-link" data-section="create-memory-link" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create Link</a>
@@ -223,6 +224,7 @@
             <tr><td><span class="param-name">include_body</span></td><td><span class="param-type">boolean</span></td><td>true</td><td>Whether to include each memory's body content.</td></tr>
             <tr><td><span class="param-name">max_body_chars</span></td><td><span class="param-type">integer</span></td><td>500</td><td>Maximum characters of body to return per memory (100–5000). Longer bodies are truncated.</td></tr>
             <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td></td><td>Filter memories to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
+            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td></td><td>Pass <code>obsolete</code> to include retired memories. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">
@@ -263,7 +265,7 @@
 }</code></div>
         </div>
         <p class="doc-note">
-          The <code>pinned_memories</code> array and <code>stats.returned_pinned</code> remain as deprecated aliases of <code>memories</code> and <code>stats.returned</code>.
+          The <code>pinned_memories</code> array and <code>stats.returned_pinned</code> remain as deprecated aliases of <code>memories</code> and <code>stats.returned</code>. <code>stats.total_memories</code> is the workspace's total and does not change with <code>include</code>; the memories returned and <code>stats.total_pinned</code> do.
         </p>
       </div>
 
@@ -362,6 +364,35 @@
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
           <span>The <code>category</code> query parameter is supported on list, search, and workspace context endpoints to filter results to a single category.</span>
+        </div>
+      </div>
+
+      <%# ===== OBSOLETE MEMORIES ===== %>
+      <div class="api-section" id="obsolete-memories">
+        <div class="endpoint-head">
+          <h3>Obsolete Memories</h3>
+          <p>A memory tagged <code>obsolete</code>, <code>superseded</code>, or <code>deprecated</code> is retired knowledge. Those three tags are <strong>excluded by default</strong> from search, listings, workspace context, stats, and merge candidates — so an agent loading context is never woken on a decision that was already reversed. Matching is case-insensitive and whole-tag: <code>Superseded</code> counts, <code>deprecated-api</code> is an ordinary tag.</p>
+        </div>
+        <div class="table-scroll"><table class="op-table">
+          <thead><tr><th>Behavior</th><th>Detail</th></tr></thead>
+          <tbody>
+            <tr><td>Default</td><td>Obsolete memories are hidden from <code>/search.json</code>, both memory list endpoints, workspace context, stats, and merge candidates</td></tr>
+            <tr><td>Opt in</td><td>Pass <code>include=obsolete</code> on any of those endpoints to get them back</td></tr>
+            <tr><td>Unknown tokens</td><td>Ignored, never an error — <code>include=obsolete,future_token</code> behaves exactly as <code>include=obsolete</code></td></tr>
+            <tr><td>Filtering by the tag</td><td>The flag is still required: <code>?tags=obsolete</code> alone returns <code>[]</code>, <code>?tags=obsolete&amp;include=obsolete</code> returns the memories</td></tr>
+            <tr><td>Fetching by identity</td><td>Never filtered — <code>/memories.json?ids=1,2,3</code> and the single-memory endpoint always return what you asked for</td></tr>
+            <tr><td>Counting what was hidden</td><td><code>/search.json</code> reports the withheld count as <code>obsolete_hidden</code></td></tr>
+          </tbody>
+        </table></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">examples</span></div>
+          <div class="code-body"><code><span class="cc">GET</span> /search.json?q=rollout                        <span class="cc"># current memories only</span>
+<span class="cc">GET</span> /search.json?q=rollout&amp;include=obsolete       <span class="cc"># plus the retired ones</span>
+<span class="cc">GET</span> /workspaces/1/stats.json?include=obsolete    <span class="cc"># every figure counts them</span></code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Retiring a memory is a tag, not a deletion. Nothing is removed, the version history stays intact, and the workspace UI keeps listing obsolete memories — marked with a distinct badge — so you can still see and manage everything you own.</span>
         </div>
       </div>
 
@@ -486,6 +517,7 @@
             <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
             <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
             <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
+            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td>Pass <code>obsolete</code> to include retired memories. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">
@@ -522,12 +554,14 @@
             <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr>
             <tr><td><span class="param-name">per_page</span></td><td><span class="param-type">integer</span></td><td>Items per page (1–100, default: 25)</td></tr>
             <tr><td><span class="param-name">workspace_id</span></td><td><span class="param-type">integer</span></td><td>Filter to a specific workspace</td></tr>
+            <tr><td><span class="param-name">ids</span></td><td><span class="param-type">string</span></td><td>Comma-separated memory ids. Batch-fetches exactly those memories, still account-scoped and paginated</td></tr>
             <tr><td><span class="param-name">title</span></td><td><span class="param-type">string</span></td><td>Glob pattern for title matching. <code>*</code> matches any characters, <code>?</code> matches one</td></tr>
             <tr><td><span class="param-name">tags</span></td><td><span class="param-type">string</span></td><td>Comma-separated tag list. Returns memories with ALL specified tags</td></tr>
             <tr><td><span class="param-name">source</span></td><td><span class="param-type">string</span></td><td>Exact match on source field</td></tr>
             <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
             <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
             <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
+            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td>Pass <code>obsolete</code> to include retired memories. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">
@@ -792,6 +826,7 @@
             <tr><td><span class="param-name">context</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines before and after each match, like <code>grep -C</code> (0–10, default: 0). Only with <code>mode=grep</code></td></tr>
             <tr><td><span class="param-name">before</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines before each match, like <code>grep -B</code> (0–10). Overrides <code>context</code>. Only with <code>mode=grep</code></td></tr>
             <tr><td><span class="param-name">after</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines after each match, like <code>grep -A</code> (0–10). Overrides <code>context</code>. Only with <code>mode=grep</code></td></tr>
+            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td></td><td>Pass <code>obsolete</code> to include retired memories. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
         <div class="param-table-label">Query Operators (FTS5)</div>
@@ -817,6 +852,7 @@
           <div class="code-body"><code>{
   <span class="ck">"query"</span>: <span class="cs">"architecture AND design"</span>,
   <span class="ck">"total_results"</span>: <span class="cn">3</span>,
+  <span class="ck">"obsolete_hidden"</span>: <span class="cn">1</span>,
   <span class="ck">"results"</span>: [
     {
       <span class="ck">"id"</span>: <span class="cn">1</span>,
