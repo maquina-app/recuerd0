@@ -339,6 +339,14 @@ en:
       empty_description: "Enter a search term to find memories across all your workspaces."
       min_length_title: "Query too short"
       min_length_description: "Please enter at least 3 characters to search."
+      include_obsolete_label: "Include obsolete memories"
+      obsolete_hidden_prefix: "Showing current memories."
+      obsolete_hidden:
+        one: "%{count} obsolete memory hidden."
+        other: "%{count} obsolete memories hidden."
+      obsolete_hidden_palette:
+        one: "%{count} obsolete hidden — open in search"
+        other: "%{count} obsolete hidden — open in search"
 
   components:
     sidebar:

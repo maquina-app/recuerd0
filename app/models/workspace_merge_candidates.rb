@@ -13,9 +13,10 @@ class WorkspaceMergeCandidates
 
   Cluster = Struct.new(:score, :reasons, :memories, keyword_init: true)
 
-  def initialize(workspace, min_score: DEFAULT_MIN_SCORE)
+  def initialize(workspace, min_score: DEFAULT_MIN_SCORE, include_obsolete: false)
     @workspace = workspace
     @min_score = min_score.to_f.clamp(0.0, 1.0)
+    @include_obsolete = include_obsolete
   end
 
   # => [Cluster(score:, reasons:, memories: [Memory, ...]), ...] sorted best-first.
@@ -30,8 +31,10 @@ class WorkspaceMergeCandidates
   private
 
   def load_memories
-    @workspace.memories.latest_versions
-      .includes(:workspace)
+    scope = @workspace.memories.latest_versions
+    scope = scope.without_obsolete unless @include_obsolete
+
+    scope.includes(:workspace)
       .order(created_at: :desc)
       .limit(MAX_MEMORIES)
       .to_a

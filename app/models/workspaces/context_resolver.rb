@@ -7,15 +7,16 @@ module Workspaces
       {child_versions: :content}
     ].freeze
 
-    def self.call(workspace:, user: nil, limit: 10, category: nil)
-      new(workspace:, user:, limit:, category:).call
+    def self.call(workspace:, user: nil, limit: 10, category: nil, include_obsolete: false)
+      new(workspace:, user:, limit:, category:, include_obsolete:).call
     end
 
-    def initialize(workspace:, user:, limit:, category:)
+    def initialize(workspace:, user:, limit:, category:, include_obsolete: false)
       @workspace = workspace
       @user = user
       @limit = limit
       @category = category
+      @include_obsolete = include_obsolete
     end
 
     def call
@@ -28,8 +29,7 @@ module Workspaces
           .map { |id, parent_memory_id| parent_memory_id || id }
           .uniq
 
-        pinned_roots_by_id = workspace.memories
-          .latest_versions
+        pinned_roots_by_id = visible(workspace.memories.latest_versions)
           .where(id: pinned_root_ids)
           .by_category(category)
           .includes(*PRELOADS)
@@ -48,8 +48,7 @@ module Workspaces
         end
       end
 
-      recent = workspace.memories
-        .latest_versions
+      recent = visible(workspace.memories.latest_versions)
         .by_category(category)
         .order(updated_at: :desc)
         .includes(*PRELOADS)
@@ -60,6 +59,13 @@ module Workspaces
     end
 
     private
+
+    # Obsolete memories are retired knowledge: a session woken on them starts
+    # from a decision that was reversed. Pins included — a pinned-and-obsolete
+    # memory stays reachable from the workspace list.
+    def visible(scope)
+      @include_obsolete ? scope : scope.without_obsolete
+    end
 
     attr_reader :workspace, :user, :limit, :category
   end

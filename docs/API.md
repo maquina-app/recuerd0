@@ -46,6 +46,28 @@ API requests are limited to 100 requests per minute per token. When exceeded:
 
 ---
 
+
+## Obsolete memories
+
+A memory tagged `obsolete`, `superseded` or `deprecated` (case-insensitive, whole-tag —
+`deprecated-api` is an ordinary tag) is retired knowledge. It is **excluded by default**
+from search, listings, workspace context, stats and merge candidates, so a caller loading
+context is never woken on a decision that was reversed.
+
+Pass `include=obsolete` on any of those endpoints to get them back. Unrecognized tokens
+are ignored: `include=obsolete,future_token` behaves exactly as `include=obsolete`. The
+flag is required even when filtering explicitly for the tag — `GET /memories.json?tags=obsolete`
+returns nothing without it.
+
+Fetching by identity is never filtered: `GET /memories.json?ids=1,2,3` returns obsolete
+memories with no flag, as do the `read_memory` / `read_memories` MCP tools. Browsing a
+workspace in the UI is also unfiltered; obsolete tags are simply shown as such.
+
+`GET /search.json` reports what it withheld in `obsolete_hidden`.
+
+MCP tools take `include` as an array of strings (`include: ["obsolete"]`); any other
+token, or a non-array value, is a JSON-RPC error.
+
 ## Workspaces
 
 ### List Workspaces
@@ -132,6 +154,7 @@ GET /workspaces/:id/context.json
 | include_body | boolean | true | Whether to include each memory's body content. |
 | max_body_chars | integer | 500 | Maximum characters of body to return per memory (100–5000). Bodies longer than this are truncated with `…`. |
 | category | string | — | Filter memories to a single category (`decision`, `discovery`, `preference`, `general`). |
+| include | string | — | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
 
 **Response** `200 OK`
 
@@ -302,6 +325,12 @@ Returns an aggregate rollup for a workspace, computed server-side, without shipp
 GET /workspaces/:workspace_id/stats.json
 ```
 
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| include | string | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
+
 **Response** `200 OK`
 
 ```json
@@ -336,6 +365,7 @@ GET /workspaces/:workspace_id/merge_candidates.json
 | Name | Type | Description |
 |------|------|-------------|
 | min_score | number | Similarity threshold `0`–`1` (default `0.5`). Higher = stricter |
+| include | string | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
 
 **Response** `200 OK`
 
@@ -393,6 +423,7 @@ GET /workspaces/:workspace_id/memories.json
 | category | string | Filter by category (`decision`, `discovery`, `preference`, `general`) |
 | sort | string | Sort field: `updated_at` (default), `created_at`, `title` |
 | direction | string | Sort direction: `desc` (default), `asc` |
+| include | string | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
 
 **Examples**
 
@@ -448,6 +479,7 @@ GET /memories.json
 | category | string | Filter by category (`decision`, `discovery`, `preference`, `general`) |
 | sort | string | Sort field: `updated_at` (default), `created_at`, `title` |
 | direction | string | Sort direction: `desc` (default), `asc` |
+| include | string | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
 
 **Examples**
 
@@ -874,6 +906,7 @@ GET /search.json?q=<query>
 | context | integer | No | Lines of context around each match, like `grep -C` (0-10, default: 0). Only used with `mode=grep` |
 | before | integer | No | Lines before each match, like `grep -B` (0-10). Overrides `context` for before. Only used with `mode=grep` |
 | after | integer | No | Lines after each match, like `grep -A` (0-10). Overrides `context` for after. Only used with `mode=grep` |
+| include | string | No | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
 
 **Query Operators**
 

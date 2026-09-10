@@ -9,7 +9,9 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     "a memory matching both appears once as an FTS match. Queries under 3 characters " \
     "search exact tags only. Returns a paginated envelope: " \
     "{memories, total_count, has_more, next_offset}. Pass `offset: next_offset` " \
-    "to fetch the following page. Defaults to 50 per page (max 200)."
+    "to fetch the following page. Defaults to 50 per page (max 200). " \
+    "Memories tagged obsolete, superseded or deprecated are excluded by default; " \
+    "pass include: [\"obsolete\"] to retrieve them."
 
   setup do
     @user = users(:one)
@@ -83,7 +85,9 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     workspace_context = tools.find { |tool| tool["name"] == "workspace_context" }
     assert workspace_context["description"].end_with?(
       "Call this before searching or writing, so later work is informed by what the " \
-        "workspace already holds and does not duplicate it."
+        "workspace already holds and does not duplicate it. " \
+        "Memories tagged obsolete, superseded or deprecated are excluded by default; " \
+        "pass include: [\"obsolete\"] to retrieve them."
     )
   end
 
@@ -670,6 +674,54 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     )
     assert result["result"]["isError"]
     assert_match "Invalid category", result["result"]["content"].first["text"]
+  end
+
+  # --- obsolete filtering ---------------------------------------------------
+
+  test "list_memories hides obsolete memories unless include is passed" do
+    Memory.create_with_content(@workspace, title: "Retired plan", content: "b", tags: ["Superseded"])
+    Memory.create_with_content(@workspace, title: "Current plan", content: "b")
+
+    default = call_tool("list_memories", {workspace_id: @workspace.id.to_s})
+    titles = default["memories"].map { |m| m["title"] }
+    refute_includes titles, "Retired plan"
+    assert_includes titles, "Current plan"
+
+    included = call_tool("list_memories", {workspace_id: @workspace.id.to_s, include: ["obsolete"]})
+    assert_includes included["memories"].map { |m| m["title"] }, "Retired plan"
+    assert_equal default["total_count"] + 1, included["total_count"]
+  end
+
+  test "workspace_context hides obsolete memories unless include is passed" do
+    Pin.destroy_all # exercise the recent branch, not the pinned one
+    Memory.create_with_content(@workspace, title: "Retired context", content: "b", tags: ["obsolete"])
+
+    default = call_tool("workspace_context", {workspace_id: @workspace.id.to_s, limit: 50})
+    refute_includes default["memories"].map { |m| m["title"] }, "Retired context"
+
+    included = call_tool("workspace_context",
+      {workspace_id: @workspace.id.to_s, limit: 50, include: ["obsolete"]})
+    assert_includes included["memories"].map { |m| m["title"] }, "Retired context"
+  end
+
+  test "an unadvertised include token is a JSON-RPC error" do
+    result = mcp(
+      rpc("tools/call", name: "list_memories",
+        arguments: {workspace_id: @workspace.id.to_s, include: ["nope"]}),
+      token: @read_token.raw_token
+    )
+    assert result["result"]["isError"]
+    assert_match "Invalid include token", result["result"]["content"].first["text"]
+  end
+
+  test "include must be an array, not a bare string" do
+    result = mcp(
+      rpc("tools/call", name: "list_memories",
+        arguments: {workspace_id: @workspace.id.to_s, include: "obsolete"}),
+      token: @read_token.raw_token
+    )
+    assert result["result"]["isError"]
+    assert_match "Invalid include token", result["result"]["content"].first["text"]
   end
 
   test "read_memories returns multiple bodies and reports missing ids" do

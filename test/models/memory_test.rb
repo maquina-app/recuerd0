@@ -547,4 +547,38 @@ class MemoryTest < ActiveSupport::TestCase
     assert_no_difference("Pin.count") { version.consolidate_versions! }
     assert version.reload.pinned_by?(users(:one))
   end
+
+  # --- without_obsolete ------------------------------------------------------
+
+  test "without_obsolete excludes each obsolete tag, case-insensitively" do
+    workspace = workspaces(:one)
+    plain = Memory.create_with_content(workspace, title: "Plain", content: "b")
+    tagged = Memory.create_with_content(workspace, title: "Tagged", content: "b", tags: ["api"])
+    obsolete = Memory::OBSOLETE_TAGS.flat_map do |tag|
+      [tag, tag.upcase, tag.capitalize].map do |variant|
+        Memory.create_with_content(workspace, title: "Retired #{variant}", content: "b", tags: [variant])
+      end
+    end
+
+    visible = workspace.memories.latest_versions.without_obsolete
+
+    assert_includes visible, plain
+    assert_includes visible, tagged
+    obsolete.each { |memory| refute_includes visible, memory, "#{memory.tags.inspect} should be hidden" }
+  end
+
+  test "without_obsolete matches whole tags only" do
+    workspace = workspaces(:one)
+    near_miss = Memory.create_with_content(workspace, title: "Near", content: "b", tags: ["deprecated-api"])
+
+    assert_includes workspace.memories.latest_versions.without_obsolete, near_miss
+  end
+
+  test "obsolete? mirrors the scope" do
+    workspace = workspaces(:one)
+
+    assert Memory.create_with_content(workspace, title: "A", content: "b", tags: ["x", "Obsolete"]).obsolete?
+    refute Memory.create_with_content(workspace, title: "B", content: "b", tags: ["deprecated-api"]).obsolete?
+    refute Memory.create_with_content(workspace, title: "C", content: "b").obsolete?
+  end
 end

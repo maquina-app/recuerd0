@@ -80,6 +80,17 @@
     <%# Enter with nothing selected falls through to the full page, which pages
         through everything the palette only shows the head of. %>
     <p class="palette-note"><%= t("search.command.see_all", count: @pagy.count) %></p>
+
+    <%# No checkbox here — the palette stays a single input. The way back to
+        withheld results is the full search page, so the link leaves the frame. %>
+    <% if @obsolete_hidden_count.to_i > 0 %>
+      <p class="palette-note">
+        <%= icon_for(:archive, class: "size-3.5 shrink-0") %>
+        <%= link_to t("search.index.obsolete_hidden_palette", count: @obsolete_hidden_count),
+              search_path(q: @query, include: "obsolete"),
+              data: {turbo_frame: "_top"} %>
+      </p>
+    <% end %>
   <% else %>
     <p class="palette-note" role="status"><%= t("search.index.no_results_title") %></p>
   <% end %>

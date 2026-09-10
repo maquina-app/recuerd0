@@ -1,11 +1,18 @@
 class Memories::BrowseController < ApplicationController
   include MemoryFilterable
+  include ObsoleteFilterable
 
   def index
     scope = active_workspace_memories
     scope = apply_memory_filters(scope)
     scope = scope.where(workspace_id: params[:workspace_id]) if params[:workspace_id].present?
-    scope = scope.where(id: batch_ids) if batch_ids
+    # Fetching by identity is never filtered: a caller naming ids already knows
+    # what it wants, obsolete or not.
+    scope = if batch_ids
+      scope.where(id: batch_ids)
+    else
+      apply_obsolete_filter(scope)
+    end
 
     @pagy, @memories = pagy(scope, limit: permitted_per_page)
     @memories = @memories.map { |m| m.versioned? ? m.current_version : m }

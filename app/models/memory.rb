@@ -20,6 +20,12 @@ class Memory < ApplicationRecord
   CATEGORIES = %w[decision discovery preference general].freeze
   DEFAULT_CATEGORY = "general"
 
+  # The whole vocabulary of obsolescence. A memory carrying any of these tags is
+  # retired knowledge: hidden from search, listings and MCP retrieval unless the
+  # caller asks for it back with include=obsolete. Matching is case-insensitive
+  # and whole-tag — "deprecated-api" is a normal tag.
+  OBSOLETE_TAGS = %w[obsolete superseded deprecated].freeze
+
   # Scopes
   scope :latest_versions, -> { where(parent_memory_id: nil) }
 
@@ -42,6 +48,24 @@ class Memory < ApplicationRecord
     next all if tag.blank?
     where("EXISTS (SELECT 1 FROM json_each(memories.tags) WHERE json_each.value = ?)", tag)
   }
+
+  OBSOLETE_PREDICATE =
+    "EXISTS (SELECT 1 FROM json_each(memories.tags) WHERE LOWER(json_each.value) IN (?))".freeze
+
+  # The negated mirror of by_tag: excludes any memory carrying at least one
+  # obsolete tag. Case-insensitive (unlike by_tag) because the vocabulary is
+  # ours, not the user's. Bound placeholders, no interpolation; no JOIN and no
+  # ORDER BY, so it composes with every other scope in any order.
+  scope :without_obsolete, -> {
+    where(
+      "NOT #{OBSOLETE_PREDICATE}",
+      OBSOLETE_TAGS
+    )
+  }
+
+  # The positive half, for counting what without_obsolete withheld. Same
+  # correlated subquery, not a NOT IN over the table.
+  scope :only_obsolete, -> { where(OBSOLETE_PREDICATE, OBSOLETE_TAGS) }
 
   SEARCH_SORTS = %w[relevance updated created title].freeze
 
@@ -267,6 +291,14 @@ class Memory < ApplicationRecord
   # Human-readable version label
   def version_label
     "v#{version}"
+  end
+
+  # Ruby-side twin of the without_obsolete scope, for views and for the
+  # in-Ruby collections (merge candidates, top_tags) that have no relation left
+  # to filter. sync_root_tags! keeps a root's tags equal to the current
+  # version's, so obsolescence is always read off the root row.
+  def obsolete?
+    tags.any? { |tag| OBSOLETE_TAGS.include?(tag.to_s.downcase) }
   end
 
   # Check if this memory has any versions (either parent or children)

@@ -1535,6 +1535,59 @@ a {
   min-width: 0;
 }
 
+/* An obsolete tag (obsolete/superseded/deprecated) reads as retired knowledge.
+   Warning tokens, not destructive: obsolete is a status, not an error, and the
+   warm hue is reserved for the alarm. Not Memory Green — the One Green Rule.
+   The swapped :archive icon carries the same signal without hue, so the badge
+   is color-blind safe, and both tokens flip with the dark theme. */
+.tag-badge[data-obsolete="true"] {
+  border-color: color-mix(in oklch, var(--warning) 70%, transparent);
+  background: var(--warning);
+  color: var(--warning-foreground);
+}
+
+/* Checkbox on the search form, styled from the semantic tokens the way the
+   segmented control's checked state is, so the app's first checkbox matches
+   the rest of the product. Quiet and secondary to the query field. */
+.search-page-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.search-page-toggle input[type="checkbox"] {
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--background);
+  cursor: pointer;
+}
+.search-page-toggle input[type="checkbox"]:checked {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+/* The check itself is a mask, not a baked-in image, so its color comes from the
+   token pair and flips with the theme like every other painted control. */
+.search-page-toggle input[type="checkbox"]:checked::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5l3 3 6-6'/%3E%3C/svg%3E");
+  mask-size: 100% 100%;
+}
+.search-page-toggle input[type="checkbox"]:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+
 /* mc-detail — "View details" link in the card footer */
 /* De-accented deliberately. This is a redundant link to the card title's own
    href, and it is aria-hidden + tabindex="-1", so spending Memory Green on it

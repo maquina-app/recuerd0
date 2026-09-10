@@ -1,4 +1,6 @@
 class Workspaces::ContextsController < ApplicationController
+  include ObsoleteFilterable
+
   before_action :set_workspace
   before_action :ensure_not_deleted
 
@@ -12,7 +14,8 @@ class Workspaces::ContextsController < ApplicationController
       workspace: @workspace,
       user: Current.user,
       limit: @limit,
-      category: params[:category]
+      category: params[:category],
+      include_obsolete: include_obsolete?
     )
     @memories = result[:memories]
     @context_source = result[:source]
@@ -31,7 +34,10 @@ class Workspaces::ContextsController < ApplicationController
         params[:category],
         @limit,
         @include_body,
-        @max_body_chars
+        @max_body_chars,
+        # Without this a client that adds include=obsolete gets a 304 carrying
+        # the filtered body it already had.
+        include_obsolete?
       ],
       last_modified: latest
     )

@@ -180,6 +180,32 @@ class ApiBrowseMemoriesTest < ActionDispatch::IntegrationTest
     assert_equal ["BatchA", "BatchB"], json.map { |m| m["title"] }.sort
   end
 
+  # --- obsolete memories ----------------------------------------------------
+
+  test "hides obsolete memories by default and shows them with include=obsolete" do
+    obsolete = Memory.create_with_content(@workspace, title: "Retired browse", content: "b", tags: ["obsolete"])
+
+    get browse_memories_url(format: :json), headers: auth_headers(@read_only_token)
+    assert_response :success
+    refute_includes JSON.parse(response.body).map { |m| m["title"] }, "Retired browse"
+
+    get browse_memories_url(format: :json), params: {include: "obsolete"},
+      headers: auth_headers(@read_only_token)
+    assert_response :success
+    assert_includes JSON.parse(response.body).map { |m| m["title"] }, "Retired browse"
+    assert obsolete.reload.obsolete?
+  end
+
+  test "fetching by ids is never filtered" do
+    obsolete = Memory.create_with_content(@workspace, title: "Retired browse", content: "b", tags: ["superseded"])
+
+    get browse_memories_url(format: :json), params: {ids: obsolete.id.to_s},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_equal ["Retired browse"], JSON.parse(response.body).map { |m| m["title"] }
+  end
+
   private
 
   def auth_headers(token)

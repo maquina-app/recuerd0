@@ -102,11 +102,15 @@
               `view:` comes from a local rather than @memory_view — a shared
               partial reading a controller ivar is how it ended up always nil
               on the pinned page. %>
+          <% obsolete_tag = Memory::OBSOLETE_TAGS.include?(tag.to_s.downcase) %>
+          <%# The workspace list is deliberately unfiltered, so this stays a
+              working filter link. Status is color *plus* icon: the swapped
+              :archive glyph carries the distinction without hue alone. %>
           <%= link_to workspace_show_path(workspace, tag: tag, view: tag_view),
                 class: "tag-badge",
-                data: { turbo_action: "advance" },
+                data: { turbo_action: "advance", obsolete: (obsolete_tag ? "true" : nil) },
                 "aria-label": (tag_scope ? t("memories.actions.tag_filter_scoped_aria", workspace: tag_scope.name, tag: tag) : t("workspaces.show.toolbar.tag_filter_aria", tag: tag)) do %>
-            <%= icon_for(:tag) %>
+            <%= icon_for(obsolete_tag ? :archive : :tag) %>
             <span class="tag-label"><%= tag %></span>
           <% end %>
         <% end %>

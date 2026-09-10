@@ -25,6 +25,22 @@ class ApiMergeCandidatesTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
   end
 
+  test "an obsolete near-duplicate only clusters with include=obsolete" do
+    Memory.create_with_content(@workspace, title: "Retry policy", content: "b", tags: ["sre"])
+    Memory.create_with_content(@workspace, title: "Retry policy", content: "b", tags: ["sre", "Superseded"])
+
+    get workspace_merge_candidates_url(@workspace, format: :json), headers: auth_headers(@read_only_token)
+    assert_response :success
+    refute JSON.parse(response.body)["candidates"].any? { |c| c["memories"].any? { |m| m["title"] == "Retry policy" } }
+
+    get workspace_merge_candidates_url(@workspace, format: :json), params: {include: "obsolete"},
+      headers: auth_headers(@read_only_token)
+    assert_response :success
+    cluster = JSON.parse(response.body)["candidates"].find { |c| c["memories"].any? { |m| m["title"] == "Retry policy" } }
+    assert cluster, "expected the obsolete near-duplicate to cluster when included"
+    assert_equal 2, cluster["memories"].size
+  end
+
   private
 
   def auth_headers(token)
