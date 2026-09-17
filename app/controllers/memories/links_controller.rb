@@ -1,7 +1,8 @@
 class Memories::LinksController < ApplicationController
+  allow_token_authentication
+
   before_action :set_workspace
   before_action :set_memory
-  before_action :require_full_access, only: %i[create destroy], if: :api_request?
 
   # GET /workspaces/:workspace_id/memories/:memory_id/links.json
   def index

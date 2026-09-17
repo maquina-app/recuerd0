@@ -2,6 +2,8 @@ class Memories::BrowseController < ApplicationController
   include MemoryFilterable
   include ObsoleteFilterable
 
+  allow_token_authentication
+
   def index
     scope = active_workspace_memories
     scope = apply_memory_filters(scope)

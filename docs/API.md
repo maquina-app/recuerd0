@@ -18,6 +18,21 @@ All responses use `Content-Type: application/json`.
 - **read_only**: Can access GET endpoints only
 - **full_access**: Can access all endpoints (GET, POST, PATCH, DELETE)
 
+### Token scope
+
+A token acts as the user who created it, across every workspace in that
+account. There is no per-workspace token — mint the token from the user whose
+reach you want the caller to have.
+
+- Workspaces, memories and search results in **other accounts** answer `404`,
+  byte for byte the same response a non-existent id gets. The 404 is
+  deliberate: a `403` would confirm the record exists.
+- **read_only** tokens are refused with `403` on every non-GET request, in every
+  format — there is no endpoint where a read-only token can write.
+- Tokens work on the API surface only. The profile, password, account and OAuth
+  consent pages are browser-only and answer `401` to a token, however valid, so
+  a token can never manage its owner's credentials or mint another token.
+
 ### Errors
 
 ```json
@@ -1100,6 +1115,12 @@ operators, grep output, or a cross-workspace API search are needed.
 
 ### 401 Unauthorized
 
+Returned when the token is missing, invalid or expired, and when a valid token
+is presented to an endpoint outside the API surface (profile, password, account
+or OAuth consent). A presented `Authorization: Bearer` header is authoritative:
+it never falls back to a browser session, so a bad token on a signed-in browser
+is still a `401`.
+
 ```json
 {
   "error": {
@@ -1112,7 +1133,8 @@ operators, grep output, or a cross-workspace API search are needed.
 
 ### 403 Forbidden
 
-Returned when using a `read_only` token for write operations:
+Returned when using a `read_only` token for write operations. This covers every
+request whose method is not GET or HEAD, whatever `Accept` header it carries:
 
 ```json
 {

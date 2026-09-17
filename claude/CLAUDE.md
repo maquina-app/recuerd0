@@ -190,6 +190,11 @@ View-level locale keys go in `config/locales/views/en.yml`. Partial key paths st
 - `bin/ci` does **not** run them (`config/ci.rb` has the step commented out) — run `bin/rails test test/system/...` by hand when you touch JS.
 - Headless Chrome cannot start in the container without `--no-sandbox`; the flags live in `test/application_system_test_case.rb`. Without them every system test fails with `SessionNotCreatedError: Chrome instance exited`.
 - Rebuild CSS (`bin/rails tailwindcss:build`) after editing `app/assets/tailwind/application.css` or system tests exercise the stale build.
+- **Run `bin/rails db:test:prepare` before system tests if you just ran `bin/ci`.** Its
+  last step, `env RAILS_ENV=test bin/rails db:seed:replant`, leaves seed rows in the
+  test database; the next fixture load deletes the memories they point at and every
+  system test errors with `Foreign key violations found: memory_links`. `db:reset` does
+  not help — it re-seeds. This is environment state, not a broken test.
 - `getComputedStyle(el, "::-webkit-search-cancel-button")` returns the **host element's** style in headless Chrome, not the pseudo-element's — it reports `appearance: auto` even when the rule applies. Don't assert on it; assert on the CSS source and check the rendering in a screenshot.
 
 ## Testing Gotchas

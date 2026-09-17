@@ -1036,7 +1036,83 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Memory not found", result["result"]["content"].first["text"]
   end
 
+  # --- Cross-account isolation ----------------------------------------------
+  #
+  # An MCP token is account-wide by design, so the boundary that matters is the
+  # account one. Every tool below is called by account two against account one's
+  # ids and must report the record as simply absent — the same answer a made-up
+  # id gets, so the error cannot be used to enumerate another account.
+
+  test "workspace tools cannot reach another account's workspace" do
+    foreign_workspace = workspaces(:one)
+
+    %w[workspace_context list_memories workspace_stats suggest_merge_candidates].each do |tool|
+      assert_tool_error "Workspace not found",
+        tool, {"workspace_id" => foreign_workspace.id.to_s}, token: foreign_account_token
+    end
+
+    assert_no_difference "Memory.count" do
+      assert_tool_error "Workspace not found", "create_memory",
+        {"workspace_id" => foreign_workspace.id.to_s, "title" => "Injected", "content" => "hello"},
+        token: foreign_account_token
+    end
+  end
+
+  test "memory tools cannot reach another account's memory" do
+    foreign_memory = memories(:one)
+    own_memory = memories(:two)
+    attributes = foreign_memory.attributes
+
+    single = {"memory_id" => foreign_memory.id.to_s}
+    paired = single.merge("to_memory_id" => own_memory.id.to_s)
+
+    assert_no_difference ["Memory.count", "MemoryLink.count"] do
+      assert_tool_error "Memory not found", "read_memory", single, token: foreign_account_token
+      assert_tool_error "Memory not found", "update_memory", single.merge("title" => "Hijacked"), token: foreign_account_token
+      assert_tool_error "Memory not found", "create_version", single.merge("content" => "hijacked"), token: foreign_account_token
+      assert_tool_error "Memory not found", "list_memory_links", single, token: foreign_account_token
+      assert_tool_error "Memory not found", "link_memories", paired, token: foreign_account_token
+      assert_tool_error "Memory not found", "unlink_memories", paired, token: foreign_account_token
+    end
+
+    assert_equal attributes, foreign_memory.reload.attributes
+  end
+
+  test "read_memories reports another account's ids as missing rather than reading them" do
+    foreign_memory = memories(:one)
+
+    result = call_tool("read_memories", {"memory_ids" => [foreign_memory.id.to_s]}, token: foreign_account_token)
+
+    assert_empty result["memories"]
+    assert_equal [foreign_memory.id.to_s], result["missing"]
+  end
+
+  test "list_workspaces never includes another account's workspace" do
+    result = call_tool("list_workspaces", {}, token: foreign_account_token)
+
+    ids = Array(result).map { |workspace| workspace["id"].to_s }
+    assert_not_includes ids, workspaces(:one).id.to_s
+    assert_includes ids, workspaces(:two).id.to_s
+  end
+
   private
+
+  # An OAuth token for account two, used to prove account one is out of reach.
+  def foreign_account_token
+    @foreign_account_token ||= users(:two).access_tokens.create!(
+      oauth_client: @client,
+      permission: "full_access",
+      oauth_scope: "memories:read memories:write",
+      expires_at: 1.hour.from_now
+    ).raw_token
+  end
+
+  def assert_tool_error(message, name, arguments, token:)
+    result = mcp(rpc("tools/call", name: name, arguments: arguments), token: token)
+
+    assert result.dig("result", "isError"), "#{name} did not report an error: #{result.inspect}"
+    assert_equal message, result.dig("result", "content").first["text"], name
+  end
 
   def create_workspace_without_starter_map(name)
     @account.workspaces.create!(name: name).tap do |workspace|

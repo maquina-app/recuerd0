@@ -2,6 +2,8 @@ class SearchController < ApplicationController
   include ContentRenderable
   include ObsoleteFilterable
 
+  allow_token_authentication
+
   def index
     @query = params[:q].to_s.strip.first(query_max_length)
 

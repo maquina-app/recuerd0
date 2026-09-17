@@ -4,10 +4,11 @@ class MemoriesController < ApplicationController
   include ObsoleteFilterable
   include ContentRenderable
 
+  allow_token_authentication
+
   before_action :set_workspace
   before_action :set_memory, only: %i[show edit update destroy]
   before_action :require_active_workspace, only: %i[new create edit update destroy]
-  before_action :require_full_access, only: %i[create update destroy], if: :api_request?
 
   def index
     scope = @workspace.memories
