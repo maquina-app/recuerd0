@@ -366,6 +366,107 @@ class ApiSearchTest < ActionDispatch::IntegrationTest
     assert_equal 0, json["obsolete_hidden"]
   end
 
+  # --- inactive workspaces --------------------------------------------------
+
+  test "search omits matches in archived and deleted workspaces and reports the count" do
+    active = Memory.create_with_content(workspaces(:one), title: "Active beacon", content: "beaconword body")
+    archived = Memory.create_with_content(workspaces(:archived), title: "Archived beacon", content: "beaconword body")
+    deleted = Memory.create_with_content(workspaces(:deleted), title: "Deleted beacon", content: "beaconword body")
+    [active, archived, deleted].each(&:rebuild_search_index)
+
+    get search_url(format: :json), params: {q: "beaconword"}, headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal ["Active beacon"], json["results"].map { |r| r["title"] }
+    assert_equal 2, json["inactive_hidden"]
+    assert_equal 0, json["obsolete_hidden"]
+  end
+
+  test "include=inactive returns the withheld archived and deleted matches" do
+    archived = Memory.create_with_content(workspaces(:archived), title: "Archived beacon", content: "beaconword body")
+    deleted = Memory.create_with_content(workspaces(:deleted), title: "Deleted beacon", content: "beaconword body")
+    [archived, deleted].each(&:rebuild_search_index)
+
+    get search_url(format: :json), params: {q: "beaconword", include: "inactive"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal ["Archived beacon", "Deleted beacon"], json["results"].map { |r| r["title"] }.sort
+    assert_equal 0, json["inactive_hidden"]
+    assert_equal %w[archived deleted],
+      json["results"].map { |r| r["workspace"]["state"] }.sort
+  end
+
+  test "the two hidden counts describe disjoint sets" do
+    obsolete_active = Memory.create_with_content(workspaces(:one), title: "Obsolete beacon",
+      content: "beaconword body", tags: ["obsolete"])
+    obsolete_archived = Memory.create_with_content(workspaces(:archived), title: "Retired archived beacon",
+      content: "beaconword body", tags: ["superseded"])
+    archived = Memory.create_with_content(workspaces(:archived), title: "Archived beacon", content: "beaconword body")
+    [obsolete_active, obsolete_archived, archived].each(&:rebuild_search_index)
+
+    get search_url(format: :json), params: {q: "beaconword"}, headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_empty json["results"]
+    # The obsolete count owns both obsolete rows; the inactive count owns only
+    # the archived row that is not also obsolete.
+    assert_equal 2, json["obsolete_hidden"]
+    assert_equal 1, json["inactive_hidden"]
+  end
+
+  test "include=obsolete,inactive composes in either order" do
+    memory = Memory.create_with_content(workspaces(:archived), title: "Retired archived beacon",
+      content: "beaconword body", tags: ["deprecated"])
+    memory.rebuild_search_index
+
+    ["obsolete,inactive", "inactive,obsolete"].each do |tokens|
+      get search_url(format: :json), params: {q: "beaconword", include: tokens},
+        headers: auth_headers(@read_only_token)
+
+      assert_response :success
+      json = JSON.parse(response.body)
+      assert_equal ["Retired archived beacon"], json["results"].map { |r| r["title"] }, tokens
+      assert_equal 0, json["inactive_hidden"], tokens
+      assert_equal 0, json["obsolete_hidden"], tokens
+    end
+  end
+
+  test "include tokens also arrive as an array, the way the search form submits them" do
+    memory = Memory.create_with_content(workspaces(:archived), title: "Retired archived beacon",
+      content: "beaconword body", tags: ["deprecated"])
+    memory.rebuild_search_index
+
+    get search_url(format: :json), params: {q: "beaconword", include: %w[obsolete inactive]},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_equal ["Retired archived beacon"], JSON.parse(response.body)["results"].map { |r| r["title"] }
+  end
+
+  # --- category validation --------------------------------------------------
+
+  test "an unknown category is a 422 rather than an unfiltered result" do
+    get search_url(format: :json), params: {q: "Meeting", category: "bogus"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :unprocessable_entity
+    json = JSON.parse(response.body)
+    assert_equal "VALIDATION_ERROR", json.dig("error", "code")
+    assert_equal "Invalid category: bogus", json.dig("error", "message")
+    assert_equal 422, json.dig("error", "status")
+  end
+
+  test "a blank category still means no filter" do
+    get search_url(format: :json), params: {q: "Meeting", category: ""},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+  end
+
   test "unrecognized include tokens are ignored" do
     obsolete = Memory.create_with_content(workspaces(:one), title: "Obsolete beacon", content: "beaconword body", tags: ["obsolete"])
     obsolete.rebuild_search_index

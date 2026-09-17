@@ -166,6 +166,17 @@ class ApiBrowseMemoriesTest < ActionDispatch::IntegrationTest
     assert_not_includes titles, "BrowseCatB"
   end
 
+  test "an unknown category is a 422 rather than an unfiltered result" do
+    get browse_memories_url(format: :json),
+      params: {category: "bogus"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :unprocessable_entity
+    json = JSON.parse(response.body)
+    assert_equal "VALIDATION_ERROR", json.dig("error", "code")
+    assert_equal "Invalid category: bogus", json.dig("error", "message")
+  end
+
   test "batch fetches memories by ids" do
     a = Memory.create_with_content(@workspace, title: "BatchA", content: "b")
     b = Memory.create_with_content(@workspace, title: "BatchB", content: "b")

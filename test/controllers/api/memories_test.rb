@@ -644,6 +644,197 @@ class ApiMemoriesTest < ActionDispatch::IntegrationTest
     assert_equal ["Retired"], JSON.parse(response.body).map { |m| m["title"] }
   end
 
+  # --- status fields --------------------------------------------------------
+
+  test "show states obsolete, current and root_id plus the workspace state" do
+    get workspace_memory_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal false, json["obsolete"]
+    assert_equal true, json["current"]
+    assert_equal @memory.id, json["root_id"]
+    assert_equal "active", json.dig("workspace", "state")
+  end
+
+  test "an obsolete memory says so in its payload" do
+    retired = Memory.create_with_content(@workspace, title: "Retired", content: "body", tags: ["Superseded"])
+
+    get workspace_memory_url(@workspace, retired, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_equal true, JSON.parse(response.body)["obsolete"]
+  end
+
+  test "a historical version read returns current false and points at its root" do
+    root = Memory.create_with_content(@workspace, title: "First", content: "v1 body")
+    superseded = root.create_version!(title: "Second", content: "v2 body")
+    latest = root.create_version!(title: "Third", content: "v3 body")
+
+    # The root id resolves to the live row, which says so.
+    get workspace_memory_url(@workspace, root, format: :json),
+      headers: auth_headers(@read_only_token)
+    assert_response :success
+    current = JSON.parse(response.body)
+    assert_equal latest.id, current["id"]
+    assert_equal true, current["current"]
+    assert_equal root.id, current["root_id"]
+
+    # A version row is served at its own id and must not read as the live one.
+    get workspace_memory_url(@workspace, superseded, format: :json),
+      headers: auth_headers(@read_only_token)
+    assert_response :success
+    historical = JSON.parse(response.body)
+    assert_equal false, historical["current"]
+    assert_equal root.id, historical["root_id"]
+    assert_equal 2, historical["version"]
+  end
+
+  test "index rows carry the status fields" do
+    get workspace_memories_url(@workspace, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    row = JSON.parse(response.body).first
+    assert_equal false, row["obsolete"]
+    assert_equal true, row["current"]
+    assert_equal row["id"], row["root_id"]
+    assert_equal "active", row.dig("workspace", "state")
+  end
+
+  # --- inactive workspaces --------------------------------------------------
+
+  test "an archived workspace still reads by id and reports its state" do
+    memory = Memory.create_with_content(workspaces(:archived), title: "Old", content: "body")
+
+    get workspace_memory_url(workspaces(:archived), memory, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_equal "archived", JSON.parse(response.body).dig("workspace", "state")
+
+    get workspace_memories_url(workspaces(:archived), format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_equal ["archived"], JSON.parse(response.body).map { |m| m.dig("workspace", "state") }
+  end
+
+  test "every JSON memory resource under a deleted workspace answers 404" do
+    deleted = workspaces(:deleted)
+    memory = Memory.create_with_content(deleted, title: "Gone", content: "body")
+
+    [
+      workspace_memories_url(deleted, format: :json),
+      workspace_memory_url(deleted, memory, format: :json),
+      workspace_memory_versions_url(deleted, memory, format: :json),
+      workspace_memory_links_url(deleted, memory, format: :json)
+    ].each do |url|
+      get url, headers: auth_headers(@read_only_token)
+
+      assert_response :not_found, url
+      json = JSON.parse(response.body)
+      assert_equal "NOT_FOUND", json.dig("error", "code"), url
+      assert_equal 404, json.dig("error", "status"), url
+    end
+  end
+
+  test "writes under a deleted workspace answer 404 rather than 403" do
+    deleted = workspaces(:deleted)
+    memory = Memory.create_with_content(deleted, title: "Gone", content: "body")
+
+    post workspace_memories_url(deleted, format: :json),
+      params: {memory: {title: "New", content: "body"}}, headers: auth_headers(@full_access_token)
+    assert_response :not_found
+
+    patch workspace_memory_url(deleted, memory, format: :json),
+      params: {memory: {title: "Renamed"}}, headers: auth_headers(@full_access_token)
+    assert_response :not_found
+
+    delete workspace_memory_url(deleted, memory, format: :json),
+      headers: auth_headers(@full_access_token)
+    assert_response :not_found
+
+    post workspace_memory_versions_url(deleted, memory, format: :json),
+      params: {version: {content: "v2"}}, headers: auth_headers(@full_access_token)
+    assert_response :not_found
+  end
+
+  test "the deleted-workspace HTML surface still leads to the recovery page" do
+    sign_in_as(users(:one))
+
+    get workspace_url(workspaces(:deleted))
+
+    # 404 is a JSON-only rule: HTML keeps the recovery route it always had.
+    assert_response :redirect
+    follow_redirect!
+    assert_response :success
+  end
+
+  # --- links ----------------------------------------------------------------
+
+  test "links exclude memories in a deleted workspace and carry their state" do
+    archived_memory = Memory.create_with_content(workspaces(:archived), title: "Archived neighbour", content: "body")
+    deleted_memory = Memory.create_with_content(workspaces(:deleted), title: "Deleted neighbour", content: "body")
+    MemoryLink.create!(from_memory: @memory, to_memory: archived_memory)
+    MemoryLink.create!(from_memory: @memory, to_memory: deleted_memory)
+
+    get workspace_memory_links_url(@workspace, @memory, format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal ["Archived neighbour"], json.map { |m| m["title"] }
+    assert_equal "archived", json.first.dig("workspace", "state")
+    assert_equal false, json.first["obsolete"]
+    assert_equal true, json.first["current"]
+    assert_equal archived_memory.id, json.first["root_id"]
+  end
+
+  test "a memory in a deleted workspace cannot be linked" do
+    deleted_memory = Memory.create_with_content(workspaces(:deleted), title: "Deleted neighbour", content: "body")
+
+    post workspace_memory_links_url(@workspace, @memory, format: :json),
+      params: {to_memory_id: deleted_memory.id}, headers: auth_headers(@full_access_token)
+
+    assert_response :unprocessable_entity
+  end
+
+  test "link show carries the status fields" do
+    other = Memory.create_with_content(@workspace, title: "Neighbour", content: "body")
+
+    post workspace_memory_links_url(@workspace, @memory, format: :json),
+      params: {to_memory_id: other.id}, headers: auth_headers(@full_access_token)
+
+    assert_response :created
+    json = JSON.parse(response.body)
+    assert_equal false, json["obsolete"]
+    assert_equal true, json["current"]
+    assert_equal other.id, json["root_id"]
+    assert_equal "active", json.dig("workspace", "state")
+  end
+
+  # --- category validation --------------------------------------------------
+
+  test "an unknown category on the workspace index is a 422" do
+    get workspace_memories_url(@workspace, format: :json), params: {category: "bogus"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :unprocessable_entity
+    json = JSON.parse(response.body)
+    assert_equal "VALIDATION_ERROR", json.dig("error", "code")
+    assert_equal "Invalid category: bogus", json.dig("error", "message")
+  end
+
+  test "a known category still filters" do
+    get workspace_memories_url(@workspace, format: :json), params: {category: "general"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+  end
+
   private
 
   def auth_headers(token)

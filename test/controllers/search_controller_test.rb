@@ -204,7 +204,11 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_match "Current beacon", response.body
     assert_no_match "Obsolete beacon", response.body
     assert_select "a[href=?]", search_path(q: "beaconword", include: "obsolete"), text: /1 obsolete memory hidden/
-    assert_select "input[type=checkbox][name=include]:not([checked])", count: 1
+    # Two boxes share the `include` name (obsolete, inactive) so an unchecked
+    # one sends nothing at all — check_box_tag, never f.check_box.
+    assert_select "input[type=checkbox][name=include]:not([checked])", count: 2
+    assert_select "input#search_include_obsolete[value=obsolete]"
+    assert_select "input#search_include_inactive[value=inactive]"
   end
 
   test "no hidden-count line when nothing was withheld" do

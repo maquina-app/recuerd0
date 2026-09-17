@@ -6,6 +6,7 @@ class Memories::VersionsController < ApplicationController
   wrap_parameters :version
 
   before_action :set_workspace
+  before_action :ensure_not_deleted
   before_action :set_memory
   before_action :require_active_workspace, only: %i[create]
 

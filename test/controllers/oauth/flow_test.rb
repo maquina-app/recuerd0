@@ -87,7 +87,9 @@ class Oauth::FlowTest < ActionDispatch::IntegrationTest
     travel 2.hours do
       assert_nil AccessToken.find_by_token(tokens["access_token"]), "access token should be expired"
 
-      post "/oauth/token", params: {grant_type: "refresh_token", refresh_token: old_refresh}
+      # client_id is required now: the grant is bound to the client it was
+      # issued to, so the token alone is no longer enough.
+      post "/oauth/token", params: {grant_type: "refresh_token", client_id: client.client_id, refresh_token: old_refresh}
       assert_response :success
       refreshed = JSON.parse(response.body)
       assert_not_equal tokens["access_token"], refreshed["access_token"]
@@ -131,6 +133,44 @@ class Oauth::FlowTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert token.reload.revoked?
     assert_nil AccessToken.find_by_token(raw)
+  end
+
+  test "a refresh token is bound to the client it was issued to" do
+    client_a = register_client
+    client_b = OauthClient.create!(client_name: "Other app", redirect_uris: JSON.generate([REDIRECT_URI]))
+
+    sign_in_as(@user)
+    post "/oauth/authorize", params: authorize_params(client_a).merge(approved: "true")
+    code = redirect_param("code")
+
+    post "/oauth/token", params: {
+      grant_type: "authorization_code",
+      client_id: client_a.client_id,
+      code: code,
+      redirect_uri: REDIRECT_URI,
+      code_verifier: PKCE_VERIFIER
+    }
+    assert_response :success
+    refresh_token = JSON.parse(response.body)["refresh_token"]
+
+    # Client B may not redeem A's grant, and the attempt must not rotate it.
+    post "/oauth/token", params: {
+      grant_type: "refresh_token",
+      client_id: client_b.client_id,
+      refresh_token: refresh_token
+    }
+    assert_response :bad_request
+    assert_equal "invalid_grant", JSON.parse(response.body)["error"]
+
+    post "/oauth/token", params: {
+      grant_type: "refresh_token",
+      client_id: client_a.client_id,
+      refresh_token: refresh_token
+    }
+    assert_response :success
+    rotated = JSON.parse(response.body)
+    assert rotated["access_token"].present?
+    assert_not_equal refresh_token, rotated["refresh_token"]
   end
 
   private

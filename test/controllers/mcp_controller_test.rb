@@ -704,6 +704,81 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_includes included["memories"].map { |m| m["title"] }, "Retired context"
   end
 
+  # --- deleted workspaces ---------------------------------------------------
+
+  test "read_memory refuses a memory in a soft-deleted workspace" do
+    memory = Memory.create_with_content(workspaces(:deleted), title: "Gone", content: "body")
+
+    result = mcp(
+      rpc("tools/call", name: "read_memory", arguments: {memory_id: memory.id.to_s}),
+      token: @read_token.raw_token
+    )
+
+    assert result["result"]["isError"]
+    assert_equal "Memory not found", result["result"]["content"].first["text"]
+  end
+
+  test "read_memories lists deleted-workspace ids under missing" do
+    live = Memory.create_with_content(@workspace, title: "Live", content: "body")
+    gone = Memory.create_with_content(workspaces(:deleted), title: "Gone", content: "body")
+
+    payload = call_tool("read_memories", {memory_ids: [live.id.to_s, gone.id.to_s]})
+
+    assert_equal ["Live"], payload["memories"].map { |m| m["title"] }
+    assert_equal [gone.id.to_s], payload["missing"]
+  end
+
+  test "an archived workspace's memory stays readable by id" do
+    memory = Memory.create_with_content(workspaces(:archived), title: "Old", content: "body")
+
+    payload = call_tool("read_memory", {memory_id: memory.id.to_s})
+
+    assert_equal "Old", payload["title"]
+  end
+
+  test "links and updates refuse deleted-workspace memories" do
+    live = Memory.create_with_content(@workspace, title: "Live", content: "body")
+    gone = Memory.create_with_content(workspaces(:deleted), title: "Gone", content: "body")
+    write_token = oauth_token(permission: "full_access", scope: "memories:read memories:write")
+
+    [
+      ["list_memory_links", {memory_id: gone.id.to_s}],
+      ["link_memories", {memory_id: live.id.to_s, to_memory_id: gone.id.to_s}],
+      ["unlink_memories", {memory_id: live.id.to_s, to_memory_id: gone.id.to_s}],
+      ["update_memory", {memory_id: gone.id.to_s, content: "edited"}]
+    ].each do |name, arguments|
+      result = mcp(rpc("tools/call", name: name, arguments: arguments), token: write_token.raw_token)
+
+      assert result["result"]["isError"], name
+      assert_equal "Memory not found", result["result"]["content"].first["text"], name
+    end
+  end
+
+  test "the inactive token stays REST-only" do
+    result = mcp(
+      rpc("tools/call", name: "list_memories",
+        arguments: {workspace_id: @workspace.id.to_s, include: ["inactive"]}),
+      token: @read_token.raw_token
+    )
+
+    assert result["result"]["isError"]
+    assert_match "Invalid include token", result["result"]["content"].first["text"]
+  end
+
+  test "memory_json states obsolete and current" do
+    root = Memory.create_with_content(@workspace, title: "First", content: "v1")
+    root.create_version!(content: "v2")
+    retired = Memory.create_with_content(@workspace, title: "Retired", content: "body", tags: ["obsolete"])
+
+    live = call_tool("read_memory", {memory_id: root.id.to_s})
+    assert_equal false, live["obsolete"]
+    assert_equal true, live["current"]
+
+    payload = call_tool("read_memory", {memory_id: retired.id.to_s})
+    assert_equal true, payload["obsolete"]
+    assert_equal true, payload["current"]
+  end
+
   test "an unadvertised include token is a JSON-RPC error" do
     result = mcp(
       rpc("tools/call", name: "list_memories",

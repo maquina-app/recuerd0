@@ -265,3 +265,22 @@ Frontend/UI work is guided by two root files (created via the `impeccable` skill
 - **`DESIGN.md`** — visual system: OKLCH hue-150 palette (Memory Green primary), Jura / Instrument Sans / Geist Mono type, flat-by-default elevation, and named rules (One Green Rule, True-Neutral Rule, Flat-By-Default Rule, One-Frost Rule). Machine-readable tokens live in its YAML frontmatter; `.impeccable/design.json` carries tonal ramps and component snippets.
 
 These align with `docs/brand-guide.md` and `docs/brand-voice.md`. Use the `impeccable` skill (`/impeccable <command>`) for UI design, critique, audit, and polish work.
+
+## Gotchas
+
+- A `parent_memory` preload re-loads the roots a collection already holds, as separate
+  instances whose `child_versions` are NOT loaded — so anything asking a version whether it
+  is current (`current_version?`) costs one query per root. When every version is already in
+  the result set, point the children at the loaded roots instead
+  (`Workspaces::ExportsController#link_parents_to_loaded_roots`).
+- `invert_where` inverts EVERY where clause on the relation, not just the last one. For "the
+  rows this filter withheld", write the positive predicate (as `Memory.only_obsolete` does).
+- Archiving or deleting a workspace does not touch its memories, so any fragment cache that
+  renders workspace state must include the workspace in its key
+  (`app/views/memories/_memory.json.jbuilder`).
+- In dev, agent-browser cannot submit the sign-in form (no POST ever reaches the server). Log
+  in with curl (`GET /session/new` → scrape `authenticity_token` → `POST /session` with a
+  cookie jar), then hand the cookie over:
+  `agent-browser cookies set --curl <file> --domain localhost --url http://localhost:3820`.
+  The jar file is Netscape format and `--curl` rejects it — write a single
+  `session_id=<value>` Cookie-header line instead.

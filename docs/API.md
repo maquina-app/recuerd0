@@ -29,6 +29,9 @@ reach you want the caller to have.
   deliberate: a `403` would confirm the record exists.
 - **read_only** tokens are refused with `403` on every non-GET request, in every
   format — there is no endpoint where a read-only token can write.
+- A **refresh token is bound to the OAuth client it was issued to**: `POST /oauth/token`
+  with `grant_type=refresh_token` requires the matching `client_id`, and a missing or
+  mismatched one answers `invalid_grant` (`400`) exactly as an unknown token does.
 - Tokens work on the API surface only. The profile, password, account and OAuth
   consent pages are browser-only and answer `401` to a token, however valid, so
   a token can never manage its owner's credentials or mint another token.
@@ -62,7 +65,14 @@ API requests are limited to 100 requests per minute per token. When exceeded:
 ---
 
 
-## Obsolete memories
+## Hidden memories
+
+Two kinds of memory are withheld from retrieval by default, each behind its own
+`include` token. Tokens compose in any order (`include=obsolete,inactive`), and the
+search form's checkboxes submit them as a repeated param (`include=obsolete&include=inactive`),
+which is accepted too.
+
+### Obsolete memories (`include=obsolete`)
 
 A memory tagged `obsolete`, `superseded` or `deprecated` (case-insensitive, whole-tag —
 `deprecated-api` is an ordinary tag) is retired knowledge. It is **excluded by default**
@@ -88,6 +98,68 @@ figure it reports.
 
 MCP tools take `include` as an array of strings (`include: ["obsolete"]`); any other
 token, or a non-array value, is a JSON-RPC error.
+
+### Inactive workspaces (`include=inactive`)
+
+A workspace is **inactive** once it is archived or soft-deleted. Its memories are
+**excluded by default** from `GET /search.json`, `GET /search` (HTML) and
+`GET /memories/pinned.json`, so an agent waking up on an account never acts on a project
+that was shut down. Pass `include=inactive` to review them deliberately; the payload's
+`workspace.state` says which kind each one came from.
+
+`GET /search.json` reports what this filter withheld in `inactive_hidden`, beside
+`obsolete_hidden`. The two counts describe **disjoint** sets: a memory that is both
+obsolete and in an inactive workspace is counted only under `obsolete_hidden`.
+
+`inactive` is REST-only. MCP tools accept `include: ["obsolete"]` and nothing else: MCP
+listings are already workspace-scoped and active-only, and there is no cross-workspace MCP
+search.
+
+### Deleted workspaces answer 404
+
+A **soft-deleted** workspace's JSON resources are unreachable by id until the workspace is
+restored — deletion means what the confirmation dialog promised:
+
+| Surface | Behaviour |
+|---|---|
+| `GET/POST/PATCH/DELETE /workspaces/:id/memories[/:id][.json]` | `404` with the `NOT_FOUND` envelope |
+| `GET/POST /workspaces/:id/memories/:id/versions.json` | `404` |
+| `GET/POST/DELETE /workspaces/:id/memories/:id/links[.json]` | `404` |
+| `GET /workspaces/:id/context.json`, `stats.json`, `merge_candidates.json` | `404` (unchanged) |
+| MCP `read_memory`, `update_memory`, `list_memory_links`, `link_memories`, `unlink_memories` | `Memory not found` |
+| MCP `read_memories` | the id is listed under `missing` |
+| `GET /workspaces/:id/export.json` | **still exported** — it is the recovery dump |
+
+Links never resolve to a memory in a deleted workspace, in either direction.
+
+**Archived** workspaces are different: every endpoint above stays readable, writes still
+answer `403`, and only `workspace.state` changes.
+
+### Unknown `category` is a 422
+
+A non-blank `category` outside the four values is rejected rather than silently ignored, so
+a typo can never be mistaken for a filtered result. Applies to `GET /workspaces/:id/memories.json`,
+`GET /memories.json`, `GET /search.json` and `GET /workspaces/:id/context.json`:
+
+```json
+{ "error": { "code": "VALIDATION_ERROR", "message": "Invalid category: bogus", "status": 422 } }
+```
+
+A blank value still means "no filter". HTML pages keep ignoring an unknown category.
+
+### Memory status fields
+
+Every memory payload states its own status, so a client can gate context injection without
+parsing tags or comparing version numbers:
+
+| Field | Meaning |
+|---|---|
+| `obsolete` | the memory carries an obsolete/superseded/deprecated tag |
+| `current` | this row is the live version (`false` on a historical version read) |
+| `root_id` | the id of the memory's root row — what to fetch to get the live version |
+| `workspace.state` | `active`, `archived` or `deleted` |
+
+MCP's `memory_json` carries `obsolete` and `current`; its `id` is already the root id.
 
 ## Workspaces
 
@@ -174,8 +246,8 @@ GET /workspaces/:id/context.json
 | limit | integer | 10 | Maximum memories to return (1–50). |
 | include_body | boolean | true | Whether to include each memory's body content. |
 | max_body_chars | integer | 500 | Maximum characters of body to return per memory (100–5000). Bodies longer than this are truncated with `…`. |
-| category | string | — | Filter memories to a single category (`decision`, `discovery`, `preference`, `general`). |
-| include | string | — | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
+| category | string | — | Filter memories to a single category (`decision`, `discovery`, `preference`, `general`). Any other non-blank value is a `422`. |
+| include | string | — | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
 **Response** `200 OK`
 
@@ -350,7 +422,7 @@ GET /workspaces/:workspace_id/stats.json
 
 | Name | Type | Description |
 |------|------|-------------|
-| include | string | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
+| include | string | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
 **Response** `200 OK`
 
@@ -386,7 +458,7 @@ GET /workspaces/:workspace_id/merge_candidates.json
 | Name | Type | Description |
 |------|------|-------------|
 | min_score | number | Similarity threshold `0`–`1` (default `0.5`). Higher = stricter |
-| include | string | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
+| include | string | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
 **Response** `200 OK`
 
@@ -444,7 +516,7 @@ GET /workspaces/:workspace_id/memories.json
 | category | string | Filter by category (`decision`, `discovery`, `preference`, `general`) |
 | sort | string | Sort field: `updated_at` (default), `created_at`, `title` |
 | direction | string | Sort direction: `desc` (default), `asc` |
-| include | string | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
+| include | string | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
 **Examples**
 
@@ -500,7 +572,7 @@ GET /memories.json
 | category | string | Filter by category (`decision`, `discovery`, `preference`, `general`) |
 | sort | string | Sort field: `updated_at` (default), `created_at`, `title` |
 | direction | string | Sort direction: `desc` (default), `asc` |
-| include | string | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
+| include | string | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
 **Examples**
 
@@ -554,6 +626,9 @@ GET /workspaces/1/memories/1.json?line_start=50&line_end=75
   "source": "manual",
   "tags": ["meetings", "q1"],
   "category": "general",
+  "obsolete": false,
+  "current": true,
+  "root_id": 1,
   "created_at": "2026-01-20T09:00:00Z",
   "updated_at": "2026-02-03T16:45:00Z",
   "url": "https://recuerd0.com/workspaces/1/memories/1",
@@ -734,9 +809,20 @@ Returns the current user's pinned memories across all workspaces, paginated. Req
 
 ```
 GET /memories/pinned.json
+GET /memories/pinned.json?include=obsolete,inactive
 ```
 
+**Query Parameters**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| include | string | Comma-separated tokens re-enabling hidden pins: `obsolete`, `inactive`. See [Hidden memories](#hidden-memories). |
+
 **Response** `200 OK` — an array of memory objects (same shape as List Memories), with standard pagination headers.
+
+Obsolete pins and pins in archived or deleted workspaces are withheld by default. The
+pinned **page** still shows every pin, including the group it labels "Inactive" — curation
+is not retrieval.
 
 ---
 
@@ -927,7 +1013,7 @@ GET /search.json?q=<query>
 | context | integer | No | Lines of context around each match, like `grep -C` (0-10, default: 0). Only used with `mode=grep` |
 | before | integer | No | Lines before each match, like `grep -B` (0-10). Overrides `context` for before. Only used with `mode=grep` |
 | after | integer | No | Lines after each match, like `grep -A` (0-10). Overrides `context` for after. Only used with `mode=grep` |
-| include | string | No | Comma-separated tokens re-enabling hidden memories. Only `obsolete` is recognized; unknown tokens are ignored. See [Obsolete memories](#obsolete-memories). |
+| include | string | No | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
 **Query Operators**
 
@@ -951,6 +1037,7 @@ The search query supports full FTS5 syntax:
   "query": "architecture AND design",
   "total_results": 3,
   "obsolete_hidden": 1,
+  "inactive_hidden": 2,
   "results": [
     {
       "id": 1,
@@ -965,9 +1052,13 @@ The search query supports full FTS5 syntax:
       "created_at": "2026-01-20T09:00:00Z",
       "updated_at": "2026-02-03T16:45:00Z",
       "url": "https://recuerd0.com/workspaces/1/memories/1",
+      "obsolete": false,
+      "current": true,
+      "root_id": 1,
       "workspace": {
         "id": 1,
         "name": "Project Notes",
+        "state": "active",
         "url": "https://recuerd0.com/workspaces/1"
       }
     }
@@ -1012,9 +1103,13 @@ When `mode=grep`, each result includes `matches` (line-level matches with contex
       "created_at": "2026-01-20T09:00:00Z",
       "updated_at": "2026-02-03T16:45:00Z",
       "url": "https://recuerd0.com/workspaces/1/memories/1",
+      "obsolete": false,
+      "current": true,
+      "root_id": 1,
       "workspace": {
         "id": 1,
         "name": "Project Notes",
+        "state": "active",
         "url": "https://recuerd0.com/workspaces/1"
       }
     }

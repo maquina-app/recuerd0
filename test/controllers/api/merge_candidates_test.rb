@@ -20,6 +20,22 @@ class ApiMergeCandidatesTest < ActionDispatch::IntegrationTest
     assert_equal 2, cluster["memories"].size
   end
 
+  test "cluster memories state obsolete, current and root_id" do
+    root = Memory.create_with_content(@workspace, title: "Incident postmortem", content: "b", tags: ["sre"])
+    root.create_version!(content: "b2")
+    Memory.create_with_content(@workspace, title: "Incident postmortem", content: "b", tags: ["sre"])
+
+    get workspace_merge_candidates_url(@workspace, format: :json), headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    cluster = JSON.parse(response.body)["candidates"]
+      .find { |c| c["memories"].any? { |m| m["title"] == "Incident postmortem" } }
+    payload = cluster["memories"].find { |m| m["id"] == root.id }
+    assert_equal false, payload["obsolete"]
+    assert_equal true, payload["current"]
+    assert_equal root.id, payload["root_id"]
+  end
+
   test "requires authentication" do
     get workspace_merge_candidates_url(@workspace, format: :json)
     assert_response :unauthorized

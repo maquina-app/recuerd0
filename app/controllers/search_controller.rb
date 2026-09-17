@@ -1,11 +1,14 @@
 class SearchController < ApplicationController
   include ContentRenderable
+  include MemoryFilterable
   include ObsoleteFilterable
 
   allow_token_authentication
 
   def index
     @query = params[:q].to_s.strip.first(query_max_length)
+
+    return if api_request? && !validate_category_param!
 
     if api_request?
       return render_validation_error("Query parameter is required") if @query.blank?
@@ -20,6 +23,7 @@ class SearchController < ApplicationController
 
     memories = build_search_scope
     @obsolete_hidden_count = obsolete_hidden_count
+    @inactive_hidden_count = inactive_hidden_count
     @workspaces = matching_workspaces
 
     @pagy, @memories = pagy(memories, items: 10)
@@ -68,6 +72,7 @@ class SearchController < ApplicationController
 
   def render_palette_suggestions
     @obsolete_hidden_count = 0
+    @inactive_hidden_count = 0
     @suggested_workspaces = Current.user.pinned_workspaces
       .where(account_id: Current.account.id)
       .limit(SUGGESTION_LIMIT)
@@ -115,7 +120,7 @@ class SearchController < ApplicationController
   end
 
   def build_search_scope
-    apply_obsolete_filter(unfiltered_search_scope)
+    apply_inactive_filter(apply_obsolete_filter(unfiltered_search_scope))
   end
 
   # How many matches the default filter withheld. One extra query, and only
@@ -124,6 +129,16 @@ class SearchController < ApplicationController
     return 0 if include_obsolete? || @query.blank?
 
     unfiltered_search_scope.only_obsolete.count
+  end
+
+  # The inactive twin. Counted with the obsolete filter applied so the two
+  # numbers describe disjoint sets and never add up to more than was withheld.
+  def inactive_hidden_count
+    return 0 if include_inactive? || @query.blank?
+
+    apply_obsolete_filter(unfiltered_search_scope)
+      .where("workspaces.archived_at IS NOT NULL OR workspaces.deleted_at IS NOT NULL")
+      .count
   end
 
   def unfiltered_search_scope

@@ -53,9 +53,14 @@ class Workspaces::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [v1_body, v2_body, v3_body], exported["versions"].map { |version| version["content"] }
     assert_equal v3_body, exported["versions"].last["content"]
 
-    metadata_keys = %w[id title tags source category version version_label has_versions links_count created_at updated_at url workspace]
+    metadata_keys = %w[id title tags source category version version_label has_versions obsolete current root_id links_count created_at updated_at url workspace]
     assert_equal metadata_keys.sort, (exported.keys - %w[content versions]).sort
     assert_equal metadata_keys.sort, (exported["versions"].last.keys - ["content"]).sort
+
+    # The dump states which row is the live one, per version, without the
+    # reader having to compare version numbers.
+    assert_equal [false, false, true], exported["versions"].map { |version| version["current"] }
+    assert_equal [root.id] * 3, exported["versions"].map { |version| version["root_id"] }
   end
 
   test "allows a read-only token" do
@@ -109,7 +114,10 @@ class Workspaces::ExportsControllerTest < ActionDispatch::IntegrationTest
       root.create_version!(content: "v3 body #{root_index}")
     end
 
-    assert_queries_count 13 do
+    # 12, not 13: children are pointed at the root instances already loaded
+    # (see ExportsController#link_parents_to_loaded_roots) instead of a
+    # parent_memory preload re-loading them.
+    assert_queries_count 12 do
       get workspace_export_url(@workspace), headers: auth_headers(@read_only_token)
     end
     assert_response :success
