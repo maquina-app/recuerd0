@@ -1,4 +1,6 @@
 class Memories::PinnedController < ApplicationController
+  allow_token_authentication
+
   SORTS = %w[pinned updated title].freeze
   DEFAULT_SORT = "pinned"
 

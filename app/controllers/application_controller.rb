@@ -9,8 +9,14 @@ class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern, if: -> { !api_request? }
 
-  # Skip CSRF verification for API requests (authenticated via Bearer token)
-  skip_forgery_protection if: -> { api_request? }
+  # Skip CSRF verification only for Bearer-token requests. A session cookie is
+  # never exempt: "looks like JSON" used to be enough, which left a same-site
+  # subdomain one step away from forging browser writes.
+  skip_forgery_protection if: -> { extract_bearer_token.present? }
+
+  # Read-only tokens never write, on any endpoint and in any format. Lives here
+  # rather than per controller so a new write action is covered by default.
+  before_action :require_full_access
 
   # Rate limit API requests: 100 requests per minute per token/user/IP.
   # OAuth + MCP endpoints opt out (self_managed_rate_limit?) — their traffic
@@ -39,11 +45,10 @@ class ApplicationController < ActionController::Base
   end
 
   def require_full_access
-    return true unless current_access_token
-    return true if current_access_token.full_access?
+    return if request.get? || request.head?
+    return unless current_access_token&.read_only?
 
     render_forbidden
-    false
   end
 
   def multi_tenant?

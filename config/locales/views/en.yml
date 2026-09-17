@@ -384,7 +384,7 @@ en:
       submit: "Change Password"
     access_tokens:
       title: "Personal Access Tokens"
-      description: "Tokens allow programmatic access to the API."
+      description: "Tokens allow programmatic access to the API. A token has the same access as you across all workspaces in this account."
       token_created: "Token created successfully!"
       copy_tooltip: "Copy to clipboard"
       token_warning: "Make sure to copy your token now. You won't be able to see it again."

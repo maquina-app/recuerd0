@@ -2,6 +2,8 @@ module Workspaces
   class ExportsController < ApplicationController
     include WorkspaceScoped
 
+    allow_token_authentication
+
     before_action :set_workspace
 
     def show
