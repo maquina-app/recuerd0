@@ -8,6 +8,19 @@ module MemoryFilterable
 
   private
 
+  # A category outside the vocabulary used to sail through as "no filter"
+  # (by_category no-ops on an unknown value), so a typo returned every memory
+  # and read as a filtered set. JSON callers get a 422 instead; HTML surfaces
+  # keep the silent presence_in behaviour. Returns false once it has rendered,
+  # so a caller can `return unless validate_category_param!`.
+  def validate_category_param!
+    category = params[:category]
+    return true if category.blank? || Memory::CATEGORIES.include?(category)
+
+    render_validation_error("Invalid category: #{category}")
+    false
+  end
+
   def apply_memory_filters(scope)
     scope = apply_title_filter(scope, params[:title])
     scope = apply_tags_filter(scope, params[:tags])

@@ -1,4 +1,5 @@
 class Workspaces::ContextsController < ApplicationController
+  include MemoryFilterable
   include ObsoleteFilterable
 
   allow_token_authentication
@@ -8,6 +9,8 @@ class Workspaces::ContextsController < ApplicationController
 
   # GET /workspaces/:workspace_id/context.json
   def show
+    return unless validate_category_param!
+
     @limit = clamp_int(params[:limit], default: 10, min: 1, max: 50)
     @include_body = to_bool(params[:include_body], default: true)
     @max_body_chars = clamp_int(params[:max_body_chars], default: 500, min: 100, max: 5000)

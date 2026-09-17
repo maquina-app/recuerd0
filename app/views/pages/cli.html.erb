@@ -304,7 +304,7 @@ recuerd0 memory link remove &lt;memory_id&gt; --to &lt;other_memory_id&gt; [--wo
             <tr><td><code>--tags</code></td><td>Comma-separated tags: <code>--tags "auth,rails,patterns"</code></td></tr>
             <tr><td><code>--source</code></td><td>Source identifier (e.g. <code>cli</code>, <code>claude-code</code>)</td></tr>
             <tr><td><code>--category</code></td><td>One of <code>decision</code>, <code>discovery</code>, <code>preference</code>, <code>general</code> (defaults to <code>general</code>). See <a href="#cli-categories">Categories</a>.</td></tr>
-            <tr><td><code>--include</code></td><td>On <code>list</code> and <code>search</code>: pass <code>obsolete</code> to include retired memories. See <a href="#cli-obsolete">Obsolete Memories</a>.</td></tr>
+            <tr><td><code>--include</code></td><td>On <code>list</code> and <code>search</code>: pass <code>obsolete</code> to include retired memories; on <code>search</code>, <code>inactive</code> also includes archived and deleted workspaces. See <a href="#cli-obsolete">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
       </div>
@@ -427,7 +427,7 @@ recuerd0 memory link list 42 --workspace 1</code></div>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">usage</span><%= render "pages/code_copy" %></div>
-          <div class="code-body"><code data-clipboard-target="source">recuerd0 search &lt;query&gt; [--workspace &lt;id&gt;] [--category CAT] [--include obsolete]</code></div>
+          <div class="code-body"><code data-clipboard-target="source">recuerd0 search &lt;query&gt; [--workspace &lt;id&gt;] [--category CAT] [--include obsolete,inactive]</code></div>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">examples</span><%= render "pages/code_copy" %></div>
@@ -453,6 +453,7 @@ recuerd0 search "auth strategy" --include obsolete</code></div>
         <div class="endpoint-head">
           <h3>Obsolete Memories</h3>
           <p>A memory tagged <code>obsolete</code>, <code>superseded</code>, or <code>deprecated</code> is retired knowledge. <code>memory list</code> and <code>search</code> leave it out by default, so what you get back is what still applies. Pass <code>--include obsolete</code> to bring it back for an audit. Matching is case-insensitive and whole-tag: <code>Superseded</code> counts, <code>deprecated-api</code> is an ordinary tag.</p>
+          <p><code>search</code> hides one more thing by default: memories living in an archived or deleted workspace. Pass <code>--include inactive</code> to see them, or <code>--include obsolete,inactive</code> for both.</p>
         </div>
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">examples</span><%= render "pages/code_copy" %></div>
@@ -465,7 +466,11 @@ recuerd0 memory list --workspace 1
 
 <span class="cc"># Everything, including what has been retired</span>
 recuerd0 memory list --workspace 1 --include obsolete
-recuerd0 search "auth" --include obsolete</code></div>
+recuerd0 search "auth" --include obsolete
+
+<span class="cc"># Including workspaces that were archived or deleted</span>
+recuerd0 search "auth" --include inactive
+recuerd0 search "auth" --include obsolete,inactive</code></div>
         </div>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>

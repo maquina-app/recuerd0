@@ -1,7 +1,10 @@
 class Memories::LinksController < ApplicationController
+  include WorkspaceScoped
+
   allow_token_authentication
 
   before_action :set_workspace
+  before_action :ensure_not_deleted
   before_action :set_memory
 
   # GET /workspaces/:workspace_id/memories/:memory_id/links.json
@@ -101,17 +104,16 @@ class Memories::LinksController < ApplicationController
     ).first
   end
 
-  def set_workspace
-    @workspace = Current.account.workspaces.find(params[:workspace_id])
-  end
-
   def set_memory
     @memory = @workspace.memories.find(params[:memory_id])
   end
 
+  # A memory in a soft-deleted workspace cannot be linked or unlinked: it is
+  # unreachable by id everywhere else, so offering it here would be a way back
+  # in through the side door.
   def find_other_memory(id)
     Memory.joins(:workspace)
-      .where(workspaces: {account_id: Current.account.id})
+      .where(workspaces: {account_id: Current.account.id, deleted_at: nil})
       .find_by(id: id)
   end
 end

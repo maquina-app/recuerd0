@@ -46,7 +46,14 @@ class Oauth::TokensController < ApplicationController
   end
 
   def refresh
+    # Bound to the client the grant was issued to, like #exchange_code: client
+    # registration is open, so a global token lookup let any registered app
+    # redeem another app's refresh token. A missing client, an unknown token and
+    # a cross-client redemption all answer the same invalid_grant.
+    client = OauthClient.find_by(client_id: params[:client_id])
     token = AccessToken.find_by_refresh_token(params[:refresh_token])
+    token = nil unless client && token&.oauth_client_id == client.id
+
     unless token
       # A well-formed but unknown refresh token is a reuse signal: rotation
       # overwrites the digest, so a replayed (already-rotated) token no longer

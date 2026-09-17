@@ -1,4 +1,6 @@
 class Memories::PinnedController < ApplicationController
+  include ObsoleteFilterable
+
   allow_token_authentication
 
   SORTS = %w[pinned updated title].freeze
@@ -43,11 +45,26 @@ class Memories::PinnedController < ApplicationController
     # Current.user like every other pin lookup, never to the account.
     respond_to do |format|
       format.html
-      format.json { @memories = @memories.map { |m| m.versioned? ? m.current_version : m } }
+      # The page shows every pin, including the group it labels "Inactive": a
+      # pin is a deliberate act and the recovery route runs through it. JSON is
+      # an agent's retrieval surface, so it hides obsolete and inactive pins by
+      # default and takes the same include tokens as search.
+      format.json do
+        retrievable = filtered_for_retrieval(@memories)
+        @memories = retrievable.map { |m| m.versioned? ? m.current_version : m }
+      end
     end
   end
 
   private
+
+  # Filtered in Ruby: the set is capped at PIN_LIMIT and already loaded, so
+  # re-querying to drop a handful of rows would cost more than it saves.
+  def filtered_for_retrieval(memories)
+    memories = memories.reject(&:obsolete?) unless include_obsolete?
+    memories = memories.select { |memory| memory.workspace.active? } unless include_inactive?
+    memories
+  end
 
   def preloads
     # Every one of these was an N+1 in the card partial: versioned? and

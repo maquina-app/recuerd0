@@ -33,7 +33,19 @@ class Memory < ApplicationRecord
   # cross-workspace list should start from. Qualified order because joining
   # workspaces makes a bare updated_at ambiguous.
   scope :in_active_workspaces_of, ->(account) {
-    joins(:workspace).where(workspaces: {account_id: account.id, archived_at: nil, deleted_at: nil})
+    in_active_workspaces.where(workspaces: {account_id: account.id})
+  }
+
+  # The workspace half on its own, for a scope that is already account-scoped
+  # (pins, a search relation) and only needs the inactive ones dropped.
+  scope :in_active_workspaces, -> {
+    joins(:workspace).where(workspaces: {archived_at: nil, deleted_at: nil})
+  }
+
+  # Memories a soft-deleted workspace is holding are unreachable until the
+  # workspace is restored; an archived workspace stays readable.
+  scope :in_undeleted_workspaces, -> {
+    joins(:workspace).where(workspaces: {deleted_at: nil})
   }
   scope :recently_updated, -> { order(Arel.sql("memories.updated_at DESC")) }
   scope :preloaded, -> { includes(:content, :workspace, :child_versions) }
@@ -346,8 +358,11 @@ class Memory < ApplicationRecord
     outgoing_links.pluck(:to_memory_id) + incoming_links.pluck(:from_memory_id)
   end
 
+  # Deleted-workspace memories are dropped: a link is a retrieval path like any
+  # other, and deletion has to mean the same thing through every door. Archived
+  # ones are kept and carry their workspace state in the payload.
   def linked_memories
-    Memory.where(id: linked_memory_ids).includes(:content, :workspace)
+    Memory.where(id: linked_memory_ids).in_undeleted_workspaces.includes(:content, :workspace)
   end
 
   def links_count

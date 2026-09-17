@@ -39,13 +39,21 @@
       <% end %>
     </div>
 
-    <%# A real checkbox in a GET form, so it still works with JS off: Enter in
-        the query field submits both fields. %>
+    <%# Real checkboxes in a GET form, so they still work with JS off: Enter in
+        the query field submits every field. Both share the `include` name, so
+        the browser submits include=obsolete&include=inactive — check_box_tag,
+        never f.check_box, so an unchecked box sends nothing at all. %>
     <label class="search-page-toggle">
       <%= check_box_tag :include, "obsolete", include_obsolete?,
             id: "search_include_obsolete",
             data: {action: "change->ws-filter#submit"} %>
       <span><%= t("search.index.include_obsolete_label") %></span>
+    </label>
+    <label class="search-page-toggle">
+      <%= check_box_tag :include, "inactive", include_inactive?,
+            id: "search_include_inactive",
+            data: {action: "change->ws-filter#submit"} %>
+      <span><%= t("search.index.include_inactive_label") %></span>
     </label>
   <% end %>
 
@@ -79,17 +87,28 @@
           <%= t("search.index.memories_heading") %>
         </h2>
         <% hidden_count = @obsolete_hidden_count.to_i %>
-        <p class="text-sm text-muted-foreground <%= hidden_count.positive? ? "mb-1" : "mb-4" %>">
+        <% inactive_hidden_count = @inactive_hidden_count.to_i %>
+        <% any_hidden = hidden_count.positive? || inactive_hidden_count.positive? %>
+        <p class="text-sm text-muted-foreground <%= any_hidden ? "mb-1" : "mb-4" %>">
           <%= t(".results_count", count: @pagy.count, query: @query) %>
         </p>
         <%# Hiding must never feel like data loss: say what was withheld and
-            make the count the way back to it. %>
-        <% if hidden_count.positive? %>
+            make the count the way back to it. The two counts are disjoint, so
+            each line reveals only its own set. %>
+        <% if any_hidden %>
           <p class="text-sm text-muted-foreground mb-4">
             <%= t("search.index.obsolete_hidden_prefix") %>
-            <%= link_to t("search.index.obsolete_hidden", count: hidden_count),
-                  search_path(request.query_parameters.merge("include" => "obsolete")),
-                  class: "font-medium underline underline-offset-2" %>
+            <% if hidden_count.positive? %>
+              <%= link_to t("search.index.obsolete_hidden", count: hidden_count),
+                    search_path(query_params_including("obsolete")),
+                    class: "font-medium underline underline-offset-2" %>
+            <% end %>
+            <% if inactive_hidden_count.positive? %>
+              <br>
+              <%= link_to t("search.index.inactive_hidden", count: inactive_hidden_count),
+                    search_path(query_params_including("inactive")),
+                    class: "font-medium underline underline-offset-2" %>
+            <% end %>
           </p>
         <% end %>
 
@@ -99,6 +118,13 @@
               <p class="text-xs text-muted-foreground mb-1">
                 <%= icon_for(:folders, class: "w-3 h-3 inline") %>
                 <%= link_to memory.workspace.name, workspace_path(memory.workspace), class: "hover:underline" %>
+                <%# Only reachable with include=inactive, where saying which
+                    workspace is shut down is the whole point of the result. %>
+                <% if memory.workspace.archived? %>
+                  <span><%= t("workspaces.show.archived_badge") %></span>
+                <% elsif memory.workspace.deleted? %>
+                  <span><%= t("workspaces.show.deleted_badge") %></span>
+                <% end %>
               </p>
               <%= render "memories/memory", memory: memory, workspace: memory.workspace %>
             </div>

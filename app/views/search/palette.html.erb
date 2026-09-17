@@ -91,6 +91,14 @@
               data: {turbo_frame: "_top"} %>
       </p>
     <% end %>
+    <% if @inactive_hidden_count.to_i > 0 %>
+      <p class="palette-note">
+        <%= icon_for(:archive, class: "size-3.5 shrink-0") %>
+        <%= link_to t("search.index.inactive_hidden_palette", count: @inactive_hidden_count),
+              search_path(q: @query, include: "inactive"),
+              data: {turbo_frame: "_top"} %>
+      </p>
+    <% end %>
   <% else %>
     <p class="palette-note" role="status"><%= t("search.index.no_results_title") %></p>
   <% end %>

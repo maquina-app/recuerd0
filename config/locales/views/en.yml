@@ -347,6 +347,13 @@ en:
       obsolete_hidden_palette:
         one: "%{count} obsolete hidden — open in search"
         other: "%{count} obsolete hidden — open in search"
+      include_inactive_label: "Include archived and deleted workspaces"
+      inactive_hidden:
+        one: "%{count} memory in inactive workspaces hidden."
+        other: "%{count} memories in inactive workspaces hidden."
+      inactive_hidden_palette:
+        one: "%{count} in inactive workspaces hidden — open in search"
+        other: "%{count} in inactive workspaces hidden — open in search"
 
   components:
     sidebar:
