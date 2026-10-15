@@ -221,7 +221,7 @@ class ApiSearchTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "REST search treats multi-word input as a raw FTS5 query" do
+  test "REST search ANDs the words of a multi-word query" do
     memory = Memory.create_with_content(workspaces(:one),
       title: "Release planning notes", content: "body")
 
@@ -234,7 +234,7 @@ class ApiSearchTest < ActionDispatch::IntegrationTest
     assert_includes json["results"].map { |result| result["id"] }, memory.id
   end
 
-  test "REST search does not union exact tag matches" do
+  test "REST search unions exact tag matches, like MCP" do
     memory = Memory.create_with_content(workspaces(:one),
       title: "Unrelated title", content: "body", tags: ["restonlytag"])
 
@@ -244,7 +244,58 @@ class ApiSearchTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     json = JSON.parse(response.body)
-    assert_not_includes json["results"].map { |result| result["id"] }, memory.id
+    assert_includes json["results"].map { |result| result["id"] }, memory.id
+  end
+
+  test "REST and MCP return the same memories in the same order" do
+    workspace = workspaces(:one)
+    Memory.create_with_content(workspace, title: "Parity alpha note", content: "parity body")
+    Memory.create_with_content(workspace, title: "Unrelated", content: "nothing", tags: ["parity"])
+    versioned = Memory.create_with_content(workspace, title: "Parity draft", content: "first")
+    versioned.create_version!(title: "Parity final", content: "parity revised")
+
+    get search_url(format: :json),
+      params: {q: "parity", workspace_id: workspace.id},
+      headers: auth_headers(@read_only_token)
+    rest_titles = JSON.parse(response.body)["results"].map { |result| result["title"] }
+
+    mcp = Mcp::Tools.list_memories(workspace.account, {"workspace_id" => workspace.id.to_s, "query" => "parity"})
+    mcp_titles = mcp[:memories].map { |memory| memory[:title] }
+
+    assert_equal 3, rest_titles.size
+    assert_equal mcp_titles, rest_titles
+  end
+
+  test "a versioned hit is returned as its current version" do
+    root = Memory.create_with_content(workspaces(:one), title: "Draft wording", content: "oldbody")
+    current = root.create_version!(title: "Final wording", content: "currentneedle text")
+
+    get search_url(format: :json),
+      params: {q: "currentneedle"},
+      headers: auth_headers(@read_only_token)
+
+    result = JSON.parse(response.body)["results"].sole
+    assert_equal current.id, result["id"]
+    assert_equal "Final wording", result["title"]
+    assert_equal current.version, result["version"]
+    assert_includes result["snippet"], "currentneedle"
+  end
+
+  test "search loads only each hit's current version, never the whole history" do
+    root = Memory.create_with_content(workspaces(:one), title: "Historyneedle", content: "v1")
+    3.times { |i| root.create_version!(content: "historyneedle v#{i + 2}") }
+    sql = []
+    callback = ->(*, payload) { sql << payload[:sql] }
+
+    ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+      get search_url(format: :json),
+        params: {q: "historyneedle"},
+        headers: auth_headers(@read_only_token)
+    end
+
+    assert_response :success
+    assert_empty sql.grep(/COUNT\(DISTINCT/)
+    assert_empty sql.grep(/child_versions_memories/)
   end
 
   # Grep mode tests
@@ -309,15 +360,25 @@ class ApiSearchTest < ActionDispatch::IntegrationTest
     refute result.key?("matches")
   end
 
-  test "returns 422 for invalid FTS5 syntax" do
+  test "a query of bare operators returns no results instead of an error" do
     get search_url(format: :json),
       params: {q: "AND OR NOT"},
       headers: auth_headers(@read_only_token)
 
-    assert_response :unprocessable_entity
-    json = JSON.parse(response.body)
-    assert_equal "VALIDATION_ERROR", json["error"]["code"]
-    assert_match(/Invalid search query syntax/, json["error"]["message"])
+    assert_response :success
+    assert_equal 0, JSON.parse(response.body)["total_results"]
+  end
+
+  test "punctuation inside a word is searched, not parsed" do
+    memory = Memory.create_with_content(workspaces(:one),
+      title: "Patch deploy.sh for kamal", content: "body")
+
+    get search_url(format: :json),
+      params: {q: "deploy.sh"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_equal [memory.id], JSON.parse(response.body)["results"].map { |result| result["id"] }
   end
 
   test "filters search results by category" do

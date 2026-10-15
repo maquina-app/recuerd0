@@ -3,8 +3,9 @@ require "test_helper"
 class McpControllerTest < ActionDispatch::IntegrationTest
   HISTORICAL_VERSION_ERROR =
     "historical versions are immutable — update the current version or create a new version"
-  LIST_MEMORIES_DESCRIPTION = "List memories within a workspace. Search safely phrase-wraps " \
-    "queries for FTS across title and body and also matches case-insensitive whole tags. " \
+  LIST_MEMORIES_DESCRIPTION = "List memories within a workspace. Search runs FTS across title " \
+    "and body (same query language as web and REST search) and also matches case-insensitive " \
+    "whole tags. " \
     "FTS matches come first by relevance, followed by tag-only matches by recency; " \
     "a memory matching both appears once as an FTS match. Queries under 3 characters " \
     "search exact tags only. Returns a paginated envelope: " \
@@ -122,7 +123,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal %w[relevance updated created title], properties["sort"]["enum"]
     assert_includes properties["sort"]["description"], "Defaults to relevance when query is present"
-    assert_includes properties["query"]["description"], "safe exact FTS phrase"
+    assert_includes properties["query"]["description"], "Words are ANDed"
+    assert_includes properties["query"]["description"], "never an error"
     assert_includes properties["query"]["description"], "case-insensitive whole-tag equality"
     assert_includes properties["query"]["description"],
       "Matching is substring-level (trigram tokenizer)"

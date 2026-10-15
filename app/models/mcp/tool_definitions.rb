@@ -47,8 +47,8 @@ module Mcp
       },
       {
         name: "list_memories",
-        description: "List memories within a workspace. Search safely phrase-wraps queries " \
-          "for FTS across title and body and also matches case-insensitive whole tags. " \
+        description: "List memories within a workspace. Search runs FTS across title and body " \
+          "(same query language as web and REST search) and also matches case-insensitive whole tags. " \
           "FTS matches come first by relevance, followed by tag-only matches by recency; " \
           "a memory matching both appears once as an FTS match. Queries under 3 characters " \
           "search exact tags only. Returns a paginated envelope: " \
@@ -61,9 +61,12 @@ module Mcp
             workspace_id: {type: "string", description: "Workspace ID"},
             query: {
               type: "string",
-              description: "Optional search query. At 3+ characters it is a safe exact FTS " \
-                "phrase across title/body, unioned with case-insensitive whole-tag equality. " \
-                "Matching is substring-level (trigram tokenizer): a phrase can match inside " \
+              description: "Optional search query. At 3+ characters it is FTS across title/body, " \
+                "unioned with case-insensitive whole-tag equality. Words are ANDed; AND, OR, NOT, " \
+                "\"exact phrase\", (grouping), title:term and body:term are honoured. Punctuation " \
+                "inside a word is searched literally (`deploy.sh`), and an expression that does not " \
+                "parse falls back to its words ANDed, never an error. " \
+                "Matching is substring-level (trigram tokenizer): a word can match inside " \
                 "longer words — `rank` matches `ranking`. " \
                 "FTS hits rank first, dual hits are deduplicated, and tag-only hits follow by " \
                 "recency. At 1–2 characters, only exact tags are searched."

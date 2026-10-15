@@ -64,7 +64,9 @@
 
       <% if @memories.any? %>
         <li role="presentation" class="palette-group"><%= t("search.index.memories_heading") %></li>
-        <% @memories.each do |memory| %>
+        <%# A hit is a root; title and link go to its current version, as the
+            results page card does, never to a stale v1. %>
+        <% @memories.map(&:resolve_current_version).each do |memory| %>
           <li role="presentation">
             <%= link_to workspace_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
                   class: "palette-item", data: {palette_result: true, turbo_frame: "_top"} do %>

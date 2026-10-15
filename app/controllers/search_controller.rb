@@ -37,6 +37,9 @@ class SearchController < ApplicationController
       # is no frame, so the form submits and /search renders normally.
       format.html { render :palette, layout: false if palette_frame? }
       format.json do
+        # Same shape as memories#index: each hit is its current version, so
+        # title, version, snippet and grep lines are never a stale v1.
+        @memories = @memories.map(&:resolve_current_version)
         set_pagination_headers(@pagy)
         parse_grep_params if grep_mode?
       end
@@ -124,27 +127,29 @@ class SearchController < ApplicationController
     unfiltered_search_scope.only_obsolete.count
   end
 
+  # Memory.search is the one search web, API and MCP share, so a query matches
+  # and ranks the same everywhere. Short queries stay empty here: the page and
+  # the API both reject them before any result is shown.
+  #
+  # preload, never includes: the workspaces condition would turn includes into
+  # one eager-loaded JOIN across every version, and its COUNT(DISTINCT) took a
+  # second per search. Only each hit's current version is loaded.
   def unfiltered_search_scope
+    return Memory.none if @query.length < Searchable::MIN_QUERY_LENGTH
+
     scope = Memory.joins(:workspace)
       .where(workspaces: {account_id: Current.account.id})
       .latest_versions
-
-    # The browser gets the same FTS5 operators as the API. The audience is
-    # people who think in queries, and `sqlite kamal` returning nothing because
-    # the whole string was quoted as one phrase read as a broken index. Invalid
-    # syntax is caught in #index and reported, rather than being pre-empted by
-    # neutering the query.
-    scope = scope.api_search(@query)
+      .search(@query)
 
     if params[:workspace_id].present?
       workspace = Current.account.workspaces.find(params[:workspace_id])
       scope = scope.where(workspace: workspace)
     end
 
-    scope = scope.by_category(params[:category])
-
-    scope.order("memories.updated_at DESC")
-      .includes(:content, :workspace, :child_versions)
+    scope.by_category(params[:category])
+      .ordered_by(Memory.resolve_sort(nil, query: @query))
+      .preload(:content, :workspace, latest_version: [:content, :workspace])
   end
 
   # One cap for both formats. They used to differ (30 for HTML, 100 for API),
