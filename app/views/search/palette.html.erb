@@ -3,12 +3,7 @@
     same query, same scopes, same ordering. With JS off no frame exists, the
     form submits normally, and /search renders the full page instead. %>
 <%= turbo_frame_tag SearchController::PALETTE_FRAME_ID do %>
-  <% if @invalid_query %>
-    <p class="palette-note" role="status">
-      <%= icon_for(:alert_triangle, class: "size-3.5 shrink-0") %>
-      <span><%= t("search.command.invalid_query") %></span>
-    </p>
-  <% elsif @suggested_workspaces || @suggested_memories %>
+  <% if @suggested_workspaces || @suggested_memories %>
     <%# Opening state: what the user pinned, then what they touched last. %>
     <% if @suggested_workspaces&.any? || @suggested_memories&.any? %>
       <ul class="palette-results" role="listbox" aria-label="<%= t("search.command.suggestions_label") %>">

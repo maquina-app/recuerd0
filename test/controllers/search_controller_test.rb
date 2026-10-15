@@ -68,12 +68,11 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-component='empty']", count: 0
   end
 
-  test "unparseable operators fall back to the words instead of a warning" do
+  test "unparseable operators fall back to the words" do
     sign_in_as(@user)
     get search_url, params: {q: "Meeting OR (("}
 
     assert_response :success
-    assert_select "strong", text: I18n.t("search.index.invalid_query_title"), count: 0
     assert_select "[data-component='empty']", count: 0
   end
 

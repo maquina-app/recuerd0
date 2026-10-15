@@ -320,14 +320,12 @@ en:
       suggestions_label: "Suggestions"
       pinned_workspaces: "Pinned projects"
       jump_back_in: "Jump back in"
-      invalid_query: "That search syntax isn't valid. Try plain words, or check your quotes and operators."
       see_all: "Press Enter to see all %{count} results"
       scope_workspace: "Only in %{workspace}"
       scope_everywhere: "Search everywhere"
       empty_query: "Type something to search."
     index:
       title: "Search"
-      invalid_query_title: "That search couldn't be run"
       results_count:
         one: "%{count} result for \"%{query}\""
         other: "%{count} results for \"%{query}\""

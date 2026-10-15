@@ -44,18 +44,6 @@ class SearchController < ApplicationController
         parse_grep_params if grep_mode?
       end
     end
-  rescue ActiveRecord::StatementInvalid => e
-    raise unless e.message.include?("fts5")
-    return render_validation_error("Invalid search query syntax") if api_request?
-
-    @invalid_query = true
-    @workspaces = Workspace.none
-    @pagy, @memories = pagy(Memory.none, items: 10)
-    if palette_frame?
-      render :palette, layout: false
-    else
-      render :index
-    end
   end
 
   private
