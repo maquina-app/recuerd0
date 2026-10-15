@@ -1,11 +1,12 @@
 <%# locals: () %>
-<% content_for :page_title, t(".title") %>
+<% content_for :page_title, scoped_workspace ? t(".title_scoped", workspace: scoped_workspace.name) : t(".title") %>
 
 <% content_for :breadcrumb do %>
-  <%= responsive_breadcrumbs(
-    {},
-    t(".title"),
-  ) %>
+  <% if scoped_workspace %>
+    <%= responsive_breadcrumbs({scoped_workspace.name => workspace_path(scoped_workspace)}, t(".title")) %>
+  <% else %>
+    <%= responsive_breadcrumbs({}, t(".title")) %>
+  <% end %>
 <% end %>
 
 <div class="mx-auto max-w-4xl">
@@ -25,19 +26,36 @@
         class: "mb-6" do |f| %>
     <div class="search-page-field">
       <%= icon_for(:search, class: "size-4 shrink-0 text-muted-foreground") %>
-      <%= f.label :q, t("search.command.input_label"), class: "sr-only" %>
+      <%= f.label :q, scoped_workspace ? t("search.index.input_label_scoped", workspace: scoped_workspace.name) : t("search.command.input_label"), class: "sr-only" %>
       <%= f.search_field :q, value: @query,
-            placeholder: t("search.placeholder"),
+            placeholder: scoped_workspace ? t("search.index.placeholder_scoped", workspace: scoped_workspace.name) : t("search.placeholder"),
             maxlength: SearchController::QUERY_MAX_LENGTH,
             autocomplete: "off",
+            aria: {describedby: ("search-scope" if scoped_workspace)},
             data: {
               ws_filter_target: "input",
               action: "input->ws-filter#submit search->ws-filter#submit keydown.esc->ws-filter#clear"
             } %>
-      <% if params[:workspace_id].present? %>
-        <%= f.hidden_field :workspace_id, value: params[:workspace_id] %>
+      <% if scoped_workspace %>
+        <%= f.hidden_field :workspace_id, value: scoped_workspace.id %>
       <% end %>
     </div>
+
+    <%# The palette's "Only in <workspace>" chip, carried onto the page. Without
+        it a scoped search was invisible: the scope lived in a hidden field, the
+        results looked like the whole account's, and only editing the URL could
+        widen it. %>
+    <% if scoped_workspace %>
+      <p id="search-scope" class="search-page-scope">
+        <span class="scope-chip" data-state="on">
+          <%= icon_for(:folders, class: "size-3.5") %>
+          <%= t("search.command.scope_workspace", workspace: scoped_workspace.name) %>
+        </span>
+        <%= link_to t("search.index.scope_clear"),
+              search_path(request.query_parameters.except("workspace_id", "page")),
+              class: "font-medium text-foreground underline underline-offset-2" %>
+      </p>
+    <% end %>
 
     <%# Real checkboxes in a GET form, so they still work with JS off: Enter in
         the query field submits every field. Both share the `include` name, so
@@ -85,7 +103,11 @@
         <% inactive_hidden_count = @inactive_hidden_count.to_i %>
         <% any_hidden = hidden_count.positive? || inactive_hidden_count.positive? %>
         <p class="text-sm text-muted-foreground <%= any_hidden ? "mb-1" : "mb-4" %>">
-          <%= t(".results_count", count: @pagy.count, query: @query) %>
+          <% if scoped_workspace %>
+            <%= t(".results_count_scoped", count: @pagy.count, query: @query, workspace: scoped_workspace.name) %>
+          <% else %>
+            <%= t(".results_count", count: @pagy.count, query: @query) %>
+          <% end %>
         </p>
         <%# Hiding must never feel like data loss: say what was withheld and
             make the count the way back to it. The two counts are disjoint, so
@@ -136,7 +158,7 @@
         icon: :search, variant: :outline %>
   <% else %>
     <%= empty_state title: t("search.index.empty_title"),
-        description: t("search.index.empty_description"),
+        description: scoped_workspace ? t("search.index.empty_description_scoped", workspace: scoped_workspace.name) : t("search.index.empty_description"),
         icon: :search, variant: :outline %>
   <% end %>
 </div>

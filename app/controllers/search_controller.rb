@@ -104,7 +104,7 @@ class SearchController < ApplicationController
     return Workspace.none if api_request? || @query.blank?
     # Scoped to one workspace, "jump to a workspace" is not the question being
     # asked, so the workspace block would just be noise above the memories.
-    return Workspace.none if params[:workspace_id].present?
+    return Workspace.none if scoped_workspace
 
     term = "%#{ActiveRecord::Base.sanitize_sql_like(@query)}%"
     Current.account.workspaces
@@ -167,13 +167,18 @@ class SearchController < ApplicationController
       .where(workspaces: {account_id: Current.account.id})
       .latest_versions
 
-    if params[:workspace_id].present?
-      workspace = Current.account.workspaces.find(params[:workspace_id])
-      scope = scope.where(workspace: workspace)
-    end
+    scope = scope.where(workspace: scoped_workspace) if scoped_workspace
 
     scope.by_category(params[:category])
   end
+
+  # The ⌘K palette hands its "Only in <workspace>" scope to this page as
+  # workspace_id. The page names it back, so a scoped result list never reads
+  # as the whole account's.
+  def scoped_workspace
+    @scoped_workspace ||= Current.account.workspaces.find(params[:workspace_id]) if params[:workspace_id].present?
+  end
+  helper_method :scoped_workspace
 
   # One cap for both formats. They used to differ (30 for HTML, 100 for API),
   # which meant the palette's maxlength="100" let a user type 70 characters the

@@ -128,6 +128,55 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_select "#search-workspaces-heading", count: 0
   end
 
+  test "a scoped search names its workspace and offers the way out" do
+    sign_in_as(@user)
+    scoped = workspaces(:one)
+
+    get search_url, params: {q: "Meeting", workspace_id: scoped.id, include: "obsolete", page: 1}
+
+    assert_response :success
+    assert_select "#search-scope .scope-chip",
+      text: I18n.t("search.command.scope_workspace", workspace: scoped.name)
+    # Widening keeps the query and filters, and drops only the scope and page.
+    assert_select "#search-scope a[href=?]", search_path(q: "Meeting", include: "obsolete"),
+      text: I18n.t("search.index.scope_clear")
+    assert_select "input#q[aria-describedby=search-scope]"
+    assert_select "input#q[placeholder=?]",
+      I18n.t("search.index.placeholder_scoped", workspace: scoped.name)
+    assert_select "p", text: I18n.t("search.index.results_count_scoped", count: 1, query: "Meeting", workspace: scoped.name)
+    assert_select "nav[aria-label=Breadcrumb] a[href=?]", workspace_path(scoped)
+    assert_select "title", text: /#{Regexp.escape(I18n.t("search.index.title_scoped", workspace: scoped.name))}/
+  end
+
+  test "a scoped search with no query says where it will look" do
+    sign_in_as(@user)
+    scoped = workspaces(:one)
+
+    get search_url, params: {workspace_id: scoped.id}
+
+    assert_response :success
+    assert_select "[data-component='empty']",
+      text: /#{Regexp.escape(I18n.t("search.index.empty_description_scoped", workspace: scoped.name))}/
+  end
+
+  test "an unscoped search shows no scope" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "Meeting"}
+
+    assert_response :success
+    assert_select "#search-scope", count: 0
+    assert_select "input#q[aria-describedby]", count: 0
+  end
+
+  test "a workspace from another account cannot scope a search" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "Shopping", workspace_id: workspaces(:two).id}
+
+    assert_response :not_found
+  end
+
   test "html query is no longer truncated to 30 characters" do
     sign_in_as(@user)
     assert_equal 100, SearchController::QUERY_MAX_LENGTH

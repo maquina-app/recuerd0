@@ -327,9 +327,16 @@ en:
       empty_query: "Type something to search."
     index:
       title: "Search"
+      title_scoped: "Search in %{workspace}"
+      input_label_scoped: "Search memories in %{workspace}"
+      placeholder_scoped: "Search memories in %{workspace}…"
+      scope_clear: "Search all workspaces"
       results_count:
         one: "%{count} result for \"%{query}\""
         other: "%{count} results for \"%{query}\""
+      results_count_scoped:
+        one: "%{count} result for \"%{query}\" in %{workspace}"
+        other: "%{count} results for \"%{query}\" in %{workspace}"
       workspaces_heading: "Workspaces"
       memories_heading: "Memories"
       related_heading: "Related memories"
@@ -338,6 +345,7 @@ en:
       no_results_description: "Nothing matched \"%{query}\". Try a different search term."
       empty_title: "Search your memories"
       empty_description: "Enter a search term to find memories across all your workspaces."
+      empty_description_scoped: "Enter a search term to find memories in %{workspace}."
       min_length_title: "Query too short"
       min_length_description: "Please enter at least 3 characters to search."
       include_obsolete_label: "Include obsolete memories"
