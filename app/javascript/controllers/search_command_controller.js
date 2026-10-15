@@ -116,7 +116,9 @@ export default class extends Controller {
     if (query) url.searchParams.set("q", query)
     if (this.scopedWorkspaceId) {
       url.searchParams.set("workspace_id", this.scopedWorkspaceId)
-      if (this._scope.dataset.workspaceInactive !== undefined) url.searchParams.set("include", "inactive")
+      // The server names the include token; the controller only forwards it.
+      const include = this._scope.dataset.workspaceInclude
+      if (include) url.searchParams.set("include", include)
     }
     return url.toString()
   }

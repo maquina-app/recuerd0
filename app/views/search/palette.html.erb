@@ -114,12 +114,14 @@
     <% end %>
   <% elsif scoped_workspace && @elsewhere_count.to_i.positive? %>
     <%# Scoped by the chip and empty here, but not empty everywhere: offer the
-        widening as a result row, so arrows and Enter reach it like any other. %>
+        widening as a result row, so arrows and Enter reach it like any other.
+        Never prefetched: with JS the row widens in place, and a hover
+        prefetch would log a search nobody ran. %>
     <p class="palette-note" role="status"><%= t("search.command.no_results_scoped", workspace: scoped_workspace.name) %></p>
     <ul class="palette-results" role="listbox" aria-label="<%= t("search.command.results_label") %>">
       <li role="presentation">
         <%= link_to search_path(q: @query), role: "option", "aria-selected": "false",
-              class: "palette-item", data: {palette_result: true, palette_widen: true, turbo_frame: "_top"} do %>
+              class: "palette-item", data: {palette_result: true, palette_widen: true, turbo_frame: "_top", turbo_prefetch: false} do %>
           <%= icon_for(:search, class: "size-4 shrink-0 text-muted-foreground") %>
           <span class="palette-item-label"><%= t("search.index.scope_clear") %></span>
           <span class="palette-item-meta"><%= t("search.command.elsewhere_count", count: @elsewhere_count) %></span>

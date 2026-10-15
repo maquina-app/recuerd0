@@ -122,6 +122,7 @@ class SearchController < ApplicationController
   # while the answer sat in another workspace. One count across the account,
   # under the same filters, and only when the scoped search came back empty.
   def elsewhere_count
+    return 0 if api_request?
     return 0 unless scoped_workspace && @pagy.count.zero?
 
     build_search_scope(workspace: nil).count

@@ -244,7 +244,7 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
       text: I18n.t("search.command.scope_workspace", workspace: workspaces(:one).name)
     # One fixed label; only aria-pressed carries the state.
     assert_select "#search-command-scope[data-scope-off]", count: 0
-    assert_select "#search-command-scope[data-workspace-inactive]", count: 0
+    assert_select "#search-command-scope[data-workspace-include]", count: 0
   end
 
   test "the palette chip on an archived workspace asks for inactive results" do
@@ -253,7 +253,7 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     get archived_workspace_url(workspaces(:archived))
 
     assert_response :success
-    assert_select "#search-command-scope[data-workspace-inactive]"
+    assert_select "#search-command-scope[data-workspace-include=?]", ObsoleteFilterable::INACTIVE_TOKEN
   end
 
   test "palette hidden-count links keep the workspace scope" do

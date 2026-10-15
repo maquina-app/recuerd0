@@ -44,7 +44,7 @@
         <div class="search-command-scope">
           <button type="button" id="search-command-scope" class="scope-chip" aria-pressed="true"
                   data-workspace-id="<%= scoped_workspace.id %>"
-                  <%= "data-workspace-inactive" unless scoped_workspace.active? %>>
+                  <%= tag.attributes(data: {workspace_include: (ObsoleteFilterable::INACTIVE_TOKEN unless scoped_workspace.active?)}) %>>
             <%= icon_for(:folders, class: "size-3.5") %>
             <%= t("search.command.scope_workspace", workspace: scoped_workspace.name) %>
           </button>
