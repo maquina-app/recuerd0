@@ -46,13 +46,11 @@
             <div class="flex items-center gap-2">
               <%= link_to "View",
                   workspace_memory_path(workspace, version),
-                  class: "btn-ghost btn-sm" %>
+                  data: { component: "button", variant: "ghost", size: "sm" } %>
               <% if workspace.active? && version != current_memory %>
-                <%= button_to "Create Version from This",
-                    workspace_memory_versions_path(workspace, version),
+                <%= button_to workspace_memory_versions_path(workspace, version),
                     method: :post,
-                    data: { turbo_confirm: "Create a new version from #{version.version_label}?" },
-                    class: "btn-secondary btn-sm" do %>
+                    data: { component: "button", variant: "secondary", size: "sm", turbo_confirm: "Create a new version from #{version.version_label}?" } do %>
                   <%= icon_for(:copy_plus, class: "w-4 h-4") %>
                   Branch
                 <% end %>

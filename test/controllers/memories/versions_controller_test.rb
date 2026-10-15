@@ -13,6 +13,16 @@ class Memories::VersionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "index renders branch buttons when the memory has other versions" do
+    child = @memory.create_version!(content: "v2 body")
+
+    get workspace_memory_versions_url(@workspace, @memory)
+
+    assert_response :success
+    assert_select "form[action=?]", workspace_memory_versions_path(@workspace, child)
+    assert_select "form[action=?]", workspace_memory_versions_path(@workspace, @memory)
+  end
+
   test "create makes new version" do
     assert_difference("Memory.count") do
       post workspace_memory_versions_url(@workspace, @memory)

@@ -22,10 +22,10 @@
       <div class="flex items-center gap-2">
         <%= link_to "Back to Memory",
             workspace_memory_path(@workspace, @memory),
-            class: "btn-ghost" %>
-        <%= link_to workspace_memory_path(@workspace, @memory),
-            data: { turbo_method: :post, turbo_confirm: "Create a new version from #{@memory.version_label}?" },
-            class: "btn-secondary" do %>
+            data: { component: "button", variant: "ghost" } %>
+        <%= button_to workspace_memory_versions_path(@workspace, @memory),
+            method: :post,
+            data: { component: "button", variant: "secondary", turbo_confirm: "Create a new version from #{@memory.version_label}?" } do %>
           <%= icon_for(:copy_plus, class: "w-4 h-4") %>
           Create New Version
         <% end %>
