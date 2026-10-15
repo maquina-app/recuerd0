@@ -99,9 +99,7 @@
         <h2 id="search-memories-heading" class="ws-group-label mb-2 px-0.5">
           <%= t("search.index.memories_heading") %>
         </h2>
-        <% hidden_count = @obsolete_hidden_count.to_i %>
-        <% inactive_hidden_count = @inactive_hidden_count.to_i %>
-        <% any_hidden = hidden_count.positive? || inactive_hidden_count.positive? %>
+        <% any_hidden = @obsolete_hidden_count.to_i.positive? || @inactive_hidden_count.to_i.positive? %>
         <p class="text-sm text-muted-foreground <%= any_hidden ? "mb-1" : "mb-4" %>">
           <% if scoped_workspace %>
             <%= t(".results_count_scoped", count: @pagy.count, query: @query, workspace: scoped_workspace.name) %>
@@ -109,25 +107,7 @@
             <%= t(".results_count", count: @pagy.count, query: @query) %>
           <% end %>
         </p>
-        <%# Hiding must never feel like data loss: say what was withheld and
-            make the count the way back to it. The two counts are disjoint, so
-            each line reveals only its own set. %>
-        <% if any_hidden %>
-          <p class="text-sm text-muted-foreground mb-4">
-            <%= t("search.index.obsolete_hidden_prefix") %>
-            <% if hidden_count.positive? %>
-              <%= link_to t("search.index.obsolete_hidden", count: hidden_count),
-                    search_path(query_params_including("obsolete")),
-                    class: "font-medium underline underline-offset-2" %>
-            <% end %>
-            <% if inactive_hidden_count.positive? %>
-              <br>
-              <%= link_to t("search.index.inactive_hidden", count: inactive_hidden_count),
-                    search_path(query_params_including("inactive")),
-                    class: "font-medium underline underline-offset-2" %>
-            <% end %>
-          </p>
-        <% end %>
+        <%= render "search/hidden_notice" %>
 
         <div class="grid gap-4">
           <%= render partial: "search/result", collection: @memories, as: :memory %>
@@ -153,10 +133,18 @@
       </section>
     <% end %>
   <% elsif @query.present? %>
-    <%= empty_state title: t("search.index.no_results_title"),
-        description: t("search.index.no_results_description", query: @query),
-        icon: :search, variant: :outline %>
+    <%# The empty state titles itself with an h3; this keeps the outline whole. %>
+    <h2 class="sr-only"><%= t("search.index.results_heading") %></h2>
+    <%= render "search/hidden_notice" %>
+    <% if scoped_workspace %>
+      <%= render "search/scoped_no_results", workspace: scoped_workspace, elsewhere_count: @elsewhere_count.to_i %>
+    <% else %>
+      <%= empty_state title: t("search.index.no_results_title"),
+          description: t("search.index.no_results_description", query: @query),
+          icon: :search, variant: :outline %>
+    <% end %>
   <% else %>
+    <h2 class="sr-only"><%= t("search.index.results_heading") %></h2>
     <%= empty_state title: t("search.index.empty_title"),
         description: scoped_workspace ? t("search.index.empty_description_scoped", workspace: scoped_workspace.name) : t("search.index.empty_description"),
         icon: :search, variant: :outline %>

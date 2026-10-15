@@ -325,6 +325,10 @@ en:
       scope_workspace: "Only in %{workspace}"
       scope_everywhere: "Search everywhere"
       empty_query: "Type something to search."
+      no_results_scoped: "Nothing in %{workspace} matches."
+      elsewhere_count:
+        one: "%{count} result"
+        other: "%{count} results"
     index:
       title: "Search"
       title_scoped: "Search in %{workspace}"
@@ -343,6 +347,12 @@ en:
       related_description: "Close in meaning to \"%{query}\", though they don't contain those words."
       no_results_title: "No results found"
       no_results_description: "Nothing matched \"%{query}\". Try a different search term."
+      no_results_title_scoped: "Nothing in %{workspace} matches \"%{query}\""
+      no_results_elsewhere:
+        one: "%{count} result in your other workspaces."
+        other: "%{count} results in your other workspaces."
+      no_results_nowhere: "Your other workspaces have no match either. Try a different search term."
+      results_heading: "Results"
       empty_title: "Search your memories"
       empty_description: "Enter a search term to find memories across all your workspaces."
       empty_description_scoped: "Enter a search term to find memories in %{workspace}."

@@ -1,0 +1,23 @@
+<%# locals: () %>
+<%# Hiding must never feel like data loss: say what was withheld and make the
+    count the way back to it. The two counts are disjoint, so each line reveals
+    only its own set. Rendered with zero results too, where a withheld match is
+    the whole answer. %>
+<% hidden_count = @obsolete_hidden_count.to_i %>
+<% inactive_hidden_count = @inactive_hidden_count.to_i %>
+<% if hidden_count.positive? || inactive_hidden_count.positive? %>
+  <p class="text-sm text-muted-foreground mb-4">
+    <%= t("search.index.obsolete_hidden_prefix") %>
+    <% if hidden_count.positive? %>
+      <%= link_to t("search.index.obsolete_hidden", count: hidden_count),
+            search_path(query_params_including("obsolete")),
+            class: "font-medium underline underline-offset-2" %>
+    <% end %>
+    <% if inactive_hidden_count.positive? %>
+      <br>
+      <%= link_to t("search.index.inactive_hidden", count: inactive_hidden_count),
+            search_path(query_params_including("inactive")),
+            class: "font-medium underline underline-offset-2" %>
+    <% end %>
+  </p>
+<% end %>

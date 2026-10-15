@@ -169,6 +169,71 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_select "input#q[aria-describedby]", count: 0
   end
 
+  test "a scoped miss counts the matches in other workspaces and widens to them" do
+    sign_in_as(@user)
+    elsewhere = Workspace.create!(account: accounts(:one), name: "Infrastructure")
+    Memory.create_with_content(elsewhere, title: "Cache layers", content: "cachequill notes").rebuild_search_index
+
+    get search_url, params: {q: "cachequill", workspace_id: workspaces(:one).id}
+
+    assert_response :success
+    assert_select "[data-component='empty'] h3",
+      text: I18n.t("search.index.no_results_title_scoped", workspace: workspaces(:one).name, query: "cachequill")
+    assert_select "[data-component='empty']", text: /#{I18n.t("search.index.no_results_elsewhere", count: 1)}/
+    assert_select "[data-component='empty'] a[href=?]", search_path(q: "cachequill"),
+      text: I18n.t("search.index.scope_clear")
+    # The empty state's h3 must not follow the h1 directly.
+    assert_select "h2.sr-only", text: I18n.t("search.index.results_heading")
+  end
+
+  test "a scoped miss with nothing elsewhere offers no dead-end widening" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "xyznonexistent", workspace_id: workspaces(:one).id}
+
+    assert_response :success
+    assert_select "[data-component='empty']", text: /#{Regexp.escape(I18n.t("search.index.no_results_nowhere"))}/
+    assert_select "[data-component='empty'] a", count: 0
+  end
+
+  test "a miss still reports what the filters withheld" do
+    sign_in_as(@user)
+    Memory.create_with_content(workspaces(:one), title: "Old beacon",
+      content: "quillbeacon body", tags: ["superseded"]).rebuild_search_index
+
+    get search_url, params: {q: "quillbeacon", workspace_id: workspaces(:one).id}
+
+    assert_response :success
+    assert_select "[data-component='empty']"
+    assert_select "a[href=?]",
+      search_path(q: "quillbeacon", workspace_id: workspaces(:one).id, include: "obsolete"),
+      text: /1 obsolete memory hidden/
+  end
+
+  test "a scoped palette miss offers the other workspaces as a result row" do
+    sign_in_as(@user)
+    elsewhere = Workspace.create!(account: accounts(:one), name: "Infrastructure")
+    Memory.create_with_content(elsewhere, title: "Cache layers", content: "cachequill notes").rebuild_search_index
+
+    get search_url, params: {q: "cachequill", workspace_id: workspaces(:one).id},
+      headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+
+    assert_response :success
+    assert_select ".palette-note", text: I18n.t("search.command.no_results_scoped", workspace: workspaces(:one).name)
+    assert_select "[data-palette-result][data-palette-widen][href=?]", search_path(q: "cachequill")
+  end
+
+  test "an unscoped miss never counts elsewhere" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "xyznonexistent"},
+      headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+
+    assert_response :success
+    assert_select "[data-palette-widen]", count: 0
+    assert_select ".palette-note", text: I18n.t("search.index.no_results_title")
+  end
+
   test "a workspace from another account cannot scope a search" do
     sign_in_as(@user)
 

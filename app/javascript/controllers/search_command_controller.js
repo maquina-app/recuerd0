@@ -125,13 +125,22 @@ export default class extends Controller {
 
   handleScopeToggle(event) {
     event.preventDefault()
-    const pressed = this._scope.getAttribute("aria-pressed") === "true"
-    this._scope.setAttribute("aria-pressed", pressed ? "false" : "true")
+    this.setScoped(this._scope.getAttribute("aria-pressed") !== "true")
+  }
+
+  // The "Search all workspaces" row on a scoped miss is the chip switched off,
+  // so the row and the chip can never disagree about what is being searched.
+  widenScope() {
+    if (this._scope) this.setScoped(false)
+  }
+
+  setScoped(pressed) {
+    this._scope.setAttribute("aria-pressed", pressed ? "true" : "false")
     const label = this._scope.querySelector("[data-scope-label]")
     if (label) {
       label.textContent = pressed
-        ? this._scope.dataset.scopeOff
-        : this._scope.dataset.scopeOn
+        ? this._scope.dataset.scopeOn
+        : this._scope.dataset.scopeOff
     }
     this.search()
     this._input.focus()
@@ -197,6 +206,11 @@ export default class extends Controller {
 
     // Enter on a highlighted row opens that row; Enter with nothing highlighted
     // falls through to the full results page.
+    if (this._selected?.dataset.paletteWiden !== undefined && this.results.includes(this._selected)) {
+      this.widenScope()
+      return
+    }
+
     if (this._selected && this.results.includes(this._selected)) {
       const href = this._selected.href
       this._dialog.close()
@@ -264,6 +278,14 @@ export default class extends Controller {
   handleDialogClick(event) {
     if (!event.target.closest("[data-search-command-panel]")) {
       this._dialog.close()
+      return
+    }
+
+    // The row's href (the unscoped results page) is the no-JS fallback; with
+    // the palette running, widen in place. Turbo skips a prevented click.
+    if (event.target.closest("[data-palette-widen]")) {
+      event.preventDefault()
+      this.widenScope()
     }
   }
 
