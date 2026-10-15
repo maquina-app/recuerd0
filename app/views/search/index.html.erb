@@ -22,6 +22,7 @@
       filter gives: a debounced keystroke burst must not push one history entry
       per submit, and morph needs it to preserve focus and caret. %>
   <%= form_with url: search_path, method: :get,
+        html: {role: "search", aria: {label: t("search.index.title")}},
         data: {controller: "ws-filter", turbo_action: "replace", ws_filter_target: "form"},
         class: "mb-6" do |f| %>
     <div class="search-page-field">
@@ -51,6 +52,12 @@
           <%= icon_for(:folders, class: "size-3.5") %>
           <%= t("search.command.scope_workspace", workspace: scoped_workspace.name) %>
         </span>
+        <%# Results no longer carry the workspace line, so its state is said here. %>
+        <% if scoped_workspace.archived? %>
+          <span class="text-muted-foreground"><%= t("workspaces.show.archived_badge") %></span>
+        <% elsif scoped_workspace.deleted? %>
+          <span class="text-muted-foreground"><%= t("workspaces.show.deleted_badge") %></span>
+        <% end %>
         <%= link_to t("search.index.scope_clear"),
               search_path(request.query_parameters.except("workspace_id", "page")),
               class: "font-medium text-foreground underline underline-offset-2" %>
@@ -61,23 +68,30 @@
         the query field submits every field. Both share the `include` name, so
         the browser submits include=obsolete&include=inactive — check_box_tag,
         never f.check_box, so an unchecked box sends nothing at all. %>
-    <label class="search-page-toggle">
-      <%= check_box_tag :include, "obsolete", include_obsolete?,
-            id: "search_include_obsolete",
-            data: {action: "change->ws-filter#submit"} %>
-      <span><%= t("search.index.include_obsolete_label") %></span>
-    </label>
-    <%# Scoped to an active workspace, no inactive workspace is in reach, so
-        the box would be a control that does nothing. %>
-    <% unless scoped_workspace&.active? %>
+    <div class="search-page-toggles">
       <label class="search-page-toggle">
-        <%= check_box_tag :include, "inactive", include_inactive?,
-              id: "search_include_inactive",
+        <%= check_box_tag :include, "obsolete", include_obsolete?,
+              id: "search_include_obsolete",
               data: {action: "change->ws-filter#submit"} %>
-        <span><%= t("search.index.include_inactive_label") %></span>
+        <span><%= t("search.index.include_obsolete_label") %></span>
       </label>
-    <% end %>
+      <%# Scoped to an active workspace, no inactive workspace is in reach, so
+          the box would be a control that does nothing. %>
+      <% unless scoped_workspace&.active? %>
+        <label class="search-page-toggle">
+          <%= check_box_tag :include, "inactive", include_inactive?,
+                id: "search_include_inactive",
+                data: {action: "change->ws-filter#submit"} %>
+          <span><%= t("search.index.include_inactive_label") %></span>
+        </label>
+      <% end %>
+    </div>
   <% end %>
+
+  <%# Debounced keystrokes swap the results in place, which a screen reader
+      never hears. One region outlives every branch below, so a morph changes
+      its text and the change is announced. %>
+  <p class="sr-only" role="status"><%= search_status_message(query: @query, count: @pagy&.count.to_i, workspace: scoped_workspace) %></p>
 
   <% if @query.present? && @query.length < Searchable::MIN_QUERY_LENGTH %>
     <%= render "components/alert", variant: :warning, icon: :alert_triangle, css_classes: "mb-6" do %>
@@ -114,10 +128,13 @@
         <%= render "search/hidden_notice" %>
 
         <div class="grid gap-4">
-          <%= render partial: "search/result", collection: @memories, as: :memory %>
+          <%= render partial: "search/result", collection: @memories, as: :memory,
+                locals: {show_workspace: scoped_workspace.nil?} %>
         </div>
 
-        <%= pagination_nav(@pagy, :search_path, params: { q: @query }) %>
+        <%# No params: the helper keeps the request's query, so q, workspace_id
+            and include all survive paging. %>
+        <%= pagination_nav(@pagy, :search_path) %>
       </section>
     <% end %>
 
@@ -132,7 +149,8 @@
           <%= t("search.index.related_description", query: @query) %>
         </p>
         <div class="grid gap-4">
-          <%= render partial: "search/result", collection: @related.map(&:memory), as: :memory %>
+          <%= render partial: "search/result", collection: @related.map(&:memory), as: :memory,
+                locals: {show_workspace: scoped_workspace.nil?} %>
         </div>
       </section>
     <% end %>

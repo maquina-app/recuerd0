@@ -283,6 +283,45 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_select "#search_include_inactive"
   end
 
+  test "scoped results drop the per-result workspace line the scope row already says" do
+    sign_in_as(@user)
+    workspace = workspaces(:one)
+
+    get search_url, params: {q: "Meeting", workspace_id: workspace.id}
+    assert_select ".grid a[href=?]", workspace_path(workspace), count: 0
+
+    get search_url, params: {q: "Meeting"}
+    assert_select ".grid a[href=?]", workspace_path(workspace), minimum: 1
+  end
+
+  test "the results summary lives in a status region a screen reader hears" do
+    sign_in_as(@user)
+    workspace = workspaces(:one)
+
+    get search_url, params: {q: "Meeting", workspace_id: workspace.id}
+    assert_select "form[role=search][aria-label=?]", I18n.t("search.index.title")
+    assert_select "p.sr-only[role=status]",
+      text: I18n.t("search.index.results_count_scoped", count: 1, query: "Meeting", workspace: workspace.name)
+
+    get search_url, params: {q: "xyznonexistent"}
+    assert_select "p.sr-only[role=status]", text: I18n.t("search.index.no_results_title")
+
+    get search_url
+    assert_select "p.sr-only[role=status]", text: ""
+  end
+
+  test "paging a scoped search keeps the scope and the filters" do
+    sign_in_as(@user)
+    workspace = workspaces(:one)
+    11.times { |i| Memory.create_with_content(workspace, title: "Pager #{i}", content: "pagerquill body").rebuild_search_index }
+
+    get search_url, params: {q: "pagerquill", workspace_id: workspace.id, include: "obsolete"}
+
+    assert_response :success
+    assert_select "a[href=?]", search_path(page: 2, q: "pagerquill", workspace_id: workspace.id, include: "obsolete"),
+      minimum: 1
+  end
+
   test "a workspace from another account cannot scope a search" do
     sign_in_as(@user)
 
