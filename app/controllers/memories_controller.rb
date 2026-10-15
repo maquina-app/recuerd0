@@ -4,10 +4,12 @@ class MemoriesController < ApplicationController
   include ObsoleteFilterable
   include ContentRenderable
 
+  allow_token_authentication
+
   before_action :set_workspace
+  before_action :ensure_not_deleted
   before_action :set_memory, only: %i[show edit update destroy]
   before_action :require_active_workspace, only: %i[new create edit update destroy]
-  before_action :require_full_access, only: %i[create update destroy], if: :api_request?
 
   def index
     scope = @workspace.memories
@@ -21,6 +23,8 @@ class MemoriesController < ApplicationController
         redirect_to workspace_path(@workspace)
       end
       format.json do
+        return unless validate_category_param!
+
         scope = apply_obsolete_filter(scope)
         scope = apply_memory_filters(scope)
         @pagy, @memories = pagy(scope, limit: permitted_per_page)

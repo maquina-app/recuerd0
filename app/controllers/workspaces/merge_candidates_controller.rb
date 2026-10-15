@@ -1,6 +1,8 @@
 class Workspaces::MergeCandidatesController < ApplicationController
   include ObsoleteFilterable
 
+  allow_token_authentication
+
   before_action :set_workspace
   before_action :ensure_not_deleted
 

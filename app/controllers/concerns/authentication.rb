@@ -6,11 +6,21 @@ module Authentication
     helper_method :authenticated?
 
     attr_reader :current_access_token
+
+    # Bearer tokens reach only the controllers that opt in below. Everything
+    # else — profile, password, account, OAuth consent, pins — is browser-only,
+    # so a leaked or read-only agent credential cannot manage its owner's
+    # credentials or escalate through an HTML action.
+    class_attribute :token_authentication_allowed, default: false, instance_predicate: false
   end
 
   class_methods do
     def allow_unauthenticated_access(**options)
       skip_before_action :require_authentication, **options
+    end
+
+    def allow_token_authentication
+      self.token_authentication_allowed = true
     end
   end
 
@@ -25,8 +35,18 @@ module Authentication
     redirect_to workspaces_path if authenticated?
   end
 
+  # A presented Bearer header is authoritative: it never falls back to the
+  # session cookie. An invalid token, or a valid one aimed at a controller
+  # outside the API surface, ends the request with the standard 401 envelope
+  # whatever the requested format.
   def require_authentication
-    authenticate_via_token || resume_session || request_authentication
+    if extract_bearer_token
+      return render_unauthorized unless token_authentication_allowed
+      return render_unauthorized unless authenticate_via_token
+    else
+      resume_session || request_authentication
+    end
+
     check_account_not_deleted if Current.user
   end
 

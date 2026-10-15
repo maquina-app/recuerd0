@@ -15,6 +15,9 @@ json.candidates @clusters do |cluster|
     json.tags current.tags
     json.source current.source
     json.version current.version
+    json.obsolete current.obsolete?
+    json.current current.current_version?
+    json.root_id memory.root_memory.id
     json.updated_at current.updated_at.utc
     json.url workspace_memory_url(memory.workspace, memory)
   end

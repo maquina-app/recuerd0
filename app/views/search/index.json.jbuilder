@@ -1,6 +1,7 @@
 json.query @query
 json.total_results @pagy.count
 json.obsolete_hidden @obsolete_hidden_count.to_i
+json.inactive_hidden @inactive_hidden_count.to_i
 
 json.results @memories do |memory|
   json.partial! "memories/memory", memory: memory

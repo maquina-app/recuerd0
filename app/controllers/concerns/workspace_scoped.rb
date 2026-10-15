@@ -7,6 +7,17 @@ module WorkspaceScoped
     @workspace = Current.account.workspaces.find(params[:workspace_id] || params[:id])
   end
 
+  # A soft-deleted workspace is named explicitly in the URL, so its JSON
+  # resources answer 404 rather than 403: deletion has to mean what the
+  # confirmation dialog promised. HTML is untouched — the deleted-workspace page
+  # is the recovery route. Mirrors Workspaces::ContextsController, which set the
+  # convention alongside stats and merge candidates.
+  def ensure_not_deleted
+    return unless @workspace.deleted?
+
+    render_not_found if request.format.json?
+  end
+
   def require_active_workspace
     return if @workspace.active?
 

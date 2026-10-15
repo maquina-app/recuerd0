@@ -224,7 +224,7 @@
             <tr><td><span class="param-name">include_body</span></td><td><span class="param-type">boolean</span></td><td>true</td><td>Whether to include each memory's body content.</td></tr>
             <tr><td><span class="param-name">max_body_chars</span></td><td><span class="param-type">integer</span></td><td>500</td><td>Maximum characters of body to return per memory (100–5000). Longer bodies are truncated.</td></tr>
             <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td></td><td>Filter memories to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
-            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td></td><td>Pass <code>obsolete</code> to include retired memories. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
+            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td></td><td>Pass <code>obsolete</code> to include retired memories, and on search and pinned <code>inactive</code> for archived/deleted workspaces. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">
@@ -382,13 +382,16 @@
             <tr><td>Filtering by the tag</td><td>The flag is still required: <code>?tags=obsolete</code> alone returns <code>[]</code>, <code>?tags=obsolete&amp;include=obsolete</code> returns the memories</td></tr>
             <tr><td>Fetching by identity</td><td>Never filtered — <code>/memories.json?ids=1,2,3</code> and the single-memory endpoint always return what you asked for</td></tr>
             <tr><td>Counting what was hidden</td><td><code>/search.json</code> reports the withheld count as <code>obsolete_hidden</code></td></tr>
+            <tr><td>Inactive workspaces</td><td>A second default filter: memories in an archived or deleted workspace are hidden from <code>/search.json</code> and <code>/memories/pinned.json</code>. Pass <code>include=inactive</code> to review them; the withheld count is <code>inactive_hidden</code>, and the two counts never overlap. Tokens compose: <code>include=obsolete,inactive</code></td></tr>
+            <tr><td>Status in the payload</td><td>Every memory carries <code>obsolete</code>, <code>current</code>, <code>root_id</code> and <code>workspace.state</code> (<code>active</code>, <code>archived</code>, <code>deleted</code>), so you can gate context injection without parsing tags</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">examples</span></div>
           <div class="code-body"><code><span class="cc">GET</span> /search.json?q=rollout                        <span class="cc"># current memories only</span>
 <span class="cc">GET</span> /search.json?q=rollout&amp;include=obsolete       <span class="cc"># plus the retired ones</span>
-<span class="cc">GET</span> /workspaces/1/stats.json?include=obsolete    <span class="cc"># every figure counts them</span></code></div>
+<span class="cc">GET</span> /workspaces/1/stats.json?include=obsolete    <span class="cc"># every figure counts them</span>
+<span class="cc">GET</span> /search.json?q=rollout&amp;include=inactive       <span class="cc"># plus archived/deleted workspaces</span></code></div>
         </div>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
@@ -517,7 +520,7 @@
             <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
             <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
             <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
-            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td>Pass <code>obsolete</code> to include retired memories. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
+            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td>Pass <code>obsolete</code> to include retired memories, and on search and pinned <code>inactive</code> for archived/deleted workspaces. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">
@@ -561,7 +564,7 @@
             <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
             <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
             <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
-            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td>Pass <code>obsolete</code> to include retired memories. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
+            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td>Pass <code>obsolete</code> to include retired memories, and on search and pinned <code>inactive</code> for archived/deleted workspaces. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">
@@ -826,7 +829,7 @@
             <tr><td><span class="param-name">context</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines before and after each match, like <code>grep -C</code> (0–10, default: 0). Only with <code>mode=grep</code></td></tr>
             <tr><td><span class="param-name">before</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines before each match, like <code>grep -B</code> (0–10). Overrides <code>context</code>. Only with <code>mode=grep</code></td></tr>
             <tr><td><span class="param-name">after</span></td><td><span class="param-type">integer</span></td><td></td><td>Lines after each match, like <code>grep -A</code> (0–10). Overrides <code>context</code>. Only with <code>mode=grep</code></td></tr>
-            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td></td><td>Pass <code>obsolete</code> to include retired memories. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
+            <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td></td><td>Pass <code>obsolete</code> to include retired memories, and on search and pinned <code>inactive</code> for archived/deleted workspaces. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
         <div class="param-table-label">Query Operators (FTS5)</div>
@@ -853,6 +856,7 @@
   <span class="ck">"query"</span>: <span class="cs">"architecture AND design"</span>,
   <span class="ck">"total_results"</span>: <span class="cn">3</span>,
   <span class="ck">"obsolete_hidden"</span>: <span class="cn">1</span>,
+  <span class="ck">"inactive_hidden"</span>: <span class="cn">2</span>,
   <span class="ck">"results"</span>: [
     {
       <span class="ck">"id"</span>: <span class="cn">1</span>,

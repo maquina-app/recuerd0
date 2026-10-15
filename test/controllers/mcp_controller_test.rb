@@ -706,6 +706,81 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_includes included["memories"].map { |m| m["title"] }, "Retired context"
   end
 
+  # --- deleted workspaces ---------------------------------------------------
+
+  test "read_memory refuses a memory in a soft-deleted workspace" do
+    memory = Memory.create_with_content(workspaces(:deleted), title: "Gone", content: "body")
+
+    result = mcp(
+      rpc("tools/call", name: "read_memory", arguments: {memory_id: memory.id.to_s}),
+      token: @read_token.raw_token
+    )
+
+    assert result["result"]["isError"]
+    assert_equal "Memory not found", result["result"]["content"].first["text"]
+  end
+
+  test "read_memories lists deleted-workspace ids under missing" do
+    live = Memory.create_with_content(@workspace, title: "Live", content: "body")
+    gone = Memory.create_with_content(workspaces(:deleted), title: "Gone", content: "body")
+
+    payload = call_tool("read_memories", {memory_ids: [live.id.to_s, gone.id.to_s]})
+
+    assert_equal ["Live"], payload["memories"].map { |m| m["title"] }
+    assert_equal [gone.id.to_s], payload["missing"]
+  end
+
+  test "an archived workspace's memory stays readable by id" do
+    memory = Memory.create_with_content(workspaces(:archived), title: "Old", content: "body")
+
+    payload = call_tool("read_memory", {memory_id: memory.id.to_s})
+
+    assert_equal "Old", payload["title"]
+  end
+
+  test "links and updates refuse deleted-workspace memories" do
+    live = Memory.create_with_content(@workspace, title: "Live", content: "body")
+    gone = Memory.create_with_content(workspaces(:deleted), title: "Gone", content: "body")
+    write_token = oauth_token(permission: "full_access", scope: "memories:read memories:write")
+
+    [
+      ["list_memory_links", {memory_id: gone.id.to_s}],
+      ["link_memories", {memory_id: live.id.to_s, to_memory_id: gone.id.to_s}],
+      ["unlink_memories", {memory_id: live.id.to_s, to_memory_id: gone.id.to_s}],
+      ["update_memory", {memory_id: gone.id.to_s, content: "edited"}]
+    ].each do |name, arguments|
+      result = mcp(rpc("tools/call", name: name, arguments: arguments), token: write_token.raw_token)
+
+      assert result["result"]["isError"], name
+      assert_equal "Memory not found", result["result"]["content"].first["text"], name
+    end
+  end
+
+  test "the inactive token stays REST-only" do
+    result = mcp(
+      rpc("tools/call", name: "list_memories",
+        arguments: {workspace_id: @workspace.id.to_s, include: ["inactive"]}),
+      token: @read_token.raw_token
+    )
+
+    assert result["result"]["isError"]
+    assert_match "Invalid include token", result["result"]["content"].first["text"]
+  end
+
+  test "memory_json states obsolete and current" do
+    root = Memory.create_with_content(@workspace, title: "First", content: "v1")
+    root.create_version!(content: "v2")
+    retired = Memory.create_with_content(@workspace, title: "Retired", content: "body", tags: ["obsolete"])
+
+    live = call_tool("read_memory", {memory_id: root.id.to_s})
+    assert_equal false, live["obsolete"]
+    assert_equal true, live["current"]
+
+    payload = call_tool("read_memory", {memory_id: retired.id.to_s})
+    assert_equal true, payload["obsolete"]
+    assert_equal true, payload["current"]
+  end
+
   test "an unadvertised include token is a JSON-RPC error" do
     result = mcp(
       rpc("tools/call", name: "list_memories",
@@ -1038,7 +1113,83 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Memory not found", result["result"]["content"].first["text"]
   end
 
+  # --- Cross-account isolation ----------------------------------------------
+  #
+  # An MCP token is account-wide by design, so the boundary that matters is the
+  # account one. Every tool below is called by account two against account one's
+  # ids and must report the record as simply absent — the same answer a made-up
+  # id gets, so the error cannot be used to enumerate another account.
+
+  test "workspace tools cannot reach another account's workspace" do
+    foreign_workspace = workspaces(:one)
+
+    %w[workspace_context list_memories workspace_stats suggest_merge_candidates].each do |tool|
+      assert_tool_error "Workspace not found",
+        tool, {"workspace_id" => foreign_workspace.id.to_s}, token: foreign_account_token
+    end
+
+    assert_no_difference "Memory.count" do
+      assert_tool_error "Workspace not found", "create_memory",
+        {"workspace_id" => foreign_workspace.id.to_s, "title" => "Injected", "content" => "hello"},
+        token: foreign_account_token
+    end
+  end
+
+  test "memory tools cannot reach another account's memory" do
+    foreign_memory = memories(:one)
+    own_memory = memories(:two)
+    attributes = foreign_memory.attributes
+
+    single = {"memory_id" => foreign_memory.id.to_s}
+    paired = single.merge("to_memory_id" => own_memory.id.to_s)
+
+    assert_no_difference ["Memory.count", "MemoryLink.count"] do
+      assert_tool_error "Memory not found", "read_memory", single, token: foreign_account_token
+      assert_tool_error "Memory not found", "update_memory", single.merge("title" => "Hijacked"), token: foreign_account_token
+      assert_tool_error "Memory not found", "create_version", single.merge("content" => "hijacked"), token: foreign_account_token
+      assert_tool_error "Memory not found", "list_memory_links", single, token: foreign_account_token
+      assert_tool_error "Memory not found", "link_memories", paired, token: foreign_account_token
+      assert_tool_error "Memory not found", "unlink_memories", paired, token: foreign_account_token
+    end
+
+    assert_equal attributes, foreign_memory.reload.attributes
+  end
+
+  test "read_memories reports another account's ids as missing rather than reading them" do
+    foreign_memory = memories(:one)
+
+    result = call_tool("read_memories", {"memory_ids" => [foreign_memory.id.to_s]}, token: foreign_account_token)
+
+    assert_empty result["memories"]
+    assert_equal [foreign_memory.id.to_s], result["missing"]
+  end
+
+  test "list_workspaces never includes another account's workspace" do
+    result = call_tool("list_workspaces", {}, token: foreign_account_token)
+
+    ids = Array(result).map { |workspace| workspace["id"].to_s }
+    assert_not_includes ids, workspaces(:one).id.to_s
+    assert_includes ids, workspaces(:two).id.to_s
+  end
+
   private
+
+  # An OAuth token for account two, used to prove account one is out of reach.
+  def foreign_account_token
+    @foreign_account_token ||= users(:two).access_tokens.create!(
+      oauth_client: @client,
+      permission: "full_access",
+      oauth_scope: "memories:read memories:write",
+      expires_at: 1.hour.from_now
+    ).raw_token
+  end
+
+  def assert_tool_error(message, name, arguments, token:)
+    result = mcp(rpc("tools/call", name: name, arguments: arguments), token: token)
+
+    assert result.dig("result", "isError"), "#{name} did not report an error: #{result.inspect}"
+    assert_equal message, result.dig("result", "content").first["text"], name
+  end
 
   def create_workspace_without_starter_map(name)
     @account.workspaces.create!(name: name).tap do |workspace|

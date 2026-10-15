@@ -9,6 +9,41 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
     @read_only_token = "test_read_token_123"
   end
 
+  test "an unknown category is a 422 rather than an unfiltered context" do
+    get workspace_context_url(@workspace, format: :json), params: {category: "bogus"},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :unprocessable_entity
+    json = JSON.parse(response.body)
+    assert_equal "VALIDATION_ERROR", json.dig("error", "code")
+    assert_equal "Invalid category: bogus", json.dig("error", "message")
+  end
+
+  test "context memories state obsolete, current and root_id" do
+    root = Memory.create_with_content(@workspace, title: "Versioned", content: "v1")
+    root.create_version!(content: "v2")
+    # Context answers with pinned memories when the user has any, so the row
+    # under test has to be one of them.
+    @user.pins.create!(pinnable: root, origin: "user")
+
+    get workspace_context_url(@workspace, format: :json), params: {limit: 50},
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    payload = JSON.parse(response.body)["memories"].find { |m| m["id"] == root.id }
+    assert_equal false, payload["obsolete"]
+    assert_equal true, payload["current"]
+    assert_equal root.id, payload["root_id"]
+  end
+
+  test "an archived workspace reports its state" do
+    get workspace_context_url(workspaces(:archived), format: :json),
+      headers: auth_headers(@read_only_token)
+
+    assert_response :success
+    assert_equal "archived", JSON.parse(response.body).dig("workspace", "state")
+  end
+
   test "returns 200 with expected payload shape" do
     get workspace_context_url(@workspace, format: :json),
       headers: auth_headers(@read_only_token)

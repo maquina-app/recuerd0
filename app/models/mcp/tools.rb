@@ -167,7 +167,7 @@ module Mcp
       ids = Array(args["memory_ids"]).map(&:to_s).reject(&:blank?).first(BATCH_READ_LIMIT)
 
       found = Memory.joins(:workspace)
-        .where(workspaces: {account_id: account.id})
+        .where(workspaces: {account_id: account.id, deleted_at: nil})
         .latest_versions
         .where(id: ids)
         .index_by { |memory| memory.id.to_s }
@@ -340,6 +340,10 @@ module Mcp
         tags: memory.tags,
         source: memory.source,
         version: memory.version,
+        # Stated rather than inferred: a client gating context injection should
+        # not have to parse tags or compare version numbers.
+        obsolete: memory.obsolete?,
+        current: memory.current_version?,
         created_at: memory.created_at.iso8601,
         updated_at: memory.updated_at.iso8601
       }
@@ -375,7 +379,9 @@ module Mcp
     private_class_method :validate_category!
 
     # `include` is an array of tokens re-enabling something hidden by default —
-    # today only "obsolete". Rejected loudly, like an unadvertised category or
+    # today only "obsolete". The REST-only `inactive` token is deliberately not
+    # accepted: MCP has no cross-workspace listing, its listings are already
+    # active-only, and deleted-workspace memories are unreachable by id. Rejected loudly, like an unadvertised category or
     # retrieval mode, so a typo is an error rather than a silently filtered set.
     def include_obsolete?(args)
       return false unless args.key?("include")
@@ -437,9 +443,12 @@ module Mcp
     end
     private_class_method :find_workspace
 
+    # A soft-deleted workspace's memories are not resolvable by id: MCP is a
+    # retrieval surface for an agent, and a deleted project must not come back
+    # through a remembered id. Archived workspaces stay readable.
     def find_memory(account, memory_id)
       Memory.joins(:workspace)
-        .where(workspaces: {account_id: account.id})
+        .where(workspaces: {account_id: account.id, deleted_at: nil})
         .latest_versions
         .find_by(id: memory_id) ||
         raise(ToolError, "Memory not found")
@@ -448,7 +457,7 @@ module Mcp
 
     def find_memory_for_update(account, memory_id)
       Memory.joins(:workspace)
-        .where(workspaces: {account_id: account.id})
+        .where(workspaces: {account_id: account.id, deleted_at: nil})
         .find_by(id: memory_id) ||
         raise(ToolError, "Memory not found")
     end

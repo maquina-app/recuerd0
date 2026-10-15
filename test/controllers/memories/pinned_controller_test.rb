@@ -125,6 +125,49 @@ class Memories::PinnedControllerTest < ActionDispatch::IntegrationTest
     assert body.first["pinned_at"].present?
   end
 
+  # JSON is an agent's retrieval surface: a pin on a retired memory or on a
+  # shut-down project must not reach a context window by accident.
+  test "json hides obsolete and inactive pins by default and reveals them on request" do
+    retired = Memory.create_with_content(workspaces(:one), title: "Retired pin", content: "b", tags: ["obsolete"])
+    archived = Memory.create_with_content(workspaces(:archived), title: "Archived pin", content: "b")
+    deleted = Memory.create_with_content(workspaces(:deleted), title: "Deleted pin", content: "b")
+    [retired, archived, deleted].each { |memory| @user.pins.create!(pinnable: memory, origin: "user") }
+
+    get pinned_memories_url(format: :json), headers: auth_headers("test_read_token_123")
+    assert_response :success
+    assert_equal [memories(:one).id], JSON.parse(response.body).map { |m| m["id"] }
+
+    get pinned_memories_url(format: :json), params: {include: "obsolete"},
+      headers: auth_headers("test_read_token_123")
+    assert_response :success
+    assert_equal [memories(:one).id, retired.id].sort, JSON.parse(response.body).map { |m| m["id"] }.sort
+
+    get pinned_memories_url(format: :json), params: {include: "inactive"},
+      headers: auth_headers("test_read_token_123")
+    assert_response :success
+    assert_equal [memories(:one).id, archived.id, deleted.id].sort,
+      JSON.parse(response.body).map { |m| m["id"] }.sort
+
+    get pinned_memories_url(format: :json), params: {include: "obsolete,inactive"},
+      headers: auth_headers("test_read_token_123")
+    assert_response :success
+    assert_equal [memories(:one).id, retired.id, archived.id, deleted.id].sort,
+      JSON.parse(response.body).map { |m| m["id"] }.sort
+  end
+
+  # The page is a curation surface, not a retrieval one: it keeps every pin,
+  # including the "Inactive" group it already labels.
+  test "the html page still renders pins from inactive workspaces" do
+    archived = Memory.create_with_content(workspaces(:archived), title: "Archived pin", content: "b")
+    @user.pins.create!(pinnable: archived, origin: "user")
+
+    sign_in_as(@user)
+    get pinned_memories_url
+
+    assert_response :success
+    assert_match "Archived pin", response.body
+  end
+
   test "json pinned set is scoped to the user, not the account" do
     other = users(:member)
     assert_equal @user.account_id, other.account_id, "fixture precondition: same account"

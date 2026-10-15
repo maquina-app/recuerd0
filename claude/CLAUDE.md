@@ -190,6 +190,11 @@ View-level locale keys go in `config/locales/views/en.yml`. Partial key paths st
 - `bin/ci` does **not** run them (`config/ci.rb` has the step commented out) — run `bin/rails test test/system/...` by hand when you touch JS.
 - Headless Chrome cannot start in the container without `--no-sandbox`; the flags live in `test/application_system_test_case.rb`. Without them every system test fails with `SessionNotCreatedError: Chrome instance exited`.
 - Rebuild CSS (`bin/rails tailwindcss:build`) after editing `app/assets/tailwind/application.css` or system tests exercise the stale build.
+- **Run `bin/rails db:test:prepare` before system tests if you just ran `bin/ci`.** Its
+  last step, `env RAILS_ENV=test bin/rails db:seed:replant`, leaves seed rows in the
+  test database; the next fixture load deletes the memories they point at and every
+  system test errors with `Foreign key violations found: memory_links`. `db:reset` does
+  not help — it re-seeds. This is environment state, not a broken test.
 - `getComputedStyle(el, "::-webkit-search-cancel-button")` returns the **host element's** style in headless Chrome, not the pseudo-element's — it reports `appearance: auto` even when the rule applies. Don't assert on it; assert on the CSS source and check the rendering in a screenshot.
 
 ## Testing Gotchas
@@ -260,3 +265,22 @@ Frontend/UI work is guided by two root files (created via the `impeccable` skill
 - **`DESIGN.md`** — visual system: OKLCH hue-150 palette (Memory Green primary), Jura / Instrument Sans / Geist Mono type, flat-by-default elevation, and named rules (One Green Rule, True-Neutral Rule, Flat-By-Default Rule, One-Frost Rule). Machine-readable tokens live in its YAML frontmatter; `.impeccable/design.json` carries tonal ramps and component snippets.
 
 These align with `docs/brand-guide.md` and `docs/brand-voice.md`. Use the `impeccable` skill (`/impeccable <command>`) for UI design, critique, audit, and polish work.
+
+## Gotchas
+
+- A `parent_memory` preload re-loads the roots a collection already holds, as separate
+  instances whose `child_versions` are NOT loaded — so anything asking a version whether it
+  is current (`current_version?`) costs one query per root. When every version is already in
+  the result set, point the children at the loaded roots instead
+  (`Workspaces::ExportsController#link_parents_to_loaded_roots`).
+- `invert_where` inverts EVERY where clause on the relation, not just the last one. For "the
+  rows this filter withheld", write the positive predicate (as `Memory.only_obsolete` does).
+- Archiving or deleting a workspace does not touch its memories, so any fragment cache that
+  renders workspace state must include the workspace in its key
+  (`app/views/memories/_memory.json.jbuilder`).
+- In dev, agent-browser cannot submit the sign-in form (no POST ever reaches the server). Log
+  in with curl (`GET /session/new` → scrape `authenticity_token` → `POST /session` with a
+  cookie jar), then hand the cookie over:
+  `agent-browser cookies set --curl <file> --domain localhost --url http://localhost:3820`.
+  The jar file is Netscape format and `--curl` rejects it — write a single
+  `session_id=<value>` Cookie-header line instead.

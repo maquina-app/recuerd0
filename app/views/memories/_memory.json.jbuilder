@@ -1,7 +1,16 @@
-json.cache! [memory, "links_count:#{memory.links_count}"] do
+# The workspace is part of the key because archiving or deleting one does not
+# touch its memories, so a record-keyed fragment would keep reporting the old
+# workspace.state long after the state changed.
+json.cache! [memory, memory.workspace, "links_count:#{memory.links_count}"] do
   json.call(memory, :id, :title, :tags, :source, :category, :version)
   json.version_label memory.version_label
   json.has_versions memory.versioned?
+  # Status stated outright, so a client can gate context injection without
+  # parsing tags or comparing version numbers. root_id is the pointer that
+  # makes current: false actionable.
+  json.obsolete memory.obsolete?
+  json.current memory.current_version?
+  json.root_id memory.root_memory.id
   json.links_count memory.links_count
   json.created_at memory.created_at.utc
   json.updated_at memory.updated_at.utc
@@ -10,6 +19,7 @@ json.cache! [memory, "links_count:#{memory.links_count}"] do
   json.workspace do
     json.id memory.workspace.id
     json.name memory.workspace.name
+    json.state memory.workspace.status
     json.url workspace_url(memory.workspace)
   end
 end

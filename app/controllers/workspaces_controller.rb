@@ -2,9 +2,10 @@ class WorkspacesController < ApplicationController
   include WorkspaceScoped
   include WorkspaceViewMode
 
+  allow_token_authentication
+
   before_action :set_workspace, only: %i[show edit update destroy]
   before_action :require_active_workspace, only: %i[edit update]
-  before_action :require_full_access, only: %i[create update destroy], if: :api_request?
 
   def index
     @view_mode = resolve_workspace_view_mode

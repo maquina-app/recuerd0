@@ -1,6 +1,6 @@
 json.workspace do
   json.call(@workspace, :id, :name, :description, :memories_count)
-  json.state @workspace.archived? ? "archived" : "active"
+  json.state @workspace.status
   json.updated_at @workspace.updated_at.utc
   json.url workspace_url(@workspace)
 end
@@ -14,6 +14,9 @@ context_memories = @memories.map do |memory|
     tags: current.tags,
     category: current.category,
     links_count: memory.links_count,
+    obsolete: current.obsolete?,
+    current: current.current_version?,
+    root_id: memory.root_memory.id,
     pinned_at: memory.pins.find { |pin| pin.user_id == Current.user.id }&.created_at&.utc,
     updated_at: current.updated_at.utc,
     url: workspace_memory_url(@workspace, memory)

@@ -2,8 +2,9 @@ class Workspaces::ArchivesController < ApplicationController
   include WorkspaceScoped
   include WorkspaceViewMode
 
+  allow_token_authentication
+
   before_action :set_workspace, except: [:index]
-  before_action :require_full_access, only: %i[create destroy], if: :api_request?
 
   # GET /workspaces/archived
   def index
