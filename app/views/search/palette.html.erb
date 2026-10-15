@@ -94,12 +94,13 @@
     <p class="palette-note"><%= t("search.command.see_all", count: @pagy.count) %></p>
 
     <%# No checkbox here — the palette stays a single input. The way back to
-        withheld results is the full search page, so the link leaves the frame. %>
+        withheld results is the full search page, so the link leaves the frame,
+        carrying the frame's own query and workspace scope with it. %>
     <% if @obsolete_hidden_count.to_i > 0 %>
       <p class="palette-note">
         <%= icon_for(:archive, class: "size-3.5 shrink-0") %>
         <%= link_to t("search.index.obsolete_hidden_palette", count: @obsolete_hidden_count),
-              search_path(q: @query, include: "obsolete"),
+              search_path(query_params_including("obsolete")),
               data: {turbo_frame: "_top"} %>
       </p>
     <% end %>
@@ -107,7 +108,7 @@
       <p class="palette-note">
         <%= icon_for(:archive, class: "size-3.5 shrink-0") %>
         <%= link_to t("search.index.inactive_hidden_palette", count: @inactive_hidden_count),
-              search_path(q: @query, include: "inactive"),
+              search_path(query_params_including("inactive")),
               data: {turbo_frame: "_top"} %>
       </p>
     <% end %>

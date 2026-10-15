@@ -323,7 +323,6 @@ en:
       see_all: "Press Enter to see all %{count} results"
       related: "Related"
       scope_workspace: "Only in %{workspace}"
-      scope_everywhere: "Search everywhere"
       empty_query: "Type something to search."
       no_results_scoped: "Nothing in %{workspace} matches."
       elsewhere_count:

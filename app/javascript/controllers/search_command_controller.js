@@ -114,7 +114,10 @@ export default class extends Controller {
   searchUrl(query) {
     const url = new URL(this.searchUrlValue, window.location.origin)
     if (query) url.searchParams.set("q", query)
-    if (this.scopedWorkspaceId) url.searchParams.set("workspace_id", this.scopedWorkspaceId)
+    if (this.scopedWorkspaceId) {
+      url.searchParams.set("workspace_id", this.scopedWorkspaceId)
+      if (this._scope.dataset.workspaceInactive !== undefined) url.searchParams.set("include", "inactive")
+    }
     return url.toString()
   }
 
@@ -136,12 +139,6 @@ export default class extends Controller {
 
   setScoped(pressed) {
     this._scope.setAttribute("aria-pressed", pressed ? "true" : "false")
-    const label = this._scope.querySelector("[data-scope-label]")
-    if (label) {
-      label.textContent = pressed
-        ? this._scope.dataset.scopeOn
-        : this._scope.dataset.scopeOff
-    }
     this.search()
     this._input.focus()
   }

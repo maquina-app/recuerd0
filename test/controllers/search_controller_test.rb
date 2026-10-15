@@ -234,6 +234,55 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_select ".palette-note", text: I18n.t("search.index.no_results_title")
   end
 
+  test "the palette on a scoped search page keeps the page's scope" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "Meeting", workspace_id: workspaces(:one).id}
+
+    assert_response :success
+    assert_select "#search-command-scope[aria-pressed=true][data-workspace-id=?]", workspaces(:one).id.to_s,
+      text: I18n.t("search.command.scope_workspace", workspace: workspaces(:one).name)
+    # One fixed label; only aria-pressed carries the state.
+    assert_select "#search-command-scope[data-scope-off]", count: 0
+    assert_select "#search-command-scope[data-workspace-inactive]", count: 0
+  end
+
+  test "the palette chip on an archived workspace asks for inactive results" do
+    sign_in_as(@user)
+
+    get archived_workspace_url(workspaces(:archived))
+
+    assert_response :success
+    assert_select "#search-command-scope[data-workspace-inactive]"
+  end
+
+  test "palette hidden-count links keep the workspace scope" do
+    sign_in_as(@user)
+    Memory.create_with_content(workspaces(:one), title: "Old beacon",
+      content: "quillbeacon body", tags: ["superseded"]).rebuild_search_index
+    Memory.create_with_content(workspaces(:one), title: "New beacon",
+      content: "quillbeacon body").rebuild_search_index
+
+    get search_url, params: {q: "quillbeacon", workspace_id: workspaces(:one).id},
+      headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+
+    assert_response :success
+    assert_select "a[href=?]", search_path(q: "quillbeacon", workspace_id: workspaces(:one).id, include: "obsolete")
+  end
+
+  test "the inactive box is offered only where an inactive workspace is in reach" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "Meeting", workspace_id: workspaces(:one).id}
+    assert_select "#search_include_inactive", count: 0
+
+    get search_url, params: {q: "Meeting", workspace_id: workspaces(:archived).id}
+    assert_select "#search_include_inactive"
+
+    get search_url, params: {q: "Meeting"}
+    assert_select "#search_include_inactive"
+  end
+
   test "a workspace from another account cannot scope a search" do
     sign_in_as(@user)
 

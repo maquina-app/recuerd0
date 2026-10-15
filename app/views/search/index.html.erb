@@ -67,12 +67,16 @@
             data: {action: "change->ws-filter#submit"} %>
       <span><%= t("search.index.include_obsolete_label") %></span>
     </label>
-    <label class="search-page-toggle">
-      <%= check_box_tag :include, "inactive", include_inactive?,
-            id: "search_include_inactive",
-            data: {action: "change->ws-filter#submit"} %>
-      <span><%= t("search.index.include_inactive_label") %></span>
-    </label>
+    <%# Scoped to an active workspace, no inactive workspace is in reach, so
+        the box would be a control that does nothing. %>
+    <% unless scoped_workspace&.active? %>
+      <label class="search-page-toggle">
+        <%= check_box_tag :include, "inactive", include_inactive?,
+              id: "search_include_inactive",
+              data: {action: "change->ws-filter#submit"} %>
+        <span><%= t("search.index.include_inactive_label") %></span>
+      </label>
+    <% end %>
   <% end %>
 
   <% if @query.present? && @query.length < Searchable::MIN_QUERY_LENGTH %>
