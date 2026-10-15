@@ -31,6 +31,14 @@
   --accent-foreground: oklch(0.280 0.030 150);
   --destructive: oklch(0.580 0.237 28.43);
   --destructive-foreground: oklch(0.985 0.010 25);
+  /* --destructive-foreground sits ON a destructive fill; field-error text and
+     the invalid border sit on the card, so they read the color itself. */
+  --destructive-text: var(--destructive);
+  --destructive-border: var(--destructive);
+  /* Toast frame, read by the gem's toast; the frosted surface is styled below. */
+  --toast-radius: 0.75rem;
+  --toast-shadow: 0 8px 32px rgb(0 0 0 / 0.08), 0 2px 8px rgb(0 0 0 / 0.05);
+  --toast-hover-shadow: 0 12px 40px rgb(0 0 0 / 0.10), 0 4px 12px rgb(0 0 0 / 0.06);
   --success: oklch(0.940 0.035 150);
   --success-foreground: oklch(0.300 0.065 150);
   --warning: oklch(0.940 0.030 85);
@@ -144,6 +152,10 @@
   --accent-foreground: oklch(0.920 0.015 150);
   --destructive: oklch(0.650 0.200 28.43);
   --destructive-foreground: oklch(0.170 0.010 25);
+  --destructive-text: var(--destructive);
+  --destructive-border: var(--destructive);
+  --toast-shadow: 0 8px 32px rgb(0 0 0 / 0.35), 0 2px 8px rgb(0 0 0 / 0.25);
+  --toast-hover-shadow: 0 12px 40px rgb(0 0 0 / 0.40), 0 4px 12px rgb(0 0 0 / 0.30);
   --success: oklch(0.250 0.030 150);
   --success-foreground: oklch(0.850 0.045 150);
   --warning: oklch(0.250 0.025 85);
@@ -206,16 +218,25 @@
   }
 }
 
-/* Tag input container: match [data-component="input"] shadow & focus ring */
-.tag-input-container {
-  box-shadow: var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05));
-  transition: color 150ms, box-shadow 150ms;
-}
-.tag-input-container:focus-within {
+/* Compound fields — a bordered shell around a bare input — ring the way the
+   gem's [data-component="input"] does: --ring border plus the focus-ring
+   tokens as an outline. Never transition outline-color on these. */
+.tag-input-container:focus-within,
+.house-md-shell:focus-within,
+.ws-filter input[type="search"]:focus-visible,
+.search-command-panel:focus-within,
+.search-page-field:focus-within {
   border-color: var(--ring);
-  box-shadow:
-    var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05)),
-    0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  outline-width: var(--focus-ring-width, 3px);
+  outline-style: var(--focus-ring-style, solid);
+  outline-color: var(--focus-ring-color, color-mix(in oklch, var(--ring) 50%, transparent));
+  outline-offset: var(--focus-ring-offset, 0px);
+}
+
+/* Tag input container: match [data-component="input"] elevation */
+.tag-input-container {
+  box-shadow: var(--elevation-control);
+  transition: color 150ms, border-color 150ms;
 }
 .dark .tag-input-container {
   background-color: color-mix(in oklch, var(--input) 30%, transparent);
@@ -251,12 +272,6 @@
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
 }
 
-/* Opt a textarea out of resizing. The gem defaults [data-component="textarea"]
-   to resize: vertical (unlayered), which outranks the layered `.resize-none`
-   utility — this higher-specificity rule wins. */
-[data-component="textarea"].resize-none {
-  resize: none;
-}
 
 /* Onboarding alert actions are one line tall; offset the shared top-aligned icon
    so it sits optically centered against the row. */
@@ -369,13 +384,10 @@ house-md-toolbar button svg {
   display: none;
 }
 
-/* The bordered shell owns the focus frame; the editor content area stays flush
-   (mirrors the .tag-input-container pattern). */
+/* The bordered shell owns the focus frame (the compound-field ring above); the
+   editor content area stays flush. */
 .house-md-shell:focus-within {
-  border-color: var(--ring);
-  box-shadow:
-    var(--shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05)),
-    0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  box-shadow: var(--elevation-control);
 }
 .house-md-content:focus,
 .house-md-content:focus-visible {
@@ -558,18 +570,8 @@ house-md-toolbar button svg {
   background-color: oklch(1 0 0 / 0.82);
   color: var(--foreground);
   border-color: color-mix(in oklch, var(--border) 70%, transparent);
-  border-radius: 0.75rem;
   backdrop-filter: blur(16px) saturate(1.4);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  box-shadow:
-    0 8px 32px rgb(0 0 0 / 0.08),
-    0 2px 8px rgb(0 0 0 / 0.05);
-}
-
-[data-component="toast"]:hover {
-  box-shadow:
-    0 12px 40px rgb(0 0 0 / 0.10),
-    0 4px 12px rgb(0 0 0 / 0.06);
 }
 
 /* Tonal icon badge — rounded chip that carries the variant color */
@@ -670,15 +672,6 @@ house-md-toolbar button svg {
 .dark [data-component="toast"][data-variant] {
   background-color: oklch(0.22 0.015 150 / 0.9);
   border-color: color-mix(in oklch, var(--border) 85%, transparent);
-  box-shadow:
-    0 8px 32px rgb(0 0 0 / 0.35),
-    0 2px 8px rgb(0 0 0 / 0.25);
-}
-
-.dark [data-component="toast"]:hover {
-  box-shadow:
-    0 12px 40px rgb(0 0 0 / 0.40),
-    0 4px 12px rgb(0 0 0 / 0.30);
 }
 
 .dark [data-toast-part="icon"] {
@@ -857,35 +850,6 @@ house-md-toolbar button svg {
   height: 1rem;
 }
 
-/* Focus ring restoration.
-   The gem defines [data-component="button"]:focus-visible with a ring, then
-   overrides box-shadow in every variant rule at EQUAL specificity and later
-   source order — ghost resolves to `none`, default/outline/secondary to
-   --shadow-sm. The ring is therefore absent on every button that is not
-   destructive. Reinstating it one specificity step up (an extra attribute
-   selector) puts it back without touching the gem. */
-[data-component="button"][data-variant]:focus-visible,
-[data-component="button"]:not([data-variant]):focus-visible {
-  box-shadow:
-    0 0 0 2px var(--background),
-    0 0 0 4px var(--ring);
-}
-[data-component="button"][data-variant="destructive"]:focus-visible {
-  box-shadow:
-    0 0 0 2px var(--background),
-    0 0 0 4px var(--destructive);
-}
-
-/* The gem's ghost variant sets `color: var(--foreground)` unlayered, which beats
-   the .text-destructive utility — so every destructive icon button (remove user,
-   revoke app, delete token) rendered in plain ink. Same specificity, later
-   source order, so this restores the intent without touching the gem. */
-[data-component="button"].text-destructive,
-[data-component="button"].text-destructive:hover,
-[data-component="button"].hover\:text-destructive:hover {
-  color: var(--destructive);
-}
-
 /* Coarse pointers get a 44px hit target without the control growing visually:
    the box stays at its designed size, a pseudo-element carries the touch area.
    Applied only under (pointer: coarse) so desktop density is untouched. */
@@ -1040,7 +1004,10 @@ house-md-toolbar button svg {
 
 /* First paint on a phone must not be a nav drawer over the content. The server
    only knows the desktop cookie, and the sidebar controller can only correct
-   the state once it connects — so hold the sheet off-canvas until then. */
+   the state once it connects — so hold the sheet off-canvas until then.
+   Still needed on maquina-components 0.7.4: the engine zeroes the gap below
+   768px and marks a collapsed sheet inert, but an expanded cookie still paints
+   the sheet over the page until the controller connects. */
 @media (max-width: 767px) {
   [data-sidebar-part="root"].sidebar-loading[data-side="left"] [data-sidebar-part="container"] {
     left: calc(var(--sidebar-width) * -1);
@@ -1094,11 +1061,6 @@ house-md-toolbar button svg {
 }
 .ws-filter input[type="search"]::placeholder {
   color: var(--muted-foreground);
-}
-.ws-filter input[type="search"]:focus-visible {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
 }
 .ws-filter kbd {
   position: absolute;
@@ -1356,55 +1318,27 @@ a {
   height: 0.5625rem;
 }
 
-/* Inline form errors must be readable.
-   The gem sets `[data-form-part="error"] { color: var(--destructive-foreground) }`
-   UNLAYERED in form.css, and --destructive-foreground is near-white because the
-   token is meant for text sitting ON a filled destructive surface. Under an
-   input it renders white-on-white: measured 1.05:1, i.e. invisible.
-
-   CLAUDE.md prescribes adding `class="text-destructive"` at the call site, and
-   that cannot work — Tailwind utilities live in @layer utilities, and an
-   unlayered declaration outranks every layer regardless of specificity. So this
-   override is deliberately UNLAYERED too, and carries a doubled attribute
-   selector so it also wins on specificity rather than relying on source order.
-   Fixes all 16 call sites at once. */
-[data-form-part="error"][data-form-part] {
-  color: var(--destructive);
-}
-
-/* card-danger — a card that must not be mistaken for its neighbours.
-   Declared here rather than as a `border-destructive` utility because the gem's
-   card.css sets `border-color: var(--border)` unlayered, and an unlayered
-   declaration beats anything in @layer utilities regardless of specificity. */
+/* card-danger — a card that must not be mistaken for its neighbours. */
 @layer components {
   .card-danger[data-component="card"] {
+    --card-shadow: none;
     border-color: var(--destructive);
     background-color: color-mix(in oklch, var(--destructive) 4%, var(--card));
-    box-shadow: none;
   }
 }
 
 /* memory-card — composed from data-card-part, redesigned for memories */
 
-/* The gem's card.css:9 does `@apply rounded-xl border shadow`, giving every
-   card a RESTING drop shadow. DESIGN.md's Flat-By-Default Rule: surfaces are
-   flat at rest and shadow is a response to state, so separate with a border or
-   a tonal plane instead. The hover response is the border, not a lift. */
+/* The gem gives every card a resting drop shadow. DESIGN.md's Flat-By-Default
+   Rule: surfaces are flat at rest and shadow is a response to state, so
+   separate with a border or a tonal plane instead. The hover response is the
+   border, not a lift. */
 .memory-card {
-  box-shadow: none;
+  --card-shadow: none;
   transition: border-color 150ms ease-out;
 }
 .memory-card:hover {
   border-color: color-mix(in oklch, var(--ring) 35%, var(--border));
-}
-
-/* The pin indicator has to out-specify the gem's
-   `[data-component="card"] [data-card-part="header"] svg { color: var(--muted-foreground) }`,
-   which beat a `text-primary` utility on the parent span and rendered this
-   icon grey everywhere memory cards appear. */
-.memory-card [data-card-part="header"] .pin-badge svg,
-.memory-row .pin-badge svg {
-  color: var(--primary);
 }
 
 /* DESIGN.md calls the focus formula "the accessibility guarantee" — the card's
@@ -1853,10 +1787,6 @@ a {
   outline: none;
   box-shadow: none;
 }
-.search-command-panel:focus-within {
-  border-color: var(--ring);
-  box-shadow: var(--shadow-md), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
-}
 
 .search-command-scope {
   border-top: 1px solid var(--border);
@@ -1956,13 +1886,14 @@ a {
   color: var(--muted-foreground);
 }
 
-/* The header triggers carry no data-component, so they missed the gem's ring
-   restoration above and fell through to the browser's `outline: auto`, which
-   composited to 2.24:1 — the half-alpha is what sank it. Same formula, full
-   alpha, 5.69:1. */
+/* The header triggers carry no data-component, so the engine's button ring
+   never reaches them and they fell through to the browser's `outline: auto`
+   (2.24:1). Same tokens and full-alpha color as the gem's button ring. */
 .palette-trigger:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  outline-width: var(--focus-ring-width, 3px);
+  outline-style: var(--focus-ring-style, solid);
+  outline-color: var(--focus-ring-color, var(--ring));
+  outline-offset: var(--focus-ring-offset, 0px);
 }
 
 /* The results page's own search field. Same shell treatment as the palette:
@@ -1975,10 +1906,6 @@ a {
   border-radius: var(--radius);
   background-color: var(--background);
   padding: 0 0.75rem;
-}
-.search-page-field:focus-within {
-  border-color: var(--ring);
-  box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
 }
 .search-page-field input[type="search"] {
   flex: 1 1 auto;

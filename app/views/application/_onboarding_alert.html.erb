@@ -6,7 +6,7 @@
 <%= render "components/alert",
   variant: :default,
   icon: :info,
-  css_classes: "mb-8 !px-3.5 !py-[11px]",
+  css_classes: "mb-8 px-3.5 py-[11px]",
   data: { onboarding_banner: true } do %>
   <div
     class="flex flex-wrap items-center gap-x-3 gap-y-2"
@@ -45,14 +45,13 @@
 
       <%= render "components/separator",
         orientation: :vertical,
-        css_classes: "!mx-1" %>
+        css_classes: "mx-1" %>
 
       <div class="flex items-center gap-1">
         <%= render "components/drawer/trigger",
           variant: :outline,
           size: :sm,
-          css_classes: "shrink-0",
-          data: { variant: "outline", size: "sm" } do %>
+          css_classes: "shrink-0" do %>
           Show me how
         <% end %>
 
@@ -61,7 +60,7 @@
           method: :post,
           form: {class: "contents"},
           data: {component: "button", variant: "ghost", size: "sm"},
-          class: "!text-muted-foreground" %>
+          class: "text-muted-foreground" %>
       </div>
     </div>
   </div>

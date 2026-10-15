@@ -14,30 +14,33 @@
         <div data-form-part="group">
           <%= form.label :email_address, t("invitations.show.email_label"), data: { component: "label" } %>
           <%= form.email_field :email_address, required: true, autofocus: true,
+              aria: field_error_aria(form, :email_address),
               autocomplete: "email", placeholder: t("invitations.show.email_placeholder"),
               data: { component: "input" } %>
           <% if @user.errors[:email_address].any? %>
-            <p data-form-part="error" class="text-destructive"><%= @user.errors[:email_address].first %></p>
+            <p data-form-part="error" id="<%= form.field_id(:email_address, :error) %>"><%= @user.errors[:email_address].first %></p>
           <% end %>
         </div>
 
         <div data-form-part="group">
           <%= form.label :password, data: { component: "label" } %>
           <%= form.password_field :password, required: true,
+              aria: field_error_aria(form, :password),
               autocomplete: "new-password", placeholder: t("invitations.show.password_placeholder"),
               data: { component: "input" } %>
           <% if @user.errors[:password].any? %>
-            <p data-form-part="error" class="text-destructive"><%= @user.errors[:password].first %></p>
+            <p data-form-part="error" id="<%= form.field_id(:password, :error) %>"><%= @user.errors[:password].first %></p>
           <% end %>
         </div>
 
         <div data-form-part="group">
           <%= form.label :password_confirmation, t("invitations.show.password_confirmation_label"), data: { component: "label" } %>
           <%= form.password_field :password_confirmation, required: true,
+              aria: field_error_aria(form, :password_confirmation),
               autocomplete: "new-password", placeholder: t("invitations.show.password_confirmation_placeholder"),
               data: { component: "input" } %>
           <% if @user.errors[:password_confirmation].any? %>
-            <p data-form-part="error" class="text-destructive"><%= @user.errors[:password_confirmation].first %></p>
+            <p data-form-part="error" id="<%= form.field_id(:password_confirmation, :error) %>"><%= @user.errors[:password_confirmation].first %></p>
           <% end %>
         </div>
 

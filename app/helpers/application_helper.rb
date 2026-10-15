@@ -31,6 +31,15 @@ module ApplicationHelper
     THEMES.include?(theme) ? theme : "system"
   end
 
+  # A field that may carry a server-side error says so: aria-invalid draws the
+  # engine's error border, aria-describedby points at the inline message, whose
+  # id is form.field_id(attribute, :error).
+  def field_error_aria(form, attribute)
+    return {invalid: false} if form.object.errors[attribute].none?
+
+    {invalid: true, describedby: form.field_id(attribute, :error)}
+  end
+
   def avatar_fallback(alt, fallback = nil)
     if fallback.present?
       fallback

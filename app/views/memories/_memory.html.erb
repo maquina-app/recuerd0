@@ -22,12 +22,10 @@
 
       <div class="flex flex-shrink-0 items-center gap-1.5">
         <% if workspace.active? && is_pinned && show_pin_badge %>
-          <%# .pin-badge, not a bare text-primary utility: the gem's
-              [data-card-part="header"] svg { color: var(--muted-foreground) }
-              wins over a colour utility on the parent span, so this icon
-              rendered grey everywhere until the class gave it a target. %>
+          <%# The colour goes on the svg itself: the card header colours its
+              svgs muted, and that beats anything inherited from the span. %>
           <span class="pin-badge inline-flex" title="<%= t("workspaces.show.pinned_badge") %>">
-            <%= icon_for(:pin, class: "size-3.5") %>
+            <%= icon_for(:pin, class: "size-3.5 text-primary") %>
             <span class="sr-only"><%= t("workspaces.show.pinned_badge") %></span>
           </span>
         <% end %>

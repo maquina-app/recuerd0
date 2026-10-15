@@ -24,7 +24,7 @@
 
         <%= render "components/separator", orientation: :vertical %>
 
-        <div class="min-w-0 flex-1 overflow-hidden [&_[data-breadcrumb-part=list]]:flex-nowrap">
+        <div class="min-w-0 flex-1 overflow-hidden">
           <% if content_for?(:breadcrumb) %>
             <%= yield :breadcrumb %>
           <% else %>

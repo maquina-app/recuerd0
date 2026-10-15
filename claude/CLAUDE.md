@@ -29,9 +29,13 @@ has started, and skipping step 4 means "CI is green" is a claim you have not ear
    | Stimulus controllers | `better-stimulus:better-stimulus` |
    | Turbo / deep Hotwire | `hotwire-patterns:hotwire-patterns` |
 
-   `bin/rails maquina:doctor` (the gate `maquina-ui-standards` names) does **not**
-   exist on maquina-components 0.5.1 — it ships in 0.6.x. Report it as unavailable
-   rather than claiming it passed.
+   Then run `bin/rails maquina:doctor` (the gate `maquina-ui-standards` names). It
+   never edits and always exits 0, so read it: BREAKING must be empty apart from
+   the known false positive — on 0.7.4 its `destructive-error-invisible` rule
+   measures `--destructive-foreground` and ignores the `--destructive-text` /
+   `--destructive-border` tokens that fix it, so those two lines stay. The
+   remaining REVIEW/CLEANUP findings are the toast restyle and app rules that
+   deliberately sit outside a layer.
 
 2. **Verify interactive work in a browser.** Tests do not exercise JavaScript. A
    Stimulus or Turbo change is unverified until it has been driven for real,
@@ -113,20 +117,17 @@ Components live in the gem (`app/views/components/`), not the app. App-specific 
 
 Before using or adding an icon, check `app/helpers/maquina_components_helper.rb` → `main_icon_svg_for(name)`. Add new icons as `when :icon_name` cases. Never use inline SVGs in views — always use `icon_for(:name)`.
 
-### Sub-component content pattern — CRITICAL
+### Sub-component content pattern
 
-Gem sub-components (card/title, card/description, alert/title, toast/title, etc.) use `text || content` — NOT `yield`. Blocks are silently dropped:
+Since maquina-components 0.7.1 every leaf partial (card/title, card/description,
+alert/title, toast/title, …) takes `text:`, `content:` or a block interchangeably.
+Prefer `text:` for plain strings. The toaster is the exception: it still takes
+`content:`, not a block.
 
 ```erb
-<%# GOOD %>
 <%= render "components/toast/title", text: "Saved!" %>
-<%= render "components/card/title", content: capture { %><span>Custom</span><% } %>
-
-<%# BAD — silently drops content %>
-<%= render "components/toast/title" do %>This won't render<% end %>
+<%= render "components/card/title" do %><span>Custom</span><% end %>
 ```
-
-Same for container components like toaster — use `content:` parameter, not a block.
 
 ### Component variants
 
@@ -153,9 +154,9 @@ Use the built-in `icon:` local — the component handles `data-has-icon` and CSS
 
 ### Form data attributes
 
-The gem styles forms via `[data-component]` and `[data-form-part]` selectors. Key attributes: `data-component="form|label|input|textarea|button"`, `data-form-part="group|error"`. Note: `data-form-part="error"` uses `--destructive-foreground` (near-white); for inline error text add `class="text-destructive"`.
+The gem styles forms via `[data-component]` and `[data-form-part]` selectors. Key attributes: `data-component="form|label|input|textarea|button"`, `data-form-part="group|error"`. Error text paints `--destructive-text` (set to `--destructive` in the theme), so `<p data-form-part="error">` needs no colour utility. The field itself must say it is invalid — `aria: { invalid: record.errors[:field].any? }` — because the engine keys the error border on `aria-invalid` / `:user-invalid`, and a server-rendered error on an untouched field matches neither.
 
-When creating compound input components, match the gem's focus ring: `box-shadow: var(--shadow-xs), 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent)`.
+When creating compound input components (a bordered shell around a bare input), add the shell to the grouped "Compound fields" rule in `application.css`: `--ring` border plus the `--focus-ring-*` tokens as an outline, exactly like `[data-component="input"]`. Never transition `outline-color` on it.
 
 ### I18n lazy lookup gotcha — CRITICAL
 
