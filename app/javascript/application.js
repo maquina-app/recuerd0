@@ -27,10 +27,12 @@ if ("serviceWorker" in navigator) {
 //
 // Scoped deliberately to the focused element, rather than data-turbo-permanent
 // on the input: the server must still be able to reset the field when the
-// visitor is NOT typing in it (the "Clear filter" link, a sort change).
-document.addEventListener('turbo:before-morph-element', (event) => {
+// visitor is NOT typing in it (the "Clear filter" link, a sort change). And
+// scoped to its value alone: every other attribute still morphs, so a failed
+// submit can mark the autofocused field aria-invalid.
+document.addEventListener('turbo:before-morph-attribute', (event) => {
   const el = event.target;
-  if (el !== document.activeElement) return;
+  if (el !== document.activeElement || event.detail.attributeName !== 'value') return;
   if (el instanceof HTMLTextAreaElement ||
       (el instanceof HTMLInputElement && !['checkbox', 'radio', 'submit', 'button'].includes(el.type))) {
     event.preventDefault();
