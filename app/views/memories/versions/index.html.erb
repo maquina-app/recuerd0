@@ -23,6 +23,13 @@
         <%= link_to "Back to Memory",
             workspace_memory_path(@workspace, @memory),
             data: { component: "button", variant: "ghost" } %>
+        <% if @all_versions.size > 1 %>
+          <%= link_to new_workspace_memory_versions_purge_path(@workspace, @root_memory),
+              data: { component: "button", variant: "ghost" } do %>
+            <%= icon_for(:trash_2, class: "w-4 h-4") %>
+            <%= t("memories.versions.index.purge") %>
+          <% end %>
+        <% end %>
         <%= button_to workspace_memory_versions_path(@workspace, @memory),
             method: :post,
             data: { component: "button", variant: "secondary", turbo_confirm: "Create a new version from #{@memory.version_label}?" } do %>

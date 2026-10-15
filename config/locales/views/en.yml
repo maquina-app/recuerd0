@@ -166,6 +166,44 @@ en:
         empty_title: "No deleted workspaces"
         empty_description: "You haven't deleted any workspaces yet."
   memories:
+    versions:
+      index:
+        purge: "Purge versions…"
+      purges:
+        new:
+          page_title: "%{title} - Purge versions"
+          breadcrumb: "Purge"
+          title: "Purge versions"
+          subtitle: "Keep the latest versions of %{title} and delete the rest."
+          keep_only_current: "Keep only the current version"
+          keep_label: "Keep the latest"
+          keep_hint: "of %{total} versions"
+          preview: "Preview"
+          warning_title:
+            one: "This permanently deletes 1 version"
+            other: "This permanently deletes %{count} versions"
+          warning_undo: "This cannot be undone. There is no trash or export of the deleted versions."
+          warning_references: "The memory keeps its address and id, its pins and its links. Pins and links on deleted versions move to the memory."
+          warning_search: "Search and agents keep seeing the same current content."
+          warning_numbers: "Version numbers are not renumbered, so the history will start at %{first_kept}."
+          warning_urls: "Direct URLs to the deleted versions, and to %{first_kept}'s own page, stop working, because %{first_kept} now lives at the memory's main address."
+          kept_title: "Kept"
+          deleted_title: "Deleted"
+          current: "Current"
+          moved: "%{pins} and %{links} on these versions move to the memory."
+          pins:
+            one: "1 pin"
+            other: "%{count} pins"
+          links:
+            one: "1 link"
+            other: "%{count} links"
+          confirm_title:
+            one: "Purge 1 version?"
+            other: "Purge %{count} versions?"
+          confirm_message: "%{deleted} will be deleted for good; %{kept} will remain."
+          confirm_button: "Purge versions"
+          submit: "Purge versions"
+          cancel: "Cancel"
     categories:
       decision: "Decision"
       discovery: "Discovery"
@@ -253,8 +291,7 @@ en:
       new_version: "New Version"
       new_version_confirm: "Create a new version from %{version}?"
       edit: "Edit"
-      delete_other_versions: "Delete Other Versions"
-      delete_other_versions_confirm: "Delete all other versions? Only %{version} will be kept."
+      purge_versions: "Purge versions…"
       delete: "Delete"
       delete_title: "Delete %{title}?"
       delete_button: "Delete"
@@ -262,8 +299,6 @@ en:
       delete_confirm_links: "It removes %{links}, including any pointing here from other workspaces."
       new_version_title: "Start a new version?"
       new_version_button: "New version"
-      delete_other_versions_title: "Delete the other versions?"
-      delete_other_versions_button: "Delete versions"
     memory:
       view_details: "View Details"
       source_label: "Source:"

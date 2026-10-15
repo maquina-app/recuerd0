@@ -221,7 +221,7 @@ class Memory < ApplicationRecord
   # shared/_pin_button, so pinning while reading v2 used to create a pin on v2.
   # That pin then pointed at a frozen snapshot: it kept showing v2 while the
   # memory moved on, it disagreed with pinned_by? everywhere else (which asks
-  # the root), and consolidating versions destroyed the row out from under it.
+  # the root), and deleting versions destroyed the row out from under it.
   def pin_target
     root_memory
   end
@@ -329,26 +329,45 @@ class Memory < ApplicationRecord
     association(:latest_version).loaded? ? latest_version.present? : child_versions.any?
   end
 
-  # Consolidate versions: keep this version and destroy all others.
+  # Trim the history to its latest `keep` versions; returns the rows deleted.
   #
-  # Order matters and used to be wrong. child_versions is dependent: :destroy,
-  # so destroying the old root cascades into every remaining child — including
-  # THIS one when consolidating onto a version. The survivor has to be detached
-  # from its parent before the others are destroyed, and its ids captured up
-  # front because all_versions resolves differently once it is a root.
-  def consolidate_versions!
-    transaction do
-      doomed_ids = all_versions.where.not(id: id).pluck(:id)
-
-      if parent_memory_id.present?
-        # Pins are dependent: :destroy too, so a pin on the outgoing root would
-        # vanish along with it — a pin the user never touched.
-        adopt_pins_from(Memory.where(id: doomed_ids))
-        update!(parent_memory_id: nil, version: 1)
-      end
-
-      Memory.where(id: doomed_ids).destroy_all
+  # The root's id is what pins, links, URLs and agents hold, so it survives. The
+  # oldest kept version (the anchor) moves into the root row and its own row goes
+  # with the doomed children: version numbers are not renumbered, and every other
+  # kept child keeps its id.
+  def purge_versions!(keep:)
+    root = root_memory
+    versions = root.all_versions.includes(:content).to_a
+    unless keep.is_a?(Integer) && keep.between?(1, versions.size - 1)
+      raise ArgumentError, "keep must be an Integer from 1 to #{versions.size - 1}"
     end
+
+    anchor = versions[-keep]
+    removed_ids = Memory.rows_removed_by_purge(versions, keep:)
+
+    transaction do
+      root.adopt_pins_from(Memory.where(id: removed_ids))
+      root.adopt_links_from(removed_ids, version_ids: versions.map(&:id))
+
+      root.update!(anchor.slice(:title, :tags, :source, :category, :version, :created_at))
+      body = anchor.content&.body&.content.to_s
+      root.content ? root.content.update!(body: body) : root.create_content!(body: body)
+
+      Memory.where(id: removed_ids).destroy_all
+    end
+
+    # Destroying a child deletes the root's FTS row after commit.
+    root.rebuild_search_index
+    root.sync_root_category!
+    root.sync_root_tags!
+
+    removed_ids.size
+  end
+
+  # The rows a purge deletes: every doomed child, plus the oldest kept version
+  # (the anchor), whose content moves into the root row.
+  def self.rows_removed_by_purge(versions, keep:)
+    versions.first(versions.size - keep).reject(&:root_version?).map(&:id) << versions[-keep].id
   end
 
   # Re-home pins from records that are about to be destroyed, keeping one pin
@@ -360,6 +379,23 @@ class Memory < ApplicationRecord
         pin.destroy!
       else
         pin.update!(pinnable_id: id)
+      end
+    end
+  end
+
+  # Move links off rows that are about to be destroyed onto this root. A link to
+  # another version of this memory, or to something the root already links to,
+  # has nowhere to go and is dropped.
+  def adopt_links_from(doomed_ids, version_ids:)
+    MemoryLink.where(from_memory_id: doomed_ids).or(MemoryLink.where(to_memory_id: doomed_ids)).to_a.each do |link|
+      doomed_side = doomed_ids.include?(link.from_memory_id) ? :from_memory_id : :to_memory_id
+      other_id = (doomed_side == :from_memory_id) ? link.to_memory_id : link.from_memory_id
+
+      # normalize_order stores every pair low id first.
+      if version_ids.include?(other_id) || MemoryLink.exists?(from_memory_id: [id, other_id].min, to_memory_id: [id, other_id].max)
+        link.destroy!
+      else
+        link.update!(doomed_side => id) # normalize_order re-sorts the pair
       end
     end
   end

@@ -17,6 +17,15 @@
   <% end %>
 <% end %>
 
+<% if workspace.active? && memory.versioned? %>
+  <%= render "components/dropdown_menu/item",
+      href: new_workspace_memory_versions_purge_path(workspace, memory.root_memory),
+      variant: :destructive do %>
+    <%= icon_for(:trash_2, class: "size-4") %>
+    <%= t("memories.memory_show_actions.purge_versions") %>
+  <% end %>
+<% end %>
+
 <% if workspace.active? && !viewing_old_version %>
   <%= render "components/dropdown_menu/item",
       href: workspace_memory_versions_path(workspace, memory),
@@ -37,22 +46,6 @@
       href: edit_workspace_memory_path(workspace, memory) do %>
     <%= icon_for(:edit, class: "size-4") %>
     <%= t("memories.memory_show_actions.edit") %>
-  <% end %>
-
-  <% if memory.versioned? %>
-    <%= render "components/dropdown_menu/item",
-        href: workspace_memory_version_consolidation_path(workspace, memory, memory),
-        method: :post,
-        variant: :destructive,
-        data: {
-        turbo_confirm: t("memories.memory_show_actions.delete_other_versions_confirm", version: memory.version_label),
-        confirm_severity: "destructive",
-        confirm_title: t("memories.memory_show_actions.delete_other_versions_title"),
-        confirm_button: t("memories.memory_show_actions.delete_other_versions_button")
-      } do %>
-      <%= icon_for(:trash_2, class: "size-4") %>
-      <%= t("memories.memory_show_actions.delete_other_versions") %>
-    <% end %>
   <% end %>
 
   <%= render "components/dropdown_menu/separator" %>

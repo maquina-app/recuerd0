@@ -30,9 +30,14 @@ en:
       create:
         created: "New version created successfully."
         failed: "Failed to create new version."
-      consolidations:
+      purges:
+        nothing_to_purge: "This memory has a single version, so there is nothing to purge."
+        stale: "A new version was added since you opened this preview, so nothing was deleted. Review the updated preview and confirm again."
+        keep_invalid: "Enter a number from 1 to %{max}."
         create:
-          created: "All other versions have been deleted."
+          purged:
+            one: "Deleted 1 version. Kept %{range}."
+            other: "Deleted %{count} versions. Kept %{range}."
 
   pins:
     create:

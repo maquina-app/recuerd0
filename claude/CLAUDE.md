@@ -287,3 +287,7 @@ These align with `docs/brand-guide.md` and `docs/brand-voice.md`. Use the `impec
   `agent-browser cookies set --curl <file> --domain localhost --url http://localhost:3820`.
   The jar file is Netscape format and `--curl` rejects it — write a single
   `session_id=<value>` Cookie-header line instead.
+- Destroying a version child fires `Searchable#delete_search_index`, which deletes the
+  **root's** FTS row (the index is keyed by root id), and nothing re-inserts it. Any code
+  that destroys versions while the memory survives must call `root.rebuild_search_index`
+  after the transaction commits (`Memory#purge_versions!` does).

@@ -85,14 +85,6 @@ class MemoryTest < ActiveSupport::TestCase
     assert_equal "preference", memory.reload.category
   end
 
-  test "consolidate_versions! collapses to single version" do
-    parent = memories(:versioned_parent)
-    parent.create_version!(content: "v2")
-    assert parent.all_versions.count > 1
-    parent.consolidate_versions!
-    assert_equal 1, parent.all_versions.count
-  end
-
   test "display_title returns title when present" do
     assert_equal "Meeting Notes", memories(:one).display_title
   end
@@ -585,15 +577,95 @@ class MemoryTest < ActiveSupport::TestCase
     refute root.reload.pinned_by?(users(:one))
   end
 
-  # Consolidating onto a child destroys the root, and pins are
-  # dependent: :destroy — the user would silently lose a pin they never touched.
-  test "consolidating onto a version keeps the user's pin" do
+  # --- purge_versions! -------------------------------------------------------
+
+  def nine_version_memory
+    root = Memory.create_with_content(workspaces(:one), title: "Purge v1", content: "body 1", tags: ["one"])
+    (2..9).each { |n| root.create_version!(title: "Purge v#{n}", content: "body #{n}", tags: ["tag#{n}"]) }
+    root.reload
+  end
+
+  test "purge_versions! keeps the latest N under the root's id" do
+    root = nine_version_memory
+    current = root.current_version
+    survivor_ids = root.all_versions.where(version: [8, 9]).pluck(:id)
+
+    assert_equal 6, root.purge_versions!(keep: 3)
+
+    root.reload
+    assert_equal [7, 8, 9], root.all_versions.pluck(:version)
+    assert_equal root.id, root.all_versions.first.id
+    assert_equal "Purge v7", root.title
+    assert_equal "body 7", root.content.body.content
+    assert_equal survivor_ids, root.all_versions.where(version: [8, 9]).pluck(:id)
+    assert_equal current.id, root.current_version.id
+    assert_equal "Purge v9", root.current_version.title
+    assert_equal ["tag9"], root.tags
+    assert_equal 10, root.create_version!(content: "next").version
+  end
+
+  test "purge_versions! with keep 1 leaves the current version at the root" do
+    root = nine_version_memory
+    created_at = root.current_version.created_at
+
+    root.current_version.purge_versions!(keep: 1)
+
+    root.reload
+    refute root.versioned?
+    assert_equal [9], root.all_versions.pluck(:version)
+    assert_equal "Purge v9", root.title
+    assert_equal "body 9", root.content.body.content
+    assert_equal created_at.to_i, root.created_at.to_i
+  end
+
+  test "purge_versions! rejects keep outside 1...versions and changes nothing" do
+    root = nine_version_memory
+
+    [0, 9, 10, -1, "3", 2.0, nil].each do |keep|
+      assert_no_difference("Memory.count") do
+        assert_raises(ArgumentError) { root.purge_versions!(keep: keep) }
+      end
+    end
+    assert_raises(ArgumentError) { memories(:one).purge_versions!(keep: 1) }
+  end
+
+  test "purge_versions! keeps the memory findable by its current version's words" do
+    root = Memory.create_with_content(workspaces(:one), title: "Old title", content: "ancient words")
+    root.create_version!(title: "Fresh title", content: "zebracorn appears only here")
+
+    root.purge_versions!(keep: 1)
+
+    assert_includes Memory.search("zebracorn").pluck(:id), root.id
+    assert_not_includes Memory.search("ancient").pluck(:id), root.id
+  end
+
+  test "purge_versions! moves a pin on a deleted version to the root" do
     root = memories(:versioned_parent)
     version = root.create_version!(title: "Design Doc v2", content: "second pass")
-    root.pin!(users(:one))
+    root.create_version!(title: "Design Doc v3", content: "third pass")
+    Pin.where(pinnable: root).destroy_all
+    Pin.create!(user: users(:one), pinnable: version)
 
-    assert_no_difference("Pin.count") { version.consolidate_versions! }
-    assert version.reload.pinned_by?(users(:one))
+    assert_no_difference("Pin.count") { root.purge_versions!(keep: 1) }
+    assert root.reload.pinned_by?(users(:one))
+  end
+
+  test "purge_versions! re-homes links from deleted rows and drops duplicates" do
+    root = nine_version_memory
+    v2, v8 = root.all_versions.where(version: [2, 8]).to_a
+    other = memories(:one)
+    third = Memory.create_with_content(workspaces(:one), title: "Third", content: "x")
+    MemoryLink.create!(from_memory: v2, to_memory: other)
+    MemoryLink.create!(from_memory: v8, to_memory: other)
+    MemoryLink.create!(from_memory: v2, to_memory: third)
+    MemoryLink.create!(from_memory: v2, to_memory: v8)
+
+    root.purge_versions!(keep: 2)
+
+    root.reload
+    assert_equal [other.id, third.id].sort, root.linked_memory_ids.sort
+    assert_equal 0, MemoryLink.where(from_memory_id: v2.id).or(MemoryLink.where(to_memory_id: v2.id)).count
+    assert_equal 0, MemoryLink.where(from_memory_id: v8.id).or(MemoryLink.where(to_memory_id: v8.id)).count
   end
 
   # --- without_obsolete ------------------------------------------------------
