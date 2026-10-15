@@ -27,11 +27,14 @@ class SearchController < ApplicationController
     @workspaces = matching_workspaces
 
     @pagy, @memories = pagy(memories, items: 10)
+    @related = related_memories
 
     if @query.present?
       track_event("search.query", metadata: {
         query: @query,
         results_count: @pagy.count,
+        related_count: @related.size,
+        top_similarity: @related.first&.similarity,
         workspace_id: params[:workspace_id]
       })
     end
@@ -142,10 +145,27 @@ class SearchController < ApplicationController
   def unfiltered_search_scope
     return Memory.none if @query.length < Searchable::MIN_QUERY_LENGTH
 
+    searchable_roots.search(@query)
+      .ordered_by(Memory.resolve_sort(nil, query: @query))
+      .preload(:content, :workspace, latest_version: [:content, :workspace])
+  end
+
+  # The semantic fallback, on page one only: memories close in meaning that
+  # keyword search missed, under the same account, workspace, category,
+  # obsolete and inactive filters as the keyword hits.
+  def related_memories
+    return [] unless @pagy.page == 1
+
+    apply_inactive_filter(apply_obsolete_filter(searchable_roots))
+      .preload(:content, :workspace, latest_version: [:content, :workspace])
+      .related_to(@query, keyword_count: @pagy.count, excluding: @memories.map(&:id))
+  end
+
+  # Every root this search may return, before any matching on the query.
+  def searchable_roots
     scope = Memory.joins(:workspace)
       .where(workspaces: {account_id: Current.account.id})
       .latest_versions
-      .search(@query)
 
     if params[:workspace_id].present?
       workspace = Current.account.workspaces.find(params[:workspace_id])
@@ -153,8 +173,6 @@ class SearchController < ApplicationController
     end
 
     scope.by_category(params[:category])
-      .ordered_by(Memory.resolve_sort(nil, query: @query))
-      .preload(:content, :workspace, latest_version: [:content, :workspace])
   end
 
   # One cap for both formats. They used to differ (30 for HTML, 100 for API),

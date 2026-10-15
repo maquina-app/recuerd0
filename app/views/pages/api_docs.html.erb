@@ -815,7 +815,7 @@
       </div>
 
       <div class="endpoint" id="search">
-        <div class="endpoint-head"><h3>REST Search Memories</h3><p>Full-text search across all memories in active workspaces, with FTS5 query operators plus case-insensitive whole-tag matches. It shares one search contract with the web UI and <a href="/mcp#memory-search">MCP</a>, requires at least three characters, and returns each memory as its current version.</p></div>
+        <div class="endpoint-head"><h3>REST Search Memories</h3><p>Full-text search across all memories in active workspaces, with FTS5 query operators plus case-insensitive whole-tag matches. It shares one search contract with the web UI and <a href="/mcp#memory-search">MCP</a>, requires at least three characters, and returns each memory as its current version. When a query finds fewer than three keyword matches, up to five memories close in meaning follow them, marked <code>match: "related"</code> with a <code>similarity</code>.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/search.json?q=<span class="param">&lt;query&gt;</span></span></div>
         <div class="param-table-label">Parameters</div>
         <div class="table-scroll"><table class="param-table">
@@ -855,6 +855,7 @@
           <div class="code-body"><code>{
   <span class="ck">"query"</span>: <span class="cs">"architecture AND design"</span>,
   <span class="ck">"total_results"</span>: <span class="cn">3</span>,
+  <span class="ck">"related_results"</span>: <span class="cn">0</span>,
   <span class="ck">"obsolete_hidden"</span>: <span class="cn">1</span>,
   <span class="ck">"inactive_hidden"</span>: <span class="cn">2</span>,
   <span class="ck">"results"</span>: [
@@ -867,6 +868,7 @@
       <span class="ck">"category"</span>: <span class="cs">"decision"</span>,
       <span class="ck">"tags"</span>: [<span class="cs">"design"</span>],
       <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
+      <span class="ck">"match"</span>: <span class="cs">"keyword"</span>,
       <span class="ck">"snippet"</span>: <span class="cs">"Initial architecture overview..."</span>,
       <span class="ck">"workspace"</span>: { ... }
     }

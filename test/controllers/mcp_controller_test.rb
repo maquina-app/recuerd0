@@ -8,8 +8,12 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     "whole tags. " \
     "FTS matches come first by relevance, followed by tag-only matches by recency; " \
     "a memory matching both appears once as an FTS match. Queries under 3 characters " \
-    "search exact tags only. Returns a paginated envelope: " \
-    "{memories, total_count, has_more, next_offset}. Pass `offset: next_offset` " \
+    "search exact tags only. When a search finds fewer than 3 matches, up to 5 memories " \
+    "close in meaning follow on the first page, marked match: \"related\" with a similarity " \
+    "(keyword hits are match: \"keyword\"); they don't contain the query words. " \
+    "Returns a paginated envelope: " \
+    "{memories, total_count, has_more, next_offset}, plus related_count when searching; " \
+    "total_count counts keyword matches only. Pass `offset: next_offset` " \
     "to fetch the following page. Defaults to 50 per page (max 200). " \
     "Memories tagged obsolete, superseded or deprecated are excluded by default; " \
     "pass include: [\"obsolete\"] to retrieve them."
@@ -134,8 +138,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_includes tool["description"], "tag-only matches by recency"
     assert_equal LIST_MEMORIES_DESCRIPTION, tool["description"]
     assert_equal %w[lexical semantic], properties["retrieval"]["enum"]
-    assert_equal "internal/experimental; requires server flag",
-      properties["retrieval"]["description"]
+    assert_includes properties["retrieval"]["description"], "lexical: keyword matches only"
+    assert_includes properties["retrieval"]["description"], "Requires server flag"
   end
 
   test "tools/list advertises omitted field and blank overwrite update semantics" do
@@ -779,6 +783,24 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     payload = call_tool("read_memory", {memory_id: retired.id.to_s})
     assert_equal true, payload["obsolete"]
     assert_equal true, payload["current"]
+  end
+
+  test "list_memories search appends related memories unless retrieval is lexical" do
+    provider = FakeEmbeddingProvider.new(vectors: {"restore hangs" => [1.0, 0.0, 0.0]})
+    related = Memory.create_with_content(@workspace, title: "Checkpoint stalls", content: "Snapshot waits")
+    create_memory_embedding(related, vector: [1.0, 0.0, 0.0], model: provider.model)
+    query = {workspace_id: @workspace.id.to_s, query: "restore hangs"}
+
+    with_hybrid_retrieval(provider: provider) do
+      payload = call_tool("list_memories", query)
+      assert_equal 0, payload["total_count"]
+      assert_equal 1, payload["related_count"]
+      assert_equal [related.id.to_s, "related", 1.0],
+        payload["memories"].sole.values_at("id", "match", "similarity")
+
+      assert_empty call_tool("list_memories", query.merge(retrieval: "lexical"))["memories"]
+      assert_empty call_tool("list_memories", query.merge(offset: 1))["memories"]
+    end
   end
 
   test "an unadvertised include token is a JSON-RPC error" do

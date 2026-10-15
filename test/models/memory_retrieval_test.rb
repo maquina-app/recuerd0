@@ -167,6 +167,77 @@ class MemoryRetrievalTest < ActiveSupport::TestCase
     assert_equal [higher_id.id, lower_id.id, older.id], ids
   end
 
+  test "related keeps matches above the floor, most similar first, minus keyword hits" do
+    provider = FakeEmbeddingProvider.new(vectors: {"restore hangs" => [1.0, 0.0, 0.0]})
+    closest = Memory.create_with_content(@workspace, title: "Checkpoint stalls", content: "Mount")
+    close = Memory.create_with_content(@workspace, title: "Snapshot waits", content: "Disk")
+    keyword_hit = Memory.create_with_content(@workspace, title: "Restore hangs", content: "Body")
+    unrelated = Memory.create_with_content(@workspace, title: "Lunch", content: "Soup")
+    create_memory_embedding(closest, vector: [1.0, 0.1, 0.0], model: provider.model)
+    create_memory_embedding(close, vector: [0.6, 0.8, 0.0], model: provider.model)
+    create_memory_embedding(keyword_hit, vector: [1.0, 0.0, 0.0], model: provider.model)
+    create_memory_embedding(unrelated, vector: [0.2, 1.0, 0.0], model: provider.model)
+
+    related = retrieval(provider).related(query: "restore hangs", excluding: [keyword_hit.id])
+
+    assert_equal [closest.id, close.id], related.map(&:first)
+    assert_in_delta 0.6, related.last.last, 0.001
+  end
+
+  test "related returns at most the related limit" do
+    provider = FakeEmbeddingProvider.new(vectors: {"restore hangs" => [1.0, 0.0, 0.0]})
+    (MemoryRetrieval::RELATED_LIMIT + 2).times do |index|
+      memory = Memory.create_with_content(@workspace, title: "Close #{index}", content: "Body")
+      create_memory_embedding(memory, vector: [1.0, 0.0, 0.0], model: provider.model)
+    end
+
+    assert_equal MemoryRetrieval::RELATED_LIMIT,
+      retrieval(provider).related(query: "restore hangs").size
+  end
+
+  test "related_to runs only when keyword search found fewer than three hits" do
+    provider = FakeEmbeddingProvider.new(vectors: {"restore hangs" => [1.0, 0.0, 0.0]})
+    memory = Memory.create_with_content(@workspace, title: "Checkpoint stalls", content: "Mount")
+    create_memory_embedding(memory, vector: [1.0, 0.0, 0.0], model: provider.model)
+    roots = @workspace.memories.latest_versions
+
+    with_hybrid_retrieval(provider: provider) do
+      assert_empty roots.related_to("restore hangs", keyword_count: MemoryRetrieval::RELATED_WHEN_FEWER_THAN)
+      assert_empty provider.embedded_texts
+
+      matches = roots.related_to("restore hangs", keyword_count: 0)
+      assert_equal [memory], matches.map(&:memory)
+      assert_in_delta 1.0, matches.first.similarity
+    end
+  end
+
+  test "related_to does nothing with the flag off" do
+    provider = FakeEmbeddingProvider.new
+
+    with_hybrid_retrieval(false, provider: provider) do
+      assert_empty @workspace.memories.latest_versions.related_to("restore hangs", keyword_count: 0)
+    end
+    assert_empty provider.embedded_texts
+  end
+
+  test "related_to embeds the query words without FTS syntax" do
+    provider = FakeEmbeddingProvider.new
+
+    with_hybrid_retrieval(provider: provider) do
+      @workspace.memories.latest_versions.related_to(%("restore hangs" OR title:checkpoint*), keyword_count: 0)
+    end
+
+    assert_equal ["restore hangs checkpoint"], provider.embedded_texts
+  end
+
+  test "related_to leaves keyword search standing when the model fails" do
+    provider = FakeEmbeddingProvider.new { raise EmbeddingProviders::Error, "model unavailable" }
+
+    with_hybrid_retrieval(provider: provider) do
+      assert_equal [], @workspace.memories.latest_versions.related_to("restore hangs", keyword_count: 0)
+    end
+  end
+
   private
 
   def retrieval(provider)

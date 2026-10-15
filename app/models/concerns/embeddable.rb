@@ -8,6 +8,30 @@ module Embeddable
     after_destroy_commit :refresh_embedding_after_destroy_safely
   end
 
+  class_methods do
+    # The semantic fallback every search surface shares: when keyword search
+    # found fewer than MemoryRetrieval::RELATED_WHEN_FEWER_THAN hits, the roots
+    # in this scope closest in meaning to the query, as MemoryRetrieval::Match.
+    # Keyword hits are never reordered, and a model failure leaves the keyword
+    # results standing rather than failing the search.
+    def related_to(query, keyword_count:, excluding: [])
+      return [] unless Rails.configuration.x.hybrid_retrieval
+      return [] if keyword_count >= MemoryRetrieval::RELATED_WHEN_FEWER_THAN
+
+      text = plain_query(query)
+      return [] if text.length < Searchable::MIN_QUERY_LENGTH
+
+      scored = MemoryRetrieval.new(relation: all).related(query: text, excluding: excluding)
+      memories = where(id: scored.map(&:first)).index_by(&:id)
+      scored.filter_map do |memory_id, similarity|
+        MemoryRetrieval::Match.new(memory: memories[memory_id], similarity: similarity.round(3)) if memories[memory_id]
+      end
+    rescue EmbeddingProviders::Error, MemoryEmbedding::InvalidVector => error
+      Rails.logger.error("Related memories unavailable error=#{error.class}")
+      []
+    end
+  end
+
   def rebuild_embedding(provider: nil)
     return :disabled unless Rails.configuration.x.hybrid_retrieval
 

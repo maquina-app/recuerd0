@@ -247,6 +247,61 @@ class ApiSearchTest < ActionDispatch::IntegrationTest
     assert_includes json["results"].map { |result| result["id"] }, memory.id
   end
 
+  test "REST appends related memories after keyword hits" do
+    provider = FakeEmbeddingProvider.new(vectors: {"restore hangs" => [1.0, 0.0, 0.0]})
+    related = Memory.create_with_content(workspaces(:one), title: "Checkpoint stalls", content: "Snapshot waits")
+    create_memory_embedding(related, vector: [1.0, 0.0, 0.0], model: provider.model)
+
+    with_hybrid_retrieval(provider: provider) do
+      get search_url(format: :json),
+        params: {q: "restore hangs"},
+        headers: auth_headers(@read_only_token)
+    end
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal [0, 1], json.values_at("total_results", "related_results")
+    assert_equal [related.id, "related", 1.0], json["results"].sole.values_at("id", "match", "similarity")
+  end
+
+  test "REST marks keyword hits and skips the fallback once three are found" do
+    3.times { |index| Memory.create_with_content(workspaces(:one), title: "Zebrafish note #{index}", content: "Body") }
+    provider = FakeEmbeddingProvider.new
+
+    with_hybrid_retrieval(provider: provider) do
+      get search_url(format: :json),
+        params: {q: "zebrafish"},
+        headers: auth_headers(@read_only_token)
+    end
+
+    json = JSON.parse(response.body)
+    assert_equal [3, 0], json.values_at("total_results", "related_results")
+    assert_equal %w[keyword], json["results"].map { |result| result["match"] }.uniq
+    assert_empty provider.embedded_texts
+  end
+
+  test "REST and MCP return the same keyword and related memories" do
+    workspace = workspaces(:one)
+    provider = FakeEmbeddingProvider.new(vectors: {"restore checkpoint" => [1.0, 0.0, 0.0]})
+    Memory.create_with_content(workspace, title: "Restore checkpoint runbook", content: "Body")
+    related = Memory.create_with_content(workspace, title: "Snapshot waits on the mount", content: "Body")
+    create_memory_embedding(related, vector: [0.9, 0.3, 0.0], model: provider.model)
+
+    rest, mcp = with_hybrid_retrieval(provider: provider) do
+      get search_url(format: :json),
+        params: {q: "restore checkpoint", workspace_id: workspace.id},
+        headers: auth_headers(@read_only_token)
+      [
+        JSON.parse(response.body)["results"].map { |result| result.values_at("title", "match") },
+        Mcp::Tools.list_memories(workspace.account, {"workspace_id" => workspace.id.to_s, "query" => "restore checkpoint"})[:memories]
+          .map { |memory| memory.values_at(:title, :match) }
+      ]
+    end
+
+    assert_equal [["Restore checkpoint runbook", "keyword"], ["Snapshot waits on the mount", "related"]], rest
+    assert_equal rest, mcp
+  end
+
   test "REST and MCP return the same memories in the same order" do
     workspace = workspaces(:one)
     Memory.create_with_content(workspace, title: "Parity alpha note", content: "parity body")

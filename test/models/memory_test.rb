@@ -210,6 +210,12 @@ class MemoryTest < ActiveSupport::TestCase
     assert_equal "", Memory.fts_expression("AND OR NOT")
   end
 
+  test "plain_query keeps only the words of a query" do
+    assert_equal "csp nonce draft", Memory.plain_query(%("csp nonce" NOT title:draft))
+    assert_equal "kube deploy.sh", Memory.plain_query("(kube* OR deploy.sh)")
+    assert_equal "", Memory.plain_query("AND OR NOT")
+  end
+
   test "full_search matches words with punctuation and never raises on bad syntax" do
     memory = Memory.create_with_content(workspaces(:one), title: "maquina-components upgrade", content: "body")
 

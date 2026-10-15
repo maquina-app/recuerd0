@@ -1004,6 +1004,13 @@ account (optionally one workspace), MCP and the workspace filter search one work
   memory-ID tie-breakers so pagination is deterministic.
 - The index holds each memory's current version, and every result is returned as its
   current version — title, version, snippet and grep lines are never an older one.
+- **Related memories.** When the server runs with `HYBRID_RETRIEVAL=true` and a query
+  finds fewer than three keyword matches, up to five memories close in meaning (local
+  MiniLM embeddings, cosine similarity ≥ 0.33) follow the keyword matches on the first
+  page. Keyword matches are never reordered. Every search result carries
+  `match: "keyword"` or `match: "related"`; related results add `similarity` and
+  don't contain the query words. `total_results` / `total_count` count keyword matches
+  only; `related_results` / `related_count` count the related ones.
 
 ### REST: `GET /search.json`
 
@@ -1050,6 +1057,7 @@ The search query supports FTS5 operators:
 {
   "query": "architecture AND design",
   "total_results": 3,
+  "related_results": 0,
   "obsolete_hidden": 1,
   "inactive_hidden": 2,
   "results": [
@@ -1062,6 +1070,7 @@ The search query supports FTS5 operators:
       "tags": ["design"],
       "source": "manual",
       "category": "decision",
+      "match": "keyword",
       "snippet": "Initial architecture overview. The system uses a layered design...",
       "created_at": "2026-01-20T09:00:00Z",
       "updated_at": "2026-02-03T16:45:00Z",
@@ -1179,7 +1188,9 @@ Query too short:
 The MCP `list_memories.query` argument and the search field within a workspace use
 the same contract as REST search above. Blank queries return the ordinary unfiltered
 listing, and queries of one or two characters skip FTS and search exact tags only,
-ordered by recency.
+ordered by recency. MCP search appends related memories the same way REST does;
+pass `retrieval: "lexical"` for keyword matches only. The workspace filter is
+keyword-only.
 
 Sort defaults are query-aware. With a query, omitted or invalid `sort` defaults
 to `relevance`; without a query it defaults to `updated`. Explicit `updated`,
