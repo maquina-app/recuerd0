@@ -3,7 +3,10 @@
 
 <% content_for :breadcrumb do %>
   <% if scoped_workspace %>
-    <%= responsive_breadcrumbs({scoped_workspace.name => workspace_path(scoped_workspace)}, t(".title")) %>
+    <%= responsive_breadcrumbs(
+          workspace_breadcrumb_links(scoped_workspace).merge(scoped_workspace.name => workspace_path(scoped_workspace)),
+          t(".title")
+        ) %>
   <% else %>
     <%= responsive_breadcrumbs({}, t(".title")) %>
   <% end %>

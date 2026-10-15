@@ -208,7 +208,7 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
     assert_drawer_state(terminal: :complete, chat: :incomplete, content: :complete)
   end
 
-  test "drawer closes on Turbo morph refresh and navigation" do
+  test "drawer stays open through a Turbo morph refresh and closes on navigation" do
     click_button "Show me how"
     assert_selector "#{DRAWER_SELECTOR}[data-state='open']"
 
@@ -225,11 +225,9 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
     JAVASCRIPT
 
     assert_selector "html[data-onboarding-morphed='true']", visible: :all, wait: 5
-    assert_selector "#{DRAWER_SELECTOR}[data-state='closed']", visible: :all, wait: 5
+    assert_selector "#{DRAWER_SELECTOR}[data-state='open']"
     assert_nil @user.reload.onboarding_dismissed_at
 
-    click_button "Show me how"
-    assert_selector "#{DRAWER_SELECTOR}[data-state='open']"
     within "[data-onboarding-panel='terminal'] [data-onboarding-item][data-onboarding-step='1']" do
       click_link "Access Tokens"
     end
