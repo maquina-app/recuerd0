@@ -31,6 +31,10 @@
   --accent-foreground: oklch(0.280 0.030 150);
   --destructive: oklch(0.580 0.237 28.43);
   --destructive-foreground: oklch(0.985 0.010 25);
+  /* --destructive-foreground sits ON a destructive fill; field-error text and
+     the invalid border sit on the card, so they read the color itself. */
+  --destructive-text: var(--destructive);
+  --destructive-border: var(--destructive);
   --success: oklch(0.940 0.035 150);
   --success-foreground: oklch(0.300 0.065 150);
   --warning: oklch(0.940 0.030 85);
@@ -144,6 +148,8 @@
   --accent-foreground: oklch(0.920 0.015 150);
   --destructive: oklch(0.650 0.200 28.43);
   --destructive-foreground: oklch(0.170 0.010 25);
+  --destructive-text: var(--destructive);
+  --destructive-border: var(--destructive);
   --success: oklch(0.250 0.030 150);
   --success-foreground: oklch(0.850 0.045 150);
   --warning: oklch(0.250 0.025 85);

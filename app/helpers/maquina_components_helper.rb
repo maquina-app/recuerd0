@@ -20,7 +20,8 @@ module MaquinaComponentsHelper
 
   # Provides fallback icons for maquina-components gem.
   # Called when the gem doesn't have a built-in icon.
-  # Returns complete SVG elements with class="" so the gem can inject CSS classes.
+  # Returns complete SVG elements with a class="" placeholder: the gem fills it
+  # with the caller's classes, or drops it when there are none.
   def main_icon_svg_for(name)
     case name.to_sym
     when :rocket
@@ -519,6 +520,20 @@ module MaquinaComponentsHelper
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+      SVG
+    when :external_link
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <path d="M15 3h6v6"></path>
+          <path d="M10 14 21 3"></path>
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        </svg>
+      SVG
+    when :loader
+      <<~SVG.freeze
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
         </svg>
       SVG
     when :list

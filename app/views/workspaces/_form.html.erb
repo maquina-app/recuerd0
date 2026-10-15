@@ -13,6 +13,7 @@
       <div class="min-w-0 flex-1" data-form-part="group">
         <%= form.label :name, t("workspaces.form.name_label"), class: "sr-only", data: { component: "label" } %>
         <%= form.text_field :name,
+            aria: { invalid: workspace.errors[:name].any? },
             class: "form-title",
             autofocus: true,
             placeholder: t("workspaces.form.name_placeholder"),
@@ -20,7 +21,7 @@
             maxlength: 100,
             autocomplete: "off" %>
         <% if workspace.errors[:name].any? %>
-          <p data-form-part="error" class="mt-1 text-destructive"><%= workspace.errors[:name].first %></p>
+          <p data-form-part="error" class="mt-1"><%= workspace.errors[:name].first %></p>
         <% end %>
       </div>
     </div>
@@ -38,6 +39,7 @@
   <div data-form-part="group">
     <%= form.label :description, data: { component: "label" } %>
     <%= form.text_area :description,
+        aria: { invalid: workspace.errors[:description].any? },
         rows: 5,
         placeholder: t("workspaces.form.description_placeholder"),
         maxlength: 500,
@@ -45,7 +47,7 @@
         class: "resize-none",
         data: { component: "textarea" } %>
     <% if workspace.errors[:description].any? %>
-      <p data-form-part="error" class="mt-1 text-destructive"><%= workspace.errors[:description].first %></p>
+      <p data-form-part="error" class="mt-1"><%= workspace.errors[:description].first %></p>
     <% end %>
   </div>
 

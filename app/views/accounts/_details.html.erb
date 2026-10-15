@@ -11,6 +11,7 @@
         <div data-form-part="group">
           <%= form.label :name, data: { component: "label" } %>
           <%= form.text_field :name,
+              aria: { invalid: account.errors[:name].any? },
               autofocus: true,
               placeholder: t("accounts.details.name_placeholder"),
               required: true,
@@ -18,7 +19,7 @@
               autocomplete: "off",
               data: { component: "input" } %>
           <% if account.errors[:name].any? %>
-            <p data-form-part="error" class="text-destructive"><%= account.errors[:name].first %></p>
+            <p data-form-part="error"><%= account.errors[:name].first %></p>
           <% end %>
         </div>
 

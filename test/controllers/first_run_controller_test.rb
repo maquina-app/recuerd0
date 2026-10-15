@@ -98,7 +98,8 @@ class FirstRunControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select ".text-destructive"
+    assert_select "[data-form-part='error']"
+    assert_select "input[aria-invalid='true']"
   end
 
   test "POST create redirects when account already exists" do
