@@ -815,7 +815,7 @@
       </div>
 
       <div class="endpoint" id="search">
-        <div class="endpoint-head"><h3>REST Search Memories</h3><p>Full-text search across all memories in active workspaces. This REST endpoint accepts raw FTS5 query operators, requires at least three characters, and does not union tag matches.</p></div>
+        <div class="endpoint-head"><h3>REST Search Memories</h3><p>Full-text search across all memories in active workspaces, with FTS5 query operators plus case-insensitive whole-tag matches. It shares one search contract with the web UI and <a href="/mcp#memory-search">MCP</a>, requires at least three characters, and returns each memory as its current version.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/search.json?q=<span class="param">&lt;query&gt;</span></span></div>
         <div class="param-table-label">Parameters</div>
         <div class="table-scroll"><table class="param-table">
@@ -848,7 +848,7 @@
         </table></div>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
-          <span><code>release notes</code> is a raw multi-term FTS5 query here. <a href="/mcp#memory-search">MCP and workspace search</a> treat the same input as an exact phrase or exact tag. The paths differ by design: raw power for API clients, safe defaults for agents and the UI.</span>
+          <span><code>release notes</code> matches memories containing both words, or tagged exactly <code>release notes</code> — the same results as <a href="/mcp#memory-search">MCP and workspace search</a>. Punctuation inside a word is searched literally (<code>deploy.sh</code>).</span>
         </div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">snippet mode response (default)</span><span class="code-status s200">200 OK</span></div>
@@ -901,7 +901,7 @@
         </div>
         <div class="info-box warn">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-patch)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
-          <span>Query must be 3–100 characters. Invalid FTS5 syntax returns a <code>422</code> with <code>VALIDATION_ERROR</code>.</span>
+          <span>Query must be 3–100 characters. An expression whose operators do not parse (<code>kamal OR</code>) is searched as its words ANDed rather than rejected.</span>
         </div>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>

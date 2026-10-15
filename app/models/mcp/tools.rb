@@ -100,7 +100,7 @@ module Mcp
       memories = memories.ordered_by(sort)
 
       total_count = memories.count
-      page = memories.offset(offset).limit(limit)
+      page = memories.offset(offset).limit(limit).preload(:latest_version)
 
       {
         memories: page.map { |memory| memory_json(memory.resolve_current_version) },

@@ -7,6 +7,13 @@ class Memory < ApplicationRecord
   belongs_to :parent_memory, class_name: "Memory", optional: true
   has_one :content, dependent: :destroy
   has_many :child_versions, class_name: "Memory", foreign_key: "parent_memory_id", dependent: :destroy
+  # Only the newest child, so a result list can show each memory's current
+  # version without loading its history. Preload it; current_version and
+  # versioned? read it when loaded.
+  has_one :latest_version, -> {
+    where("memories.version = (SELECT MAX(siblings.version) FROM memories AS siblings " \
+      "WHERE siblings.parent_memory_id = memories.parent_memory_id)")
+  }, class_name: "Memory", foreign_key: "parent_memory_id", inverse_of: :parent_memory
   has_many :outgoing_links, class_name: "MemoryLink", foreign_key: :from_memory_id, dependent: :destroy
   has_many :incoming_links, class_name: "MemoryLink", foreign_key: :to_memory_id, dependent: :destroy
 
@@ -234,7 +241,9 @@ class Memory < ApplicationRecord
   # Returns the latest (highest version number) version of this memory
   def current_version
     if root_version?
-      if child_versions.loaded?
+      if association(:latest_version).loaded?
+        latest_version || self
+      elsif child_versions.loaded?
         child_versions.max_by(&:version) || self
       else
         child_versions.order(version: :desc).first || self
@@ -315,7 +324,9 @@ class Memory < ApplicationRecord
 
   # Check if this memory has any versions (either parent or children)
   def versioned?
-    child_versions.any? || parent_memory.present?
+    return true if parent_memory_id.present?
+
+    association(:latest_version).loaded? ? latest_version.present? : child_versions.any?
   end
 
   # Consolidate versions: keep this version and destroy all others.

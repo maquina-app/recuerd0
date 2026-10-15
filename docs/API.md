@@ -984,18 +984,31 @@ POST /workspaces/:workspace_id/memories/:memory_id/versions.json
 
 ## Search
 
-recuerd0 intentionally has two search contracts:
+REST `GET /search.json`, the web UI and MCP `list_memories` share one search
+contract (`Memory.search`), so the same query returns the same memories, in the same
+order, everywhere. Only the scope differs: REST and the web search page span the
+account (optionally one workspace), MCP and the workspace filter search one workspace.
 
-- [REST `GET /search.json`](#rest-get-searchjson-raw-fts5) exposes raw FTS5 syntax
-  for API clients.
-- [MCP and workspace search](#mcp-and-workspace-search-safe-phrases-and-exact-tags)
-  uses safe phrase matching plus exact tags for agents and the UI.
+- Whitespace is trimmed once.
+- Queries of three or more characters run FTS over memory titles and bodies with the
+  [operators below](#query-operators), unioned with case-insensitive whole-tag
+  equality. Words are ANDed.
+- Every bare word is quoted before it reaches FTS5, so punctuation inside a word is
+  searched literally (`deploy.sh`, `maquina-components`). An expression whose
+  operators do not parse (`kamal OR`, `(sqlite`) is searched as its words ANDed —
+  search never fails on syntax.
+- Matching is substring-level (trigram tokenizer): a word can match inside longer
+  words — `rank` matches `ranking`. A trailing `*` is accepted and ignored.
+- FTS matches come first by rank. A memory that also has the exact tag appears once
+  in the FTS group. Tag-only matches follow by `updated_at DESC`, with stable
+  memory-ID tie-breakers so pagination is deterministic.
+- The index holds each memory's current version, and every result is returned as its
+  current version — title, version, snippet and grep lines are never an older one.
 
-### REST: `GET /search.json` (raw FTS5)
+### REST: `GET /search.json`
 
-Full-text search across all memories in active workspaces. This endpoint passes the
-query through as raw FTS5 syntax, requires at least three characters, and does not
-union tag matches. It requires a `read_only` or `full_access` token.
+Full-text search across all memories in active workspaces. Requires at least three
+characters and a `read_only` or `full_access` token.
 
 ```
 GET /search.json?q=<query>
@@ -1015,9 +1028,10 @@ GET /search.json?q=<query>
 | after | integer | No | Lines after each match, like `grep -A` (0-10). Overrides `context` for after. Only used with `mode=grep` |
 | include | string | No | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
+<a id="query-operators"></a>
 **Query Operators**
 
-The search query supports full FTS5 syntax:
+The search query supports FTS5 operators:
 
 | Operator | Example | Description |
 |----------|---------|-------------|
@@ -1126,11 +1140,9 @@ GET /search.json?q=title:design&workspace_id=1
 GET /search.json?q=release notes
 ```
 
-In the last example, `release notes` is a raw multi-term FTS5 query. By contrast,
-[MCP and workspace search](#mcp-and-workspace-search-safe-phrases-and-exact-tags)
-treats the same input as the exact phrase `release notes` or the exact tag
-`release notes`. The paths differ by design: raw power for API clients, safe
-defaults for agents and the UI.
+In the last example, `release notes` matches memories containing both words, or
+tagged exactly `release notes` — the same result MCP returns. Quote it,
+`"release notes"`, for the exact phrase.
 
 **Headers**
 
@@ -1162,47 +1174,17 @@ Query too short:
 }
 ```
 
-Invalid FTS5 syntax:
+### MCP and workspace search
 
-```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid search query syntax",
-    "status": 422
-  }
-}
-```
-
-### MCP and workspace search (safe phrases and exact tags)
-
-The MCP `list_memories.query` argument and the search field within a workspace
-share one search and ordering contract:
-
-- Whitespace is trimmed once. Blank queries return the ordinary unfiltered listing.
-- Queries of three or more characters are phrase-wrapped before FTS searches
-  memory titles and bodies, neutralizing FTS5 operators and special syntax.
-- Matching is substring-level (trigram tokenizer): a phrase can match inside
-  longer words — `rank` matches `ranking`.
-- Tags use case-insensitive whole-tag equality. Partial tags and wildcard
-  characters do not broaden the match.
-- FTS matches come first by rank. A memory that also has the exact tag appears
-  once in the FTS group.
-- Tag-only matches follow by `updated_at DESC`. Stable memory-ID tie-breakers make
-  pagination deterministic.
-- Queries of one or two characters skip FTS and search exact tags only, ordered
-  by recency.
-
-For example, `release notes` matches that exact title/body phrase or a tag whose
-complete value is `release notes`; it is not interpreted as raw FTS5 syntax.
+The MCP `list_memories.query` argument and the search field within a workspace use
+the same contract as REST search above. Blank queries return the ordinary unfiltered
+listing, and queries of one or two characters skip FTS and search exact tags only,
+ordered by recency.
 
 Sort defaults are query-aware. With a query, omitted or invalid `sort` defaults
 to `relevance`; without a query it defaults to `updated`. Explicit `updated`,
 `created`, or `title` always wins. Explicit `relevance` preserves the search
 order when a query is present and resolves to `updated` without one.
-
-See [the raw REST search contract](#rest-get-searchjson-raw-fts5) when FTS5
-operators, grep output, or a cross-workspace API search are needed.
 
 ---
 

@@ -68,21 +68,21 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-component='empty']", count: 0
   end
 
-  test "invalid FTS5 syntax renders a warning instead of raising" do
+  test "unparseable operators fall back to the words" do
     sign_in_as(@user)
-    get search_url, params: {q: "broken(("}
+    get search_url, params: {q: "Meeting OR (("}
 
     assert_response :success
-    assert_select "strong", text: I18n.t("search.index.invalid_query_title")
+    assert_select "[data-component='empty']", count: 0
   end
 
-  test "invalid FTS5 syntax in a palette frame does not raise" do
+  test "unparseable operators in a palette frame still return results" do
     sign_in_as(@user)
-    get search_url, params: {q: "broken(("},
+    get search_url, params: {q: "Meeting OR (("},
       headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
 
     assert_response :success
-    assert_select "[data-palette-result]", count: 0
+    assert_select "[data-palette-result]", minimum: 1
   end
 
   test "html search honours workspace_id scoping" do

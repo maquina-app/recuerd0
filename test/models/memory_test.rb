@@ -193,6 +193,48 @@ class MemoryTest < ActiveSupport::TestCase
     assert_not_includes results, m2
   end
 
+  test "fts_expression quotes words and keeps operators, phrases, grouping and columns" do
+    assert_equal %("deploy.sh" AND "kamal"), Memory.fts_expression("deploy.sh kamal")
+    assert_equal %("kamal" OR "sqlite"), Memory.fts_expression("kamal OR sqlite")
+    assert_equal %("design" NOT "draft"), Memory.fts_expression("design NOT draft")
+    assert_equal %("release notes"), Memory.fts_expression(%("release notes"))
+    assert_equal %(( "a1b" OR "c2d" ) AND "notes"), Memory.fts_expression("(a1b OR c2d) notes")
+    assert_equal %(title:"design"), Memory.fts_expression("title:design")
+    assert_equal %("kube"), Memory.fts_expression("kube*")
+  end
+
+  test "fts_expression falls back to the words ANDed when operators do not parse" do
+    assert_equal %("kamal"), Memory.fts_expression("kamal OR")
+    assert_equal %("sqlite" AND "notes"), Memory.fts_expression("(sqlite notes")
+    assert_equal %("open"), Memory.fts_expression(%("open))
+    assert_equal "", Memory.fts_expression("AND OR NOT")
+  end
+
+  test "full_search matches words with punctuation and never raises on bad syntax" do
+    memory = Memory.create_with_content(workspaces(:one), title: "maquina-components upgrade", content: "body")
+
+    assert_includes Memory.full_search("maquina-components"), memory
+    assert_includes Memory.full_search("maquina-components OR"), memory
+    assert_empty Memory.full_search("AND OR NOT").to_a
+  end
+
+  test "latest_version preloads only the newest child" do
+    root = Memory.create_with_content(workspaces(:one), title: "Root", content: "v1")
+    root.create_version!(content: "v2")
+    newest = root.create_version!(content: "v3")
+    plain = Memory.create_with_content(workspaces(:one), title: "Plain", content: "v1")
+
+    loaded = Memory.where(id: [root.id, plain.id]).preload(:latest_version).index_by(&:id)
+
+    assert_equal newest, loaded[root.id].latest_version
+    assert_equal newest, loaded[root.id].current_version
+    assert loaded[root.id].versioned?
+    assert_same loaded[root.id], loaded[root.id].latest_version.parent_memory
+    assert_nil loaded[plain.id].latest_version
+    assert_equal loaded[plain.id], loaded[plain.id].resolve_current_version
+    assert_not loaded[plain.id].versioned?
+  end
+
   test "full_search updates index when content changes" do
     memory = Memory.create_with_content(workspaces(:one), title: "Title", content: "original text here")
     assert_includes Memory.full_search("original"), memory

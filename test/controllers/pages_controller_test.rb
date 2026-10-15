@@ -167,13 +167,13 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "License"
   end
 
-  test "GET api docs distinguishes raw REST search from MCP and workspace search" do
+  test "GET api docs states REST search shares one contract with MCP and workspace search" do
     get api_docs_url
 
     assert_response :success
     assert_select "#search h3", text: "REST Search Memories"
     assert_includes response.body, "release notes"
-    assert_includes response.body, "raw multi-term FTS5 query"
+    assert_includes response.body, "shares one search contract with the web UI"
     assert_select "a[href='/mcp#memory-search']"
     assert_includes response.body,
       "When the requesting user has no pinned memories in the workspace, the endpoint returns " \
@@ -183,7 +183,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#get-workspace-context", text: /stats\.returned_pinned.*deprecated/m
   end
 
-  test "GET MCP docs renders the safe phrase and exact-tag search contract" do
+  test "GET MCP docs renders the shared FTS and exact-tag search contract" do
     get mcp_url
 
     assert_response :success
@@ -195,6 +195,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
       text: "download the MCP skill"
     assert_select "#memory-search h3", text: "Memory search"
     assert_includes response.body, "case-insensitive whole-tag equality"
+    assert_includes response.body, "one query returns the same memories everywhere"
     assert_includes response.body, "Matching is substring-level (trigram tokenizer)"
     assert_includes response.body, "<code>rank</code> matches <code>ranking</code>"
     assert_includes response.body, "Queries under three characters"
