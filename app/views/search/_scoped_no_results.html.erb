@@ -1,0 +1,19 @@
+<%# locals: (workspace:, elsewhere_count:) %>
+<%# A scoped miss is not "nothing matched": say where we looked, and when the
+    rest of the account has the answer, make widening the next step. %>
+<% description = elsewhere_count.positive? ?
+     t("search.index.no_results_elsewhere", count: elsewhere_count) :
+     t("search.index.no_results_nowhere") %>
+<% if elsewhere_count.positive? %>
+  <%= empty_state title: t("search.index.no_results_title_scoped", workspace: workspace.name, query: @query),
+        description: description, icon: :search, variant: :outline do %>
+    <%= link_to search_path(request.query_parameters.except("workspace_id", "page")),
+          data: {component: "button"} do %>
+      <%= icon_for(:search, class: "w-4 h-4") %>
+      <%= t("search.index.scope_clear") %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= empty_state title: t("search.index.no_results_title_scoped", workspace: workspace.name, query: @query),
+        description: description, icon: :search, variant: :outline %>
+<% end %>

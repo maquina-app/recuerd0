@@ -28,6 +28,7 @@ class SearchController < ApplicationController
 
     @pagy, @memories = pagy(memories, items: 10)
     @related = related_memories
+    @elsewhere_count = elsewhere_count
 
     if @query.present?
       track_event("search.query", metadata: {
@@ -104,7 +105,7 @@ class SearchController < ApplicationController
     return Workspace.none if api_request? || @query.blank?
     # Scoped to one workspace, "jump to a workspace" is not the question being
     # asked, so the workspace block would just be noise above the memories.
-    return Workspace.none if params[:workspace_id].present?
+    return Workspace.none if scoped_workspace
 
     term = "%#{ActiveRecord::Base.sanitize_sql_like(@query)}%"
     Current.account.workspaces
@@ -113,8 +114,18 @@ class SearchController < ApplicationController
       .limit(WORKSPACE_RESULT_LIMIT)
   end
 
-  def build_search_scope
-    apply_inactive_filter(apply_obsolete_filter(unfiltered_search_scope))
+  def build_search_scope(workspace: scoped_workspace)
+    apply_inactive_filter(apply_obsolete_filter(unfiltered_search_scope(workspace:)))
+  end
+
+  # A scoped search that finds nothing read as "this was never written down"
+  # while the answer sat in another workspace. One count across the account,
+  # under the same filters, and only when the scoped search came back empty.
+  def elsewhere_count
+    return 0 if api_request?
+    return 0 unless scoped_workspace && @pagy.count.zero?
+
+    build_search_scope(workspace: nil).count
   end
 
   # How many matches the default filter withheld. One extra query, and only
@@ -142,10 +153,10 @@ class SearchController < ApplicationController
   # preload, never includes: the workspaces condition would turn includes into
   # one eager-loaded JOIN across every version, and its COUNT(DISTINCT) took a
   # second per search. Only each hit's current version is loaded.
-  def unfiltered_search_scope
+  def unfiltered_search_scope(workspace: scoped_workspace)
     return Memory.none if @query.length < Searchable::MIN_QUERY_LENGTH
 
-    searchable_roots.search(@query)
+    searchable_roots(workspace:).search(@query)
       .ordered_by(Memory.resolve_sort(nil, query: @query))
       .preload(:content, :workspace, latest_version: [:content, :workspace])
   end
@@ -162,18 +173,23 @@ class SearchController < ApplicationController
   end
 
   # Every root this search may return, before any matching on the query.
-  def searchable_roots
+  def searchable_roots(workspace: scoped_workspace)
     scope = Memory.joins(:workspace)
       .where(workspaces: {account_id: Current.account.id})
       .latest_versions
 
-    if params[:workspace_id].present?
-      workspace = Current.account.workspaces.find(params[:workspace_id])
-      scope = scope.where(workspace: workspace)
-    end
+    scope = scope.where(workspace:) if workspace
 
     scope.by_category(params[:category])
   end
+
+  # The ⌘K palette hands its "Only in <workspace>" scope to this page as
+  # workspace_id. The page names it back, so a scoped result list never reads
+  # as the whole account's.
+  def scoped_workspace
+    @scoped_workspace ||= Current.account.workspaces.find(params[:workspace_id]) if params[:workspace_id].present?
+  end
+  helper_method :scoped_workspace
 
   # One cap for both formats. They used to differ (30 for HTML, 100 for API),
   # which meant the palette's maxlength="100" let a user type 70 characters the

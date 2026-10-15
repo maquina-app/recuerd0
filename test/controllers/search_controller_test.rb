@@ -128,6 +128,208 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_select "#search-workspaces-heading", count: 0
   end
 
+  test "a scoped search names its workspace and offers the way out" do
+    sign_in_as(@user)
+    scoped = workspaces(:one)
+
+    get search_url, params: {q: "Meeting", workspace_id: scoped.id, include: "obsolete", page: 1}
+
+    assert_response :success
+    assert_select "#search-scope .scope-chip",
+      text: I18n.t("search.command.scope_workspace", workspace: scoped.name)
+    # Widening keeps the query and filters, and drops only the scope and page.
+    assert_select "#search-scope a[href=?]", search_path(q: "Meeting", include: "obsolete"),
+      text: I18n.t("search.index.scope_clear")
+    assert_select "input#q[aria-describedby=search-scope]"
+    assert_select "input#q[placeholder=?]",
+      I18n.t("search.index.placeholder_scoped", workspace: scoped.name)
+    assert_select "p", text: I18n.t("search.index.results_count_scoped", count: 1, query: "Meeting", workspace: scoped.name)
+    assert_select "nav[aria-label=Breadcrumb] a[href=?]", workspace_path(scoped)
+    assert_select "title", text: /#{Regexp.escape(I18n.t("search.index.title_scoped", workspace: scoped.name))}/
+  end
+
+  test "a scoped search with no query says where it will look" do
+    sign_in_as(@user)
+    scoped = workspaces(:one)
+
+    get search_url, params: {workspace_id: scoped.id}
+
+    assert_response :success
+    assert_select "[data-component='empty']",
+      text: /#{Regexp.escape(I18n.t("search.index.empty_description_scoped", workspace: scoped.name))}/
+  end
+
+  test "an unscoped search shows no scope" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "Meeting"}
+
+    assert_response :success
+    assert_select "#search-scope", count: 0
+    assert_select "input#q[aria-describedby]", count: 0
+  end
+
+  test "a scoped miss counts the matches in other workspaces and widens to them" do
+    sign_in_as(@user)
+    elsewhere = Workspace.create!(account: accounts(:one), name: "Infrastructure")
+    Memory.create_with_content(elsewhere, title: "Cache layers", content: "cachequill notes").rebuild_search_index
+
+    get search_url, params: {q: "cachequill", workspace_id: workspaces(:one).id}
+
+    assert_response :success
+    assert_select "[data-component='empty'] h3",
+      text: I18n.t("search.index.no_results_title_scoped", workspace: workspaces(:one).name, query: "cachequill")
+    assert_select "[data-component='empty']", text: /#{I18n.t("search.index.no_results_elsewhere", count: 1)}/
+    assert_select "[data-component='empty'] a[href=?]", search_path(q: "cachequill"),
+      text: I18n.t("search.index.scope_clear")
+    # The empty state's h3 must not follow the h1 directly.
+    assert_select "h2.sr-only", text: I18n.t("search.index.results_heading")
+  end
+
+  test "a scoped miss with nothing elsewhere offers no dead-end widening" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "xyznonexistent", workspace_id: workspaces(:one).id}
+
+    assert_response :success
+    assert_select "[data-component='empty']", text: /#{Regexp.escape(I18n.t("search.index.no_results_nowhere"))}/
+    assert_select "[data-component='empty'] a", count: 0
+  end
+
+  test "a miss still reports what the filters withheld" do
+    sign_in_as(@user)
+    Memory.create_with_content(workspaces(:one), title: "Old beacon",
+      content: "quillbeacon body", tags: ["superseded"]).rebuild_search_index
+
+    get search_url, params: {q: "quillbeacon", workspace_id: workspaces(:one).id}
+
+    assert_response :success
+    assert_select "[data-component='empty']"
+    assert_select "a[href=?]",
+      search_path(q: "quillbeacon", workspace_id: workspaces(:one).id, include: "obsolete"),
+      text: /1 obsolete memory hidden/
+  end
+
+  test "a scoped palette miss offers the other workspaces as a result row" do
+    sign_in_as(@user)
+    elsewhere = Workspace.create!(account: accounts(:one), name: "Infrastructure")
+    Memory.create_with_content(elsewhere, title: "Cache layers", content: "cachequill notes").rebuild_search_index
+
+    get search_url, params: {q: "cachequill", workspace_id: workspaces(:one).id},
+      headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+
+    assert_response :success
+    assert_select ".palette-note", text: I18n.t("search.command.no_results_scoped", workspace: workspaces(:one).name)
+    assert_select "[data-palette-result][data-palette-widen][href=?]", search_path(q: "cachequill")
+  end
+
+  test "an unscoped miss never counts elsewhere" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "xyznonexistent"},
+      headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+
+    assert_response :success
+    assert_select "[data-palette-widen]", count: 0
+    assert_select ".palette-note", text: I18n.t("search.index.no_results_title")
+  end
+
+  test "the palette on a scoped search page keeps the page's scope" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "Meeting", workspace_id: workspaces(:one).id}
+
+    assert_response :success
+    assert_select "#search-command-scope[aria-pressed=true][data-workspace-id=?]", workspaces(:one).id.to_s,
+      text: I18n.t("search.command.scope_workspace", workspace: workspaces(:one).name)
+    # One fixed label; only aria-pressed carries the state.
+    assert_select "#search-command-scope[data-scope-off]", count: 0
+    assert_select "#search-command-scope[data-workspace-include]", count: 0
+  end
+
+  test "the palette chip on an archived workspace asks for inactive results" do
+    sign_in_as(@user)
+
+    get archived_workspace_url(workspaces(:archived))
+
+    assert_response :success
+    assert_select "#search-command-scope[data-workspace-include=?]", ObsoleteFilterable::INACTIVE_TOKEN
+  end
+
+  test "palette hidden-count links keep the workspace scope" do
+    sign_in_as(@user)
+    Memory.create_with_content(workspaces(:one), title: "Old beacon",
+      content: "quillbeacon body", tags: ["superseded"]).rebuild_search_index
+    Memory.create_with_content(workspaces(:one), title: "New beacon",
+      content: "quillbeacon body").rebuild_search_index
+
+    get search_url, params: {q: "quillbeacon", workspace_id: workspaces(:one).id},
+      headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+
+    assert_response :success
+    assert_select "a[href=?]", search_path(q: "quillbeacon", workspace_id: workspaces(:one).id, include: "obsolete")
+  end
+
+  test "the inactive box is offered only where an inactive workspace is in reach" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "Meeting", workspace_id: workspaces(:one).id}
+    assert_select "#search_include_inactive", count: 0
+
+    get search_url, params: {q: "Meeting", workspace_id: workspaces(:archived).id}
+    assert_select "#search_include_inactive"
+
+    get search_url, params: {q: "Meeting"}
+    assert_select "#search_include_inactive"
+  end
+
+  test "scoped results drop the per-result workspace line the scope row already says" do
+    sign_in_as(@user)
+    workspace = workspaces(:one)
+
+    get search_url, params: {q: "Meeting", workspace_id: workspace.id}
+    assert_select ".grid a[href=?]", workspace_path(workspace), count: 0
+
+    get search_url, params: {q: "Meeting"}
+    assert_select ".grid a[href=?]", workspace_path(workspace), minimum: 1
+  end
+
+  test "the results summary lives in a status region a screen reader hears" do
+    sign_in_as(@user)
+    workspace = workspaces(:one)
+
+    get search_url, params: {q: "Meeting", workspace_id: workspace.id}
+    assert_select "form[role=search][aria-label=?]", I18n.t("search.index.title")
+    assert_select "p.sr-only[role=status]",
+      text: I18n.t("search.index.results_count_scoped", count: 1, query: "Meeting", workspace: workspace.name)
+
+    get search_url, params: {q: "xyznonexistent"}
+    assert_select "p.sr-only[role=status]", text: I18n.t("search.index.no_results_title")
+
+    get search_url
+    assert_select "p.sr-only[role=status]", text: ""
+  end
+
+  test "paging a scoped search keeps the scope and the filters" do
+    sign_in_as(@user)
+    workspace = workspaces(:one)
+    11.times { |i| Memory.create_with_content(workspace, title: "Pager #{i}", content: "pagerquill body").rebuild_search_index }
+
+    get search_url, params: {q: "pagerquill", workspace_id: workspace.id, include: "obsolete"}
+
+    assert_response :success
+    assert_select "a[href=?]", search_path(page: 2, q: "pagerquill", workspace_id: workspace.id, include: "obsolete"),
+      minimum: 1
+  end
+
+  test "a workspace from another account cannot scope a search" do
+    sign_in_as(@user)
+
+    get search_url, params: {q: "Shopping", workspace_id: workspaces(:two).id}
+
+    assert_response :not_found
+  end
+
   test "html query is no longer truncated to 30 characters" do
     sign_in_as(@user)
     assert_equal 100, SearchController::QUERY_MAX_LENGTH

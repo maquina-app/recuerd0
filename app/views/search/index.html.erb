@@ -1,11 +1,12 @@
 <%# locals: () %>
-<% content_for :page_title, t(".title") %>
+<% content_for :page_title, scoped_workspace ? t(".title_scoped", workspace: scoped_workspace.name) : t(".title") %>
 
 <% content_for :breadcrumb do %>
-  <%= responsive_breadcrumbs(
-    {},
-    t(".title"),
-  ) %>
+  <% if scoped_workspace %>
+    <%= responsive_breadcrumbs({scoped_workspace.name => workspace_path(scoped_workspace)}, t(".title")) %>
+  <% else %>
+    <%= responsive_breadcrumbs({}, t(".title")) %>
+  <% end %>
 <% end %>
 
 <div class="mx-auto max-w-4xl">
@@ -21,41 +22,76 @@
       filter gives: a debounced keystroke burst must not push one history entry
       per submit, and morph needs it to preserve focus and caret. %>
   <%= form_with url: search_path, method: :get,
+        html: {role: "search", aria: {label: t("search.index.title")}},
         data: {controller: "ws-filter", turbo_action: "replace", ws_filter_target: "form"},
         class: "mb-6" do |f| %>
     <div class="search-page-field">
       <%= icon_for(:search, class: "size-4 shrink-0 text-muted-foreground") %>
-      <%= f.label :q, t("search.command.input_label"), class: "sr-only" %>
+      <%= f.label :q, scoped_workspace ? t("search.index.input_label_scoped", workspace: scoped_workspace.name) : t("search.command.input_label"), class: "sr-only" %>
       <%= f.search_field :q, value: @query,
-            placeholder: t("search.placeholder"),
+            placeholder: scoped_workspace ? t("search.index.placeholder_scoped", workspace: scoped_workspace.name) : t("search.placeholder"),
             maxlength: SearchController::QUERY_MAX_LENGTH,
             autocomplete: "off",
+            aria: {describedby: ("search-scope" if scoped_workspace)},
             data: {
               ws_filter_target: "input",
               action: "input->ws-filter#submit search->ws-filter#submit keydown.esc->ws-filter#clear"
             } %>
-      <% if params[:workspace_id].present? %>
-        <%= f.hidden_field :workspace_id, value: params[:workspace_id] %>
+      <% if scoped_workspace %>
+        <%= f.hidden_field :workspace_id, value: scoped_workspace.id %>
       <% end %>
     </div>
+
+    <%# The palette's "Only in <workspace>" chip, carried onto the page. Without
+        it a scoped search was invisible: the scope lived in a hidden field, the
+        results looked like the whole account's, and only editing the URL could
+        widen it. %>
+    <% if scoped_workspace %>
+      <p id="search-scope" class="search-page-scope">
+        <span class="scope-chip" data-state="on">
+          <%= icon_for(:folders, class: "size-3.5") %>
+          <%= t("search.command.scope_workspace", workspace: scoped_workspace.name) %>
+        </span>
+        <%# Results no longer carry the workspace line, so its state is said here. %>
+        <% if scoped_workspace.archived? %>
+          <span class="text-muted-foreground"><%= t("workspaces.show.archived_badge") %></span>
+        <% elsif scoped_workspace.deleted? %>
+          <span class="text-muted-foreground"><%= t("workspaces.show.deleted_badge") %></span>
+        <% end %>
+        <%= link_to t("search.index.scope_clear"),
+              search_path(request.query_parameters.except("workspace_id", "page")),
+              class: "font-medium text-foreground underline underline-offset-2" %>
+      </p>
+    <% end %>
 
     <%# Real checkboxes in a GET form, so they still work with JS off: Enter in
         the query field submits every field. Both share the `include` name, so
         the browser submits include=obsolete&include=inactive — check_box_tag,
         never f.check_box, so an unchecked box sends nothing at all. %>
-    <label class="search-page-toggle">
-      <%= check_box_tag :include, "obsolete", include_obsolete?,
-            id: "search_include_obsolete",
-            data: {action: "change->ws-filter#submit"} %>
-      <span><%= t("search.index.include_obsolete_label") %></span>
-    </label>
-    <label class="search-page-toggle">
-      <%= check_box_tag :include, "inactive", include_inactive?,
-            id: "search_include_inactive",
-            data: {action: "change->ws-filter#submit"} %>
-      <span><%= t("search.index.include_inactive_label") %></span>
-    </label>
+    <div class="search-page-toggles">
+      <label class="search-page-toggle">
+        <%= check_box_tag :include, "obsolete", include_obsolete?,
+              id: "search_include_obsolete",
+              data: {action: "change->ws-filter#submit"} %>
+        <span><%= t("search.index.include_obsolete_label") %></span>
+      </label>
+      <%# Scoped to an active workspace, no inactive workspace is in reach, so
+          the box would be a control that does nothing. %>
+      <% unless scoped_workspace&.active? %>
+        <label class="search-page-toggle">
+          <%= check_box_tag :include, "inactive", include_inactive?,
+                id: "search_include_inactive",
+                data: {action: "change->ws-filter#submit"} %>
+          <span><%= t("search.index.include_inactive_label") %></span>
+        </label>
+      <% end %>
+    </div>
   <% end %>
+
+  <%# Debounced keystrokes swap the results in place, which a screen reader
+      never hears. One region outlives every branch below, so a morph changes
+      its text and the change is announced. The id pins the morph's pairing. %>
+  <p id="search-status" class="sr-only" role="status"><%= search_status_message(query: @query, count: @pagy&.count.to_i, workspace: scoped_workspace) %></p>
 
   <% if @query.present? && @query.length < Searchable::MIN_QUERY_LENGTH %>
     <%= render "components/alert", variant: :warning, icon: :alert_triangle, css_classes: "mb-6" do %>
@@ -81,37 +117,24 @@
         <h2 id="search-memories-heading" class="ws-group-label mb-2 px-0.5">
           <%= t("search.index.memories_heading") %>
         </h2>
-        <% hidden_count = @obsolete_hidden_count.to_i %>
-        <% inactive_hidden_count = @inactive_hidden_count.to_i %>
-        <% any_hidden = hidden_count.positive? || inactive_hidden_count.positive? %>
+        <% any_hidden = @obsolete_hidden_count.to_i.positive? || @inactive_hidden_count.to_i.positive? %>
         <p class="text-sm text-muted-foreground <%= any_hidden ? "mb-1" : "mb-4" %>">
-          <%= t(".results_count", count: @pagy.count, query: @query) %>
+          <% if scoped_workspace %>
+            <%= t(".results_count_scoped", count: @pagy.count, query: @query, workspace: scoped_workspace.name) %>
+          <% else %>
+            <%= t(".results_count", count: @pagy.count, query: @query) %>
+          <% end %>
         </p>
-        <%# Hiding must never feel like data loss: say what was withheld and
-            make the count the way back to it. The two counts are disjoint, so
-            each line reveals only its own set. %>
-        <% if any_hidden %>
-          <p class="text-sm text-muted-foreground mb-4">
-            <%= t("search.index.obsolete_hidden_prefix") %>
-            <% if hidden_count.positive? %>
-              <%= link_to t("search.index.obsolete_hidden", count: hidden_count),
-                    search_path(query_params_including("obsolete")),
-                    class: "font-medium underline underline-offset-2" %>
-            <% end %>
-            <% if inactive_hidden_count.positive? %>
-              <br>
-              <%= link_to t("search.index.inactive_hidden", count: inactive_hidden_count),
-                    search_path(query_params_including("inactive")),
-                    class: "font-medium underline underline-offset-2" %>
-            <% end %>
-          </p>
-        <% end %>
+        <%= render "search/hidden_notice" %>
 
         <div class="grid gap-4">
-          <%= render partial: "search/result", collection: @memories, as: :memory %>
+          <%= render partial: "search/result", collection: @memories, as: :memory,
+                locals: {show_workspace: scoped_workspace.nil?} %>
         </div>
 
-        <%= pagination_nav(@pagy, :search_path, params: { q: @query }) %>
+        <%# No params: the helper keeps the request's query, so q, workspace_id
+            and include all survive paging. %>
+        <%= pagination_nav(@pagy, :search_path) %>
       </section>
     <% end %>
 
@@ -126,17 +149,26 @@
           <%= t("search.index.related_description", query: @query) %>
         </p>
         <div class="grid gap-4">
-          <%= render partial: "search/result", collection: @related.map(&:memory), as: :memory %>
+          <%= render partial: "search/result", collection: @related.map(&:memory), as: :memory,
+                locals: {show_workspace: scoped_workspace.nil?} %>
         </div>
       </section>
     <% end %>
   <% elsif @query.present? %>
-    <%= empty_state title: t("search.index.no_results_title"),
-        description: t("search.index.no_results_description", query: @query),
-        icon: :search, variant: :outline %>
+    <%# The empty state titles itself with an h3; this keeps the outline whole. %>
+    <h2 class="sr-only"><%= t("search.index.results_heading") %></h2>
+    <%= render "search/hidden_notice" %>
+    <% if scoped_workspace %>
+      <%= render "search/scoped_no_results", workspace: scoped_workspace, elsewhere_count: @elsewhere_count.to_i %>
+    <% else %>
+      <%= empty_state title: t("search.index.no_results_title"),
+          description: t("search.index.no_results_description", query: @query),
+          icon: :search, variant: :outline %>
+    <% end %>
   <% else %>
+    <h2 class="sr-only"><%= t("search.index.results_heading") %></h2>
     <%= empty_state title: t("search.index.empty_title"),
-        description: t("search.index.empty_description"),
+        description: scoped_workspace ? t("search.index.empty_description_scoped", workspace: scoped_workspace.name) : t("search.index.empty_description"),
         icon: :search, variant: :outline %>
   <% end %>
 </div>

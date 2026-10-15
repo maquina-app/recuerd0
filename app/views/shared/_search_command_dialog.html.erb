@@ -35,13 +35,18 @@
         <%# Ids, not Stimulus targets: the dialog is a layout sibling of the
             controller element, so targets and actions would never bind. The
             controller reaches in by id, exactly as it does for the input. %>
+        <%# A toggle button keeps one label and flips only aria-pressed. Swapping
+            the label to "Search everywhere" as well made the off state announce
+            as "Search everywhere, not pressed" — the opposite of the truth. %>
+        <%# An archived or deleted workspace's memories sit behind the inactive
+            filter, so scoping to one asks for include=inactive, or the chip
+            would offer a search that can only come back empty. %>
         <div class="search-command-scope">
           <button type="button" id="search-command-scope" class="scope-chip" aria-pressed="true"
                   data-workspace-id="<%= scoped_workspace.id %>"
-                  data-scope-on="<%= t("search.command.scope_workspace", workspace: scoped_workspace.name) %>"
-                  data-scope-off="<%= t("search.command.scope_everywhere") %>">
+                  <%= tag.attributes(data: {workspace_include: (ObsoleteFilterable::INACTIVE_TOKEN unless scoped_workspace.active?)}) %>>
             <%= icon_for(:folders, class: "size-3.5") %>
-            <span data-scope-label><%= t("search.command.scope_workspace", workspace: scoped_workspace.name) %></span>
+            <%= t("search.command.scope_workspace", workspace: scoped_workspace.name) %>
           </button>
         </div>
       <% end %>
