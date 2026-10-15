@@ -13,7 +13,7 @@
       <div class="min-w-0 flex-1" data-form-part="group">
         <%= form.label :name, t("workspaces.form.name_label"), class: "sr-only", data: { component: "label" } %>
         <%= form.text_field :name,
-            aria: { invalid: workspace.errors[:name].any? },
+            aria: field_error_aria(form, :name),
             class: "form-title",
             autofocus: true,
             placeholder: t("workspaces.form.name_placeholder"),
@@ -21,7 +21,7 @@
             maxlength: 100,
             autocomplete: "off" %>
         <% if workspace.errors[:name].any? %>
-          <p data-form-part="error" class="mt-1"><%= workspace.errors[:name].first %></p>
+          <p data-form-part="error" id="<%= form.field_id(:name, :error) %>" class="mt-1"><%= workspace.errors[:name].first %></p>
         <% end %>
       </div>
     </div>
@@ -39,7 +39,7 @@
   <div data-form-part="group">
     <%= form.label :description, data: { component: "label" } %>
     <%= form.text_area :description,
-        aria: { invalid: workspace.errors[:description].any? },
+        aria: field_error_aria(form, :description),
         rows: 5,
         placeholder: t("workspaces.form.description_placeholder"),
         maxlength: 500,
@@ -47,7 +47,7 @@
         class: "resize-none",
         data: { component: "textarea" } %>
     <% if workspace.errors[:description].any? %>
-      <p data-form-part="error" class="mt-1"><%= workspace.errors[:description].first %></p>
+      <p data-form-part="error" id="<%= form.field_id(:description, :error) %>" class="mt-1"><%= workspace.errors[:description].first %></p>
     <% end %>
   </div>
 

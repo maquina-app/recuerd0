@@ -13,7 +13,7 @@
       <div data-form-part="group">
         <%= form.label :email_address, t("first_run.new.email_label"), data: { component: "label" } %>
         <%= form.email_field :email_address,
-            aria: { invalid: @user.errors[:email_address].any? },
+            aria: field_error_aria(form, :email_address),
             required: true,
             autofocus: true,
             autocomplete: "email",
@@ -22,14 +22,14 @@
             placeholder: t("first_run.new.email_placeholder"),
             data: { component: "input" } %>
         <% if @user.errors[:email_address].any? %>
-          <p data-form-part="error"><%= @user.errors[:email_address].first %></p>
+          <p data-form-part="error" id="<%= form.field_id(:email_address, :error) %>"><%= @user.errors[:email_address].first %></p>
         <% end %>
       </div>
 
       <div data-form-part="group">
         <%= form.label :password, data: { component: "label" } %>
         <%= form.password_field :password,
-            aria: { invalid: @user.errors[:password].any? },
+            aria: field_error_aria(form, :password),
             required: true,
             autocomplete: "new-password",
             placeholder: t("first_run.new.password_placeholder"),
@@ -37,14 +37,14 @@
             spellcheck: "false",
             data: { component: "input" } %>
         <% if @user.errors[:password].any? %>
-          <p data-form-part="error"><%= @user.errors[:password].first %></p>
+          <p data-form-part="error" id="<%= form.field_id(:password, :error) %>"><%= @user.errors[:password].first %></p>
         <% end %>
       </div>
 
       <div data-form-part="group">
         <%= form.label :password_confirmation, t("first_run.new.password_confirmation_label"), data: { component: "label" } %>
         <%= form.password_field :password_confirmation,
-            aria: { invalid: @user.errors[:password_confirmation].any? },
+            aria: field_error_aria(form, :password_confirmation),
             required: true,
             autocomplete: "new-password",
             placeholder: t("first_run.new.password_confirmation_placeholder"),
@@ -52,7 +52,7 @@
             spellcheck: "false",
             data: { component: "input" } %>
         <% if @user.errors[:password_confirmation].any? %>
-          <p data-form-part="error"><%= @user.errors[:password_confirmation].first %></p>
+          <p data-form-part="error" id="<%= form.field_id(:password_confirmation, :error) %>"><%= @user.errors[:password_confirmation].first %></p>
         <% end %>
       </div>
 

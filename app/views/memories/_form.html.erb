@@ -33,7 +33,7 @@
       <div class="relative" data-form-part="group">
         <%= form.label :title, t("memories.form.title_label"), data: { component: "label" }, class: "sr-only" %>
         <%= form.text_field :title,
-            aria: { invalid: memory.errors[:title].any? },
+            aria: field_error_aria(form, :title),
             placeholder: t("memories.form.title_placeholder"),
             maxlength: 255,
             autocomplete: "off",
@@ -47,7 +47,7 @@
             accepting keystrokes with no explanation. %>
         <span class="title-count" data-memory-editor-target="titleCount" aria-live="polite" hidden></span>
         <% if memory.errors[:title].any? %>
-          <p data-form-part="error"><%= memory.errors[:title].first %></p>
+          <p data-form-part="error" id="<%= form.field_id(:title, :error) %>"><%= memory.errors[:title].first %></p>
         <% end %>
       </div>
     </div>
@@ -58,12 +58,12 @@
         <div class="flex-1 min-w-0" data-form-part="group">
           <%= form.label :source, data: { component: "label" } %>
           <%= form.text_field :source,
-              aria: { invalid: memory.errors[:source].any? },
+              aria: field_error_aria(form, :source),
               placeholder: t("memories.form.source_placeholder"),
               autocomplete: "off",
               data: { component: "input" } %>
           <% if memory.errors[:source].any? %>
-            <p data-form-part="error"><%= memory.errors[:source].first %></p>
+            <p data-form-part="error" id="<%= form.field_id(:source, :error) %>"><%= memory.errors[:source].first %></p>
           <% end %>
         </div>
 
