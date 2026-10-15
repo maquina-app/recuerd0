@@ -104,7 +104,7 @@ class ApiTokenSurfaceTest < ActionDispatch::IntegrationTest
       [:post, create_pin_url(pinnable_type: "Memory", pinnable_id: @memory.id), nil],
       [:post, restore_deleted_workspace_url(@deleted_workspace), nil],
       [:delete, destroy_deleted_workspace_url(@deleted_workspace), nil],
-      [:post, workspace_memory_version_consolidation_url(workspace_id: @memory.workspace_id, memory_id: @memory.id, version_id: @memory.id), nil],
+      [:post, workspace_memory_versions_purge_url(workspace_id: @memory.workspace_id, memory_id: @memory.id), {keep: 1}],
       [:post, onboarding_dismiss_url, nil]
     ]
   end

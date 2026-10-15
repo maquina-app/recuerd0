@@ -73,9 +73,9 @@ Rails.application.routes.draw do
 
     resources :memories do
       resource :markdown, only: %i[show], controller: "memories/markdowns"
-      resources :versions, only: %i[index show create], controller: "memories/versions" do
-        resource :consolidation, only: %i[create], controller: "memories/versions/consolidations"
-      end
+      resources :versions, only: %i[index show create], controller: "memories/versions"
+      resource :versions_purge, path: "versions/purge", only: %i[new create],
+        controller: "memories/versions/purges"
       # Browser-facing link management. Deliberately on its own path segment so
       # it can never shadow the JSON API below, which keeps its
       # defaults: {format: :json} untouched — clients that omit the extension

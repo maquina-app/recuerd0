@@ -1,0 +1,125 @@
+<% content_for :page_title, t("memories.versions.purges.new.page_title", title: @root.display_title) %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+
+<% content_for :breadcrumb do %>
+  <%= responsive_breadcrumbs(
+    {
+      "Workspaces" => workspaces_path,
+      @workspace.name => workspace_path(@workspace),
+      @root.display_title => workspace_memory_path(@workspace, @root),
+      "Versions" => workspace_memory_versions_path(@workspace, @root)
+    },
+    t(".breadcrumb")
+  ) %>
+<% end %>
+
+<% kept_range = version_range_label(@kept) %>
+<% deleted_range = version_range_label(@deleted) %>
+<% first_kept = @kept.first.version_label %>
+
+<div class="mx-auto max-w-2xl space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold"><%= t(".title") %></h1>
+    <p class="text-muted-foreground"><%= t(".subtitle", title: @root.display_title) %></p>
+  </div>
+
+  <% if @stale %>
+    <%= render "components/alert", variant: :destructive, icon: :alert_circle do %>
+      <%= render "components/alert/description", text: t("memories.versions.purges.stale") %>
+    <% end %>
+  <% end %>
+
+  <%# Choose: a plain GET back to this page, so previewing never changes data. %>
+  <%= form_with url: new_workspace_memory_versions_purge_path(@workspace, @root), method: :get,
+      data: { turbo_action: "replace" }, class: "space-y-3" do %>
+    <div data-form-part="group" class="space-y-2">
+      <%= label_tag :keep, t(".keep_label"), data: { component: "label" } %>
+      <div class="flex flex-wrap items-center gap-3">
+        <%= number_field_tag :keep, @keep_input,
+            min: 1, max: @versions.size - 1, required: true,
+            class: "w-24",
+            aria: { invalid: @keep_error.present?, describedby: ("keep_error" if @keep_error) },
+            data: { component: "input" } %>
+        <span class="text-sm text-muted-foreground"><%= t(".keep_hint", total: @versions.size) %></span>
+        <%= button_tag t(".preview"), type: :submit, name: nil, data: { component: "button", variant: "outline" } %>
+      </div>
+      <% if @keep_error %>
+        <p data-form-part="error" id="keep_error"><%= @keep_error %></p>
+      <% end %>
+    </div>
+    <%= link_to t(".keep_only_current"),
+        new_workspace_memory_versions_purge_path(@workspace, @root, keep: 1),
+        data: { turbo_action: "replace" },
+        class: "text-sm underline underline-offset-4 hover:text-primary" %>
+  <% end %>
+
+  <%# Explain %>
+  <%= render "components/alert", variant: :warning, icon: :trash_2 do %>
+    <%= render "components/alert/title", text: t("memories.versions.purges.new.warning_title", count: @deleted.size) %>
+    <%= render "components/alert/description" do %>
+      <ul class="mt-1 list-disc space-y-1 pl-4">
+        <li><%= t("memories.versions.purges.new.warning_undo") %></li>
+        <li><%= t("memories.versions.purges.new.warning_references") %></li>
+        <li><%= t("memories.versions.purges.new.warning_search") %></li>
+        <li><%= t("memories.versions.purges.new.warning_numbers", first_kept:) %></li>
+        <li><%= t("memories.versions.purges.new.warning_urls", first_kept:) %></li>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <%# Kept %>
+  <%= render "components/card" do %>
+    <%= render "components/card/header" do %>
+      <%= render "components/card/title", text: "#{t("memories.versions.purges.new.kept_title")} · #{kept_range}" %>
+    <% end %>
+    <%= render "components/card/content" do %>
+      <ul class="divide-y divide-border">
+        <% @kept.reverse_each do |version| %>
+          <%= render "memories/versions/purges/version_row", version:, current: version == @kept.last %>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <%# Deleted %>
+  <%= render "components/card" do %>
+    <%= render "components/card/header" do %>
+      <%= render "components/card/title", text: "#{t("memories.versions.purges.new.deleted_title")} · #{deleted_range}" %>
+    <% end %>
+    <%= render "components/card/content" do %>
+      <ul class="divide-y divide-border text-muted-foreground">
+        <% @deleted.reverse_each do |version| %>
+          <%= render "memories/versions/purges/version_row", version:, current: false %>
+        <% end %>
+      </ul>
+    <% end %>
+    <%= render "components/card/footer" do %>
+      <p class="text-sm text-muted-foreground">
+        <%= t("memories.versions.purges.new.moved",
+            pins: t("memories.versions.purges.new.pins", count: @moved_pins),
+            links: t("memories.versions.purges.new.links", count: @moved_links)) %>
+      </p>
+    <% end %>
+  <% end %>
+
+  <%# Confirm %>
+  <div class="flex items-center justify-end gap-2">
+    <%= link_to t(".cancel"), workspace_memory_versions_path(@workspace, @root),
+        data: { component: "button", variant: "ghost" } %>
+    <%= button_to workspace_memory_versions_purge_path(@workspace, @root),
+        params: { keep: @keep, current_version_id: @kept.last.id },
+        data: {
+          component: "button",
+          variant: "destructive",
+          turbo_confirm: t(".confirm_message", deleted: deleted_range, kept: kept_range),
+          confirm_severity: "destructive",
+          confirm_title: t(".confirm_title", count: @deleted.size),
+          confirm_button: t(".confirm_button")
+        } do %>
+      <%= icon_for(:trash_2, class: "size-4") %>
+      <%= t(".submit") %>
+    <% end %>
+  </div>
+</div>

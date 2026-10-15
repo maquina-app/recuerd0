@@ -1,0 +1,9 @@
+<%# locals: (version:, current:) %>
+<li class="flex items-center gap-3 py-2 text-sm">
+  <span class="font-mono w-10 shrink-0"><%= version.version_label %></span>
+  <span class="min-w-0 flex-1 truncate"><%= version.display_title %></span>
+  <% if current %>
+    <%= render "components/badge", variant: :default, css_classes: "text-xs" do %><%= t("memories.versions.purges.new.current") %><% end %>
+  <% end %>
+  <span class="shrink-0 text-xs text-muted-foreground"><%= l(version.created_at.to_date, format: :long) %></span>
+</li>
