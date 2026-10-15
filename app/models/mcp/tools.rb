@@ -81,7 +81,7 @@ module Mcp
       query = Memory.normalize_search_query(args["query"])
 
       retrieval = resolve_retrieval(args)
-      if retrieval != "lexical" && query.length >= Searchable::MIN_QUERY_LENGTH
+      if retrieval == "semantic" && query.length >= Searchable::MIN_QUERY_LENGTH
         return list_memories_experimentally(
           workspace,
           args,
@@ -92,27 +92,48 @@ module Mcp
         )
       end
 
-      memories = workspace.memories.latest_versions
-      memories = memories.without_obsolete unless include_obsolete
-      memories = memories.search(query) if query.present?
-      memories = memories.by_category(args["category"]) if args["category"].present?
+      roots = workspace.memories.latest_versions
+      roots = roots.without_obsolete unless include_obsolete
+      roots = roots.by_category(args["category"]) if args["category"].present?
+      memories = query.present? ? roots.search(query) : roots
       sort = Memory.resolve_sort(args["sort"], query: query)
       memories = memories.ordered_by(sort)
 
       total_count = memories.count
       page = memories.offset(offset).limit(limit).preload(:latest_version)
-
-      {
+      envelope = {
         memories: page.map { |memory| memory_json(memory.resolve_current_version) },
         total_count: total_count,
         has_more: offset + limit < total_count,
         next_offset: (offset + limit < total_count) ? offset + limit : nil
       }
+      return envelope if query.blank?
+
+      # The same semantic fallback as web and REST search: keyword hits keep
+      # their order, related memories follow on the first page. An explicit
+      # retrieval: "lexical" opts out.
+      related = []
+      if retrieval.nil? && offset.zero?
+        keyword_ids = (total_count < MemoryRetrieval::RELATED_WHEN_FEWER_THAN) ? memories.pluck(:id) : []
+        related = roots.preload(:latest_version)
+          .related_to(query, keyword_count: total_count, excluding: keyword_ids)
+      end
+
+      envelope.merge(
+        memories: envelope[:memories].map { |memory| memory.merge(match: "keyword") } +
+          related.map do |match|
+            memory_json(match.memory.resolve_current_version)
+              .merge(match: "related", similarity: match.similarity)
+          end,
+        related_count: related.size
+      )
     end
 
+    # nil when the caller sent no retrieval mode: the default search, keyword
+    # hits plus the related fallback. "lexical" is keyword only.
     def resolve_retrieval(args)
       return "lexical" unless Rails.configuration.x.hybrid_retrieval
-      return "lexical" unless args.key?("retrieval")
+      return nil unless args.key?("retrieval")
 
       retrieval = args["retrieval"]
       unless retrieval.is_a?(String) && RETRIEVAL_MODES.include?(retrieval)

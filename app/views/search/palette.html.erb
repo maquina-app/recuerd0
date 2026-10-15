@@ -37,7 +37,7 @@
     <% end %>
   <% elsif @query.blank? || @query.length < Searchable::MIN_QUERY_LENGTH %>
     <%# Nothing to say: the hint under the input already states the minimum. %>
-  <% elsif @workspaces.any? || @memories.any? %>
+  <% elsif @workspaces.any? || @memories.any? || @related.any? %>
     <ul class="palette-results" role="listbox" aria-label="<%= t("search.command.results_label") %>">
       <% if @workspaces.any? %>
         <li role="presentation" class="palette-group"><%= t("search.index.workspaces_heading") %></li>
@@ -65,6 +65,21 @@
           <li role="presentation">
             <%= link_to workspace_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
                   class: "palette-item", data: {palette_result: true, turbo_frame: "_top"} do %>
+              <%= icon_for(:file_text, class: "size-4 shrink-0 text-muted-foreground") %>
+              <span class="palette-item-label"><%= memory.display_title %></span>
+              <span class="palette-item-meta"><%= memory.workspace.name %></span>
+            <% end %>
+          </li>
+        <% end %>
+      <% end %>
+
+      <%# Semantic fallback, labelled apart: these don't contain the typed words. %>
+      <% if @related.any? %>
+        <li role="presentation" class="palette-group"><%= t("search.command.related") %></li>
+        <% @related.map { |match| match.memory.resolve_current_version }.each do |memory| %>
+          <li role="presentation">
+            <%= link_to workspace_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
+                  class: "palette-item", data: {palette_result: true, palette_related: true, turbo_frame: "_top"} do %>
               <%= icon_for(:file_text, class: "size-4 shrink-0 text-muted-foreground") %>
               <span class="palette-item-label"><%= memory.display_title %></span>
               <span class="palette-item-meta"><%= memory.workspace.name %></span>

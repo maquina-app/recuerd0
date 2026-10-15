@@ -50,6 +50,39 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-palette-result]", count: 0
   end
 
+  test "results page lists related memories in their own labelled section" do
+    provider = FakeEmbeddingProvider.new(vectors: {"restore hangs" => [1.0, 0.0, 0.0]})
+    related = Memory.create_with_content(workspaces(:one), title: "Checkpoint stalls", content: "Snapshot waits")
+    create_memory_embedding(related, vector: [1.0, 0.0, 0.0], model: provider.model)
+    sign_in_as(@user)
+
+    with_hybrid_retrieval(provider: provider) do
+      get search_url, params: {q: "restore hangs"}
+    end
+
+    assert_response :success
+    assert_select "#search-related-heading", text: I18n.t("search.index.related_heading")
+    assert_select "#search-memories-heading", count: 0
+    assert_select "[data-component='empty']", count: 0
+    assert_includes response.body, "Checkpoint stalls"
+  end
+
+  test "palette shows related memories under their own group" do
+    provider = FakeEmbeddingProvider.new(vectors: {"restore hangs" => [1.0, 0.0, 0.0]})
+    related = Memory.create_with_content(workspaces(:one), title: "Checkpoint stalls", content: "Snapshot waits")
+    create_memory_embedding(related, vector: [1.0, 0.0, 0.0], model: provider.model)
+    sign_in_as(@user)
+
+    with_hybrid_retrieval(provider: provider) do
+      get search_url, params: {q: "restore hangs"},
+        headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+    end
+
+    assert_response :success
+    assert_select ".palette-group", text: I18n.t("search.command.related")
+    assert_select "[data-palette-related]", text: /Checkpoint stalls/
+  end
+
   test "results page carries a search field prefilled with the query" do
     sign_in_as(@user)
     get search_url, params: {q: "Meeting"}

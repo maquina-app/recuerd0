@@ -25,8 +25,18 @@ module Searchable
   FTS_OPERATORS = %w[AND OR NOT].freeze
   FTS_SYNTAX = ["(", ")", *FTS_OPERATORS].freeze
   FTS_COLUMN_FILTER = /\A(title|body):(.+)\z/
+  FTS_TOKEN = /"[^"]*"?|[()]|[^\s()"]+/
 
   class_methods do
+    # The words of a query with its FTS5 syntax removed — what an embedding
+    # model should see. `"csp nonce" NOT title:draft` becomes `csp nonce draft`.
+    def plain_query(query)
+      query.to_s.scan(FTS_TOKEN).excluding(FTS_SYNTAX)
+        .map { |token| token.delete('"').sub(/\A(?:title|body):/, "").delete_suffix("*") }
+        .compact_blank
+        .join(" ")
+    end
+
     # Turns what a person or agent typed into an FTS5 expression that cannot be
     # a syntax error. Every bare word is quoted, so `deploy.sh` or
     # `maquina-components` is searched for rather than parsed; operators,
@@ -34,7 +44,7 @@ module Searchable
     # operators themselves don't parse (`kamal OR`, `(sqlite`), the words are
     # searched on their own, ANDed, instead of failing the request.
     def fts_expression(query)
-      tokens = query.to_s.scan(/"[^"]*"?|[()]|[^\s()"]+/)
+      tokens = query.to_s.scan(FTS_TOKEN)
 
       expression = fts_join(tokens.filter_map { |token| fts_token(token) })
       return expression if fts_expression_valid?(expression)

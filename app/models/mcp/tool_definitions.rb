@@ -51,8 +51,12 @@ module Mcp
           "(same query language as web and REST search) and also matches case-insensitive whole tags. " \
           "FTS matches come first by relevance, followed by tag-only matches by recency; " \
           "a memory matching both appears once as an FTS match. Queries under 3 characters " \
-          "search exact tags only. Returns a paginated envelope: " \
-          "{memories, total_count, has_more, next_offset}. Pass `offset: next_offset` " \
+          "search exact tags only. When a search finds fewer than 3 matches, up to 5 memories " \
+          "close in meaning follow on the first page, marked match: \"related\" with a similarity " \
+          "(keyword hits are match: \"keyword\"); they don't contain the query words. " \
+          "Returns a paginated envelope: " \
+          "{memories, total_count, has_more, next_offset}, plus related_count when searching; " \
+          "total_count counts keyword matches only. Pass `offset: next_offset` " \
           "to fetch the following page. Defaults to 50 per page (max 200). " + OBSOLETE_NOTE,
         annotations: {readOnlyHint: true, destructiveHint: false},
         inputSchema: {
@@ -74,7 +78,8 @@ module Mcp
             retrieval: {
               type: "string",
               enum: %w[lexical semantic],
-              description: "internal/experimental; requires server flag"
+              description: "Omit for the default search. lexical: keyword matches only, no related " \
+                "memories. semantic: internal/experimental, ranks by meaning alone. Requires server flag."
             },
             category: {type: "string", enum: CATEGORIES, description: "Filter by memory category"},
             sort: {type: "string", enum: Memory::SEARCH_SORTS,

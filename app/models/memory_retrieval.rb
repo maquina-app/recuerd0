@@ -2,57 +2,86 @@ class MemoryRetrieval
   SEMANTIC_TOP_K = 50
   OBSOLETE_DEMOTION = 0.5
 
+  # Keyword search stays first everywhere; embeddings only fill in when it
+  # comes up nearly empty. Fusing the two lists demoted exact matches on the
+  # retrieval bench (D022), and a third of production searches returned
+  # nothing, so the vectors earn their place as a fallback, not a blend.
+  RELATED_WHEN_FEWER_THAN = 3
+  # MiniLM cosine: gibberish peaked at 0.28 and unrelated prose at 0.22 on the
+  # production corpus, while plausible matches started around 0.33.
+  RELATED_FLOOR = 0.33
+  RELATED_LIMIT = 5
+
+  Match = Data.define(:memory, :similarity)
+
   def initialize(relation:, provider: EmbeddingProviders.application)
     @relation = relation
     @provider = provider
   end
 
   def ranked_ids(query:)
-    query_vector = MemoryEmbedding.validate_vector!(
-      @provider.embed(query),
-      dimensions: @provider.dimensions
-    )
-    metadata = relation_metadata
+    scored(query).first(SEMANTIC_TOP_K).map(&:first)
+  end
 
-    candidates = MemoryEmbedding
-      .where(
-        model: @provider.model,
-        memory_id: @relation.reorder(nil).select(:id)
-      )
-      .find_each
-      .map do |embedding|
-        vector = MemoryEmbedding.unpack_vector(
-          embedding.vector,
-          dimensions: @provider.dimensions
-        )
-        similarity = cosine_similarity(query_vector, vector)
-        memory = metadata.fetch(embedding.memory_id)
-        similarity *= OBSOLETE_DEMOTION if obsolete?(memory[:tags])
+  # [memory_id, similarity] pairs at or above the floor, most similar first,
+  # skipping what keyword search already returned.
+  def related(query:, excluding: [])
+    excluded = excluding.to_set
 
-        [embedding.memory_id, similarity]
-      end
-
-    candidates.sort_by do |memory_id, similarity|
-      memory = metadata.fetch(memory_id)
-      [-similarity, -memory[:updated_at].to_f, -memory_id]
-    end.first(SEMANTIC_TOP_K).map(&:first)
+    scored(query)
+      .select { |memory_id, _| excluded.exclude?(memory_id) }
+      .take_while { |_, similarity| similarity >= RELATED_FLOOR }
+      .first(RELATED_LIMIT)
   end
 
   private
 
-  def cosine_similarity(left, right)
-    dot_product = 0.0
-    left_norm = 0.0
-    right_norm = 0.0
+  # Every embedded root in the relation, scored against the query, most similar
+  # first. Vectors were validated when written, so they are unpacked without
+  # per-element checks; a corrupt row scores as non-finite and is dropped.
+  def scored(query)
+    query_vector = MemoryEmbedding.validate_vector!(
+      @provider.embed(query),
+      dimensions: @provider.dimensions
+    )
+    query_norm = Math.sqrt(query_vector.sum { |value| value * value })
+    return [] if query_norm.zero?
 
-    left.zip(right).each do |left_value, right_value|
-      dot_product += left_value * right_value
-      left_norm += left_value * left_value
-      right_norm += right_value * right_value
+    metadata = relation_metadata
+    expected_bytes = @provider.dimensions * 4
+
+    candidates = MemoryEmbedding
+      .where(model: @provider.model, memory_id: @relation.reorder(nil).select(:id))
+      .pluck(:memory_id, :vector)
+      .filter_map do |memory_id, bytes|
+        next unless bytes&.bytesize == expected_bytes
+
+        similarity = cosine_similarity(query_vector, query_norm, bytes.unpack("e*"))
+        next unless similarity.finite?
+
+        similarity *= OBSOLETE_DEMOTION if obsolete?(metadata.fetch(memory_id)[:tags])
+        [memory_id, similarity]
+      end
+
+    candidates.sort_by do |memory_id, similarity|
+      [-similarity, -metadata.fetch(memory_id)[:updated_at].to_f, -memory_id]
+    end
+  end
+
+  # One pass, no intermediate arrays: this loop runs once per embedded memory
+  # on every semantic query.
+  def cosine_similarity(query_vector, query_norm, vector)
+    dot_product = 0.0
+    norm = 0.0
+    index = 0
+    while index < vector.length
+      value = vector[index]
+      dot_product += query_vector[index] * value
+      norm += value * value
+      index += 1
     end
 
-    denominator = Math.sqrt(left_norm) * Math.sqrt(right_norm)
-    denominator.zero? ? 0.0 : dot_product / denominator
+    norm.zero? ? 0.0 : dot_product / (query_norm * Math.sqrt(norm))
   end
 
   # Obsolete rows only reach here when the caller passed include=obsolete;

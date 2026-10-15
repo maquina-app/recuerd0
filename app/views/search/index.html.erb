@@ -62,7 +62,7 @@
       <strong><%= t("search.index.min_length_title") %></strong>
       <p class="mt-1"><%= t("search.index.min_length_description") %></p>
     <% end %>
-  <% elsif @memories.any? || @workspaces.any? %>
+  <% elsif @memories.any? || @workspaces.any? || @related.any? %>
     <%# Workspaces first: "which workspace?" is the commoner question, and it is
         answered by a name, not by a snippet. %>
     <% if @workspaces.any? %>
@@ -108,25 +108,26 @@
         <% end %>
 
         <div class="grid gap-4">
-          <% @memories.each do |memory| %>
-            <div>
-              <p class="text-xs text-muted-foreground mb-1">
-                <%= icon_for(:folders, class: "w-3 h-3 inline") %>
-                <%= link_to memory.workspace.name, workspace_path(memory.workspace), class: "hover:underline" %>
-                <%# Only reachable with include=inactive, where saying which
-                    workspace is shut down is the whole point of the result. %>
-                <% if memory.workspace.archived? %>
-                  <span><%= t("workspaces.show.archived_badge") %></span>
-                <% elsif memory.workspace.deleted? %>
-                  <span><%= t("workspaces.show.deleted_badge") %></span>
-                <% end %>
-              </p>
-              <%= render "memories/memory", memory: memory, workspace: memory.workspace %>
-            </div>
-          <% end %>
+          <%= render partial: "search/result", collection: @memories, as: :memory %>
         </div>
 
         <%= pagination_nav(@pagy, :search_path, params: { q: @query }) %>
+      </section>
+    <% end %>
+
+    <%# Below the keyword hits, never mixed in: these don't contain the words,
+        and saying so keeps a near miss from reading as a broken search. %>
+    <% if @related.any? %>
+      <section class="<%= class_names("mt-8": @memories.any?) %>" aria-labelledby="search-related-heading">
+        <h2 id="search-related-heading" class="ws-group-label mb-2 px-0.5">
+          <%= t("search.index.related_heading") %>
+        </h2>
+        <p class="text-sm text-muted-foreground mb-4">
+          <%= t("search.index.related_description", query: @query) %>
+        </p>
+        <div class="grid gap-4">
+          <%= render partial: "search/result", collection: @related.map(&:memory), as: :memory %>
+        </div>
       </section>
     <% end %>
   <% elsif @query.present? %>
