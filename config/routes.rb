@@ -24,6 +24,11 @@ Rails.application.routes.draw do
   # Remote MCP server endpoint (JSON-RPC 2.0 over HTTP). Named explicitly so it
   # doesn't collide with the `mcp` marketing page route (GET /mcp) below.
   post "/mcp", to: "mcp#call", as: :mcp_endpoint
+  # An MCP client's GET opens the server-to-client SSE stream. Answer it with
+  # 405 instead of the marketing page, or the client reconnects in a loop.
+  get "/mcp", to: "mcp/streams#show", as: :mcp_stream, constraints: ->(request) {
+    request.headers["Accept"].to_s.include?("text/event-stream") || request.headers["MCP-Protocol-Version"].present?
+  }
 
   # Product documentation
   get "start", to: "pages#start", as: :start
