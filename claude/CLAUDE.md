@@ -4,6 +4,8 @@ Recuerd0 — Rails 8 memory/workspace app. SQLite for everything (including cach
 
 See `docs/technical-guide.md` for architecture, `docs/ui-patterns.md` for UI patterns, `docs/hotwire-patterns.md` for Turbo/Stimulus patterns, `docs/brand-guide.md` for brand guidelines, `docs/API.md` for REST API.
 
+**Auth is not Clave and not Devise**, unlike the other maquina apps: the Rails 8 generator's `has_secure_password` with a signed `session_id` cookie (`Authentication` concern, `new_session_path`), plus Bearer access tokens and OAuth for the API and MCP.
+
 ## Workflow Discipline
 
 - When implementing a feature from a plan, ALWAYS re-read the full plan before starting and check off each requirement as you complete it. Before declaring done, verify every planned item was addressed.
