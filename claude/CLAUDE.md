@@ -293,3 +293,7 @@ These align with `docs/brand-guide.md` and `docs/brand-voice.md`. Use the `impec
   **root's** FTS row (the index is keyed by root id), and nothing re-inserts it. Any code
   that destroys versions while the memory survives must call `root.rebuild_search_index`
   after the transaction commits (`Memory#purge_versions!` does).
+- mise does not read `.ruby-version` here (`idiomatic_version_file_enable_tools` is empty and
+  the global config pins a Ruby), so bumping `.ruby-version` leaves `ruby -v` on the old
+  version. Export `MISE_RUBY_VERSION=<version>` (or `mise use ruby@<version>`) before
+  `bundle`/`bin/ci`, then confirm with `bin/rails runner 'puts RUBY_VERSION'`.
