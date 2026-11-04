@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   get "/.well-known/oauth-protected-resource", to: "oauth/well_known#protected_resource"
   get "/.well-known/oauth-protected-resource/mcp", to: "oauth/well_known#protected_resource"
   get "/.well-known/oauth-authorization-server", to: "oauth/well_known#authorization_server"
+  get "/.well-known/openid-configuration", to: "oauth/well_known#authorization_server"
 
   namespace :oauth do
     post "register", to: "registrations#create"   # Dynamic Client Registration (RFC 7591)
@@ -24,11 +25,13 @@ Rails.application.routes.draw do
   # Remote MCP server endpoint (JSON-RPC 2.0 over HTTP). Named explicitly so it
   # doesn't collide with the `mcp` marketing page route (GET /mcp) below.
   post "/mcp", to: "mcp#call", as: :mcp_endpoint
-  # An MCP client's GET opens the server-to-client SSE stream. Answer it with
-  # 405 instead of the marketing page, or the client reconnects in a loop.
-  get "/mcp", to: "mcp/streams#show", as: :mcp_stream, constraints: ->(request) {
+  # An MCP client's GET asks for an SSE stream and its DELETE ends a session;
+  # this stateless server offers neither, so both answer 405. The GET
+  # constraint keeps a browser's GET /mcp on the docs page below.
+  get "/mcp", to: "mcp#unsupported_method", as: nil, constraints: ->(request) {
     request.headers["Accept"].to_s.include?("text/event-stream") || request.headers["MCP-Protocol-Version"].present?
   }
+  delete "/mcp", to: "mcp#unsupported_method", as: nil
 
   # Product documentation
   get "start", to: "pages#start", as: :start

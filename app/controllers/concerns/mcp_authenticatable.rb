@@ -16,14 +16,29 @@ module McpAuthenticatable
     @current_oauth_token = AccessToken.find_by_token(raw)
     return render_mcp_unauthorized("Invalid or expired token") unless @current_oauth_token
 
+    # RFC 8707: an OAuth token is only good for the resource it was issued for.
+    # Manual API tokens (no oauth_client) aren't OAuth tokens, carry no
+    # audience, and keep working here as they do on the REST API.
+    if @current_oauth_token.oauth_client && @current_oauth_token.audience != canonical_resource
+      return render_mcp_unauthorized("Invalid or expired token")
+    end
+
     @current_oauth_token.touch_last_used!
     @mcp_account = @current_oauth_token.user.account
   end
 
+  def canonical_resource
+    "#{request.base_url}/mcp"
+  end
+
+  # RFC 9728: resource metadata lives at the resource-path-suffixed well-known URL.
+  def resource_metadata_url
+    "#{request.base_url}/.well-known/oauth-protected-resource/mcp"
+  end
+
   def render_mcp_unauthorized(message)
-    # RFC 9728: resource metadata lives at the resource-path-suffixed well-known URL.
     response.set_header("WWW-Authenticate",
-      %(Bearer resource_metadata="#{request.base_url}/.well-known/oauth-protected-resource/mcp"))
+      %(Bearer scope="memories:read", resource_metadata="#{resource_metadata_url}"))
     render json: jsonrpc_error(nil, -32_001, message), status: :unauthorized
   end
 end

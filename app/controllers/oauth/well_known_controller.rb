@@ -3,19 +3,22 @@
 class Oauth::WellKnownController < ApplicationController
   allow_unauthenticated_access
 
-  SCOPES = %w[memories:read memories:write workspaces:read].freeze
+  # The documents only change on deploy, so clients and proxies may cache them.
+  before_action { expires_in 1.hour, public: true }
 
   # GET /.well-known/oauth-protected-resource (RFC 9728)
   def protected_resource
     render json: {
       resource: "#{request.base_url}/mcp",
       authorization_servers: [issuer],
-      scopes_supported: SCOPES,
+      scopes_supported: OauthClient::SCOPES,
       bearer_methods_supported: ["header"]
     }
   end
 
   # GET /.well-known/oauth-authorization-server (RFC 8414)
+  # GET /.well-known/openid-configuration (same document, for clients that
+  # probe OIDC discovery first; no OIDC-only claims)
   def authorization_server
     render json: {
       issuer: issuer,
@@ -27,7 +30,8 @@ class Oauth::WellKnownController < ApplicationController
       grant_types_supported: %w[authorization_code refresh_token],
       code_challenge_methods_supported: ["S256"],
       token_endpoint_auth_methods_supported: ["none"],
-      scopes_supported: SCOPES,
+      scopes_supported: OauthClient::SCOPES,
+      authorization_response_iss_parameter_supported: true,
       client_id_metadata_document_supported: false
     }
   end

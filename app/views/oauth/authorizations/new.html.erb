@@ -13,7 +13,7 @@
       <div class="space-y-2 text-sm">
         <p class="font-medium"><%= t("oauth.authorizations.new.permissions_heading") %></p>
         <ul class="space-y-1.5 text-muted-foreground">
-          <% @authorization[:scope].to_s.split.each do |scope| %>
+          <% @granted_scope.to_s.split.each do |scope| %>
             <li class="flex items-center gap-2">
               <%= icon_for(:check, class: "size-4 text-primary shrink-0") %>
               <%= t("oauth.authorizations.scopes.#{scope.tr(":", "_")}", default: scope) %>
@@ -31,9 +31,11 @@
           via fetch and be blocked by CORS; a real browser navigation is required. %>
       <%= form_with url: oauth_authorize_path, method: :post, data: { component: "form", turbo: false } do |form| %>
         <%= form.hidden_field :client_id, value: @client.client_id %>
+        <%= form.hidden_field :response_type, value: @authorization[:response_type] %>
         <%= form.hidden_field :redirect_uri, value: @authorization[:redirect_uri] %>
         <%= form.hidden_field :state, value: @authorization[:state] %>
-        <%= form.hidden_field :scope, value: @authorization[:scope] %>
+        <%= form.hidden_field :scope, value: @granted_scope %>
+        <%= form.hidden_field :resource, value: @authorization[:resource] %>
         <%= form.hidden_field :code_challenge, value: @authorization[:code_challenge] %>
         <%= form.hidden_field :code_challenge_method, value: @authorization[:code_challenge_method] %>
 

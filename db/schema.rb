@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_000000) do
   create_table "access_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
@@ -24,6 +24,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_000000) do
     t.string "token_digest", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.string "audience"
     t.index ["oauth_client_id"], name: "index_access_tokens_on_oauth_client_id"
     t.index ["refresh_token_digest"], name: "index_access_tokens_on_refresh_token_digest", unique: true
     t.index ["token_digest"], name: "index_access_tokens_on_token_digest", unique: true
@@ -180,6 +181,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_000000) do
     t.string "scope"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.string "resource"
     t.index ["code"], name: "index_oauth_authorization_codes_on_code", unique: true
     t.index ["oauth_client_id"], name: "index_oauth_authorization_codes_on_oauth_client_id"
     t.index ["user_id"], name: "index_oauth_authorization_codes_on_user_id"

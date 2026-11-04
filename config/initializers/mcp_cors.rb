@@ -15,8 +15,8 @@ class McpCors
   HEADERS = {
     "access-control-allow-origin" => "*",
     "access-control-allow-methods" => "GET, POST, OPTIONS",
-    "access-control-allow-headers" => "Authorization, Content-Type, Mcp-Session-Id, MCP-Protocol-Version",
-    "access-control-expose-headers" => "WWW-Authenticate, Mcp-Session-Id",
+    "access-control-allow-headers" => "Authorization, Content-Type, MCP-Protocol-Version, Mcp-Method, Mcp-Name",
+    "access-control-expose-headers" => "WWW-Authenticate",
     "access-control-max-age" => "86400"
   }.freeze
 
