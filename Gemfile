@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.1.2"
+gem "rails", "~> 8.1.4", ">= 8.1.4.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use sqlite3 as the database for Active Record
@@ -45,8 +45,8 @@ gem "thruster", require: false
 gem "redcarpet", "~> 3.6"
 gem "rouge", "~> 4.5"
 gem "pagy", "~> 9.3"
-gem "maquina-components", "~> 0.7.4"
-gem "informers", "~> 1.3.0"
+gem "maquina-components", "~> 0.7"
+gem "informers", "~> 1.3"
 gem "rubyzip", "~> 3.0", require: "zip"
 
 group :development, :test do
@@ -64,7 +64,8 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
 
-  # Pin minitest to v5 for Rails 8.0 compatibility with Ruby 4.0
+  # Pin minitest to v5: minitest 6 drops minitest/mock (now the separate
+  # minitest-mock gem), which the suite requires for stubbing
   gem "minitest", "~> 5.25"
 end
 
@@ -72,7 +73,7 @@ group :development do
   gem "letter_opener"
   # gem "log_bench"
   # gem "reactionview"
-  gem "standard", "~> 1.54.0"
+  gem "standard", "~> 1.54"
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 end
