@@ -9,6 +9,10 @@ module WorkspacesHelper
     workspace.active? || workspace.manageable_by?(Current.user)
   end
 
+  def workspace_badges?(workspace, show_status: false)
+    workspace.deleted? || (show_status && workspace.archived?)
+  end
+
   # What a delete confirmation adds when some of what goes belongs to other people.
   def memories_of_others_warning(workspace)
     others = workspace.memories_of_others_count(Current.user)

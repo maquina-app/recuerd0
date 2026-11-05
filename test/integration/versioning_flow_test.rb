@@ -555,6 +555,26 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
 
   # --- deleting by a version's id -----------------------------------------------------
 
+  test "the delete dialog counts only the versions besides the current one" do
+    user = users(:one)
+    workspace = user.account.workspaces.create!(name: "Dialog copy", created_by: user)
+    memory = Memory.create_with_content(workspace, title: "T", content: "v1", created_by: user)
+    sign_in_as(user)
+
+    confirm = lambda do
+      get workspace_memory_url(workspace, memory)
+      css_select("a[data-turbo-method='delete'][href='#{workspace_memory_path(workspace, memory)}']").first["data-turbo-confirm"]
+    end
+
+    assert_equal "This is permanent.", confirm.call
+
+    memory.create_version!(content: "v2", created_by: user)
+    assert_equal "This is permanent, and it also deletes its older version.", confirm.call
+
+    memory.create_version!(content: "v3", created_by: user)
+    assert_equal "This is permanent, and it also deletes its 2 older versions.", confirm.call
+  end
+
   test "an older version's id deletes nothing, on REST and the web" do
     user = users(:one)
     workspace = user.account.workspaces.create!(name: "Delete by version", created_by: user)

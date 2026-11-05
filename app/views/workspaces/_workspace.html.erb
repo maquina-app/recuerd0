@@ -7,8 +7,10 @@
 
   <%# Name, description, stats %>
   <div class="flex-1 min-w-0">
-    <div class="flex items-center gap-2">
-      <h3 class="text-sm font-medium truncate">
+    <%# Badges get their own line on a phone. Beside the name, they left room for only
+        its first letters, so rows couldn't be told apart. %>
+    <div class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
+      <h3 class="max-w-full text-sm font-medium truncate">
         <% if (path = workspace_link_path(workspace)) %>
           <%# ws-row-link stretches this one link across the whole row, so the %>
           <%# hover state and the click target are the same shape. %>
@@ -17,7 +19,11 @@
           <%= workspace.name %>
         <% end %>
       </h3>
-      <%= render "workspaces/workspace_badges", workspace: workspace, show_status: show_status %>
+      <% if workspace_badges?(workspace, show_status: show_status) %>
+        <div class="flex shrink-0 flex-wrap items-center gap-1.5">
+          <%= render "workspaces/workspace_badges", workspace: workspace, show_status: show_status %>
+        </div>
+      <% end %>
     </div>
 
     <% if workspace.description.present? %>

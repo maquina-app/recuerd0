@@ -321,7 +321,10 @@ en:
       delete: "Delete"
       delete_title: "Delete %{title}?"
       delete_button: "Delete"
-      delete_confirm: "This is permanent, and it also deletes %{versions}."
+      delete_confirm:
+        zero: "This is permanent."
+        one: "This is permanent, and it also deletes its older version."
+        other: "This is permanent, and it also deletes its %{count} older versions."
       delete_confirm_links: "It removes %{links}, including any pointing here from other workspaces."
     memory:
       view_details: "View Details"

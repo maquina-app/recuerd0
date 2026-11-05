@@ -48,7 +48,7 @@
         data: {
           turbo_method: :delete,
           turbo_confirm: [
-            t("memories.memory_show_actions.delete_confirm", versions: pluralize(memory.all_versions.size, "version")),
+            t("memories.memory_show_actions.delete_confirm", count: memory.all_versions.size - 1),
             memory_owner_note(memory)
           ].compact.join(" "),
           confirm_severity: "destructive",

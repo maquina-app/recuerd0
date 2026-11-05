@@ -66,8 +66,7 @@
         variant: :destructive,
         data: {
           turbo_confirm: [
-            t("memories.memory_show_actions.delete_confirm",
-              versions: pluralize(memory.all_versions.size, "version")),
+            t("memories.memory_show_actions.delete_confirm", count: memory.all_versions.size - 1),
             (t("memories.memory_show_actions.delete_confirm_links",
                links: pluralize(memory.root_memory.links_count, "link")) if memory.root_memory.links_count > 0),
             memory_owner_note(memory)
