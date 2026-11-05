@@ -9,7 +9,7 @@ class Workspaces::OwnershipsController < ApplicationController
   private
 
   def set_ownable
-    return redirect_to(deleted_workspaces_path, alert: t("ownership.pass_denied"), status: :see_other) if @workspace.deleted?
+    return redirect_to(deleted_workspaces_path, alert: t("ownership.restore_first"), status: :see_other) if @workspace.deleted?
 
     @ownable = @workspace
   end

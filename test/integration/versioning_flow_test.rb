@@ -552,4 +552,51 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
 
     assert_equal "first line", @memory.reload.current_version.content.body.content
   end
+
+  # --- deleting by a version's id -----------------------------------------------------
+
+  test "an older version's id deletes nothing, on REST and the web" do
+    user = users(:one)
+    workspace = user.account.workspaces.create!(name: "Delete by version", created_by: user)
+    memory = Memory.create_with_content(workspace, title: "T", content: "v1", created_by: user)
+    v2 = memory.create_version!(content: "v2", created_by: user)
+    memory.create_version!(content: "v3", created_by: user)
+    token = user.access_tokens.build(permission: "full_access", description: "test")
+    token.save!
+
+    assert_no_difference("Memory.count") do
+      delete workspace_memory_url(workspace, v2, format: :json), headers: auth_headers(token.raw_token)
+    end
+    assert_response :unprocessable_entity
+    assert_includes response.parsed_body["error"]["message"], memory.id.to_s
+
+    sign_in_as(user)
+    assert_no_difference("Memory.count") do
+      delete workspace_memory_url(workspace, v2)
+    end
+    assert_redirected_to workspace_memory_url(workspace, memory)
+    assert_response :see_other
+    assert_match(/nothing was deleted/, flash[:alert])
+  end
+
+  test "the root's id and the current version's both delete the memory" do
+    user = users(:one)
+    workspace = user.account.workspaces.create!(name: "Delete by id", created_by: user)
+    token = user.access_tokens.build(permission: "full_access", description: "test")
+    token.save!
+
+    by_root = Memory.create_with_content(workspace, title: "Root", content: "v1", created_by: user)
+    by_root.create_version!(content: "v2", created_by: user)
+    assert_difference("Memory.count", -2) do
+      delete workspace_memory_url(workspace, by_root, format: :json), headers: auth_headers(token.raw_token)
+    end
+    assert_response :no_content
+
+    by_current = Memory.create_with_content(workspace, title: "Current", content: "v1", created_by: user)
+    current = by_current.create_version!(content: "v2", created_by: user)
+    assert_difference("Memory.count", -2) do
+      delete workspace_memory_url(workspace, current, format: :json), headers: auth_headers(token.raw_token)
+    end
+    assert_response :no_content
+  end
 end

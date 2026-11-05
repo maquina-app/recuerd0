@@ -36,6 +36,12 @@ module MemoriesHelper
     t("ownership.owned_and_created_by", owner: owner, creator: creator)
   end
 
+  # A workspace's owner and an admin can delete what isn't theirs, so the confirmation
+  # says whose it is.
+  def memory_owner_note(memory)
+    t("ownership.belongs_to", name: person_name(memory.ownership_record.owner)) unless memory.owned_by?(Current.user)
+  end
+
   # nil means no recorded creator, which belongs to the account admin.
   def person_name(user)
     return t("ownership.you") if user == Current.user || (user.nil? && Current.user.admin?)

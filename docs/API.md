@@ -805,6 +805,8 @@ Returns the updated memory object with content.
 
 Deletes a memory and all its versions. Requires `full_access` token, and the token's owner must own the memory, own its workspace, or be an account admin; otherwise `403 FORBIDDEN`.
 
+`:id` is the memory's root id or its current version's id. An older version's id returns `422` and deletes nothing, because versions can't be deleted one by one here: use `root_id` from the response, or purge old versions from the web.
+
 ```
 DELETE /workspaces/:workspace_id/memories/:id.json
 ```

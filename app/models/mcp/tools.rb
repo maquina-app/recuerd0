@@ -224,6 +224,7 @@ module Mcp
 
     def update_memory(account, args = {}, user: nil)
       memory = find_memory_for_update(account, args["memory_id"]).resolve_current_version
+      refuse_if_archived!(memory)
       raise ToolError, I18n.t("ownership.update_denied") unless memory.manageable_by?(user)
 
       unless memory.current_version?
@@ -251,6 +252,7 @@ module Mcp
     # which overwrites in place). Omitted fields inherit from the latest version.
     def create_version(account, args = {}, user: nil)
       memory = find_memory(account, args["memory_id"])
+      refuse_if_archived!(memory)
       validate_category!(args["category"])
       category = args["category"].presence
 
@@ -492,5 +494,13 @@ module Mcp
         raise(ToolError, "Memory not found")
     end
     private_class_method :find_memory_for_update
+
+    # find_memory keeps archived workspaces readable, so writes have to ask.
+    def refuse_if_archived!(memory)
+      return unless memory.archived?
+
+      raise ToolError, "This memory's workspace is archived, so it is read-only. Unarchive the workspace to change it."
+    end
+    private_class_method :refuse_if_archived!
   end
 end

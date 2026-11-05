@@ -5,6 +5,9 @@
 <% workspaces_count = user.owned_workspaces.count %>
 <% memories_count = user.owned_memories.count %>
 <% owns_anything = (workspaces_count + memories_count).positive? %>
+<%# Their What you own page leaves deleted things out, so say these numbers don't. %>
+<% deleted_workspaces_count = user.owned_workspaces.deleted.count %>
+<% memories_in_deleted_count = memories_count - user.owned_memories.in_undeleted_workspaces.count %>
 <% recipients = users.reject { |candidate| candidate == user } %>
 <div data-controller="modal">
   <button type="button"
@@ -36,6 +39,13 @@
                 <%= t("accounts.users.remove_owns",
                       workspaces: t("accounts.users.workspaces_count", count: workspaces_count),
                       memories: t("accounts.users.memories_count", count: memories_count)) %>
+                <% if (deleted_workspaces_count + memories_in_deleted_count).positive? %>
+                  <%= t("accounts.users.remove_owns_deleted",
+                        items: [
+                          (t("accounts.users.workspaces_count", count: deleted_workspaces_count) if deleted_workspaces_count.positive?),
+                          (t("accounts.users.memories_count", count: memories_in_deleted_count) if memories_in_deleted_count.positive?)
+                        ].compact.to_sentence) %>
+                <% end %>
               </p>
               <%= form.label :transfer_to, t("accounts.users.remove_recipient"), data: { component: "label" }, for: dom_id(user, :transfer_to) %>
               <%= form.select :transfer_to,

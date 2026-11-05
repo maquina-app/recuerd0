@@ -436,6 +436,7 @@ en:
         other: "%{count} in inactive workspaces hidden — open in search"
 
   ownership:
+    belongs_to: "It belongs to %{name}."
     created_by: "Created by %{name}"
     you: "you"
     account_admin: "the account admin"
@@ -444,6 +445,8 @@ en:
     denied: "Only its owner or an admin can do that."
     update_denied: "Only this memory's owner or an account admin can update it in place. Use create_version to add a new version instead."
     passed: "%{name} now owns this."
+    taken: "You now own this."
+    restore_first: "A deleted workspace has to be restored before it can change hands."
     pass_denied: "Only its owner can pass this on. An admin can take it first."
     invalid_recipient: "Choose someone on this account who doesn't already own it."
     actions:
@@ -570,6 +573,7 @@ en:
       remove_button: "Remove user"
       remove_confirm: "This permanently revokes their access, including their API tokens and connected apps, and cannot be undone. Every unused invitation link stops working too, so anyone invited but not yet joined needs a new one."
       remove_owns: "They own %{workspaces} and %{memories}."
+      remove_owns_deleted: "That counts %{items} under Deleted."
       remove_recipient: "Who should own these now?"
       remove_recipient_hint: "Everything still shows who created it."
       workspaces_count:

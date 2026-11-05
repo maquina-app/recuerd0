@@ -12,6 +12,10 @@ class WorkspaceOwnershipTest < ActionDispatch::IntegrationTest
     @admin_workspace = @account.workspaces.create!(name: "Admin's", created_by: @admin)
   end
 
+  def delete_confirm(path)
+    css_select("a[data-turbo-method='delete'][href='#{path}']").first["data-turbo-confirm"]
+  end
+
   def token_for(user, permission: "full_access")
     token = user.access_tokens.build(permission:, description: "test")
     token.save!
@@ -363,6 +367,96 @@ class WorkspaceOwnershipTest < ActionDispatch::IntegrationTest
     assert_includes @admin.owned_workspaces, unowned
     assert_not_includes @admin.owned_workspaces, elsewhere
     assert_not_includes @member.owned_workspaces, unowned
+  end
+
+  # --- what has no owner is the admin's ---------------------------------------------
+
+  test "an admin can pass what has no owner, without taking it first" do
+    unowned = @account.workspaces.create!(name: "No owner")
+    sign_in_as(@admin)
+
+    get workspace_url(unowned)
+    assert_select "a[href=?]", edit_workspace_ownership_path(unowned)
+    assert_select "a[data-turbo-method='patch'][href=?]", workspace_ownership_path(unowned, user_id: @admin.id), count: 0
+
+    get edit_workspace_ownership_url(unowned)
+    assert_response :success
+
+    patch workspace_ownership_url(unowned), params: {user_id: @other_member.id}
+    assert_equal @other_member, unowned.reload.owner
+  end
+
+  test "a new account's admin owns its starter workspace, as What you own says" do
+    user = Account.create_with_user(account_name: "New", email_address: "fresh@example.com", password: "password123", password_confirmation: "password123")
+    starter = user.account.workspaces.first
+
+    assert_nil starter.owner_id
+    assert starter.owned_by?(user)
+    assert_includes user.owned_workspaces, starter
+    assert starter.memories.latest_versions.first.owned_by?(user)
+  end
+
+  test "having no owner gives a member nothing" do
+    unowned = @account.workspaces.create!(name: "No owner")
+
+    assert_not unowned.owned_by?(@member)
+    assert_not unowned.owned_by?(nil)
+    assert_not unowned.manageable_by?(nil)
+  end
+
+  # --- what the messages say ----------------------------------------------------------
+
+  test "taking something says so in the first person" do
+    sign_in_as(@admin)
+
+    patch workspace_ownership_url(@member_workspace), params: {user_id: @admin.id}
+    assert_equal "You now own this.", flash[:notice]
+
+    patch workspace_ownership_url(@member_workspace), params: {user_id: @other_member.id}
+    assert_equal "#{@other_member.display_name} now owns this.", flash[:notice]
+  end
+
+  test "deleting a memory someone else owns says whose it is" do
+    memory = Memory.create_with_content(@member_workspace, title: "Admin's", content: "x", created_by: @admin)
+    mine = Memory.create_with_content(@member_workspace, title: "Mine", content: "x", created_by: @member)
+    sign_in_as(@member)
+    note = I18n.t("ownership.belongs_to", name: @admin.display_name)
+
+    get workspace_memory_url(@member_workspace, memory)
+    assert_includes delete_confirm(workspace_memory_path(@member_workspace, memory)), note
+
+    get workspace_url(@member_workspace, view: "list")
+    assert_includes delete_confirm(workspace_memory_path(@member_workspace, memory)), note
+    assert_not_includes delete_confirm(workspace_memory_path(@member_workspace, mine)), "belongs to"
+  end
+
+  test "a deleted workspace's owner is told to restore it first" do
+    @member_workspace.soft_delete
+    sign_in_as(@member)
+
+    get edit_workspace_ownership_url(@member_workspace)
+
+    assert_redirected_to deleted_workspaces_url
+    assert_equal I18n.t("ownership.restore_first"), flash[:alert]
+  end
+
+  test "the removal dialog says when its counts include what's under Deleted" do
+    gone = @account.workspaces.create!(name: "Gone", created_by: @member)
+    Memory.create_with_content(gone, title: "Inside", content: "x", created_by: @member)
+    gone.soft_delete
+    sign_in_as(@admin)
+
+    get account_url
+
+    assert_match "They own 2 workspaces and 3 memories. That counts 1 workspace and 2 memories under Deleted.", response.body.squish
+  end
+
+  test "the removal dialog doesn't mention Deleted when nothing is there" do
+    sign_in_as(@admin)
+
+    get account_url
+
+    assert_no_match(/under Deleted/, response.body)
   end
 
   test "the label stays simple until owner and creator differ" do

@@ -47,8 +47,10 @@
         variant: :destructive,
         data: {
           turbo_method: :delete,
-          turbo_confirm: t("memories.memory_show_actions.delete_confirm",
-            versions: pluralize(memory.all_versions.size, "version")),
+          turbo_confirm: [
+            t("memories.memory_show_actions.delete_confirm", versions: pluralize(memory.all_versions.size, "version")),
+            memory_owner_note(memory)
+          ].compact.join(" "),
           confirm_severity: "destructive",
           confirm_title: t("memories.memory_show_actions.delete_title", title: memory.display_title),
           confirm_button: t("memories.memory_show_actions.delete_button")

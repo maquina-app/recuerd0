@@ -26,13 +26,17 @@ module OwnershipTransferring
       @ownable.pass_ownership_to(recipient)
       track_event("ownership.change", resource: @ownable)
       respond_to do |format|
-        format.html { redirect_to ownership_return_path, notice: t("ownership.passed", name: helpers.person_name(recipient)), status: :see_other }
+        format.html { redirect_to ownership_return_path, notice: ownership_notice(recipient), status: :see_other }
         format.json { render json: {id: @ownable.ownership_record.id, owner_id: recipient.id} }
       end
     end
   end
 
   private
+
+  def ownership_notice(recipient)
+    (recipient == Current.user) ? t("ownership.taken") : t("ownership.passed", name: recipient.display_name)
+  end
 
   def deny_ownership_change
     respond_to do |format|

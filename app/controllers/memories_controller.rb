@@ -14,6 +14,7 @@ class MemoriesController < ApplicationController
   before_action -> { require_delete_access(@memory) }, only: :destroy
   before_action :require_in_place_access, only: :update
   before_action :require_active_workspace, only: %i[new create edit update destroy]
+  before_action :refuse_deleting_an_older_version, only: :destroy
 
   def index
     scope = @workspace.memories
@@ -137,6 +138,19 @@ class MemoriesController < ApplicationController
   end
 
   private
+
+  # Delete takes the whole memory, which is not what an older version's id asks for,
+  # and a client that kept the id from an earlier save holds exactly that. The root's
+  # id and the current version's both mean the memory.
+  def refuse_deleting_an_older_version
+    return if @memory.root_version? || @memory.current_version?
+
+    message = t("memories.destroy.older_version", version: @memory.version_label, id: @memory.stable_id)
+    respond_to do |format|
+      format.html { redirect_to workspace_memory_path(@workspace, @memory.stable_id), alert: message, status: :see_other }
+      format.json { render_validation_error(message) }
+    end
+  end
 
   # Only the editor sends edit_base; REST keeps last-write-wins.
   def edit_conflict?

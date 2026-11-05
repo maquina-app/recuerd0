@@ -69,7 +69,8 @@
             t("memories.memory_show_actions.delete_confirm",
               versions: pluralize(memory.all_versions.size, "version")),
             (t("memories.memory_show_actions.delete_confirm_links",
-               links: pluralize(memory.root_memory.links_count, "link")) if memory.root_memory.links_count > 0)
+               links: pluralize(memory.root_memory.links_count, "link")) if memory.root_memory.links_count > 0),
+            memory_owner_note(memory)
           ].compact.join(" "),
           confirm_severity: "destructive",
           confirm_title: t("memories.memory_show_actions.delete_title", title: memory.display_title),

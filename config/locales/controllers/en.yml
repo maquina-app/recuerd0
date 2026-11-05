@@ -22,6 +22,7 @@ en:
       version_created: "Saved as %{version}."
       errors: "Please review the errors below."
     destroy:
+      older_version: "%{version} is an older version, so nothing was deleted. To delete this memory and all its versions, use its id, %{id}."
       destroyed: "Memory was successfully deleted."
     versions:
       read_only: "Cannot modify versions in a read-only workspace."

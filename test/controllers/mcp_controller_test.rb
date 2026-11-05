@@ -727,6 +727,25 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal [gone.id.to_s], payload["missing"]
   end
 
+  test "an archived workspace's memory can't be written to" do
+    owner = @read_token.user
+    workspace = owner.account.workspaces.create!(name: "To archive", created_by: owner)
+    memory = Memory.create_with_content(workspace, title: "Frozen", content: "body", created_by: owner)
+    workspace.archive
+
+    assert_no_difference("Memory.count") do
+      %w[update_memory create_version].each do |tool|
+        error = assert_raises(Mcp::ToolError) do
+          Mcp::Tools.public_send(tool, owner.account, {"memory_id" => memory.id.to_s, "title" => "Changed"}, user: owner)
+        end
+        assert_match(/archived/, error.message)
+      end
+    end
+
+    assert_equal "Frozen", memory.reload.title
+    assert_equal "Frozen", Mcp::Tools.read_memory(owner.account, {"memory_id" => memory.id.to_s}, user: owner)[:title]
+  end
+
   test "an archived workspace's memory stays readable by id" do
     memory = Memory.create_with_content(workspaces(:archived), title: "Old", content: "body")
 

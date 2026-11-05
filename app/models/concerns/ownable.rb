@@ -20,15 +20,15 @@ module Ownable
   end
 
   def owned_by?(user)
+    return false unless user
+
     current_owner_id = ownership_record.owner_id
 
-    current_owner_id.present? && current_owner_id == user&.id
+    current_owner_id.nil? ? user.admin? : current_owner_id == user.id
   end
 
   def manageable_by?(user)
-    return false unless user
-
-    user.admin? || owned_by?(user)
+    user&.admin? || owned_by?(user)
   end
 
   # An admin takes first and passes as the owner, so nobody is handed something by
