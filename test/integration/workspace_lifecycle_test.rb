@@ -6,7 +6,6 @@ class WorkspaceLifecycleTest < ActionDispatch::IntegrationTest
     @workspace = workspaces(:one)
   end
 
-  # U-02
   test "a workspace archived then deleted reads as deleted everywhere, with Restore" do
     @workspace.archive
     @workspace.soft_delete
@@ -59,7 +58,6 @@ class WorkspaceLifecycleTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  # U-05
   test "the header and the filter agree once a memory has versions" do
     workspace = accounts(:one).workspaces.create!(name: "Counts", start_with_map: "0", created_by: users(:one))
     memory = Memory.create_with_content(workspace, title: "A", content: "x")
@@ -72,7 +70,6 @@ class WorkspaceLifecycleTest < ActionDispatch::IntegrationTest
     assert_select ".category-chip .cat-count", text: "2"
   end
 
-  # U-19
   test "the new workspace form offers the map, on by default" do
     get new_workspace_url
     assert_select "input[type=checkbox][name='workspace[start_with_map]'][checked]"
@@ -82,7 +79,6 @@ class WorkspaceLifecycleTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # U-43
   test "a whitespace-only name comes back empty with its error" do
     post workspaces_url, params: {workspace: {name: "   "}}
 
@@ -98,7 +94,6 @@ class WorkspaceLifecycleTest < ActionDispatch::IntegrationTest
     assert_select ".src-val", text: I18n.t("memories.memory.source_system")
   end
 
-  # U-38
   test "empty states don't claim you never did it" do
     Workspace.where(account: accounts(:one)).update_all(archived_at: nil, deleted_at: nil)
 
@@ -107,14 +102,12 @@ class WorkspaceLifecycleTest < ActionDispatch::IntegrationTest
     assert_no_match(/haven&#39;t archived/, response.body)
   end
 
-  # U-31
   test "the workspace ID has a visible label" do
     get workspace_url(@workspace)
 
     assert_select "p:has(code.ws-id) span:not(.sr-only)", text: I18n.t("workspaces.show.workspace_id_label")
   end
 
-  # U-30
   test "pinned page says workspaces" do
     pinned = Memory.create_with_content(workspaces(:one), title: "Pinned one", content: "x")
     pinned.pin!(users(:one))

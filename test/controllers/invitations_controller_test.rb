@@ -139,7 +139,6 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # U-01
   test "an email that already has an account gets an inline error, not a crash" do
     assert_no_difference("User.count") do
       post invitations_url, params: {token: @token, user: {email_address: users(:two).email_address, password: "password123", password_confirmation: "password123"}}
@@ -174,7 +173,6 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_match users(:two).email_address, response.body
   end
 
-  # U-20
   test "an admin can revoke every link" do
     sign_in_as(users(:one))
 
@@ -194,17 +192,31 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, @account.reload.invitation_generation
   end
 
-  # U-22
-  test "an account never named reads as its owner's team, and the legal line shows" do
+  test "an account never named reveals nothing about its owner" do
     @account.update!(name: users(:one).email_address.split("@").first)
 
     get invitation_url(token: @token)
 
-    assert_select "[data-card-part='title'], h3, h2", text: /#{users(:one).email_address}/
+    assert_match I18n.t("invitations.show.heading_unnamed"), response.body
+    assert_no_match(/#{Regexp.escape(users(:one).email_address)}/, response.body)
+    assert_select "[data-card-part='title']", text: /#{I18n.t("invitations.show.heading_unnamed")}/
+    assert_no_match(/>Join one</, response.body)
     assert_match I18n.t("invitations.show.description"), response.body
     assert_no_match(/join this workspace/, response.body)
     assert_select "a[href=?]", terms_path
     assert_select "a[href=?]", privacy_path
+  end
+
+  test "an admin is told why an unnamed account's invitation is generic" do
+    sign_in_as(users(:one))
+    @account.update!(name: users(:one).email_address.split("@").first)
+
+    get account_url
+    assert_match ERB::Util.html_escape(I18n.t("accounts.invitations.name_hint")), response.body
+
+    @account.update!(name: "Maquina")
+    get account_url
+    assert_no_match(/until you give this account a name/, response.body)
   end
 
   test "a chosen account name is used as it is" do

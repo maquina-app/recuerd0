@@ -161,6 +161,7 @@ class Memory < ApplicationRecord
 
   # Callbacks
   before_validation :set_version, on: :create
+  before_validation :drop_repeated_tags
   # memories_count answers "how many memories", and a version is not a memory,
   # so this replaces a counter cache that counted every row.
   after_create :increment_workspace_memories_count, if: :root_version?
@@ -312,6 +313,13 @@ class Memory < ApplicationRecord
     new_version
   end
 
+  # Fingerprint of the current text and fields, carried by the edit form to notice
+  # that someone saved while this person was typing. Includes the id, so a new
+  # version by anyone counts.
+  def edit_digest
+    Digest::SHA256.hexdigest([id, title, source, category, tags, content&.body&.content.to_s].to_json)
+  end
+
   # The editor's "Save as new version": the new version, or nil with the reason in
   # errors. Unlike create_version!, whose callers may legitimately copy (restore,
   # or an API client relying on inherited fields), this one refuses a version that
@@ -355,6 +363,17 @@ class Memory < ApplicationRecord
     root = root_memory
     current_tags = root.current_version.tags
     root.update_column(:tags, current_tags) if root.tags != current_tags
+  end
+
+  # What changed besides the body, as [field, before, after]. A root row's tags and
+  # category are kept synced to the current version, so they say nothing about v1.
+  def field_changes_from(previous)
+    fields = previous.root_version? ? %i[title source] : %i[title source category tags]
+
+    fields.filter_map do |field|
+      before, after = previous[field], self[field]
+      [field, before, after] if before.presence != after.presence
+    end
   end
 
   # Human-readable version label
@@ -480,6 +499,12 @@ class Memory < ApplicationRecord
   end
 
   private
+
+  # Search and filters treat tags by name, so Deploy and deploy are one tag. The
+  # first spelling wins.
+  def drop_repeated_tags
+    self.tags = Array(tags).uniq { |tag| tag.to_s.strip.downcase }
+  end
 
   def increment_workspace_memories_count
     adjust_workspace_memories_count(1)

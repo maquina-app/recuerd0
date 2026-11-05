@@ -4,6 +4,9 @@
     <%= render "components/card/title", text: t("accounts.invitations.title") %>
     <%= render "components/card/description", text: t("accounts.invitations.description") %>
     <%= render "components/card/description", text: t("accounts.invitations.permissions") %>
+    <% unless account.named? %>
+      <%= render "components/card/description", text: t("accounts.invitations.name_hint") %>
+    <% end %>
   <% end %>
 
   <%= render "components/card/content" do %>

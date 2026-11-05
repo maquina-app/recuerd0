@@ -1,4 +1,4 @@
-<%# locals: (workspace:, memory:) %>
+<%# locals: (workspace:, memory:, edit_base: nil) %>
 
 <div class="h-full flex flex-col">
   <%# Custom form layout — intentionally omits data-component="form" to avoid the
@@ -19,14 +19,14 @@
       class: "memory-form relative flex flex-col h-full gap-3",
       data: {
         controller: "memory-editor",
-        action: "house-md:change->memory-editor#change submit->memory-editor#submit",
+        action: "house-md:change->memory-editor#change submit->memory-editor#submit turbo:morph@document->memory-editor#morphed",
         memory_editor_focus_editor_value: params[:focus] == "editor",
+        memory_editor_start_dirty_value: memory.errors.any?,
         memory_editor_unsaved_label_value: t("memories.form.status.unsaved"),
         memory_editor_unload_prompt_value: t("memories.form.status.unload_prompt")
       } do |form| %>
-    <% if memory.errors[:base].any? %>
-      <p data-form-part="error" class="shrink-0"><%= memory.errors[:base].first %></p>
-    <% end %>
+    <%# What the person started from, to notice a save by anyone else since. %>
+    <%= hidden_field_tag :edit_base, edit_base, id: nil if edit_base %>
 
     <%# Borderless document title. sm:pr-* reserves the strip the absolutely
         positioned actions occupy so a long title never runs under them. %>
@@ -52,6 +52,18 @@
         <% end %>
       </div>
     </div>
+
+    <%# Below the title, not above it: the actions sit absolutely at the top right and
+        a long message would run under them. %>
+    <% if memory.errors[:base].any? %>
+      <p data-form-part="error" class="shrink-0">
+        <%= memory.errors[:base].first %>
+        <% if memory.errors.where(:base, :edit_conflict).any? %>
+          <%= link_to t("memories.form.open_current"), stable_memory_path(workspace, memory),
+                target: "_blank", class: "underline underline-offset-2" %>
+        <% end %>
+      </p>
+    <% end %>
 
     <%# Metadata: Source + Category on one aligned row; Tags full-width below %>
     <div class="shrink-0 flex flex-col gap-3">
@@ -145,13 +157,18 @@
           memory.persisted? ? stable_memory_path(workspace, memory) : workspace_path(workspace),
           data: { component: "button", variant: "outline", size: "sm" } %>
       <% if memory.persisted? %>
-        <%= form.button t("memories.form.update_in_place", version: memory.version_label),
-            name: "save_as", value: "in_place", type: :submit,
-            data: { component: "button", variant: "outline", size: "sm" } %>
+        <%# First in the DOM, last on screen: pressing Enter in a field presses the
+            form's first submit button, and that has to be the highlighted one. %>
         <%= form.button t("memories.form.save_as_new_version"),
             name: "save_as", value: "new_version", type: :submit,
             title: t("memories.form.save_as_new_version_title", version: memory.next_version_label),
+            class: "order-last",
             data: { component: "button", variant: "primary", size: "sm", memory_editor_target: "primarySubmit" } %>
+        <% if memory.manageable_by?(Current.user) %>
+          <%= form.button t("memories.form.update_in_place", version: memory.version_label),
+              name: "save_as", value: "in_place", type: :submit,
+              data: { component: "button", variant: "outline", size: "sm" } %>
+        <% end %>
       <% else %>
         <%= form.submit t("memories.form.create"),
             data: { component: "button", variant: "primary", size: "sm", memory_editor_target: "primarySubmit" } %>

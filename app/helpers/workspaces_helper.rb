@@ -3,6 +3,12 @@ module WorkspacesHelper
     @view_mode || "list"
   end
 
+  # On an archived or deleted workspace every action belongs to its creator or an
+  # admin, so anyone else would open an empty menu.
+  def workspace_actions?(workspace)
+    workspace.active? || workspace.manageable_by?(Current.user)
+  end
+
   def workspace_link_path(workspace)
     if workspace.active?
       workspace_path(workspace)

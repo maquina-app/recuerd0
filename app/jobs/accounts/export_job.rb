@@ -63,18 +63,29 @@ module Accounts
     def export_memories(workspace, workspace_dir)
       used_filenames = Set.new(["_workspace"])
 
-      workspace.memories.latest_versions.includes(:content, :child_versions).order(:title).each do |root_memory|
+      workspace.memories.latest_versions.includes(:content, child_versions: :content).order(:title).each do |root_memory|
         newest = find_newest_version(root_memory)
         filename = unique_filename(newest.display_title, used_filenames)
         used_filenames.add(filename)
 
         write_memory_file(newest, filename, workspace_dir)
+        export_earlier_versions(root_memory, newest, filename, workspace_dir)
       end
     end
 
     def find_newest_version(root_memory)
-      latest_child = root_memory.child_versions.order(version: :desc).first
-      latest_child || root_memory
+      root_memory.child_versions.max_by(&:version) || root_memory
+    end
+
+    # The current text stays at <title>.md, so the export reads as a plain folder of
+    # Markdown. History sits beside it: <title>.versions/v1.md and so on.
+    def export_earlier_versions(root_memory, newest, filename, workspace_dir)
+      earlier = ([root_memory] + root_memory.child_versions.to_a) - [newest]
+      return if earlier.empty?
+
+      versions_dir = File.join(workspace_dir, "#{filename}.versions")
+      FileUtils.mkdir_p(versions_dir)
+      earlier.each { |version| write_memory_file(version, version.version_label, versions_dir) }
     end
 
     def write_memory_file(memory, filename, workspace_dir)
@@ -83,6 +94,7 @@ module Accounts
         "tags" => memory.tags.presence,
         "source" => memory.source.presence,
         "version" => memory.version,
+        "change_note" => memory.change_note.presence,
         "created_at" => memory.created_at.iso8601,
         "updated_at" => memory.updated_at.iso8601
       }.compact

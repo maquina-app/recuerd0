@@ -1,4 +1,4 @@
-# Ownership (U-21). Nullable on purpose: a row with no recorded creator belongs
+# Ownership. Nullable on purpose: a row with no recorded creator belongs
 # to the account admin, which covers everything created before this column and
 # the seeded "My Workspace". ON DELETE SET NULL keeps a hard account purge from
 # tripping over the foreign key when users go before their workspaces.

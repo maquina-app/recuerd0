@@ -6,6 +6,7 @@
     <div class="flex items-start justify-between gap-2">
       <%= render "workspaces/workspace_tile", workspace: workspace, size: :sm %>
 
+      <% if workspace_actions?(workspace) %>
       <div class="flex-shrink-0">
         <%= render "components/dropdown_menu", auto_close: true do %>
           <%= render "components/dropdown_menu/trigger", as_child: true do %>
@@ -29,6 +30,7 @@
           <% end %>
         <% end %>
       </div>
+      <% end %>
     </div>
 
     <%= render "components/card/title", css_classes: "truncate", content: capture {

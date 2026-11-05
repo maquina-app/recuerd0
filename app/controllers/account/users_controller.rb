@@ -15,8 +15,7 @@ class Account::UsersController < ApplicationController
       return
     end
 
-    @user.sessions.delete_all
-    @user.anonymize_email!
+    @user.remove_from_account!
 
     redirect_to account_path, notice: t(".removed"), status: :see_other
   end

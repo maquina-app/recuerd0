@@ -106,6 +106,7 @@
         <%= render "shared/pin_button", pinnable: @workspace %>
       <% end %>
 
+      <% if workspace_actions?(@workspace) %>
       <%= render "components/dropdown_menu", auto_close: true do %>
         <%= render "components/dropdown_menu/trigger", as_child: true do %>
           <button
@@ -126,6 +127,7 @@
         <%= render "components/dropdown_menu/content", align: :end, css_classes: "w-48" do %>
           <%= render "workspaces/workspace_actions", workspace: @workspace %>
         <% end %>
+      <% end %>
       <% end %>
     </div>
   </div>

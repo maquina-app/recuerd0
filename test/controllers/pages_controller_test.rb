@@ -240,7 +240,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "It installs the <code>remember</code> skill"
   end
 
-  # U-07
   test "the legal pages agree with each other and with the product" do
     get privacy_url
     assert_no_match(/permanently removed upon account closure/, response.body)
@@ -261,7 +260,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#export-workspace"
   end
 
-  # U-17
   test "docs name this instance, not a placeholder" do
     get start_url
     assert_match "--api-url http://www.example.com", response.body
@@ -280,7 +278,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_match "recuerd0 account add personal --token YOUR_TOKEN", response.body
   end
 
-  # U-24, U-25, U-26, U-27
   test "the landing page makes no claim the product contradicts" do
     get root_url
     assert_no_match(/Six tools/, response.body)
@@ -290,14 +287,12 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/in the managed cloud\. The client/, response.body)
   end
 
-  # U-28
   test "pricing does not contradict itself" do
     get pricing_url
     assert_no_match(/same limits/, response.body)
     assert_match "Self-host on GitHub", response.body
   end
 
-  # U-29
   test "a signed-in visitor keeps a way back to the app on the docs" do
     sign_in_as(users(:one))
 
@@ -306,7 +301,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", new_registration_path, count: 0
   end
 
-  # U-44
   test "navigation reaches the docs from everywhere" do
     get root_url
     assert_select "footer a[href=?]", mcp_path

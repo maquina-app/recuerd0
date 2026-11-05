@@ -940,7 +940,7 @@ GET /workspaces/:workspace_id/memories/:memory_id/versions/:id.json
 
 ### Create Version
 
-Creates a new version of a memory. Requires `full_access` token.
+Creates a new version of a memory. Requires `full_access` token. Anyone in the account can do this; updating a memory in place (`PATCH`) needs its creator or an account admin, otherwise `403 FORBIDDEN`.
 
 ```
 POST /workspaces/:workspace_id/memories/:memory_id/versions.json

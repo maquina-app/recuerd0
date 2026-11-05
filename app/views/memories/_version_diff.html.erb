@@ -1,5 +1,18 @@
 <%# locals: (version:, previous:) %>
 <% diff = LineDiff.new(previous.content&.body&.content, version.content&.body&.content) %>
+<% field_changes = version.field_changes_from(previous) %>
+<% if field_changes.any? %>
+  <ul class="mb-2 space-y-0.5 text-sm">
+    <% field_changes.each do |field, before, after| %>
+      <li>
+        <span class="text-muted-foreground"><%= t("memories.versions.index.fields.#{field}") %>:</span>
+        <span class="line-through text-muted-foreground"><%= Array(before).join(", ").presence || t("memories.versions.index.field_empty") %></span>
+        <span aria-hidden="true">&rarr;</span>
+        <%= Array(after).join(", ").presence || t("memories.versions.index.field_empty") %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>
 <% if diff.changed? %>
   <details class="version-diff">
     <summary>
@@ -19,6 +32,6 @@
       <% end %>
     </div>
   </details>
-<% else %>
+<% elsif field_changes.empty? %>
   <p class="text-sm text-muted-foreground"><%= t("memories.versions.index.no_content_changes", version: previous.version_label) %></p>
 <% end %>

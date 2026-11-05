@@ -1,9 +1,10 @@
-<% content_for :title, "#{t('invitations.show.page_title', account: @account.invitation_name)} — recuerd0" %>
+<% heading = @account.named? ? t("invitations.show.heading", account: @account.name) : t("invitations.show.heading_unnamed") %>
+<% content_for :title, "#{heading} — recuerd0" %>
 
 <div>
   <%= render "components/card" do %>
     <%= render "components/card/header", css_classes: "text-center" do %>
-      <%= render "components/card/title", text: t("invitations.show.heading", account: @account.invitation_name) %>
+      <%= render "components/card/title", text: heading %>
       <%= render "components/card/description", text: t("invitations.show.description") %>
     <% end %>
 

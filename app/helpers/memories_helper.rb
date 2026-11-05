@@ -25,7 +25,14 @@ module MemoriesHelper
   end
 
   def creator_name(record)
-    record.ownership_record.created_by&.display_name || t("ownership.account_admin")
+    person_name(record.ownership_record.created_by)
+  end
+
+  # nil means no recorded creator, which belongs to the account admin.
+  def person_name(user)
+    return t("ownership.you") if user == Current.user || (user.nil? && Current.user.admin?)
+
+    user&.display_name || account_admin_name
   end
 
   # "system" is a storage value, not something to show a person. Only http(s)
@@ -35,5 +42,12 @@ module MemoriesHelper
     return source unless source.match?(%r{\Ahttps?://\S+\z}i)
 
     link_to source, source, target: "_blank", rel: "noopener noreferrer", class: "src-link"
+  end
+
+  private
+
+  def account_admin_name
+    @account_admin_name ||= Current.account.users.where(role: "admin").order(:created_at).first&.display_name ||
+      t("ownership.account_admin")
   end
 end

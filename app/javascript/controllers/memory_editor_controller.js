@@ -19,6 +19,8 @@ export default class extends Controller {
   static targets = ["status", "editor", "shell", "title", "titleCount", "primarySubmit"]
   static values = {
     focusEditor: { type: Boolean, default: false },
+    // A form re-rendered with an error holds text nothing has saved yet.
+    startDirty: { type: Boolean, default: false },
     unsavedLabel: String,
     unloadPrompt: String
   }
@@ -36,6 +38,7 @@ export default class extends Controller {
     // and Ctrl+S is one of them.
     document.addEventListener("keydown", this.onSaveShortcut, true)
 
+    this.#dirty = this.startDirtyValue
     this.#render()
     this.#renderPlaceholder()
     if (this.focusEditorValue) this.#focusEditor()
@@ -57,6 +60,15 @@ export default class extends Controller {
 
   submit() {
     this.#dirty = false
+  }
+
+  // A failed save comes back as a morph, which keeps this controller connected and
+  // syncs what it wrote into the DOM back to the server's empty markup, so connect()
+  // never gets to mark the returned text as unsaved.
+  morphed() {
+    this.#dirty = this.#dirty || this.startDirtyValue
+    this.#render()
+    this.#renderPlaceholder()
   }
 
   // The title silently stops accepting keystrokes at maxlength. Show the

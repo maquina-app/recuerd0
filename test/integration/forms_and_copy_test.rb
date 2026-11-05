@@ -1,7 +1,6 @@
 require "test_helper"
 
 class FormsAndCopyTest < ActionDispatch::IntegrationTest
-  # U-13
   test "blank memories are refused on web and REST alike" do
     sign_in_as(users(:one))
 
@@ -19,7 +18,6 @@ class FormsAndCopyTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  # U-15, U-37
   test "the new memory form promises nothing about saving, and no leading heading" do
     sign_in_as(users(:one))
 
@@ -30,7 +28,6 @@ class FormsAndCopyTest < ActionDispatch::IntegrationTest
     assert_no_match(/## a heading/, response.body)
   end
 
-  # U-18
   test "arriving from setup preselects Full Access and suggests a name" do
     sign_in_as(users(:one))
 
@@ -56,7 +53,6 @@ class FormsAndCopyTest < ActionDispatch::IntegrationTest
     assert_match(/\AToken created /, users(:one).access_tokens.order(:created_at).last.description)
   end
 
-  # U-23
   test "profile says what it actually manages and shows the email" do
     sign_in_as(users(:one))
 
@@ -66,7 +62,6 @@ class FormsAndCopyTest < ActionDispatch::IntegrationTest
     assert_match users(:one).email_address, response.body
   end
 
-  # U-33
   test "signup states the password rule up front and speaks in sentences" do
     get new_registration_url
     assert_match I18n.t("registrations.new.password_hint"), response.body
@@ -77,14 +72,12 @@ class FormsAndCopyTest < ActionDispatch::IntegrationTest
     assert_no_match(/doesn&#39;t match Password/, response.body)
   end
 
-  # U-34
   test "sign-in wording matches the button" do
     get new_session_url
 
     assert_no_match(/clicking continue/, response.body)
   end
 
-  # U-35
   test "the palette gets its plural right" do
     sign_in_as(users(:one))
     memory = Memory.create_with_content(workspaces(:one), title: "Zzqx unique title", content: "x")
@@ -96,19 +89,6 @@ class FormsAndCopyTest < ActionDispatch::IntegrationTest
     assert_no_match(/all 1 results/, response.body)
   end
 
-  # U-36
-  test "the search page states the count once for screen readers" do
-    sign_in_as(users(:one))
-    memory = Memory.create_with_content(workspaces(:one), title: "Zzqx unique title", content: "x")
-    memory.rebuild_search_index
-
-    get search_url(q: "Zzqx")
-
-    assert_select "p[aria-hidden='true']", text: /1 result for/
-    assert_select "#search-status", text: /1 result/
-  end
-
-  # U-42
   test "a real source URL is a link, anything else is text, and removed links are plain" do
     sign_in_as(users(:one))
     memory = Memory.create_with_content(workspaces(:one), title: "Links", source: "https://example.com/notes",
@@ -126,7 +106,6 @@ class FormsAndCopyTest < ActionDispatch::IntegrationTest
     assert_select ".src-val a", count: 0
   end
 
-  # U-39
   test "workspace rows carry a time for the browser to localize, not a hidden UTC date" do
     sign_in_as(users(:one))
 

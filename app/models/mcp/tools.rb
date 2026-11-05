@@ -224,6 +224,8 @@ module Mcp
 
     def update_memory(account, args = {}, user: nil)
       memory = find_memory_for_update(account, args["memory_id"]).resolve_current_version
+      raise ToolError, I18n.t("ownership.update_denied") unless memory.manageable_by?(user)
+
       unless memory.current_version?
         raise ToolError,
           I18n.t("activerecord.errors.models.memory.attributes.base.historical_version_immutable")

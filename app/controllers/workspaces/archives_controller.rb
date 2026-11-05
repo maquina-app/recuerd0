@@ -7,7 +7,7 @@ class Workspaces::ArchivesController < ApplicationController
 
   before_action :set_workspace, except: [:index]
   before_action :redirect_deleted_workspace, only: %i[create destroy]
-  before_action -> { require_manage_access(@workspace) }, only: :create
+  before_action -> { require_manage_access(@workspace) }, only: %i[create destroy]
 
   # GET /workspaces/archived
   def index

@@ -68,8 +68,7 @@ en:
     create:
       sent: "Password reset instructions sent (if user with that email address exists)."
     update:
-      success: "Password has been reset."
-      mismatch: "Passwords did not match."
+      success: "Password has been reset and every session was signed out. API tokens keep working; revoke any you don't recognize from your Profile."
     invalid_token: "Password reset link is invalid or has expired."
 
   profiles:
@@ -80,7 +79,7 @@ en:
   profile:
     passwords:
       update:
-        updated: "Password changed successfully."
+        updated: "Password changed. Your other sessions were signed out; API tokens keep working."
         current_password_invalid: "Current password is incorrect."
     access_tokens:
       create:

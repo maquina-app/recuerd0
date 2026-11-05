@@ -1,12 +1,14 @@
 <%# locals: (workspace:) -%>
-<%= render "components/dropdown_menu/item",
-    href: restore_deleted_workspace_path(workspace),
-    data: { turbo_method: :post } do %>
-  <%= icon_for(:rotate_ccw, class: "w-4 h-4") %>
-  <%= t("workspaces.actions.restore") %>
+<% if workspace.manageable_by?(Current.user) %>
+  <%= render "components/dropdown_menu/item",
+      href: restore_deleted_workspace_path(workspace),
+      data: { turbo_method: :post } do %>
+    <%= icon_for(:rotate_ccw, class: "w-4 h-4") %>
+    <%= t("workspaces.actions.restore") %>
+  <% end %>
 <% end %>
 
-<% if workspace.manageable_by?(Current.user) %>
+<% if workspace.permanently_deletable_by?(Current.user) %>
   <%= render "components/dropdown_menu/separator" %>
 
   <%= render "components/dropdown_menu/item",
@@ -22,4 +24,7 @@
     <%= icon_for(:trash, class: "w-4 h-4") %>
     <%= t("workspaces.actions.delete_permanently") %>
   <% end %>
+<% elsif workspace.owned_by?(Current.user) %>
+  <%= render "components/dropdown_menu/separator" %>
+  <p class="px-2 py-1.5 text-xs text-muted-foreground"><%= t("ownership.holds_others") %></p>
 <% end %>

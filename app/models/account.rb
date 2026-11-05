@@ -38,13 +38,12 @@ class Account < ApplicationRecord
     users.active
   end
 
-  # How an invitation names this account. An account name nobody chose is just
-  # the owner's email prefix, which means nothing to the person invited.
-  def invitation_name
+  # A name nobody chose is the owner's email prefix: it means nothing to the person
+  # invited, and it gives away part of the owner's email.
+  def named?
     owner_email = users.where(role: "admin").order(:created_at).pick(:email_address)
-    return name if owner_email.blank? || name != owner_email.split("@").first
 
-    I18n.t("invitations.show.owner_team", email: owner_email)
+    owner_email.blank? || name != owner_email.split("@").first
   end
 
   def active_users_count

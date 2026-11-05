@@ -49,11 +49,30 @@ class OwnershipTest < ActionDispatch::IntegrationTest
     assert_match I18n.t("ownership.created_by", name: "Bob"), response.body
   end
 
-  test "an item with no recorded creator shows the account admin" do
+  test "an item with no recorded creator reads as the admin's: you, or their name" do
     sign_in_as(@admin)
-
     get workspace_url(workspaces(:one))
-    assert_match I18n.t("ownership.created_by", name: I18n.t("ownership.account_admin")), response.body
+    assert_match I18n.t("ownership.created_by", name: "you"), response.body
+
+    delete session_url
+    sign_in_as(@member)
+    get workspace_url(workspaces(:one))
+    assert_match I18n.t("ownership.created_by", name: "Alice"), response.body
+  end
+
+  test "your own items say you, and someone with no name shows their email prefix" do
+    @member.update!(name: nil)
+    memory = Memory.create_with_content(@member_workspace, title: "Mine", content: "x", created_by: @member)
+
+    sign_in_as(@member)
+    get workspace_memory_url(@member_workspace, memory)
+    assert_match I18n.t("ownership.created_by", name: "you"), response.body
+
+    delete session_url
+    sign_in_as(@admin)
+    get workspace_memory_url(@member_workspace, memory)
+    assert_match I18n.t("ownership.created_by", name: "member"), response.body
+    assert_no_match(/Created by member@example/, response.body)
   end
 
   # --- workspaces -------------------------------------------------------------
@@ -181,6 +200,6 @@ class OwnershipTest < ActionDispatch::IntegrationTest
     sign_in_as(@admin)
 
     get account_url
-    assert_match I18n.t("accounts.invitations.permissions"), response.body
+    assert_match ERB::Util.html_escape(I18n.t("accounts.invitations.permissions")), response.body
   end
 end

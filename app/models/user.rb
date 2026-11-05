@@ -52,7 +52,29 @@ class User < ApplicationRecord
   def display_name
     return I18n.t("ownership.former_member") if anonymized?
 
-    name.presence || email_address
+    name.presence || email_address.split("@").first
+  end
+
+  # has_secure_password ignores a blank password, which would otherwise report a
+  # reset that changed nothing.
+  def reset_password(attributes)
+    if attributes[:password].blank?
+      errors.add(:password, :blank)
+      return false
+    end
+
+    update(attributes).tap { |updated| sessions.destroy_all if updated }
+  end
+
+  # Ends every way in at once. The email goes last because it is what makes sign-in
+  # impossible; tokens and OAuth grants survive that unless revoked here.
+  def remove_from_account!
+    transaction do
+      sessions.delete_all
+      oauth_authorization_codes.delete_all
+      access_tokens.where(revoked_at: nil).find_each(&:revoke!)
+      anonymize_email!
+    end
   end
 
   def anonymize_email!

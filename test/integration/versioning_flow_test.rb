@@ -7,7 +7,6 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
     sign_in_as(users(:one))
   end
 
-  # U-04
   test "each version's markdown URL returns that version, and the memory's the current one" do
     v2 = @memory.create_version!(content: "second line")
     v3 = @memory.create_version!(content: "third line")
@@ -33,7 +32,6 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", workspace_memory_version_markdown_path(@workspace, @memory, @memory)
   end
 
-  # U-08
   test "saving as a new version keeps the old text and records the note" do
     patch workspace_memory_url(@workspace, @memory), params: {
       save_as: "new_version",
@@ -79,7 +77,6 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
     assert_select "input[name='memory[change_note]']"
   end
 
-  # U-09
   test "New Version opens the editor rather than making a copy" do
     get workspace_memory_url(@workspace, @memory)
 
@@ -110,7 +107,6 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  # U-10
   test "restoring an old version makes it current and says so, without touching the others" do
     v2 = @memory.create_version!(content: "second line")
 
@@ -218,7 +214,6 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
     assert_equal "brand new", @memory.reload.current_version.content.body.content
   end
 
-  # U-11
   test "the history shows each version's changes and note, not raw markdown" do
     @memory.create_version!(content: "first line\nadded line", change_note: "Why it changed", created_by: users(:one))
 
@@ -240,7 +235,6 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
     assert_equal "From the API", JSON.parse(response.body)["change_note"]
   end
 
-  # U-12
   test "the current version shows the memory's original creation date and its own save date" do
     @memory.update_columns(created_at: 3.days.ago)
     @memory.create_version!(content: "second line")
@@ -283,7 +277,6 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
     assert_select "#related-memories .memory-row", text: /#{other.title}/
   end
 
-  # U-14
   test "the link picker searches as you type and stays open with an empty query" do
     get workspace_memory_url(@workspace, @memory)
     assert_select "details#link-picker:not([open])[data-controller='ws-filter']"
@@ -293,7 +286,6 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
     assert_select "details#link-picker[open]"
   end
 
-  # U-43
   test "Add Content asks the editor for focus" do
     empty = Memory.create_with_content(@workspace, title: "No body yet", content: "", created_by: users(:one))
 
@@ -302,5 +294,159 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
 
     get edit_workspace_memory_url(@workspace, empty, focus: "editor")
     assert_select "form[data-memory-editor-focus-editor-value='true']"
+  end
+
+  test "a title-only version says what changed instead of 'same content'" do
+    @memory.create_version!(title: "Renamed", content: @memory.content.body.content)
+
+    get workspace_memory_versions_url(@workspace, @memory)
+
+    assert_match "Deploy notes", css_select(".ring-primary li").text
+    assert_match "Renamed", css_select(".ring-primary li").text
+    assert_no_match(/Same content/, css_select(".ring-primary").text)
+  end
+
+  test "a body opening with the title's heading shows it once, and keeps it in the source" do
+    memory = Memory.create_with_content(@workspace, title: "Deploy notes", content: "## Deploy notes\n\nWe use Kamal.\n\n## Deploy notes\n\nAgain.", created_by: users(:one))
+
+    get workspace_memory_url(@workspace, memory)
+
+    assert_select ".memory-content h3", count: 1
+    assert_select ".memory-content p", text: "We use Kamal."
+    assert_includes memory.reload.content.body.content, "## Deploy notes\n\nWe use Kamal."
+  end
+
+  test "a heading that differs from the title stays" do
+    memory = Memory.create_with_content(@workspace, title: "Deploy notes", content: "## Overview\n\nText.", created_by: users(:one))
+
+    get workspace_memory_url(@workspace, memory)
+
+    assert_select ".memory-content h3", text: /Overview/
+  end
+
+  test "the primary save button comes first, so Enter in a field presses it" do
+    get edit_workspace_memory_url(@workspace, @memory)
+
+    assert_equal "new_version", css_select("form.memory-form button[type=submit]").first["value"]
+  end
+
+  test "saving over someone else's save warns, keeps the text, and then lets you decide" do
+    get edit_workspace_memory_url(@workspace, @memory)
+    base = css_select("input[name=edit_base]").first["value"]
+
+    @memory.update_with_content(content: "someone else's")
+
+    assert_no_difference("Memory.count") do
+      patch workspace_memory_url(@workspace, @memory), params: {
+        save_as: "in_place", edit_base: base, memory: {title: "My title", content: "my text"}
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_match "Someone saved this memory", response.body
+    assert_select "form[data-memory-editor-start-dirty-value='true']"
+    assert_select "house-md", text: /my text/
+    assert_select "input[name='memory[title]'][value='My title']"
+    assert_equal "someone else's", @memory.reload.content.body.content
+
+    new_base = css_select("input[name=edit_base]").first["value"]
+    assert_not_equal base, new_base
+
+    patch workspace_memory_url(@workspace, @memory), params: {
+      save_as: "new_version", edit_base: new_base, memory: {title: "My title", content: "my text"}
+    }
+
+    assert_equal "someone else's", @memory.reload.content.body.content
+    assert_equal "my text", @memory.current_version.content.body.content
+  end
+
+  test "someone else's new version counts as a conflict too, on a new version save" do
+    get edit_workspace_memory_url(@workspace, @memory)
+    base = css_select("input[name=edit_base]").first["value"]
+
+    @memory.create_version!(content: "their version")
+
+    assert_no_difference("Memory.count") do
+      patch workspace_memory_url(@workspace, @memory), params: {
+        save_as: "new_version", edit_base: base, memory: {content: "my text"}
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "form[action=?]", workspace_memory_path(@workspace, @memory.current_version)
+  end
+
+  test "an unchanged base saves normally, and a validation error doesn't fake a conflict" do
+    get edit_workspace_memory_url(@workspace, @memory)
+    base = css_select("input[name=edit_base]").first["value"]
+
+    patch workspace_memory_url(@workspace, @memory), params: {
+      save_as: "in_place", edit_base: base, memory: {title: "x" * 256, content: "my text"}
+    }
+    assert_response :unprocessable_entity
+    assert_equal base, css_select("input[name=edit_base]").first["value"]
+
+    patch workspace_memory_url(@workspace, @memory), params: {
+      save_as: "in_place", edit_base: base, memory: {title: "Fine", content: "my text"}
+    }
+    assert_response :see_other
+    assert_equal "my text", @memory.reload.content.body.content
+  end
+
+  test "pinned memories lead page 1 whatever the sort, and take no regular slot" do
+    workspace = accounts(:one).workspaces.create!(name: "Busy", start_with_map: "0", created_by: users(:one))
+    pinned = Memory.create_with_content(workspace, title: "AAA oldest pinned", content: "x")
+    pinned.update_columns(updated_at: 1.year.ago)
+    pinned.pin!(users(:one))
+    last_alpha = Memory.create_with_content(workspace, title: "ZZZ pinned", content: "x")
+    last_alpha.update_columns(updated_at: 1.year.ago)
+    last_alpha.pin!(users(:one))
+    12.times { |n| Memory.create_with_content(workspace, title: "Regular #{n}", content: "x") }
+
+    [nil, "title", "created"].each do |sort|
+      get workspace_url(workspace, sort: sort)
+
+      assert_select "section[aria-labelledby=memories-group-pinned] .mc-title", count: 2
+      assert_select "section[aria-labelledby=memories-group-pinned]", text: /AAA oldest pinned/
+      assert_select "section[aria-labelledby=memories-group-pinned]", text: /ZZZ pinned/
+      assert_select "section[aria-labelledby=memories-group-all] .mc-title", count: 10
+    end
+
+    get workspace_url(workspace, page: 2)
+    assert_select "section[aria-labelledby=memories-group-pinned]", count: 0
+    assert_select "section[aria-labelledby=memories-group-all] .mc-title", count: 2
+    assert_no_match(/AAA oldest pinned/, css_select("section[aria-labelledby=memories-group-all]").text)
+
+    get workspace_url(workspace, view: "compact")
+    assert_select "section[aria-labelledby=memories-group-pinned] .memory-row", count: 2
+  end
+
+  test "a filter applies to pinned memories too, and a search stays one ranked list" do
+    workspace = accounts(:one).workspaces.create!(name: "Filtered", start_with_map: "0", created_by: users(:one))
+    decision = Memory.create_with_content(workspace, title: "Pinned decision", content: "needle", category: "decision")
+    decision.pin!(users(:one))
+    general = Memory.create_with_content(workspace, title: "Pinned general", content: "x")
+    general.pin!(users(:one))
+    decision.rebuild_search_index
+
+    get workspace_url(workspace, category: "decision")
+    assert_select "section[aria-labelledby=memories-group-pinned] .mc-title", count: 1
+    assert_no_match(/Pinned general/, css_select("main").text)
+
+    get workspace_url(workspace, q: "needle")
+    assert_select "section[aria-labelledby=memories-group-pinned]", count: 0
+    assert_select ".mc-title", text: /Pinned decision/
+  end
+
+  test "pins do not separate in an archived workspace" do
+    workspace = accounts(:one).workspaces.create!(name: "Shelved", start_with_map: "0", created_by: users(:one))
+    memory = Memory.create_with_content(workspace, title: "Was pinned", content: "x")
+    memory.pin!(users(:one))
+    workspace.archive
+
+    get archived_workspace_url(workspace)
+
+    assert_select "section[aria-labelledby=memories-group-pinned]", count: 0
+    assert_select ".mc-title", text: /Was pinned/
   end
 end

@@ -13,6 +13,7 @@ en:
           attributes:
             base:
               blank_memory: "Add a title or some content first."
+              edit_conflict: "Someone saved this memory while you were editing. Nothing was saved, and your text is still here. Saving as a new version keeps both."
               no_changes: "Nothing has changed since this version, so there is nothing to save as a new version."
               historical_version_immutable: "historical versions are immutable — update the current version or create a new version"
             title:

@@ -30,29 +30,31 @@
   </div>
 
   <%# Actions dropdown — always reachable (visible, no hover gating) %>
-  <div class="ws-row-actions flex-shrink-0">
-    <%= render "components/dropdown_menu", auto_close: true do %>
-      <%= render "components/dropdown_menu/trigger", as_child: true do %>
-        <button
-          type="button"
-          data-component="button"
-          data-variant="ghost"
-          data-size="icon-sm"
-          data-dropdown-menu-target="trigger"
-          data-action="dropdown-menu#toggle"
-          aria-haspopup="menu"
-          aria-expanded="false"
-          aria-label="<%= t("workspaces.index.actions_for", name: workspace.name) %>"
-        >
-          <%= icon_for(:more_vertical, class: "w-4 h-4") %>
-        </button>
-      <% end %>
+  <% if workspace_actions?(workspace) %>
+    <div class="ws-row-actions flex-shrink-0">
+      <%= render "components/dropdown_menu", auto_close: true do %>
+        <%= render "components/dropdown_menu/trigger", as_child: true do %>
+          <button
+            type="button"
+            data-component="button"
+            data-variant="ghost"
+            data-size="icon-sm"
+            data-dropdown-menu-target="trigger"
+            data-action="dropdown-menu#toggle"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-label="<%= t("workspaces.index.actions_for", name: workspace.name) %>"
+          >
+            <%= icon_for(:more_vertical, class: "w-4 h-4") %>
+          </button>
+        <% end %>
 
-      <%= render "components/dropdown_menu/content",
-          align: :end,
-          css_classes: "w-48" do %>
-        <%= render "workspaces/workspace_actions", workspace: workspace %>
+        <%= render "components/dropdown_menu/content",
+            align: :end,
+            css_classes: "w-48" do %>
+          <%= render "workspaces/workspace_actions", workspace: workspace %>
+        <% end %>
       <% end %>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
 </div>

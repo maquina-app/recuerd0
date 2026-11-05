@@ -1,12 +1,12 @@
 <%# locals: (workspace:) -%>
-<%= render "components/dropdown_menu/item",
-    href: archive_workspace_path(workspace),
-    data: { turbo_method: :delete } do %>
-  <%= icon_for(:archive_restore, class: "w-4 h-4") %>
-  <%= t("workspaces.actions.unarchive") %>
-<% end %>
-
 <% if workspace.manageable_by?(Current.user) %>
+  <%= render "components/dropdown_menu/item",
+      href: archive_workspace_path(workspace),
+      data: { turbo_method: :delete } do %>
+    <%= icon_for(:archive_restore, class: "w-4 h-4") %>
+    <%= t("workspaces.actions.unarchive") %>
+  <% end %>
+
   <%= render "components/dropdown_menu/separator" %>
 
   <%= render "components/dropdown_menu/item",

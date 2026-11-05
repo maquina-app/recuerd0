@@ -183,6 +183,12 @@ en:
         restore_button: "Restore"
         changes_from: "Changes from %{version}"
         no_content_changes: "Same content as %{version}."
+        field_empty: "none"
+        fields:
+          title: "Title"
+          source: "Source"
+          category: "Category"
+          tags: "Tags"
         line_added: "Added: "
         line_removed: "Removed: "
       purges:
@@ -237,6 +243,7 @@ en:
       save_as_new_version: "Save as new version"
       save_as_new_version_title: "Creates %{version} and keeps this version in history"
       update_in_place: "Update %{version} in place"
+      open_current: "Open what they saved"
       change_note_label: "What changed?"
       change_note_placeholder: "Optional. Saved with the new version."
       status:
@@ -427,9 +434,12 @@ en:
 
   ownership:
     created_by: "Created by %{name}"
+    you: "you"
     account_admin: "the account admin"
     former_member: "a former member"
     denied: "Only its creator or an admin can do that."
+    update_denied: "Only this memory's creator or an account admin can update it in place. Use create_version to add a new version instead."
+    holds_others: "This workspace holds other people's memories, so only an admin can permanently delete it."
 
   components:
     sidebar:
@@ -534,7 +544,7 @@ en:
       remove_aria: "Remove %{email} from this account"
       remove_title: "Remove %{email}?"
       remove_button: "Remove user"
-      remove_confirm: "Remove %{email}? This permanently revokes their access and cannot be undone — they will not be able to log in again."
+      remove_confirm: "This permanently revokes their access, including their API tokens and connected apps, and cannot be undone."
     invitations:
       title: "Invite Users"
       description: "Generate a shareable link for new members to join your account."
@@ -543,7 +553,8 @@ en:
       copy_tooltip: "Copy to clipboard"
       link_hint: "Anyone with this link can join until it expires in 7 days or you revoke it."
       generate: "Generate Invitation Link"
-      permissions: "Members can use every workspace in this account. They can delete, archive or purge only what they created; admins can do that to anything."
+      permissions: "Members can use every workspace in this account and add new versions to any memory. Only a thing's creator or an admin can delete, archive, restore, purge or overwrite it, and only an admin can permanently delete a workspace holding someone else's memories."
+      name_hint: "Invitations say only \"a team\" until you give this account a name."
       revoke: "Revoke all invitation links"
       revoke_title: "Revoke all invitation links?"
       revoke_confirm: "Every link generated so far stops working. People who already joined keep their access."
@@ -608,7 +619,7 @@ en:
       page_title: "Join %{account}"
       heading: "Join %{account}"
       description: "Create your login to join this account."
-      owner_team: "%{email}'s team"
+      heading_unnamed: "Join a team on recuerd0"
       signed_in: "You're signed in as %{email}. An email can belong to one account only, so joining here needs a different email."
       email_taken: "This email already has an account, and an email can belong to one account only."
       sign_in_instead: "Sign in"

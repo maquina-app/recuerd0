@@ -225,7 +225,7 @@
     <%= render "components/card" do %>
       <%= render "components/card/content" do %>
         <div class="memory-content">
-          <%= sanitize_content @memory.content.body.to_html %>
+          <%= memory_body_html(@memory) %>
         </div>
       <% end %>
     <% end %>

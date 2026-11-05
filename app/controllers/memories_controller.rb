@@ -12,6 +12,7 @@ class MemoriesController < ApplicationController
   before_action :ensure_not_deleted
   before_action :set_memory, only: %i[show edit update destroy]
   before_action -> { require_manage_access(@memory) }, only: :destroy
+  before_action :require_in_place_access, only: :update
   before_action :require_active_workspace, only: %i[new create edit update destroy]
 
   def index
@@ -93,6 +94,8 @@ class MemoriesController < ApplicationController
   end
 
   def update
+    return render_edit_conflict if edit_conflict?
+
     @memory = @memory.resolve_current_version
 
     if !@memory.current_version?
@@ -134,6 +137,33 @@ class MemoriesController < ApplicationController
   end
 
   private
+
+  # Only the editor sends edit_base; REST keeps last-write-wins.
+  def edit_conflict?
+    params[:edit_base].present? && @memory.current_version.edit_digest != params[:edit_base]
+  end
+
+  # Nothing is saved and nothing typed is lost: the form comes back with this
+  # person's text over the newest version, whose fingerprint is now the base, so
+  # the next save is a decision made knowing about the other one.
+  def render_edit_conflict
+    @memory = @memory.current_version
+    @edit_base = @memory.edit_digest
+    attributes = memory_params
+
+    @memory.assign_attributes(attributes.slice(:title, :source, :category, :tags))
+    (@memory.content || @memory.build_content).body.content = attributes[:content] if attributes.key?(:content)
+    @memory.errors.add(:base, :edit_conflict)
+
+    flash.now[:alert] = t(".errors")
+    render :edit, status: :unprocessable_entity
+  end
+
+  # Overwriting can erase someone's work as surely as deleting it. Anyone can add a
+  # new version; updating in place is for the creator and admins.
+  def require_in_place_access
+    require_manage_access(@memory) unless save_as_new_version?
+  end
 
   # Only the editor's primary button asks for this. A plain PATCH, which is what
   # the REST API sends, keeps meaning "update in place".

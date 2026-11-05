@@ -34,7 +34,7 @@
               <p class="text-xs text-muted-foreground">
                 <%= t("memories.versions.index.saved_by",
                       time: time_ago_in_words(version.created_at),
-                      name: version.created_by&.display_name || t("ownership.account_admin")) %>
+                      name: person_name(version.created_by)) %>
               </p>
             </div>
 
