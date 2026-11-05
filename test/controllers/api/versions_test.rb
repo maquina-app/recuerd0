@@ -31,15 +31,25 @@ class ApiVersionsTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test "version copies source attributes" do
+  test "omitted attributes are copied from the source" do
     post workspace_memory_versions_url(@workspace, @memory, format: :json),
-      params: {version: {}},
+      params: {version: {content: "Something new"}},
       headers: auth_headers(@full_access_token)
 
     assert_response :created
     json = JSON.parse(response.body)
     assert_equal @memory.title, json["title"]
     assert_equal @memory.source, json["source"]
+  end
+
+  test "an empty request would repeat the current version, so it is refused" do
+    assert_no_difference("Memory.count") do
+      post workspace_memory_versions_url(@workspace, @memory, format: :json),
+        params: {version: {}},
+        headers: auth_headers(@full_access_token)
+    end
+
+    assert_response :unprocessable_entity
   end
 
   test "version includes custom content" do

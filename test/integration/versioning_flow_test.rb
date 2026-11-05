@@ -157,7 +157,7 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
     latest = @memory.create_version!(title: "Renamed", content: "latest body", source: "newer", category: "decision", tags: ["newer"])
 
     post workspace_memory_versions_url(@workspace, @memory, format: :json),
-      params: {version: {change_note: "No other changes"}},
+      params: {version: {tags: ["newer", "another"], change_note: "One more tag"}},
       headers: auth_headers("test_full_token_456")
 
     assert_response :created
@@ -167,7 +167,7 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
     assert_equal "latest body", created.content.body.content
     assert_equal "newer", created.source
     assert_equal "decision", created.category
-    assert_equal ["newer"], created.tags
+    assert_equal ["newer", "another"], created.tags
   end
 
   test "REST: without a change note or a browser, nothing claims to be a restoration" do
@@ -198,7 +198,7 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
   test "MCP: omitted fields come from the current version" do
     @memory.create_version!(title: "Renamed", content: "latest body", source: "newer", tags: ["newer"])
 
-    result = Mcp::Tools.create_version(accounts(:one), {"memory_id" => @memory.id.to_s, "change_note" => "Note only"}, user: users(:one))
+    result = Mcp::Tools.create_version(accounts(:one), {"memory_id" => @memory.id.to_s, "category" => "decision"}, user: users(:one))
 
     assert_equal "Renamed", result[:title]
     assert_equal ["newer"], result[:tags]
@@ -448,5 +448,108 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
 
     assert_select "section[aria-labelledby=memories-group-pinned]", count: 0
     assert_select ".mc-title", text: /Was pinned/
+  end
+
+  # A repeat adds a row to the history and tells a reader nothing, whichever door it
+  # came through. Two versions, so "the current version" and "v1" are different rows.
+  def post_version(version, memory: @memory)
+    post workspace_memory_versions_url(@workspace, memory, format: :json),
+      params: {version: version},
+      headers: auth_headers("test_full_token_456")
+  end
+
+  test "REST refuses a version identical to the current one" do
+    current = @memory.create_version!(title: "Renamed", content: "latest body", tags: ["kept"], category: "decision")
+
+    assert_no_difference("Memory.count") do
+      post_version({change_note: "Nothing else"})
+      assert_response :unprocessable_entity
+
+      post_version({title: "Renamed", content: "latest body", tags: ["kept"], category: "decision"})
+      assert_response :unprocessable_entity
+
+      post_version({content: "latest body", tags: ["kept", "KEPT"]})
+      assert_response :unprocessable_entity
+    end
+
+    assert_match "Nothing has changed", response.body
+    assert_equal current, @memory.reload.current_version
+  end
+
+  test "REST: Markdown the save would normalize anyway is still identical" do
+    @memory.create_version!(content: "- one\n```\nx\n```")
+
+    assert_no_difference("Memory.count") do
+      post_version({content: "- one\n```\nx\n```"})
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "REST accepts a change to any single field" do
+    @memory.create_version!(content: "latest body", source: "first", tags: ["kept"])
+
+    [{title: "New"}, {content: "new body"}, {source: "second"}, {tags: ["other"]}, {category: "decision"}].each do |change|
+      assert_difference("Memory.count", 1, change.inspect) { post_version(change) }
+      assert_response :created
+    end
+  end
+
+  test "REST: going back to a different version's content is a change" do
+    v2 = @memory.create_version!(content: "second line")
+    @memory.create_version!(content: "third line")
+
+    assert_difference("Memory.count") { post_version({change_note: "Back to v2"}, memory: v2) }
+    assert_response :created
+
+    assert_equal "second line", @memory.reload.current_version.content.body.content
+
+    assert_no_difference("Memory.count") { post_version({}, memory: v2) }
+    assert_response :unprocessable_entity
+  end
+
+  test "REST: a blank memory stays refused until there is something to add" do
+    empty = Memory.create_with_content(@workspace, title: "No body yet", content: "")
+
+    assert_no_difference("Memory.count") { post_version({content: ""}, memory: empty) }
+    assert_response :unprocessable_entity
+
+    assert_difference("Memory.count") { post_version({content: "now with text"}, memory: empty) }
+    assert_response :created
+  end
+
+  test "MCP refuses a repeat, however the client stamps its source" do
+    @memory.create_version!(title: "Renamed", content: "latest body", source: "manual", tags: ["kept"])
+    args = {"memory_id" => @memory.id.to_s, "source" => "Claude"}
+
+    assert_no_difference("Memory.count") do
+      [
+        args,
+        args.merge("content" => "latest body"),
+        args.merge("title" => "Renamed", "content" => "latest body", "tags" => ["kept"]),
+        args.merge("change_note" => "Only a note")
+      ].each do |call|
+        error = assert_raises(Mcp::ToolError, call.inspect) do
+          Mcp::Tools.create_version(accounts(:one), call, user: users(:one))
+        end
+        assert_match "Nothing has changed", error.message
+      end
+    end
+  end
+
+  test "MCP accepts a real change" do
+    @memory.create_version!(content: "latest body")
+
+    result = Mcp::Tools.create_version(accounts(:one), {"memory_id" => @memory.id.to_s, "content" => "new", "source" => "Claude"}, user: users(:one))
+
+    assert_equal 3, result[:version]
+    assert_equal "Claude", result[:source]
+  end
+
+  test "a browser restore of an older version is still allowed" do
+    @memory.create_version!(content: "second line")
+
+    post workspace_memory_version_restoration_url(@workspace, @memory, @memory)
+
+    assert_equal "first line", @memory.reload.current_version.content.body.content
   end
 end

@@ -217,7 +217,7 @@
               <tr><td><code>suggest_merge_candidates</code></td><td>read</td><td>Clusters of likely-duplicate memories. Suggestions only; merging stays a human decision</td></tr>
               <tr><td><code>create_memory</code></td><td>write</td><td>Create a memory in a workspace, with optional <code>tags</code></td></tr>
               <tr><td><code>update_memory</code></td><td>write</td><td>Update a memory in place — title, content, category, or tags</td></tr>
-              <tr><td><code>create_version</code></td><td>write</td><td>Append a new version to a memory, preserving history</td></tr>
+              <tr><td><code>create_version</code></td><td>write</td><td>Append a new version to a memory, preserving history. Refused when nothing would change</td></tr>
               <tr><td><code>link_memories</code></td><td>write</td><td>Create an undirected "see also" link between two memories</td></tr>
               <tr><td><code>unlink_memories</code></td><td>write</td><td>Remove the link between two memories</td></tr>
             </tbody>

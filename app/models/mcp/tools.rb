@@ -254,14 +254,17 @@ module Mcp
       validate_category!(args["category"])
       category = args["category"].presence
 
-      version = memory.resolve_current_version.create_version!(
-        title: args["title"],
-        category: category,
-        content: args["content"],
-        tags: (normalize_tags(args["tags"]) if args.key?("tags")),
-        source: args["source"], # server-injected — provenance of this version
-        change_note: args["change_note"],
-        created_by: user
+      version = memory.resolve_current_version.create_changed_version(
+        {
+          title: args["title"],
+          category: category,
+          content: args["content"],
+          tags: (normalize_tags(args["tags"]) if args.key?("tags")),
+          source: args["source"], # server-injected — provenance of this version
+          change_note: args["change_note"],
+          created_by: user
+        },
+        ignoring: [:source]
       )
       raise ToolError, version.errors.full_messages.to_sentence if version.errors.any?
 

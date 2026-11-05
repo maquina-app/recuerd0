@@ -25,8 +25,16 @@ class Memories::VersionsControllerTest < ActionDispatch::IntegrationTest
 
   test "create makes new version" do
     assert_difference("Memory.count") do
+      post workspace_memory_versions_url(@workspace, @memory), params: {version: {title: "Changed"}}
+    end
+  end
+
+  test "a request that isn't JSON is refused the same way when nothing changed" do
+    assert_no_difference("Memory.count") do
       post workspace_memory_versions_url(@workspace, @memory)
     end
+
+    assert_equal I18n.t("memories.versions.create.failed"), flash[:alert]
   end
 
   test "create version via json with custom title and content" do

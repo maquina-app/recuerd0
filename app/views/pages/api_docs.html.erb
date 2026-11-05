@@ -768,7 +768,7 @@
       </div>
 
       <div class="endpoint" id="create-version">
-        <div class="endpoint-head"><h3>Create Version</h3><p>Creates a new version of a memory. Omitted fields come from its current version. Given the id of a specific version, they come from that version instead.</p></div>
+        <div class="endpoint-head"><h3>Create Version</h3><p>Creates a new version of a memory. Omitted fields come from its current version. Given the id of a specific version, they come from that version instead. A result identical to the current version is refused with <code>422</code>; a change note alone is not a change.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/versions.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
         <div class="table-scroll"><table class="param-table">

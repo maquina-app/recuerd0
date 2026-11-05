@@ -337,10 +337,40 @@ class Memory < ApplicationRecord
     version if errors.empty?
   end
 
+  # REST and MCP's way in: the same as create_version!, unless the result would
+  # repeat the current version. That adds a row to the history and tells a reader
+  # nothing, and it is what a retrying agent produces. `ignoring` is for fields the
+  # caller did not choose: MCP stamps every call with the client's name as its source.
+  def create_changed_version(attributes, ignoring: [])
+    return create_version!(attributes) unless repeats_current_version?(attributes.except(*ignoring))
+
+    Memory.new.tap { |version| version.errors.add(:base, :no_changes) }
+  end
+
+  # What this row would become with these attributes, as create_version! fills them:
+  # a nil or a blank category inherits. Versioning an older row with no changes is
+  # not a repeat, because the result differs from the current version.
+  def repeats_current_version?(attributes)
+    given = attributes.compact
+    given = given.except(:category) if given[:category].blank?
+    inherited = {title: title, source: source, category: category, tags: tags, content: content&.body&.content.to_s}
+
+    !root_memory.current_version.differs_from?(inherited.merge(given))
+  end
+
+  # Compares what would be stored, so text the save normalizes and tags differing
+  # only in case do not read as changes.
   def differs_from?(attributes)
     %i[title source category].any? { |field| attributes.key?(field) && attributes[field].to_s != self[field].to_s } ||
-      (attributes.key?(:tags) && Array(attributes[:tags]).compact_blank != tags) ||
-      (attributes.key?(:content) && attributes[:content].to_s != content&.body&.content.to_s)
+      (attributes.key?(:tags) && self.class.distinct_tags(attributes[:tags]) != self.class.distinct_tags(tags)) ||
+      (attributes.key?(:content) &&
+        ActionText::Markdown.separate_fences_from_lists(attributes[:content]) != content&.body&.content.to_s)
+  end
+
+  # Search and filters treat tags by name, so Deploy and deploy are one tag. The first
+  # spelling wins.
+  def self.distinct_tags(tags)
+    Array(tags).compact_blank.uniq { |tag| tag.to_s.strip.downcase }
   end
 
   # Keep the root row's category in sync with the current (latest) version's.
@@ -500,10 +530,8 @@ class Memory < ApplicationRecord
 
   private
 
-  # Search and filters treat tags by name, so Deploy and deploy are one tag. The
-  # first spelling wins.
   def drop_repeated_tags
-    self.tags = Array(tags).uniq { |tag| tag.to_s.strip.downcase }
+    self.tags = self.class.distinct_tags(tags)
   end
 
   def increment_workspace_memories_count

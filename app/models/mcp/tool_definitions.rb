@@ -201,7 +201,8 @@ module Mcp
         description: "Append a new version to an existing memory, " \
           "preserving prior versions as history. Any omitted field inherits its " \
           "value from the latest version. Mechanics: appends a new current version and " \
-          "leaves earlier versions intact.",
+          "leaves earlier versions intact. Refused when nothing would differ from the latest " \
+          "version; a change_note alone is not a change.",
         annotations: {readOnlyHint: false, destructiveHint: false},
         inputSchema: {
           type: "object",

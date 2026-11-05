@@ -26,9 +26,10 @@ class Memories::VersionsController < ApplicationController
 
   # Omitted fields come from the version in the URL. The memory's own id means its
   # current version, the same as every other surface, and never v1. A specific
-  # version's id means that version.
+  # version's id means that version. A result identical to the current version is
+  # refused.
   def create
-    @new_version = @memory.resolve_current_version.create_version!(
+    @new_version = @memory.resolve_current_version.create_changed_version(
       version_params.to_h.symbolize_keys.merge(created_by: Current.user)
     )
 
