@@ -61,9 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return Promise.resolve(false);
     }
 
-    // Get the inner content div
-    const contentDiv = dialog.querySelector('[data-state]');
-
     // Update the message
     const messageElement = dialog.querySelector('#turbo-confirm-message');
     if (messageElement) {
@@ -97,11 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     }
 
-    // Set state to open for animations
-    if (contentDiv) {
-      contentDiv.setAttribute('data-state', 'open');
-    }
-
     // Show the modal
     dialog.showModal();
 
@@ -110,22 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const cancelButton = dialog.querySelector('[data-behavior="cancel"]');
       const confirmButton = dialog.querySelector('[data-behavior="confirm"]');
 
+      // Close before resolving, never after. Resolving submits the form, and a
+      // redirect back to this page morphs it, which strips the dialog's `open`
+      // attribute. close() then does nothing, because it checks that attribute, so
+      // the browser keeps the dialog modal and the whole page inert.
       const cleanup = () => {
-        // Set state to closed for animations
-        if (contentDiv) {
-          contentDiv.setAttribute('data-state', 'closed');
-        }
-
-        // Wait for animation to complete
-        setTimeout(() => {
-          dialog.close();
-          if (contentDiv) {
-            contentDiv.setAttribute('data-state', 'open');
-          }
-          cancelButton.removeEventListener('click', handleCancel);
-          confirmButton.removeEventListener('click', handleConfirm);
-          dialog.removeEventListener('cancel', handleCancel);
-        }, 150);
+        dialog.close();
+        cancelButton.removeEventListener('click', handleCancel);
+        confirmButton.removeEventListener('click', handleConfirm);
+        dialog.removeEventListener('cancel', handleEscape);
       };
 
       const handleCancel = () => {
@@ -143,10 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
       confirmButton.addEventListener('click', handleConfirm, { once: true });
 
       // Handle ESC key (triggers 'cancel' event on dialog)
-      dialog.addEventListener('cancel', (e) => {
+      const handleEscape = (e) => {
         e.preventDefault(); // Prevent default close behavior
         handleCancel();
-      }, { once: true });
+      };
+      dialog.addEventListener('cancel', handleEscape, { once: true });
     });
   };
 });
