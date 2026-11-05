@@ -82,6 +82,10 @@ List endpoints take `page` (default 1) and report their position in `X-Page`, `X
 | `memory[source]` | 255 characters |
 | `memory[tags]` | 50 tags, each up to 100 characters |
 
+A limit applies to a value you set. An older memory can hold more than these from before they existed: editing it or adding a version that leaves the value alone still works.
+
+A query parameter sent as a list or an object, such as `tags[]=x`, is a `422`. Only `include` also accepts a list.
+
 Going over a limit is a `422` naming the field. Limits apply when a value changes, so an older row over a limit can still be edited in other ways.
 
 ---
@@ -445,7 +449,7 @@ DELETE /workspaces/:id.json
 
 From then on, the workspace and its memories answer `404` over the API. See [Deleted workspaces answer 404](#deleted-workspaces-answer-404). `GET /workspaces/:id/export.json` keeps working, so you can still take a copy.
 
-A deleted workspace stays recoverable for 30 days. **Restoring is browser-only:** an account member does it from the Deleted Workspaces page in the web app, and there is no REST endpoint for it.
+A deleted workspace stays recoverable for 30 days. **Restoring is browser-only:** its owner or an admin does it from the Deleted Workspaces page in the web app, and there is no REST endpoint for it.
 
 ---
 
@@ -591,8 +595,8 @@ GET /workspaces/:workspace_id/memories.json
 | tags | string | Comma-separated tag list, ignoring case. Returns memories containing ALL specified tags. A tag that itself contains a comma can't be filtered on |
 | source | string | Exact match on source field |
 | category | string | Filter by category (`decision`, `discovery`, `preference`, `general`) |
-| sort | string | Sort field: `updated_at` (default), `created_at`, `title` |
-| direction | string | Sort direction: `desc` (default), `asc` |
+| sort | string | Sort field: `updated_at` (default), `created_at`, `title`. Anything else is a `422` |
+| direction | string | Sort direction: `desc` (default), `asc`. Anything else is a `422` |
 | include | string | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
 **Examples**
@@ -664,8 +668,8 @@ GET /memories.json
 | tags | string | Comma-separated tag list, ignoring case. Returns memories containing ALL specified tags. A tag that itself contains a comma can't be filtered on |
 | source | string | Exact match on source field |
 | category | string | Filter by category (`decision`, `discovery`, `preference`, `general`) |
-| sort | string | Sort field: `updated_at` (default), `created_at`, `title` |
-| direction | string | Sort direction: `desc` (default), `asc` |
+| sort | string | Sort field: `updated_at` (default), `created_at`, `title`. Anything else is a `422` |
+| direction | string | Sort direction: `desc` (default), `asc`. Anything else is a `422` |
 | include | string | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
 **Examples**
@@ -744,7 +748,7 @@ The `content` object always includes `total_lines`, `line_start`, and `line_end`
 
 **Errors**
 
-Returns `422` if `line_start` is greater than `line_end`.
+Returns `422` if `line_start` is greater than `line_end`, or if either isn't a positive integer.
 
 **Grep Mode**
 

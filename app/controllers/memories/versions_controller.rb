@@ -1,6 +1,6 @@
 class Memories::VersionsController < ApplicationController
   include WorkspaceScoped
-  include MemoryPayload
+  include PayloadShape
   include MemoryPage
 
   allow_token_authentication

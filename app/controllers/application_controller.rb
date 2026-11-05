@@ -27,16 +27,26 @@ class ApplicationController < ActionController::Base
     by: -> { current_access_token&.id || Current.user&.id || request.remote_ip },
     with: -> { render_rate_limited }
 
-  before_action :reject_null_characters, if: -> { api_request? && !self_managed_rate_limit? }
+  before_action :reject_null_characters, unless: :self_managed_rate_limit?
+  before_action :reject_structured_query_params, if: -> { api_request? && !self_managed_rate_limit? }
 
   after_action :set_api_cache_control, if: :api_request?
   rescue_from ActiveRecord::RecordNotFound, with: :handle_record_not_found
   rescue_from ActionController::ParameterMissing, with: :handle_parameter_missing
   rescue_from ActionDispatch::Http::Parameters::ParseError, with: :handle_malformed_body
   rescue_from ActionController::UnknownFormat, with: :handle_unknown_format
-  rescue_from Pagy::VariableError, with: :handle_invalid_page
+  rescue_from ApiHelpers::InvalidPage, with: :handle_invalid_page
 
   private
+
+  # Rails reads the params to log them before rescue_from is in place, so a query
+  # string that isn't valid UTF-8 can't be rescued the usual way. Left alone it reaches
+  # the exceptions app, which trips over the same params and answers a bare 500.
+  def process_action(*)
+    super
+  rescue ActionController::BadRequest
+    render_unreadable_params
+  end
 
   def set_api_cache_control
     expires_in 0, public: false
@@ -70,16 +80,44 @@ class ApplicationController < ActionController::Base
     render_not_acceptable
   end
 
-  def handle_invalid_page(error)
-    raise error unless api_request?
-
+  def handle_invalid_page
     render_validation_error("page must be a positive integer")
+  end
+
+  # api_request? reads the params that just failed, so this asks only what doesn't
+  # depend on them.
+  def render_unreadable_params
+    if request.path_parameters[:format].to_s == "json" || extract_bearer_token.present? || request.accepts.any? { |type| type&.json? }
+      render_bad_request("The request's parameters can't be read. Check that they are valid UTF-8.")
+    else
+      render_bad_request_page
+    end
+  end
+
+  def render_bad_request_page
+    render file: Rails.public_path.join("400.html"), status: :bad_request, layout: false
   end
 
   # SQLite treats NUL as the end of a string in LOWER, FTS and friends, so text
   # holding one would be stored and then misbehave everywhere it is read.
   def reject_null_characters
-    render_validation_error("Text can't contain null characters") if null_character_in?(params.to_unsafe_h)
+    return unless null_character_in?(params.to_unsafe_h)
+
+    if api_request?
+      render_validation_error("Text can't contain null characters")
+    else
+      render_bad_request_page
+    end
+  end
+
+  # page[]=1 and tags[a]=b parse fine and then crash whatever expected a string. No
+  # API query parameter takes a list or an object, except include, which the search
+  # form submits as a list.
+  def reject_structured_query_params
+    name, = request.query_parameters.find do |key, value|
+      value.is_a?(Hash) || (value.is_a?(Array) && key != "include")
+    end
+    render_validation_error("#{name} must be a single value") if name
   end
 
   def null_character_in?(value)

@@ -881,6 +881,32 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert call_tool("unlink_memories", paired, token: member_token.raw_token)["unlinked"]
   end
 
+  test "a null character is a tool error, not an HTML 500" do
+    arguments = {workspace_id: @workspace.id.to_s, title: "a\u0000b", content: "c"}
+
+    assert_no_difference "Memory.count" do
+      assert_tool_error "Text can't contain null characters", "create_memory", arguments, token: @full_token.raw_token
+    end
+    assert_response :success
+  end
+
+  test "write tools refuse a field of the wrong shape instead of saving it as text" do
+    memory = Memory.create_with_content(@workspace, title: "Shaped", content: "b")
+    create = {workspace_id: @workspace.id.to_s, title: "New"}
+
+    assert_no_difference "Memory.count" do
+      assert_tool_error "content must be a string", "create_memory", create.merge(content: ["a"]), token: @full_token.raw_token
+      assert_tool_error "title must be a string", "create_memory", create.merge(title: {a: 1}), token: @full_token.raw_token
+      assert_tool_error "tags must be an array of strings", "create_memory", create.merge(tags: "one,two"), token: @full_token.raw_token
+      assert_tool_error "tags must be an array of strings", "create_memory", create.merge(tags: [1]), token: @full_token.raw_token
+      assert_tool_error "content must be a string", "create_version", {memory_id: memory.id.to_s, content: ["a"]}, token: @full_token.raw_token
+      assert_tool_error "change_note must be a string", "create_version", {memory_id: memory.id.to_s, content: "c", change_note: [1]}, token: @full_token.raw_token
+    end
+
+    assert_tool_error "tags must be an array of strings", "update_memory", {memory_id: memory.id.to_s, tags: "one,two"}, token: @full_token.raw_token
+    assert_empty memory.reload.tags
+  end
+
   test "link_memories says plainly when a pair is already linked" do
     a = Memory.create_with_content(@workspace, title: "A", content: "b")
     b = Memory.create_with_content(@workspace, title: "B", content: "b")

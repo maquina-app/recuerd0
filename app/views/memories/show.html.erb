@@ -277,6 +277,11 @@
               <% end %>
             <% end %>
 
+            <%# Remove is refused for this one, so the row says why it has no control. %>
+            <% if @workspace.active? && linked.archived? && !@viewing_old_version %>
+              <span class="mr-elsewhere-static"><%= t("memories.links.archived_other_hint") %></span>
+            <% end %>
+
             <% if @workspace.active? && linked.active? && !@viewing_old_version && @unlinkable_memory_ids.include?(linked.id) %>
               <%= button_to workspace_memory_memory_linking_remove_path(@workspace, @root_memory, other_id: linked.id),
                     method: :delete,

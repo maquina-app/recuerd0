@@ -69,13 +69,114 @@ class ApiErrorContractTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "a line_end below the first line doesn't count back from the end" do
+  test "a line number that isn't a positive integer is a 422" do
     memory = Memory.create_with_content(@workspace, title: "Lines", content: "1\n2\n3")
 
-    get workspace_memory_url(@workspace, memory, format: :json), params: {line_end: 0}, headers: @headers
+    [{line_start: "abc"}, {line_start: 0}, {line_start: -1}, {line_end: 0}, {line_end: "x"}, {line_start: "9" * 25}].each do |line_params|
+      get workspace_memory_url(@workspace, memory, format: :json), params: line_params, headers: @headers
 
+      assert_json_error :unprocessable_entity, "VALIDATION_ERROR", line_params.inspect
+    end
+  end
+
+  test "a page that can't be read is a 422 however it is written" do
+    %w[1.5 1e3 9223372036854775807 100000000000000000000].each do |page|
+      get workspaces_url(format: :json), params: {page: page}, headers: @headers
+
+      assert_json_error :unprocessable_entity, "VALIDATION_ERROR", page
+    end
+
+    get workspaces_url(format: :json), params: {page: "99999999999"}, headers: @headers
     assert_response :success
-    assert_equal "", response.parsed_body.dig("content", "body")
+    assert_empty response.parsed_body
+  end
+
+  test "a query parameter sent as a list or an object is a 422" do
+    memory_url = workspace_memory_url(@workspace, @memory, format: :json)
+    memories_url = workspace_memories_url(@workspace, format: :json)
+
+    [
+      "#{workspaces_url(format: :json)}?page[]=1",
+      "#{memories_url}?page[]=1",
+      "#{search_url(format: :json)}?q=memory&page[]=1",
+      "#{search_url(format: :json)}?q[]=abc",
+      "#{memories_url}?per_page[]=1",
+      "#{memories_url}?tags[]=x",
+      "#{memories_url}?title[]=x",
+      "#{memories_url}?tags[a]=x",
+      "#{memory_url}?line_start[]=1",
+      "#{memory_url}?line_end[]=1",
+      "#{memory_url}?line_start[a]=1",
+      "#{workspace_merge_candidates_url(@workspace, format: :json)}?min_score[]=1"
+    ].each do |url|
+      get url, headers: @headers
+
+      assert_json_error :unprocessable_entity, "VALIDATION_ERROR", url
+    end
+  end
+
+  test "a query string that isn't valid UTF-8 is a JSON 400" do
+    get "#{search_url(format: :json)}?q=abc%FFdef", headers: @headers
+    assert_json_error :bad_request, "BAD_REQUEST"
+
+    get "#{workspaces_url(format: :json)}?q=abc%FFdef"
+    assert_json_error :bad_request, "BAD_REQUEST"
+  end
+
+  test "a browser sending a query string that isn't valid UTF-8 gets the 400 page" do
+    get "#{search_url}?q=abc%FFdef"
+
+    assert_response :bad_request
+    assert_equal "text/html", response.media_type
+    assert_not_includes response.body, "Exception caught"
+  end
+
+  test "an unknown sort or direction is a 422 on the memory lists" do
+    [workspace_memories_url(@workspace, format: :json), browse_memories_url(format: :json)].each do |url|
+      get url, params: {sort: "nope"}, headers: @headers
+      assert_json_error :unprocessable_entity, "VALIDATION_ERROR", url
+
+      get url, params: {direction: "nope"}, headers: @headers
+      assert_json_error :unprocessable_entity, "VALIDATION_ERROR", url
+
+      get url, params: {sort: "title", direction: "asc"}, headers: @headers
+      assert_response :success
+    end
+  end
+
+  test "a link target that isn't one id is a 422" do
+    memory = Memory.create_with_content(@workspace, title: "From", content: "b")
+
+    [[1], {a: 1}, true, 1.5].each do |value|
+      assert_no_difference "MemoryLink.count", value.inspect do
+        post workspace_memory_links_url(@workspace, memory, format: :json),
+          params: {to_memory_id: value}.to_json, headers: @headers
+      end
+
+      assert_json_error :unprocessable_entity, "VALIDATION_ERROR", value.inspect
+    end
+
+    post workspace_memory_links_url(@workspace, memory, format: :json),
+      params: {link: "x"}.to_json, headers: @headers
+    assert_json_error :unprocessable_entity, "VALIDATION_ERROR"
+  end
+
+  test "a workspace field of the wrong shape is a 422 naming it" do
+    {"name" => [%w[a], {a: 1}, 5], "description" => [%w[a], {a: 1}, 5]}.each do |field, values|
+      values.each do |value|
+        assert_no_difference "Workspace.count", "#{field}: #{value.inspect}" do
+          post workspaces_url(format: :json),
+            params: {workspace: {"name" => "Named"}.merge(field => value)}.to_json, headers: @headers
+        end
+
+        assert_json_error :unprocessable_entity, "VALIDATION_ERROR", "#{field}: #{value.inspect}"
+        assert response.parsed_body.dig("error", "details").key?(field), "#{field}: #{value.inspect}"
+      end
+    end
+
+    patch workspace_url(@workspace, format: :json),
+      params: {workspace: {description: %w[a]}}.to_json, headers: @headers
+    assert_json_error :unprocessable_entity, "VALIDATION_ERROR"
   end
 
   # Errors that came back as HTML

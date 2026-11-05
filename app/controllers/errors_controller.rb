@@ -1,7 +1,7 @@
 class ErrorsController < ApplicationController
   allow_unauthenticated_access
   skip_forgery_protection # the catch-all route lets a POST in, and nothing here writes
-  skip_before_action :reject_null_characters
+  skip_before_action :reject_null_characters, :reject_structured_query_params
 
   layout false
 

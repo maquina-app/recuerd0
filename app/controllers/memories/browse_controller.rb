@@ -5,7 +5,7 @@ class Memories::BrowseController < ApplicationController
   allow_token_authentication
 
   def index
-    return unless validate_category_param!
+    return unless validate_category_param! && validate_sort_params!
 
     scope = active_workspace_memories
     scope = apply_memory_filters(scope)

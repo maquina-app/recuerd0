@@ -3,7 +3,7 @@ class MemoriesController < ApplicationController
   include MemoryFilterable
   include ObsoleteFilterable
   include ContentRenderable
-  include MemoryPayload
+  include PayloadShape
   include OwnershipAuthorizable
   include MemoryPage
 
@@ -34,7 +34,7 @@ class MemoriesController < ApplicationController
         redirect_to workspace_path(@workspace)
       end
       format.json do
-        return unless validate_category_param!
+        return unless validate_category_param! && validate_sort_params!
 
         scope = apply_obsolete_filter(scope)
         scope = apply_memory_filters(scope)
@@ -123,6 +123,7 @@ class MemoriesController < ApplicationController
     else
       respond_to do |format|
         format.html do
+          keep_what_was_typed if save_as_new_version?
           flash.now[:alert] = t(".errors")
           render :edit, status: :unprocessable_entity
         end
@@ -169,14 +170,19 @@ class MemoriesController < ApplicationController
   def render_edit_conflict
     @memory = @memory.current_version
     @edit_base = @memory.edit_digest
-    attributes = memory_params
-
-    @memory.assign_attributes(attributes.slice(:title, :source, :category, :tags))
-    (@memory.content || @memory.build_content).body.content = attributes[:content] if attributes.key?(:content)
+    keep_what_was_typed
     @memory.errors.add(:base, :edit_conflict)
 
     flash.now[:alert] = t(".errors")
     render :edit, status: :unprocessable_entity
+  end
+
+  # Puts this person's text over the record for the form to show. Nothing here is saved.
+  def keep_what_was_typed
+    attributes = memory_params
+
+    @memory.assign_attributes(attributes.slice(:title, :source, :category, :tags))
+    (@memory.content || @memory.build_content).body.content = attributes[:content] if attributes.key?(:content)
   end
 
   # Overwriting can erase someone's work as surely as deleting it. Anyone can add a
@@ -248,6 +254,8 @@ class MemoriesController < ApplicationController
       parse_grep_params
       render_validation_error(t("memories.show.grep_query_required")) if @grep_query.blank?
     elsif line_range_requested?
+      return render_validation_error(t("memories.show.invalid_line_number")) if invalid_line_numbers?
+
       parse_line_range_params
       render_validation_error(t("memories.show.invalid_line_range")) if invalid_line_range?
     end

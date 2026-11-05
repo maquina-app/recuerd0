@@ -3,12 +3,15 @@ class WorkspacesController < ApplicationController
   include WorkspaceViewMode
   include OwnershipAuthorizable
 
+  include PayloadShape
+
   allow_token_authentication
 
   before_action :set_workspace, only: %i[show edit update destroy]
   before_action :ensure_not_deleted, only: %i[show update destroy]
   before_action :require_active_workspace, only: %i[edit update]
   before_action -> { require_manage_access(@workspace) }, only: %i[edit update destroy]
+  before_action -> { reject_misshaped_fields(:workspace) }, only: %i[create update]
 
   def index
     @view_mode = resolve_workspace_view_mode

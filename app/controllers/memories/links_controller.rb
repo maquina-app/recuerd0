@@ -19,12 +19,12 @@ class Memories::LinksController < ApplicationController
 
   # POST /workspaces/:workspace_id/memories/:memory_id/links.json
   def create
-    other_id = params[:to_memory_id] || params.dig(:link, :to_memory_id)
+    other_id = params[:to_memory_id] || (params[:link][:to_memory_id] if params[:link].respond_to?(:key?))
     if other_id.blank?
       return render_validation_error("to_memory_id is required")
     end
 
-    if other_id.to_i == @memory.id
+    if other_id.to_s == @memory.id.to_s
       link = MemoryLink.new(from_memory: @memory, to_memory: @memory)
       link.valid?
       return render_validation_errors(link)
@@ -123,6 +123,8 @@ class Memories::LinksController < ApplicationController
   # unreachable by id everywhere else, so offering it here would be a way back
   # in through the side door.
   def find_other_memory(id)
+    return unless id.is_a?(String) || id.is_a?(Integer)
+
     Memory.joins(:workspace)
       .where(workspaces: {account_id: Current.account.id, deleted_at: nil})
       .find_by(id: id)

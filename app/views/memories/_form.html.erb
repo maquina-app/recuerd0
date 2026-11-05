@@ -106,6 +106,9 @@
       <div class="min-w-0" data-form-part="group">
         <%= form.label :tags, for: "memory_tags_entry", data: { component: "label" } %>
         <%= render "application/components/tag_input", form: form, field: :tags, value: memory.tags %>
+        <% if memory.errors[:tags].any? %>
+          <p data-form-part="error"><%= memory.errors.full_messages_for(:tags).first %></p>
+        <% end %>
       </div>
 
       <% if memory.persisted? %>

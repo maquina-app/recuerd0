@@ -21,6 +21,19 @@ module MemoryFilterable
     false
   end
 
+  # The same for sort and direction, which used to fall back to the default order
+  # and read as if the request had been honoured.
+  def validate_sort_params!
+    if params[:sort].present? && ALLOWED_SORT_FIELDS.exclude?(params[:sort])
+      render_validation_error("Invalid sort: #{params[:sort]}. Use #{ALLOWED_SORT_FIELDS.to_sentence(last_word_connector: " or ", two_words_connector: " or ")}")
+      return false
+    end
+    return true if params[:direction].blank? || ALLOWED_DIRECTIONS.include?(params[:direction])
+
+    render_validation_error("Invalid direction: #{params[:direction]}. Use asc or desc")
+    false
+  end
+
   def apply_memory_filters(scope)
     scope = apply_title_filter(scope, params[:title])
     scope = apply_tags_filter(scope, params[:tags])

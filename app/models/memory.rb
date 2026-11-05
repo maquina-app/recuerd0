@@ -163,14 +163,14 @@ class Memory < ApplicationRecord
 
   # The body being written, so the limit can fail on this record: Content is saved
   # after it, and its own invalid record would leave these errors empty.
-  attr_accessor :incoming_body
+  attr_accessor :incoming_body, :version_base
 
   # Validations
   validates :title, length: {maximum: 255}
   validates :version, presence: true, numericality: {greater_than: 0}
   validates :category, presence: true, inclusion: {in: CATEGORIES}
-  validates :source, length: {maximum: MAX_SOURCE_LENGTH}, if: :source_changed?
-  validate :tags_within_limits, if: :tags_changed?
+  validates :source, length: {maximum: MAX_SOURCE_LENGTH}, if: :source_introduced?
+  validate :tags_within_limits, if: :tags_introduced?
   validate :incoming_body_within_limit
 
   validates :change_note, length: {maximum: 280}
@@ -334,6 +334,7 @@ class Memory < ApplicationRecord
       change_note: attributes[:change_note].presence
     )
     new_version.incoming_body = attributes[:content]
+    new_version.version_base = self
 
     # Omitting content inherits it. Sending it blank is asking to wipe the memory,
     # which update_with_content refuses too.
@@ -586,6 +587,17 @@ class Memory < ApplicationRecord
   end
 
   private
+
+  # The limits are for what someone is setting now. A value from before they existed
+  # can't stop an edit that leaves it alone, and that includes a new version carrying
+  # it forward: someone adding a sentence shouldn't be refused over a long source.
+  def source_introduced?
+    source_changed? && source != version_base&.source
+  end
+
+  def tags_introduced?
+    tags_changed? && (version_base.nil? || tags != self.class.distinct_tags(version_base.version_tags))
+  end
 
   def tags_within_limits
     errors.add(:tags, :too_many, count: MAX_TAGS) if tags.size > MAX_TAGS

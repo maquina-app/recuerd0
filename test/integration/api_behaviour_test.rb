@@ -336,6 +336,125 @@ class ApiBehaviourTest < ActionDispatch::IntegrationTest
     assert_select ".link-picker .mr-title", text: /archived|deleted/, count: 0
   end
 
+  test "a link to an archived memory says why it can't be removed" do
+    sign_in_as users(:one)
+    frozen = Memory.create_with_content(workspaces(:archived), title: "Frozen", content: "b")
+    linked = Memory.create_with_content(@workspace, title: "Linked", content: "b")
+    live = Memory.create_with_content(@workspace, title: "Live", content: "b")
+    MemoryLink.create!(from_memory: live, to_memory: frozen, created_by: users(:one))
+    MemoryLink.create!(from_memory: live, to_memory: linked, created_by: users(:one))
+
+    get workspace_memory_url(@workspace, live)
+
+    hint = I18n.t("memories.links.archived_other_hint")
+    assert_select "li.memory-row", text: /Frozen/ do
+      assert_select ".mr-elsewhere-static", text: hint
+    end
+    assert_select "li.memory-row", text: /Linked/ do
+      assert_select ".mr-elsewhere-static", text: hint, count: 0
+    end
+  end
+
+  # Values from before the limits existed
+
+  test "a new version isn't refused over a source or tags it inherits" do
+    memory = Memory.create_with_content(@workspace, title: "Older", content: "b")
+    memory.update_columns(source: "s" * 420, tags: Array.new(60) { |n| "tag#{n}" })
+
+    post workspace_memory_versions_url(@workspace, memory, format: :json),
+      params: {version: {content: "one more sentence"}}.to_json, headers: @headers
+
+    assert_response :created
+    assert_equal 420, response.parsed_body["source"].length
+    assert_equal 60, response.parsed_body["tags"].length
+  end
+
+  test "a member's new version isn't refused over an inherited source either" do
+    memory = Memory.create_with_content(@workspace, title: "Older", content: "b")
+    memory.update_columns(source: "s" * 420)
+
+    post workspace_memory_versions_url(@workspace, memory, format: :json),
+      params: {version: {content: "one more sentence"}}.to_json, headers: @member_headers
+
+    assert_response :created
+  end
+
+  test "a value sent in the request is still held to the limit" do
+    memory = Memory.create_with_content(@workspace, title: "Older", content: "b")
+    memory.update_columns(source: "s" * 420, tags: Array.new(60) { |n| "tag#{n}" })
+
+    post workspace_memory_versions_url(@workspace, memory, format: :json),
+      params: {version: {content: "c", source: "t" * 256}}.to_json, headers: @headers
+    assert_response :unprocessable_entity
+
+    post workspace_memory_versions_url(@workspace, memory, format: :json),
+      params: {version: {content: "c", tags: Array.new(51) { |n| "new#{n}" }}}.to_json, headers: @headers
+    assert_response :unprocessable_entity
+  end
+
+  test "the form shows a tag limit error, and saves a new version over untouched values" do
+    sign_in_as users(:one)
+    memory = Memory.create_with_content(@workspace, title: "Older", content: "b")
+    tags = Array.new(60) { |n| "tag#{n}" }
+    memory.update_columns(source: "s" * 420, tags: tags)
+
+    patch workspace_memory_url(@workspace, memory),
+      params: {save_as: "new_version", memory: {title: "Older", content: "more", source: "s" * 420, tags: tags}}
+    assert_response :see_other
+    assert_equal 2, memory.reload.current_version.version
+
+    patch workspace_memory_url(@workspace, memory),
+      params: {save_as: "new_version", memory: {title: "Older", content: "more again", source: "s" * 420, tags: tags + ["one more"]}}
+    assert_response :unprocessable_entity
+    assert_select "[data-form-part=error]", text: /Tags are limited to 50/
+  end
+
+  test "a refused new version keeps everything the person typed" do
+    sign_in_as users(:one)
+    memory = Memory.create_with_content(@workspace, title: "Saved title", content: "saved body")
+
+    patch workspace_memory_url(@workspace, memory),
+      params: {save_as: "new_version", memory: {title: "Typed title", content: "typed body", source: "t" * 256, tags: ["typed tag"]}}
+
+    assert_response :unprocessable_entity
+    assert_select "[data-form-part=error]", text: /too long/
+    assert_includes response.body, "Typed title"
+    assert_includes response.body, "typed body"
+    assert_includes response.body, "typed tag"
+    assert_includes response.body, "t" * 256
+    assert_equal "Saved title", memory.reload.title
+    assert_equal 1, memory.current_version.version
+  end
+
+  # Bad requests from a browser
+
+  test "a browser with a bad page gets the first page" do
+    sign_in_as users(:one)
+
+    [
+      "#{workspaces_url}?page=0",
+      "#{workspaces_url}?page=abc",
+      "#{workspaces_url}?page[]=1",
+      "#{workspaces_url}?page=9223372036854775807",
+      "#{search_url}?q=note&page=0",
+      "#{search_url}?q=note&page[]=1",
+      "#{workspace_url(@workspace)}?page=0"
+    ].each do |url|
+      get url
+
+      assert_response :success, url
+    end
+  end
+
+  test "a browser form replayed with a null character gets a 400, not a 500" do
+    sign_in_as users(:one)
+
+    assert_no_difference "Memory.count" do
+      post workspace_memories_url(@workspace), params: {memory: {title: "a\u0000b", content: "c"}}
+    end
+    assert_response :bad_request
+  end
+
   # Short words in a search
 
   test "a short word doesn't stop a search finding the rest" do

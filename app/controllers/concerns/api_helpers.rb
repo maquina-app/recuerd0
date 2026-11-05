@@ -1,6 +1,11 @@
 module ApiHelpers
   extend ActiveSupport::Concern
 
+  class InvalidPage < StandardError; end
+
+  # Far past any real list, and well short of the offset overflowing SQLite's integer.
+  MAX_PAGE = 1_000_000_000_000
+
   private
 
   # Pagy's default sends a page past the end back to the last page, which suits a
@@ -8,7 +13,19 @@ module ApiHelpers
   # page. API requests get that empty page.
   def pagy(collection, **vars)
     vars[:overflow] = :empty_page if api_request?
+    vars[:page] ||= requested_page
     super
+  end
+
+  # A bad page is a mistake an API client should hear about. A person who followed
+  # a bad link just gets the first page.
+  def requested_page
+    page = params[:page]
+    return 1 if page.blank?
+    return page.to_i if page.is_a?(String) && page.match?(/\A[1-9]\d*\z/) && page.to_i <= MAX_PAGE
+    raise InvalidPage if api_request?
+
+    1
   end
 
   def set_pagination_headers(pagy)

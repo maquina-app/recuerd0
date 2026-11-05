@@ -155,6 +155,8 @@ class McpController < ApplicationController
     insufficient_scope(name) if WRITE_TOOLS.include?(name) && !@current_oauth_token.full_access?
 
     arguments = object_param(params["arguments"])
+    raise Mcp::ToolError, "Text can't contain null characters" if null_character_in?(arguments)
+
     # `source` is server-authoritative: the authenticated OAuth client's name,
     # never whatever a client might pass. Stamped only on record creation.
     arguments["source"] = mcp_client_name if SOURCE_STAMPED_TOOLS.include?(name)

@@ -153,7 +153,7 @@
         <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Status</th><th>Code</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><code>400</code></td><td><code>BAD_REQUEST</code></td><td>The request body isn't valid JSON</td></tr>
+            <tr><td><code>400</code></td><td><code>BAD_REQUEST</code></td><td>The request body isn't valid JSON, or the query string isn't valid UTF-8</td></tr>
             <tr><td><code>401</code></td><td><code>UNAUTHORIZED</code></td><td>Invalid or missing access token</td></tr>
             <tr><td><code>403</code></td><td><code>FORBIDDEN</code></td><td>Insufficient permissions, an inactive workspace, changing in place, deleting, archiving or restoring something you neither own nor administer, or removing a link only an admin or its creator can remove</td></tr>
             <tr><td><code>404</code></td><td><code>NOT_FOUND</code></td><td>Resource or path not found</td></tr>
@@ -169,7 +169,7 @@
       <div class="api-section" id="pagination-limits">
         <div class="resource-header">
           <h2>Pagination and Limits</h2>
-          <p>Lists report their position in <code>X-Page</code>, <code>X-Per-Page</code>, <code>X-Total</code>, <code>X-Total-Pages</code> and <code>Link</code> headers. A <code>page</code> past the end returns an empty list. A <code>page</code> that isn't a positive integer is a <code>422</code>.</p>
+          <p>Lists report their position in <code>X-Page</code>, <code>X-Per-Page</code>, <code>X-Total</code>, <code>X-Total-Pages</code> and <code>Link</code> headers. A <code>page</code> past the end returns an empty list. A <code>page</code> that isn't a positive integer is a <code>422</code>, and so is any query parameter sent as a list or an object, such as <code>tags[]=x</code>; only <code>include</code> also accepts a list. A limit applies to a value you set: a new version can carry forward an older value over it.</p>
         </div>
         <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Field</th><th>Limit</th></tr></thead>
@@ -366,7 +366,7 @@
         </div>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
-          <span>A deleted workspace stays recoverable for 30 days. Restoring is browser-only: an account member does it from the Deleted Workspaces page in the web app, and there is no REST endpoint for it.</span>
+          <span>A deleted workspace stays recoverable for 30 days. Restoring is browser-only: its owner or an admin does it from the Deleted Workspaces page in the web app, and there is no REST endpoint for it.</span>
         </div>
       </div>
 
@@ -626,8 +626,8 @@
             <tr><td><span class="param-name">tags</span></td><td><span class="param-type">string</span></td><td>Comma-separated tag list, ignoring case. Returns memories with ALL specified tags. A tag that itself contains a comma can't be filtered on</td></tr>
             <tr><td><span class="param-name">source</span></td><td><span class="param-type">string</span></td><td>Exact match on source field</td></tr>
             <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
-            <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
-            <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
+            <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code>. Anything else is a <code>422</code></td></tr>
+            <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code>. Anything else is a <code>422</code></td></tr>
             <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td>Pass <code>obsolete</code> to include retired memories, and on search and pinned <code>inactive</code> for archived/deleted workspaces. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
@@ -684,8 +684,8 @@
             <tr><td><span class="param-name">tags</span></td><td><span class="param-type">string</span></td><td>Comma-separated tag list, ignoring case. Returns memories with ALL specified tags. A tag that itself contains a comma can't be filtered on</td></tr>
             <tr><td><span class="param-name">source</span></td><td><span class="param-type">string</span></td><td>Exact match on source field</td></tr>
             <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
-            <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
-            <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code></td></tr>
+            <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code>. Anything else is a <code>422</code></td></tr>
+            <tr><td><span class="param-name">direction</span></td><td><span class="param-type">string</span></td><td>Sort direction: <code>desc</code> (default), <code>asc</code>. Anything else is a <code>422</code></td></tr>
             <tr><td><span class="param-name">include</span></td><td><span class="param-type">string</span></td><td>Pass <code>obsolete</code> to include retired memories, and on search and pinned <code>inactive</code> for archived/deleted workspaces. See <a href="#obsolete-memories">Obsolete Memories</a>.</td></tr>
           </tbody>
         </table></div>
@@ -708,8 +708,8 @@
         <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><span class="param-name">line_start</span></td><td><span class="param-type">integer</span></td><td>First line to return (1-based, inclusive). Default: 1</td></tr>
-            <tr><td><span class="param-name">line_end</span></td><td><span class="param-type">integer</span></td><td>Last line to return (1-based, inclusive). Default: last line</td></tr>
+            <tr><td><span class="param-name">line_start</span></td><td><span class="param-type">integer</span></td><td>First line to return (1-based, inclusive). Default: 1. Must be a positive integer</td></tr>
+            <tr><td><span class="param-name">line_end</span></td><td><span class="param-type">integer</span></td><td>Last line to return (1-based, inclusive). Default: last line. Must be a positive integer</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">

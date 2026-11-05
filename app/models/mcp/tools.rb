@@ -205,6 +205,7 @@ module Mcp
     end
 
     def create_memory(account, args = {}, user: nil)
+      refuse_misshaped_fields!(args)
       workspace = find_workspace(account, args["workspace_id"])
       validate_category!(args["category"])
       category = args["category"].presence || Memory::DEFAULT_CATEGORY
@@ -224,6 +225,7 @@ module Mcp
     end
 
     def update_memory(account, args = {}, user: nil)
+      refuse_misshaped_fields!(args)
       memory = find_memory_for_update(account, args["memory_id"]).resolve_current_version
       refuse_if_archived!(memory)
       raise ToolError, I18n.t("ownership.update_denied") unless memory.manageable_by?(user)
@@ -252,6 +254,7 @@ module Mcp
     # Appends a new version to an existing memory (vs. update_memory,
     # which overwrites in place). Omitted fields inherit from the latest version.
     def create_version(account, args = {}, user: nil)
+      refuse_misshaped_fields!(args)
       memory = find_memory(account, args["memory_id"])
       refuse_if_archived!(memory)
       validate_category!(args["category"])
@@ -399,6 +402,17 @@ module Mcp
       }
     end
     private_class_method :workspace_json
+
+    # to_s and Array() would otherwise save ["a"] as literal text and "one,two" as one tag.
+    def refuse_misshaped_fields!(args)
+      %w[title content change_note].each do |field|
+        raise ToolError, "#{field} must be a string" unless args[field].nil? || args[field].is_a?(String)
+      end
+      return if args["tags"].nil? || (args["tags"].is_a?(Array) && args["tags"].all?(String))
+
+      raise ToolError, "tags must be an array of strings"
+    end
+    private_class_method :refuse_misshaped_fields!
 
     def normalize_tags(value)
       Array(value).map { |tag| tag.to_s.strip }.reject(&:blank?)
