@@ -53,7 +53,7 @@ class Workspaces::ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [v1_body, v2_body, v3_body], exported["versions"].map { |version| version["content"] }
     assert_equal v3_body, exported["versions"].last["content"]
 
-    metadata_keys = %w[id title tags source category version version_label has_versions obsolete current root_id links_count created_at updated_at url workspace]
+    metadata_keys = %w[id title tags source category version change_note version_label has_versions obsolete current root_id links_count created_at updated_at url workspace]
     assert_equal metadata_keys.sort, (exported.keys - %w[content versions]).sort
     assert_equal metadata_keys.sort, (exported["versions"].last.keys - ["content"]).sort
 

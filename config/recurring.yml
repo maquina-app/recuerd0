@@ -3,3 +3,9 @@ production:
     class: Accounts::ExportCleanupJob
     queue: default
     schedule: every day at 3am
+  # Hourly so "Deleting today" and "deleted on <date>" hold: a daily run could land
+  # almost a day after the 30 days are up.
+  purge_deleted:
+    class: Accounts::PurgeDeletedJob
+    queue: default
+    schedule: every hour

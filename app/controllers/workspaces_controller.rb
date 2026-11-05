@@ -1,12 +1,14 @@
 class WorkspacesController < ApplicationController
   include WorkspaceScoped
   include WorkspaceViewMode
+  include OwnershipAuthorizable
 
   allow_token_authentication
 
   before_action :set_workspace, only: %i[show edit update destroy]
   before_action :ensure_not_deleted, only: %i[show update destroy]
   before_action :require_active_workspace, only: %i[edit update]
+  before_action -> { require_manage_access(@workspace) }, only: %i[edit update destroy]
 
   def index
     @view_mode = resolve_workspace_view_mode
@@ -23,7 +25,7 @@ class WorkspacesController < ApplicationController
 
     workspaces = scope
       .ordered_with_pins_first(Current.user, sort: @sort)
-      .includes(:pins)
+      .includes(:pins, :created_by, :owner)
       .select(<<~SQL.squish)
         workspaces.*,
         (SELECT MAX(memories.created_at) FROM memories WHERE memories.workspace_id = workspaces.id) AS last_activity_at
@@ -58,7 +60,7 @@ class WorkspacesController < ApplicationController
       # Keyed on the viewer too: the JSON renders per-user pin state outside
       # the record-keyed cache block, so a record-only validator would serve
       # one user the pin state cached for another.
-      format.json { stale?(etag: [@workspace, Current.user]) }
+      format.json { stale?(etag: [@workspace, @workspace.owner_id, Current.user]) }
     end
   end
 
@@ -70,7 +72,7 @@ class WorkspacesController < ApplicationController
   end
 
   def create
-    @workspace = Current.account.workspaces.build(workspace_params)
+    @workspace = Current.account.workspaces.build(workspace_params.merge(created_by: Current.user))
 
     if @workspace.save
       track_event("workspace.create", resource: @workspace)

@@ -95,6 +95,7 @@ export default class extends Controller {
   // --- querying -----------------------------------------------------------
 
   handleInput() {
+    this.renderMinLengthHint()
     clearTimeout(this._debounce)
     this._debounce = setTimeout(() => this.search(), this.debounceValue)
   }
@@ -244,6 +245,12 @@ export default class extends Controller {
     }
   }
 
+  // The minimum stops being worth saying the moment it has been met.
+  renderMinLengthHint() {
+    const hint = document.getElementById("search-command-min-hint")
+    if (hint) hint.hidden = (this._input?.value.trim().length ?? 0) >= this.minLengthValue
+  }
+
   // --- lifecycle ----------------------------------------------------------
 
   // Recorded before the render, because by the time turbo:morph fires the
@@ -257,6 +264,7 @@ export default class extends Controller {
     // every morph wipes it — including the ordinary filter keystroke, where no
     // dialog is open and the guard below would skip us.
     this.renderShortcutHint()
+    this.renderMinLengthHint()
 
     if (!this._dialog || this._dialog.open || !this._wasOpen) return
     const { value } = this._wasOpen

@@ -20,6 +20,11 @@
         <% end %>
       </div>
 
+      <div data-form-part="group">
+        <span data-component="label"><%= t("profiles.personal_info.email_label") %></span>
+        <p class="text-sm text-muted-foreground"><%= user.email_address %></p>
+      </div>
+
       <div data-form-part="actions">
         <%= form.submit t("profiles.personal_info.submit"),
             data: { component: "button", variant: "primary" } %>

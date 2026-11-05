@@ -4,7 +4,7 @@
 module MemoryPayload
   extend ActiveSupport::Concern
 
-  TEXT_FIELDS = %w[title content source category].freeze
+  TEXT_FIELDS = %w[title content source category change_note].freeze
 
   private
 

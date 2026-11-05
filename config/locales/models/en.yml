@@ -14,6 +14,9 @@ en:
         memory:
           attributes:
             base:
+              blank_memory: "Add a title or some content first."
+              edit_conflict: "Someone saved this memory while you were editing, so yours wasn't saved. Your text is still here. Press Save as new version to add it on top of theirs."
+              no_changes: "Nothing has changed since this version, so there is nothing to save as a new version."
               historical_version_immutable: "historical versions are immutable — update the current version or create a new version"
             title:
               format: "%{message}"
@@ -43,9 +46,16 @@ en:
               taken: "This item is already pinned."
         user:
           attributes:
+            email_address:
+              format: "%{message}"
+              taken: "This email already has an account."
             password:
               format: "%{message}"
+              blank: "Enter a password."
               too_short: "Password is too short (minimum is %{count} characters)."
+            password_confirmation:
+              format: "%{message}"
+              confirmation: "Passwords don't match."
 
     models:
       workspace: "Workspace"

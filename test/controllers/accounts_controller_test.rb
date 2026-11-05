@@ -55,20 +55,28 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
   test "destroy soft-deletes account for admin" do
     sign_in_as(@admin)
 
-    delete account_url
+    delete account_url, params: {password: "password"}
 
-    assert_redirected_to root_path
+    assert_redirected_to new_session_path
     assert @account.reload.deleted?
-    assert_equal I18n.t("accounts.destroy.deleted"), flash[:notice]
+    assert_equal I18n.t("accounts.destroy.deleted", date: I18n.l(@account.permanent_deletion_on, format: :long)), flash[:notice]
   end
 
-  test "destroy anonymizes all user emails" do
+  test "destroy needs the admin's password" do
     sign_in_as(@admin)
 
-    delete account_url
+    delete account_url, params: {password: "wrong"}
 
-    @account.users.reload.each do |user|
-      assert user.anonymized?, "Expected #{user.email_address} to be anonymized"
+    assert_redirected_to account_path(anchor: "delete-account")
+    assert_not @account.reload.deleted?
+    assert_equal I18n.t("accounts.destroy.wrong_password"), flash[:alert]
+  end
+
+  test "destroy leaves every email intact so the account can come back" do
+    sign_in_as(@admin)
+
+    assert_no_changes -> { @account.users.reload.map(&:email_address).sort } do
+      delete account_url, params: {password: "password"}
     end
   end
 

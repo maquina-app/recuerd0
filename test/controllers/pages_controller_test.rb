@@ -6,7 +6,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "body.marketing"
-    assert_select "title", text: "Getting Started"
+    assert_select "title", text: "Getting Started — recuerd0"
     assert_select ".doc-header .header-section", text: "Getting Started"
     assert_select "h1", text: "Getting Started"
 
@@ -236,5 +236,77 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#claude-code-plugin p",
       text: /It installs the recuerd0 skill — a model-invoked skill/
     assert_not_includes response.body, "It installs the <code>remember</code> skill"
+  end
+
+  test "the legal pages agree with each other and with the product" do
+    get privacy_url
+    assert_no_match(/permanently removed upon account closure/, response.body)
+    assert_no_match(/do not use.{0,20}third-party analytics/m, response.body)
+    assert_no_match(/No tracking/, response.body)
+    assert_match "plausible.maquina.app", response.body
+    assert_match "November 2026", response.body
+
+    get terms_url
+    assert_no_match(/for individual use/, response.body)
+    assert_match "up to twice a month", response.body
+    assert_match "restore the account or export its data", response.body
+    assert_match "November 2026", response.body
+  end
+
+  test "the API docs cover the export the privacy policy points at" do
+    get api_docs_url
+    assert_select "#export-workspace"
+  end
+
+  test "docs name this instance, not a placeholder" do
+    get start_url
+    assert_match "--api-url http://www.example.com", response.body
+    assert_no_match(/your-server\.com/, response.body)
+
+    get cli_url
+    assert_no_match(/recuerd0 account add personal --api-url https:\/\/your-server/, response.body)
+
+    get mcp_url
+    assert_match "http://www.example.com/mcp", response.body
+  end
+
+  test "the hosted service needs no --api-url" do
+    host! "recuerd0.ai"
+    get start_url
+    assert_match "recuerd0 account add personal --token YOUR_TOKEN", response.body
+  end
+
+  test "the landing page makes no claim the product contradicts" do
+    get root_url
+    assert_no_match(/Six tools/, response.body)
+    assert_no_match(/on the roadmap/, response.body)
+    assert_no_match(/Start free/i, response.body)
+    assert_match "Self-hosted, it needs no external services", response.body
+    assert_no_match(/in the managed cloud\. The client/, response.body)
+  end
+
+  test "pricing does not contradict itself" do
+    get pricing_url
+    assert_no_match(/same limits/, response.body)
+    assert_match "Self-host on GitHub", response.body
+  end
+
+  test "a signed-in visitor keeps a way back to the app on the docs" do
+    sign_in_as(users(:one))
+
+    get api_docs_url
+    assert_select "a[href=?]", workspaces_path, text: /Go to App/
+    assert_select "a[href=?]", new_registration_path, count: 0
+  end
+
+  test "navigation reaches the docs from everywhere" do
+    get root_url
+    assert_select "footer a[href=?]", mcp_path
+    assert_select "footer a[href=?]", start_path
+    assert_select "nav a[href=?]", start_path
+
+    get start_url
+    assert_select "title", text: /recuerd0/
+    assert_select "header a[href=?]", start_path
   end
 end

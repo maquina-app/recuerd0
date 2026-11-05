@@ -57,6 +57,7 @@ class McpController < ApplicationController
     raise RequestError.new(-32_600, "Invalid Request: id must not be null") if @jsonrpc_id.nil?
 
     rpc_params = object_param(body["params"])
+    reject_legacy_handshake!(body["method"], rpc_params)
     validate_meta!(object_param(rpc_params["_meta"]))
     validate_headers!(body["method"], rpc_params)
 
@@ -75,6 +76,15 @@ class McpController < ApplicationController
   end
 
   private
+
+  # This revision has no handshake. A client still opening with one gets the versions
+  # it could speak instead of a complaint about _meta keys it has never heard of.
+  def reject_legacy_handshake!(method, params)
+    return unless method == "initialize" && !object_param(params["_meta"]).key?(PROTOCOL_VERSION_META)
+
+    raise RequestError.new(-32_022, "Unsupported protocol version",
+      data: {supported: SUPPORTED_PROTOCOL_VERSIONS, requested: params["protocolVersion"]})
+  end
 
   def validate_meta!(meta)
     [PROTOCOL_VERSION_META, CLIENT_CAPABILITIES_META].each do |key|

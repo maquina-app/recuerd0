@@ -150,7 +150,7 @@ make build
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
           <div class="code-body"><code data-clipboard-target="source"><span class="cc"># 1. Add your account</span>
-recuerd0 account add personal --api-url https://your-server.com --token YOUR_TOKEN
+<%= cli_account_add_command(token: "YOUR_TOKEN") %>
 
 <span class="cc"># 2. List workspaces</span>
 recuerd0 workspace list

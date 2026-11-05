@@ -26,7 +26,7 @@
             else
               t("memories.pinned.index.summary",
                 memories: t("memories.pinned.index.summary_memories", count: @total_count),
-                projects: t("memories.pinned.index.summary_projects", count: @workspace_counts.size))
+                workspaces: t("memories.pinned.index.summary_workspaces", count: @workspace_counts.size))
             end %>
         <span class="mx-1" aria-hidden="true">·</span>
         <%# The ten-pin cap used to be invisible here and surfaced only as a

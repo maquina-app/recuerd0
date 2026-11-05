@@ -22,8 +22,37 @@ module ActionText
 
     belongs_to :record, polymorphic: true, touch: true
 
+    # Redcarpet will not let a fence interrupt a list item: without a blank line
+    # the fence turns into inline code inside the last bullet, while the editor
+    # and any CommonMark reader see a code block. Only unindented fences move; an
+    # indented one is deliberately part of its list item. Idempotent, and applied
+    # on save as well as here so memories saved before the fix render correctly.
+    LIST_ITEM = /\A\s*(?:[-*+]|\d+[.)])\s/
+    FENCE = /\A(?:```|~~~)/
+
+    def self.separate_fences_from_lists(markdown)
+      in_fence = false
+      in_list = false
+
+      markdown.to_s.each_line.with_object(+"") do |line, output|
+        if in_fence
+          in_fence = false if line.match?(FENCE)
+        elsif line.match?(FENCE)
+          output << "\n" if in_list
+          in_fence = true
+          in_list = false
+        elsif line.strip.empty?
+          in_list = false
+        elsif line.match?(LIST_ITEM)
+          in_list = true
+        end
+
+        output << line
+      end
+    end
+
     def to_html
-      (renderer.try(:call) || renderer).render(content).html_safe
+      (renderer.try(:call) || renderer).render(self.class.separate_fences_from_lists(content)).html_safe
     end
   end
 end

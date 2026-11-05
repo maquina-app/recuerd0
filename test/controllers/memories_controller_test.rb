@@ -105,22 +105,6 @@ class MemoriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "autosave update answers no content instead of redirecting" do
-    patch workspace_memory_url(@workspace, @memory),
-      params: {autosave: "1", memory: {title: "Autosaved title"}}
-
-    assert_response :no_content
-    assert_equal "Autosaved title", @memory.reload.title
-  end
-
-  test "autosave update answers unprocessable entity without re-rendering the form" do
-    patch workspace_memory_url(@workspace, @memory),
-      params: {autosave: "1", memory: {title: "x" * 256}}
-
-    assert_response :unprocessable_entity
-    assert_empty response.body
-  end
-
   test "a normal update still redirects" do
     patch workspace_memory_url(@workspace, @memory),
       params: {memory: {title: "Saved by hand"}}
@@ -152,52 +136,46 @@ class MemoriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Updated Title", @memory.reload.title
   end
 
-  test "show renders root memory without resolving to latest version" do
+  test "the memory's URL opens its current version" do
     parent = memories(:versioned_parent)
     parent.create_version!(title: "Latest Version", content: "Latest content")
 
     get workspace_memory_url(parent.workspace, parent)
     assert_response :success
-    assert_match parent.display_title, response.body
+    assert_match "Latest Version", response.body
+    assert_no_match(/#{Regexp.escape(I18n.t("memories.show.old_version_title", version: "v1"))}/, response.body)
   end
 
-  test "show renders specific version when navigating to child version" do
+  test "a saved link to an old version lands on that version's own URL" do
     parent = memories(:versioned_parent)
     v2 = parent.create_version!(title: "V2 Specific", content: "V2 content")
     parent.create_version!(title: "V3 Latest", content: "V3 content")
 
     get workspace_memory_url(parent.workspace, v2)
+    assert_redirected_to workspace_memory_version_url(parent.workspace, parent, v2)
+
+    follow_redirect!
     assert_response :success
     assert_match "V2 Specific", response.body
-  end
-
-  test "show sets viewing_old_version flag for non-current versions" do
-    parent = memories(:versioned_parent)
-    v2 = parent.create_version!(title: "V2", content: "V2 content")
-    parent.create_version!(title: "V3 Latest", content: "V3 content")
-
-    get workspace_memory_url(parent.workspace, v2)
-    assert_response :success
     assert_match I18n.t("memories.show.old_version_title", version: v2.version_label), response.body
   end
 
-  test "show does not show old version alert for current version" do
+  test "a saved link to the current version lands on the memory's URL" do
     parent = memories(:versioned_parent)
     v2 = parent.create_version!(title: "V2 Latest", content: "V2 content")
 
     get workspace_memory_url(parent.workspace, v2)
-    assert_response :success
-    assert_no_match(/#{Regexp.escape(I18n.t("memories.show.old_version_title", version: v2.version_label))}/, response.body)
+    assert_redirected_to workspace_memory_url(parent.workspace, parent)
   end
 
-  test "show hides edit actions for old versions" do
+  test "an old version's page has no edit action" do
     parent = memories(:versioned_parent)
     v2 = parent.create_version!(title: "V2", content: "V2 content")
     parent.create_version!(title: "V3 Latest", content: "V3 content")
 
-    get workspace_memory_url(parent.workspace, v2)
+    get workspace_memory_version_url(parent.workspace, parent, v2)
     assert_response :success
-    assert_no_match edit_workspace_memory_path(parent.workspace, v2), response.body
+    assert_select "a[href=?]", edit_workspace_memory_path(parent.workspace, parent), count: 0
   end
 
   test "workspace show filters memories by category" do

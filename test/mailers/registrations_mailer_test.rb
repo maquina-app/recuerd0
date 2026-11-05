@@ -3,6 +3,7 @@ require "test_helper"
 class RegistrationsMailerTest < ActionMailer::TestCase
   setup do
     @user = Account.create_with_user(
+      account_name: "Test account",
       email_address: "welcome@example.com",
       password: "password123",
       password_confirmation: "password123"

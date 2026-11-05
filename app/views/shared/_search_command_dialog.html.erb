@@ -55,7 +55,8 @@
 
       <div class="search-command-hint">
         <p id="search-command-hint" class="text-xs">
-          <%= t("search.command.hint", count: Searchable::MIN_QUERY_LENGTH) %>
+          <span id="search-command-min-hint"><%= t("search.command.hint_min_length", count: Searchable::MIN_QUERY_LENGTH) %></span>
+          <%= t("search.command.hint") %>
         </p>
         <p class="text-xs mt-0.5 opacity-80"><%= t("search.command.hint_operators") %></p>
       </div>

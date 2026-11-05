@@ -39,7 +39,7 @@
             <% if authenticated? %>
               <%= link_to "Go to App \u2192", workspaces_path, data: { component: "button", variant: "default" }, class: "btn-primary" %>
             <% else %>
-              <%= link_to "Start free \u2192", new_registration_path, data: { component: "button", variant: "default" }, class: "btn-primary" %>
+              <%= link_to "Get started \u2192", new_registration_path, data: { component: "button", variant: "default" }, class: "btn-primary" %>
             <% end %>
             <%= link_to "Self-host \u2192", "https://github.com/maquina-app/recuerd0", target: "_blank", rel: "noopener", data: { component: "button", variant: "ghost" }, class: "btn-ghost" %>
           </div>
@@ -334,7 +334,7 @@ as new versioned memories.</code>
         <h2 class="m-section-title">Everything you need, nothing you don't</h2>
         <p class="section-desc">
           Built with Rails 8, SQLite, and a philosophy of simplicity.
-          No external services, no data leaving your network.
+          Self-hosted, it needs no external services and no data leaves your network.
         </p>
       </div>
 
@@ -392,7 +392,7 @@ as new versioned memories.</code>
           <div class="feature-icon"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v5"/><path d="M15 2v5"/><path d="M7 7h10v4a5 5 0 0 1-10 0V7Z"/><path d="M12 16v6"/></svg></div>
           <div>
             <h3>MCP Server</h3>
-            <p>Connect Claude Desktop, Claude.ai, and any MCP client straight to your memories in the managed cloud. The client registers itself and you approve a consent screen — no tokens to copy, no config files to hand-edit. Six tools cover reading, searching, and writing memories across your workspaces.</p>
+            <p>Connect Claude Desktop, Claude.ai, and any MCP client straight to your memories, on the managed cloud or your own instance. The client registers itself and you approve a consent screen — no tokens to copy, no config files to hand-edit. Its tools cover reading, searching, and writing memories across your workspaces.</p>
             <div class="feature-meta">
               <span class="feature-chip">remote mcp</span>
               <span class="feature-chip">oauth 2.1</span>
@@ -417,7 +417,7 @@ as new versioned memories.</code>
           <div class="feature-icon"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></div>
           <div>
             <h3>Workspace Organization</h3>
-            <p>Pin, archive, soft-delete, and tag. Workspaces are tuned for a curated set of high-value memories — think dozens, curation over accumulation — so the context you serve stays sharp, not noisy. Deep, large workspaces work too; keeping recall sharp as they grow is what semantic search (on the roadmap) is for.</p>
+            <p>Pin, archive, soft-delete, and tag. Workspaces are tuned for a curated set of high-value memories — think dozens, curation over accumulation — so the context you serve stays sharp, not noisy. Deep, large workspaces work too; an optional semantic fallback, off unless an instance enables it, helps recall as they grow by adding close matches when keyword search comes up short.</p>
             <div class="feature-meta">
               <span class="feature-chip">pins</span>
               <span class="feature-chip">tags</span>

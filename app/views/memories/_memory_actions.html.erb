@@ -3,7 +3,7 @@
     it this partial fired one pinned_by? query per row. -%>
 <% is_pinned = pinned.nil? ? memory.pinned_by?(Current.user) : pinned -%>
 <%= render "components/dropdown_menu/item",
-    href: workspace_memory_path(workspace, memory) do %>
+    href: stable_memory_path(workspace, memory) do %>
   <%= icon_for(:file_text, class: "w-4 h-4") %>
   <%= t("memories.actions.open") %>
 <% end %>
@@ -26,7 +26,7 @@
 
 <% if memory.versioned? %>
   <%= render "components/dropdown_menu/item",
-      href: workspace_memory_versions_path(workspace, memory) do %>
+      href: workspace_memory_versions_path(workspace, memory.stable_id) do %>
     <%= icon_for(:git_branch, class: "w-4 h-4") %>
     <%= t("memories.actions.versions") %>
   <% end %>
@@ -36,16 +36,27 @@
   <%= render "components/dropdown_menu/separator" %>
 
   <%= render "components/dropdown_menu/item",
-      href: edit_workspace_memory_path(workspace, memory) do %>
+      href: edit_workspace_memory_path(workspace, memory.stable_id) do %>
     <%= icon_for(:edit, class: "w-4 h-4") %>
     <%= t("memories.actions.edit") %>
   <% end %>
 
-  <%= render "components/dropdown_menu/item",
-      href: workspace_memory_path(workspace, memory),
-      variant: :destructive,
-      data: { turbo_method: :delete, turbo_confirm: t("memories.actions.delete_confirm") } do %>
-    <%= icon_for(:trash_2, class: "w-4 h-4") %>
-    <%= t("memories.actions.delete") %>
+  <% if memory.deletable_by?(Current.user) %>
+    <%= render "components/dropdown_menu/item",
+        href: stable_memory_path(workspace, memory),
+        variant: :destructive,
+        data: {
+          turbo_method: :delete,
+          turbo_confirm: [
+            t("memories.memory_show_actions.delete_confirm", count: memory.all_versions.size - 1),
+            memory_owner_note(memory)
+          ].compact.join(" "),
+          confirm_severity: "destructive",
+          confirm_title: t("memories.memory_show_actions.delete_title", title: memory.display_title),
+          confirm_button: t("memories.memory_show_actions.delete_button")
+        } do %>
+      <%= icon_for(:trash_2, class: "w-4 h-4") %>
+      <%= t("memories.actions.delete") %>
+    <% end %>
   <% end %>
 <% end %>

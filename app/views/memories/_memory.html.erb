@@ -17,7 +17,7 @@
   <%= render "components/card/header" do %>
     <div class="flex items-start justify-between gap-2">
       <div class="mc-title min-w-0">
-        <%= link_to display_version.display_title, workspace_memory_path(workspace, display_version) %>
+        <%= link_to display_version.display_title, stable_memory_path(workspace, memory) %>
       </div>
 
       <div class="flex flex-shrink-0 items-center gap-1.5">
@@ -82,13 +82,13 @@
     <% if display_version.source.present? %>
       <div class="mc-source">
         <%= icon_for(:file_text) %>
-        <span class="min-w-0"><%= t("memories.memory.source_label") %> <span class="src-val"><%= display_version.source %></span></span>
+        <span class="min-w-0"><%= t("memories.memory.source_label") %> <span class="src-val"><%= memory_source_value(display_version.source) %></span></span>
       </div>
     <% end %>
   <% end %>
 
   <%= render "components/card/content" do %>
-    <% plain = display_version.content&.plain_text.to_s.gsub(/\n{3,}/, "\n\n").strip %>
+    <% plain = display_version.content&.preview_text(title: display_version.title).to_s %>
     <p class="excerpt-clamp"><%= truncate(plain, length: 200, omission: "...") %></p>
 
     <% if display_version.tags.any? %>
@@ -125,7 +125,7 @@
         tab stop and a second announcement per card for one destination — ten of
         each on a full page. Kept as a visible click affordance, removed from the
         tab order and the accessibility tree; the title link is the real one. %>
-    <%= link_to workspace_memory_path(workspace, display_version),
+    <%= link_to stable_memory_path(workspace, memory),
           class: "mc-detail", tabindex: -1, "aria-hidden": true do %>
       <%= t("memories.memory.view_details") %>
       <%= icon_for(:chevron_right) %>

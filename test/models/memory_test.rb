@@ -701,10 +701,12 @@ class MemoryTest < ActiveSupport::TestCase
     v2, v8 = root.all_versions.where(version: [2, 8]).to_a
     other = memories(:one)
     third = Memory.create_with_content(workspaces(:one), title: "Third", content: "x")
-    MemoryLink.create!(from_memory: v2, to_memory: other)
-    MemoryLink.create!(from_memory: v8, to_memory: other)
-    MemoryLink.create!(from_memory: v2, to_memory: third)
-    MemoryLink.create!(from_memory: v2, to_memory: v8)
+    # Links on version rows predate MemoryLink#point_at_roots, so they are written
+    # directly here: purge still has to clean up any that remain.
+    [[v2, other], [v8, other], [v2, third], [v2, v8]].each do |a, b|
+      low, high = [a.id, b.id].minmax
+      MemoryLink.insert!({from_memory_id: low, to_memory_id: high}, record_timestamps: true)
+    end
 
     root.purge_versions!(keep: 2)
 

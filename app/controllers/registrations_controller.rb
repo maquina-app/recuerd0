@@ -25,7 +25,7 @@ class RegistrationsController < ApplicationController
   private
 
   def registration_params
-    params.require(:user).permit(:email_address, :password, :password_confirmation).to_h.symbolize_keys
+    params.require(:user).permit(:account_name, :email_address, :password, :password_confirmation).to_h.symbolize_keys
   end
 
   def schedule_onboarding_emails(user)

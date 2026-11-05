@@ -4,7 +4,7 @@ class MemoryLink < ApplicationRecord
   # Nullable on purpose: a link with no recorded creator belongs to the account admin.
   belongs_to :created_by, class_name: "User", optional: true
 
-  before_validation :normalize_order
+  before_validation :point_at_roots, :normalize_order
   validate :different_memories
   validate :same_account
   validates :from_memory_id, uniqueness: {scope: :to_memory_id}
@@ -29,6 +29,12 @@ class MemoryLink < ApplicationRecord
   end
 
   private
+
+  # A link joins memories, not versions: every surface reads links off the root.
+  def point_at_roots
+    self.from_memory = from_memory.root_memory if from_memory&.parent_memory_id
+    self.to_memory = to_memory.root_memory if to_memory&.parent_memory_id
+  end
 
   def normalize_order
     return if from_memory_id.blank? || to_memory_id.blank?

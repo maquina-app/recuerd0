@@ -28,7 +28,7 @@
           <li role="presentation" class="palette-group"><%= t("search.command.jump_back_in") %></li>
           <% @suggested_memories.each do |memory| %>
             <li role="presentation">
-              <%= link_to workspace_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
+              <%= link_to stable_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
                     class: "palette-item", data: {palette_result: true, turbo_frame: "_top"} do %>
                 <%= icon_for(:file_text, class: "size-4 shrink-0 text-muted-foreground") %>
                 <span class="palette-item-label"><%= memory.display_title %></span>
@@ -67,7 +67,7 @@
             results page card does, never to a stale v1. %>
         <% @memories.map(&:resolve_current_version).each do |memory| %>
           <li role="presentation">
-            <%= link_to workspace_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
+            <%= link_to stable_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
                   class: "palette-item", data: {palette_result: true, turbo_frame: "_top"} do %>
               <%= icon_for(:file_text, class: "size-4 shrink-0 text-muted-foreground") %>
               <span class="palette-item-label"><%= memory.display_title %></span>
@@ -82,7 +82,7 @@
         <li role="presentation" class="palette-group"><%= t("search.command.related") %></li>
         <% @related.map { |match| match.memory.resolve_current_version }.each do |memory| %>
           <li role="presentation">
-            <%= link_to workspace_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
+            <%= link_to stable_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
                   class: "palette-item", data: {palette_result: true, palette_related: true, turbo_frame: "_top"} do %>
               <%= icon_for(:file_text, class: "size-4 shrink-0 text-muted-foreground") %>
               <span class="palette-item-label"><%= memory.display_title %></span>

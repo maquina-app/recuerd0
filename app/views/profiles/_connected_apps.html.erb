@@ -30,7 +30,10 @@
                     component: "button",
                     variant: "ghost",
                     size: "icon-sm",
-                    turbo_confirm: t("profiles.connected_apps.revoke_confirm")
+                    turbo_confirm: t("profiles.connected_apps.revoke_confirm"),
+                    confirm_severity: "warning",
+                    confirm_title: t("profiles.connected_apps.revoke_title"),
+                    confirm_button: t("profiles.connected_apps.revoke")
                   },
                   class: "text-destructive hover:text-destructive",
                   title: t("profiles.connected_apps.revoke") do %>

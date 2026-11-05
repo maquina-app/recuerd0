@@ -1,5 +1,5 @@
 <% content_for :title, "Privacy Policy — recuerd0" %>
-<% content_for :description, "How recuerd0 handles your data. No tracking, no third-party analytics, self-host option for full data sovereignty." %>
+<% content_for :description, "How recuerd0 handles your data. Cookie-free page analytics, no ads, no selling your data, and a self-host option for full data sovereignty." %>
 <% content_for :canonical_url, "https://recuerd0.ai/privacy" %>
 
 <% content_for :structured_data do %>
@@ -20,7 +20,7 @@
   <%= render "pages/marketing_nav" %>
 
   <main class="legal-content">
-    <%= render "pages/legal_header", title: "Privacy Policy", date_label: "February 2026", date_iso: "2026-02" %>
+    <%= render "pages/legal_header", title: "Privacy Policy", date_label: "November 2026", date_iso: "2026-11" %>
 
     <nav class="legal-toc" aria-label="Sections">
       <p class="legal-toc-label">On this page</p>
@@ -44,6 +44,8 @@
         <div><dt>Account information:</dt> <dd>your email address and a hashed password (we never store your password in plain text)</dd></div>
         <div><dt>Content you create:</dt> <dd>workspaces, memories, versions, and tags</dd></div>
         <div><dt>Session data:</dt> <dd>IP address and user agent for active sessions, used only for security purposes</dd></div>
+        <div><dt>Usage events:</dt> <dd>actions in your account and API requests (such as signing in or creating a memory), stored with a shortened IP address and user agent, used to operate and secure the service</dd></div>
+        <div><dt>Page analytics:</dt> <dd>aggregate page-view statistics collected with <a href="https://plausible.io/data-policy" target="_blank" rel="noopener">Plausible Analytics</a>, hosted at plausible.maquina.app. It sets no cookies and does not follow you across other sites</dd></div>
       </dl>
 
       <h2 id="how-we-use">2. How we use your information</h2>
@@ -51,7 +53,7 @@
       <ul>
         <li>To authenticate you and maintain your session</li>
         <li>To store and serve your workspaces and memories</li>
-        <li>To send you service-related emails (password resets, account notifications)</li>
+        <li>To send you service-related emails (password resets, account notifications, and a short series of setup tips after you sign up)</li>
         <li>To detect and prevent unauthorized access</li>
       </ul>
 
@@ -63,7 +65,7 @@
         <li>We <strong>do not use</strong> your data to train AI or machine learning models — not ours, not anyone else's</li>
         <li>We <strong>do not track</strong> you across websites or services</li>
         <li>We <strong>do not display</strong> ads or engage in behavioral targeting</li>
-        <li>We <strong>do not use</strong> third-party analytics, tracking pixels, or social media integrations</li>
+        <li>We <strong>do not use</strong> advertising networks, tracking pixels, or social media integrations</li>
       </ul>
 
       <h2 id="security">4. Data storage and security</h2>
@@ -80,7 +82,7 @@
       <p>You have full control over your data:</p>
       <dl>
         <div><dt>Access:</dt> <dd>view all your data through the application or API</dd></div>
-        <div><dt>Export:</dt> <dd>download your data via the API at any time</dd></div>
+        <div><dt>Export:</dt> <dd>read any workspace through the API at any time (<a href="/api-docs#export-workspace"><code>GET /workspaces/:id/export</code></a>), or request a full account export from the Account page, up to twice a month</dd></div>
         <div><dt>Correction:</dt> <dd>edit or update any of your content</dd></div>
         <div><dt>Deletion:</dt> <dd>delete individual memories, workspaces, or your entire account</dd></div>
         <div><dt>Portability:</dt> <dd>your data is stored in standard formats and accessible via API</dd></div>
@@ -92,7 +94,7 @@
         <div><dt>Active data:</dt> <dd>retained as long as your account exists</dd></div>
         <div><dt>Deleted workspaces:</dt> <dd>soft-deleted with a 30-day recovery window, then permanently removed</dd></div>
         <div><dt>Deleted memories:</dt> <dd>permanently removed immediately</dd></div>
-        <div><dt>Account deletion:</dt> <dd>all data permanently removed upon account closure</dd></div>
+        <div><dt>Account deletion:</dt> <dd>access ends immediately and data is kept for 30 days so an admin can restore the account or export it, then permanently removed</dd></div>
         <div><dt>Session data:</dt> <dd>automatically cleaned up when sessions expire</dd></div>
       </dl>
 
@@ -100,7 +102,7 @@
       <p>We use only essential cookies:</p>
       <dl>
         <div><dt>Session cookie:</dt> <dd>a signed, HTTP-only cookie to maintain your login session</dd></div>
-        <div><dt>UI preference cookie:</dt> <dd>remembers your sidebar state (open/closed)</dd></div>
+        <div><dt>UI preference cookies:</dt> <dd>remember your sidebar state, theme, and list views</dd></div>
       </dl>
       <p>We do not use third-party cookies, tracking cookies, or advertising cookies.</p>
 

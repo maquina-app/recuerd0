@@ -29,12 +29,14 @@ export default class extends Controller {
       tagName = tagName.slice(0, -1).trim()
     }
 
-    if (tagName && !this.tags.includes(tagName)) {
+    if (!tagName) return
+
+    if (!this.tags.some(tag => tag.toLowerCase() === tagName.toLowerCase())) {
       this.tags.push(tagName)
       this.renderTag(tagName)
       this.updateHiddenInputs()
-      input.value = ""
     }
+    input.value = ""
   }
 
   removeTag(event) {

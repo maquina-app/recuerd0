@@ -11,6 +11,7 @@
         <li><a href="#how" data-action="click->marketing-nav#smoothScroll">how it works</a></li>
         <li><a href="#api" data-action="click->marketing-nav#smoothScroll">api</a></li>
         <li><a href="#features" data-action="click->marketing-nav#smoothScroll">features</a></li>
+        <li><%= link_to "docs", start_path %></li>
         <% if Rails.application.config.multi_tenant %>
           <li><%= link_to "pricing", pricing_path %></li>
         <% end %>
@@ -52,6 +53,7 @@
       <li><a href="#how" data-action="click->marketing-nav#overlayScroll">how it works</a></li>
       <li><a href="#api" data-action="click->marketing-nav#overlayScroll">api</a></li>
       <li><a href="#features" data-action="click->marketing-nav#overlayScroll">features</a></li>
+      <li><%= link_to "docs", start_path %></li>
       <% if Rails.application.config.multi_tenant %>
         <li><%= link_to "pricing", pricing_path %></li>
       <% end %>

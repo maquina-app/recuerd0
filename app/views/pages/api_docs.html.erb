@@ -35,7 +35,9 @@
       <a href="#create-workspace" class="sidebar-link" data-section="create-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create</a>
       <a href="#update-workspace" class="sidebar-link" data-section="update-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method patch">PATCH</span> Update</a>
       <a href="#delete-workspace" class="sidebar-link" data-section="delete-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method delete">DEL</span> Delete</a>
+      <a href="#pass-ownership" class="sidebar-link" data-section="pass-ownership" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method patch">PATCH</span> Pass ownership</a>
       <a href="#archive-workspace" class="sidebar-link" data-section="archive-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Archive</a>
+      <a href="#export-workspace" class="sidebar-link" data-section="export-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Export Workspace</a>
       <a href="#unarchive-workspace" class="sidebar-link" data-section="unarchive-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method delete">DEL</span> Unarchive</a>
       <a href="#workspace-stats" class="sidebar-link" data-section="workspace-stats" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Stats</a>
       <a href="#merge-candidates" class="sidebar-link" data-section="merge-candidates" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Merge Candidates</a>
@@ -153,7 +155,7 @@
           <tbody>
             <tr><td><code>400</code></td><td><code>BAD_REQUEST</code></td><td>The request body isn't valid JSON</td></tr>
             <tr><td><code>401</code></td><td><code>UNAUTHORIZED</code></td><td>Invalid or missing access token</td></tr>
-            <tr><td><code>403</code></td><td><code>FORBIDDEN</code></td><td>Insufficient permissions, an inactive workspace, or a link only an admin or its creator can remove</td></tr>
+            <tr><td><code>403</code></td><td><code>FORBIDDEN</code></td><td>Insufficient permissions, an inactive workspace, changing in place, deleting, archiving or restoring something you neither own nor administer, or removing a link only an admin or its creator can remove</td></tr>
             <tr><td><code>404</code></td><td><code>NOT_FOUND</code></td><td>Resource or path not found</td></tr>
             <tr><td><code>406</code></td><td><code>NOT_ACCEPTABLE</code></td><td>The endpoint has no JSON representation</td></tr>
             <tr><td><code>422</code></td><td><code>VALIDATION_ERROR</code></td><td>Invalid request data (may include <code>details</code>)</td></tr>
@@ -339,7 +341,7 @@
       </div>
 
       <div class="endpoint" id="update-workspace">
-        <div class="endpoint-head"><h3>Update Workspace</h3><p>Updates an existing workspace.</p></div>
+        <div class="endpoint-head"><h3>Update Workspace</h3><p>Updates an existing workspace. Only its owner or an account admin can do this; anyone else gets <code>403</code>.</p></div>
         <div class="route-bar patch"><span class="route-method">PATCH</span><span class="route-path">/workspaces/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
         <div class="table-scroll"><table class="param-table">
@@ -368,13 +370,35 @@
         </div>
       </div>
 
+      <div class="endpoint" id="pass-ownership">
+        <div class="endpoint-head"><h3>Pass or Take Ownership</h3><p>Workspaces and memories report an <code>owner_id</code>, which starts as whoever created them; <code>null</code> means the account admin. The owner can pass a record to anyone still on the account. An admin who doesn't own it can only name themselves, and can pass it on once they do. Anyone else gets <code>403</code>. The receiver doesn't have to accept, and passing a workspace leaves the owners of the memories in it unchanged.</p></div>
+        <div class="route-bar patch"><span class="route-method">PATCH</span><span class="route-path">/workspaces/<span class="param">:id</span>/ownership.json</span><span class="route-badge">full_access</span></div>
+        <div class="route-bar patch"><span class="route-method">PATCH</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>/ownership.json</span><span class="route-badge">full_access</span></div>
+        <div class="param-table-label">Parameters</div>
+        <div class="table-scroll"><table class="param-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">user_id</span></td><td><span class="param-type">integer</span></td><td>Who receives it (required)</td></tr>
+          </tbody>
+        </table></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body">{ <span class="ck">"id"</span>: <span class="cb">12</span>, <span class="ck">"owner_id"</span>: <span class="cb">7</span> }</div>
+        </div>
+      </div>
+
       <div class="endpoint" id="archive-workspace">
-        <div class="endpoint-head"><h3>Archive Workspace</h3><p>Archives a workspace. Archived workspaces become read-only.</p></div>
+        <div class="endpoint-head"><h3>Archive Workspace</h3><p>Archives a workspace. Archived workspaces become read-only. Only the workspace's owner or an account admin can archive or delete it; anyone else gets <code>403</code>.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:id</span>/archive.json</span><span class="route-badge">full_access</span></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><span class="cc">Returns the workspace with</span> <span class="ck">"archived"</span>: <span class="cb">true</span></div>
         </div>
+      </div>
+
+      <div class="endpoint" id="export-workspace">
+        <div class="endpoint-head"><h3>Export Workspace</h3><p>Returns every memory in a workspace, with all its versions, as one JSON document. Available at any time and not subject to the monthly limit on full account exports.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:id</span>/export.json</span></div>
       </div>
 
       <div class="endpoint" id="unarchive-workspace">
@@ -824,7 +848,7 @@
       </div>
 
       <div class="endpoint" id="update-memory">
-        <div class="endpoint-head"><h3>Update Memory</h3><p>Updates an existing memory.</p></div>
+        <div class="endpoint-head"><h3>Update Memory</h3><p>Updates an existing memory in place. Only its owner or an account admin can do this; anyone else gets <code>403</code> and can add a version instead.</p></div>
         <div class="route-bar patch"><span class="route-method">PATCH</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
         <div class="table-scroll"><table class="param-table">
@@ -844,7 +868,7 @@
       </div>
 
       <div class="endpoint" id="delete-memory">
-        <div class="endpoint-head"><h3>Delete Memory</h3><p>Deletes a memory and all its versions.</p></div>
+        <div class="endpoint-head"><h3>Delete Memory</h3><p>Deletes a memory and all its versions. Only the memory's owner, its workspace's owner or an account admin can do this; anyone else gets <code>403</code>. Use the memory's root id or its current version's id: an older version's id returns <code>422</code> and deletes nothing.</p></div>
         <div class="route-bar delete"><span class="route-method">DELETE</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s204">204 No Content</span></div>
@@ -875,17 +899,18 @@
       </div>
 
       <div class="endpoint" id="create-version">
-        <div class="endpoint-head"><h3>Create Version</h3><p>Creates a new version of a memory. Fields default to the parent version values if not provided. Sending <code>content</code> blank is a <code>422</code>, because it would wipe the memory's current text.</p></div>
+        <div class="endpoint-head"><h3>Create Version</h3><p>Creates a new version of a memory. Omitted fields come from its current version. Given the id of a specific version, they come from that version instead. A result identical to the current version is refused with <code>422</code>; a change note alone is not a change. Sending <code>content</code> blank is also a <code>422</code>, because it would wipe the memory's current text.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/versions.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
         <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><span class="param-name">version[title]</span></td><td><span class="param-type">string</span></td><td>Version title (defaults to parent)</td></tr>
-            <tr><td><span class="param-name">version[content]</span></td><td><span class="param-type">string</span></td><td>Version body (defaults to parent)</td></tr>
-            <tr><td><span class="param-name">version[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier (defaults to parent)</td></tr>
-            <tr><td><span class="param-name">version[tags]</span></td><td><span class="param-type">array</span></td><td>Tags (defaults to parent)</td></tr>
-            <tr><td><span class="param-name">version[category]</span></td><td><span class="param-type">string</span></td><td>Category (defaults to the parent memory's category). See <a href="#memory-categories">Memory Categories</a>.</td></tr>
+            <tr><td><span class="param-name">version[title]</span></td><td><span class="param-type">string</span></td><td>Version title (defaults to the current version)</td></tr>
+            <tr><td><span class="param-name">version[content]</span></td><td><span class="param-type">string</span></td><td>Version body (defaults to the current version)</td></tr>
+            <tr><td><span class="param-name">version[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier (defaults to the current version)</td></tr>
+            <tr><td><span class="param-name">version[tags]</span></td><td><span class="param-type">array</span></td><td>Tags (defaults to the current version)</td></tr>
+            <tr><td><span class="param-name">version[change_note]</span></td><td><span class="param-type">string</span></td><td>Why this version exists, in one line (optional, max 280 characters)</td></tr>
+            <tr><td><span class="param-name">version[category]</span></td><td><span class="param-type">string</span></td><td>Category (defaults to the current version). See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">

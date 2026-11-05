@@ -1,7 +1,9 @@
 class Workspaces::RestoresController < ApplicationController
   include WorkspaceScoped
+  include OwnershipAuthorizable
 
   before_action :set_workspace
+  before_action -> { require_manage_access(@workspace) }
 
   def create
     if @workspace.restore

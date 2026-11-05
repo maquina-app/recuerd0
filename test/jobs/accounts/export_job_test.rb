@@ -107,4 +107,32 @@ class Accounts::ExportJobTest < ActiveSupport::TestCase
     used = Set.new(["test-file"])
     assert_equal "test-file-2", job.send(:unique_filename, "Test File", used)
   end
+
+  test "a versioned memory exports its current text and every earlier version" do
+    memory = Memory.create_with_content(@workspace, title: "History check", content: "first body")
+    memory.create_version!(content: "second body", change_note: "Second try")
+    memory.create_version!(content: "third body")
+
+    Accounts::ExportJob.perform_now(@export.id)
+
+    files = {}
+    Zip::InputStream.open(StringIO.new(@export.reload.archive.download)) do |io|
+      while (entry = io.get_next_entry)
+        files[entry.name] = io.read
+      end
+    end
+
+    current = files.find { |name, _| name.end_with?("/history-check.md") }
+    assert_includes current.last, "third body"
+    assert_includes current.last, "version: 3"
+
+    v1 = files.find { |name, _| name.end_with?("/history-check.versions/v1.md") }
+    assert_includes v1.last, "first body"
+
+    v2 = files.find { |name, _| name.end_with?("/history-check.versions/v2.md") }
+    assert_includes v2.last, "second body"
+    assert_includes v2.last, "change_note: Second try"
+
+    assert_empty files.keys.grep(%r{history-check\.versions/v3})
+  end
 end

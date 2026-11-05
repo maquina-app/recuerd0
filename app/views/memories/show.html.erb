@@ -15,6 +15,7 @@
 <% is_pinned = @memory.pinned_by?(Current.user) %>
 <% category_variant = {"decision" => :default, "discovery" => :secondary, "preference" => :warning, "general" => :outline}[@memory.category] || :outline %>
 <% has_content = @memory.content&.body&.content.present? %>
+<% current_version = @all_versions.last %>
 
 <%# pb-20 keeps the scroll-to-top button from covering the last section. %>
 <div class="mx-auto max-w-5xl overflow-x-clip pb-20">
@@ -37,7 +38,7 @@
     <%# action cluster %>
     <div class="flex flex-shrink-0 items-center gap-1 sm:ml-auto">
       <% if @workspace.active? && !@viewing_old_version %>
-        <%= link_to edit_workspace_memory_path(@workspace, @memory), data: { component: "button", variant: "secondary", size: "sm" } do %>
+        <%= link_to edit_workspace_memory_path(@workspace, @root_memory), data: { component: "button", variant: "secondary", size: "sm" } do %>
           <%= icon_for(:edit, class: "size-4") %>
           <%= t("memories.memory_show_actions.edit") %>
         <% end %>
@@ -88,8 +89,8 @@
   <%# ===== META (flush-left, aligned with tags + content) ===== %>
   <div class="mb-2 flex flex-wrap items-center gap-2">
     <%= render "components/badge", variant: category_variant, size: :sm do %>
-      <span class="category-dot" data-cat="<%= @memory.category %>"></span>
-      <%= t("memories.categories.#{@memory.category}") %>
+      <span class="category-dot" data-cat="<%= @memory.version_category %>"></span>
+      <%= t("memories.categories.#{@memory.version_category}") %>
     <% end %>
 
     <% if @memory.versioned? %>
@@ -103,19 +104,32 @@
   <% if @memory.source.present? %>
     <div class="mc-source mb-2">
       <%= icon_for(:file_text) %>
-      <span class="min-w-0">Source: <span class="src-val"><%= @memory.source %></span></span>
+      <span class="min-w-0"><%= t("memories.memory.source_label") %> <span class="src-val"><%= memory_source_value(@memory.source) %></span></span>
     </div>
   <% end %>
 
   <%# stat chips %>
   <div class="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-    <span class="stat-chip" title="<%= @memory.created_at.strftime("%B %-d, %Y") %>">
+    <span class="stat-chip">
       <%= icon_for(:clock) %>
-      <%= t("memories.show.created_ago", time: time_ago_in_words(@memory.created_at)) %>
+      <time datetime="<%= @root_memory.created_at.iso8601 %>" data-controller="local-time" data-action="turbo:morph@document->local-time#render">
+        <%= t("memories.show.created_ago", time: time_ago_in_words(@root_memory.created_at)) %>
+      </time>
     </span>
-    <span class="stat-chip" title="<%= @memory.updated_at.strftime("%B %-d, %Y at %-l:%M %p") %>">
+    <span class="stat-chip">
+      <%= icon_for(:user) %>
+      <%= ownership_label(@memory) %>
+    </span>
+    <% saved_at = version_saved_at(@memory) %>
+    <span class="stat-chip">
       <%= icon_for(:refresh_cw) %>
-      <%= t("memories.show.updated_ago", time: time_ago_in_words(@memory.updated_at)) %>
+      <time datetime="<%= saved_at.iso8601 %>" data-controller="local-time" data-action="turbo:morph@document->local-time#render">
+        <% if @memory.versioned? %>
+          <%= t("memories.show.version_saved_ago", version: @memory.version_label, time: time_ago_in_words(saved_at)) %>
+        <% else %>
+          <%= t("memories.show.updated_ago", time: time_ago_in_words(saved_at)) %>
+        <% end %>
+      </time>
     </span>
     <% if @memory.versioned? %>
       <span class="stat-chip">
@@ -124,11 +138,11 @@
         <%= "version".pluralize(@all_versions.size) %>
       </span>
     <% end %>
-    <% if @memory.links_count > 0 %>
+    <% if @root_memory.links_count > 0 %>
       <a href="#related-memories" class="stat-chip stat-chip-link">
         <%= icon_for(:link) %>
-        <strong><%= @memory.links_count %></strong>
-        <%= t("memories.links.count_noun", count: @memory.links_count) %>
+        <strong><%= @root_memory.links_count %></strong>
+        <%= t("memories.links.count_noun", count: @root_memory.links_count) %>
       </a>
     <% end %>
   </div>
@@ -137,8 +151,14 @@
   <% if @viewing_old_version %>
     <%= render "components/alert", variant: :default, icon: :git_branch, css_classes: "mb-5" do %>
       <%= render "components/alert/title", text: t("memories.show.old_version_title", version: @memory.version_label) %>
-      <%= render "components/alert/description", text: t("memories.show.old_version_description") %>
+      <%= render "components/alert/description", text: t("memories.show.old_version_description", version: current_version.version_label) %>
     <% end %>
+  <% end %>
+
+  <% if @memory.change_note.present? %>
+    <p class="mb-4 text-sm text-muted-foreground">
+      <%= t("memories.show.change_note", version: @memory.version_label, note: @memory.change_note) %>
+    </p>
   <% end %>
 
   <% if @workspace.archived? %>
@@ -154,10 +174,10 @@
   <% end %>
 
   <%# ===== TAGS + VERSION SWITCHER ===== %>
-  <% if @memory.tags.any? || @memory.versioned? %>
+  <% if @memory.version_tags.any? || @memory.versioned? %>
     <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div class="flex flex-wrap gap-1.5">
-        <% @memory.tags.each do |tag| %>
+        <% @memory.version_tags.each do |tag| %>
           <span class="tag-badge">
             <%= icon_for(:tag) %>
             <span class="tag-label"><%= tag %></span>
@@ -186,10 +206,10 @@
 
           <%= render "components/dropdown_menu/content", align: :end, css_classes: "w-44" do %>
             <% @all_versions.each do |version| %>
-              <%= render "components/dropdown_menu/item", href: workspace_memory_path(@workspace, version) do %>
+              <%= render "components/dropdown_menu/item", href: version_page_path(@workspace, version, current: version == current_version) do %>
                 <%= icon_for(:git_branch, class: "size-4") %>
                 <span><%= version.version_label %></span>
-                <% if version.current_version? %>
+                <% if version == current_version %>
                   <span class="ml-auto text-xs text-muted-foreground"><%= t("memories.show.current_label") %></span>
                 <% end %>
               <% end %>
@@ -205,7 +225,7 @@
     <%= render "components/card" do %>
       <%= render "components/card/content" do %>
         <div class="memory-content">
-          <%= sanitize_content @memory.content.body.to_html %>
+          <%= memory_body_html(@memory) %>
         </div>
       <% end %>
     <% end %>
@@ -218,7 +238,7 @@
       <% end %>
       <% if @workspace.active? %>
         <%= render "components/empty/content" do %>
-          <%= link_to edit_workspace_memory_path(@workspace, @memory), data: { component: "button", variant: "secondary" } do %>
+          <%= link_to edit_workspace_memory_path(@workspace, @root_memory, focus: "editor"), data: { component: "button", variant: "secondary" } do %>
             <%= icon_for(:edit, class: "size-4") %>
             <%= t("memories.show.add_content") %>
           <% end %>
@@ -236,9 +256,9 @@
         reader can use to reach the link list. %>
     <h2 id="related-memories-heading" class="ws-group-label mb-3"><%= t("memories.show.related_memories") %></h2>
 
-    <% if @memory.links_count > 0 %>
+    <% if @root_memory.links_count > 0 %>
       <ul class="divide-y divide-border overflow-hidden rounded-lg border border-border">
-        <% @memory.linked_memories.latest_versions.includes(:workspace).order(:title).each do |linked| %>
+        <% @root_memory.linked_memories.latest_versions.includes(:workspace).order(:title).each do |linked| %>
           <% linked_cat = Memory::CATEGORIES.include?(linked.category) ? linked.category : "general" %>
           <% elsewhere = linked.workspace_id != @workspace.id %>
           <li class="memory-row">
@@ -258,7 +278,7 @@
             <% end %>
 
             <% if @workspace.active? && linked.active? && !@viewing_old_version && @unlinkable_memory_ids.include?(linked.id) %>
-              <%= button_to workspace_memory_memory_linking_remove_path(@workspace, @memory, other_id: linked.id),
+              <%= button_to workspace_memory_memory_linking_remove_path(@workspace, @root_memory, other_id: linked.id),
                     method: :delete,
                     class: "mr-remove",
                     form: { class: "contents" },
@@ -289,19 +309,23 @@
         when a search is active, so it survives the page morph with no JS state
         to resync. %>
     <% if @workspace.active? && !@viewing_old_version %>
-      <details class="link-picker mt-3" id="link-picker" <%= "open" if @link_query.present? %>>
+      <details class="link-picker mt-3" id="link-picker" <%= "open" if @link_picker_open %>
+               data-controller="ws-filter"
+               data-action="toggle->ws-filter#focusWhenOpened">
         <summary class="link-picker-summary">
           <%= icon_for(:plus) %>
           <%= t("memories.links.add") %>
         </summary>
 
         <div class="link-picker-body">
-          <%= form_with url: workspace_memory_path(@workspace, @memory), method: :get,
-                        data: { turbo_action: "replace" }, class: "search-field" do %>
+          <%= form_with url: stable_memory_path(@workspace, @memory), method: :get,
+                        data: { turbo_action: "replace", ws_filter_target: "form" }, class: "search-field" do %>
             <%= icon_for(:search) %>
             <label for="link-picker-search" class="sr-only"><%= t("memories.links.search_label") %></label>
             <input id="link-picker-search" type="search" name="link_q" value="<%= @link_query %>"
                    data-component="input" autocomplete="off"
+                   data-ws-filter-target="input"
+                   data-action="input->ws-filter#submit search->ws-filter#submit keydown.esc->ws-filter#clear"
                    placeholder="<%= t("memories.links.search_placeholder") %>">
           <% end %>
 
@@ -317,7 +341,7 @@
                     <span class="mr-title"><%= candidate.display_title %></span>
                     <span class="mr-elsewhere-static"><%= candidate.workspace.name %></span>
                     <%= button_to t("memories.links.link_button"),
-                          workspace_memory_memory_linking_path(@workspace, @memory),
+                          workspace_memory_memory_linking_path(@workspace, @root_memory),
                           params: { to_memory_id: candidate.id },
                           form: { class: "contents" },
                           data: { component: "button", variant: "secondary", size: "sm" } %>
@@ -347,10 +371,8 @@
         <%= render "components/card/content" do %>
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-              <span><%= t("memories.show.current_version_html", version: @memory.version_label) %></span>
-              <% if @memory.child_versions.any? %>
-                <span class="text-muted-foreground"><%= t("memories.show.child_versions_count", count: @memory.child_versions.count) %></span>
-              <% end %>
+              <span><%= t("memories.show.current_version_html", version: current_version.version_label) %></span>
+              <span class="text-muted-foreground"><%= t("memories.show.of_versions", count: @all_versions.size) %></span>
             </div>
             <%= link_to workspace_memory_versions_path(@workspace, @memory), data: { component: "button", variant: "ghost", size: "sm" } do %>
               <%= icon_for(:git_branch, class: "size-4") %>

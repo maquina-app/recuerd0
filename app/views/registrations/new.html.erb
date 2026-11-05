@@ -22,7 +22,12 @@
             placeholder: t("registrations.new.email_placeholder"),
             data: { component: "input" } %>
         <% if @user.errors[:email_address].any? %>
-          <p data-form-part="error" id="<%= form.field_id(:email_address, :error) %>"><%= @user.errors[:email_address].first %></p>
+          <p data-form-part="error" id="<%= form.field_id(:email_address, :error) %>">
+            <%= @user.errors[:email_address].first %>
+            <% if @user.errors.where(:email_address, :taken).any? %>
+              <%= link_to t("registrations.new.sign_in_instead"), new_session_path, class: "underline underline-offset-2" %>
+            <% end %>
+          </p>
         <% end %>
       </div>
 
@@ -33,11 +38,14 @@
             required: true,
             autocomplete: "new-password",
             placeholder: t("registrations.new.password_placeholder"),
+            minlength: 8,
             maxlength: 72,
             spellcheck: "false",
             data: { component: "input" } %>
         <% if @user.errors[:password].any? %>
           <p data-form-part="error" id="<%= form.field_id(:password, :error) %>"><%= @user.errors[:password].first %></p>
+        <% else %>
+          <p class="text-xs text-muted-foreground"><%= t("registrations.new.password_hint") %></p>
         <% end %>
       </div>
 
@@ -53,6 +61,22 @@
             data: { component: "input" } %>
         <% if @user.errors[:password_confirmation].any? %>
           <p data-form-part="error" id="<%= form.field_id(:password_confirmation, :error) %>"><%= @user.errors[:password_confirmation].first %></p>
+        <% end %>
+      </div>
+
+      <div data-form-part="group">
+        <%= form.label :account_name, t("registrations.new.account_name_label"), data: { component: "label" } %>
+        <%= form.text_field :account_name,
+            aria: field_error_aria(form, :account_name),
+            required: true,
+            maxlength: 100,
+            autocomplete: "organization",
+            placeholder: t("registrations.new.account_name_placeholder"),
+            data: { component: "input" } %>
+        <% if @user.errors[:account_name].any? %>
+          <p data-form-part="error" id="<%= form.field_id(:account_name, :error) %>"><%= @user.errors[:account_name].first %></p>
+        <% else %>
+          <p class="text-xs text-muted-foreground"><%= t("registrations.new.account_name_hint") %></p>
         <% end %>
       </div>
 

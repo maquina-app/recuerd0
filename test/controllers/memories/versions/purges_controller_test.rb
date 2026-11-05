@@ -106,7 +106,7 @@ class Memories::Versions::PurgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "memory actions offer purge on a versioned memory, also on an old version" do
-    get workspace_memory_url(@workspace, @root.all_versions.second)
+    get workspace_memory_version_url(@workspace, @root, @root.all_versions.second)
 
     assert_select "a[href='#{new_workspace_memory_versions_purge_path(@workspace, @root)}']", text: /Purge versions/
   end

@@ -3,7 +3,7 @@
     border-color: var(--border) UNLAYERED in card.css, which beats any utility
     living in @layer utilities, so this card rendered with the same grey border
     as the invite card. Same failure mode as the hidden/sm:hidden regression. %>
-<%= render "components/card", css_classes: "card-danger" do %>
+<%= render "components/card", id: "delete-account", css_classes: "card-danger" do %>
   <%= render "components/card/header" do %>
     <%= render "components/card/title", text: t("accounts.danger_zone.title"), css_classes: "text-destructive" %>
   <% end %>
@@ -11,16 +11,30 @@
   <%= render "components/card/content" do %>
     <%= render "components/alert", variant: :destructive, icon: :alert_triangle, css_classes: "mb-4" do %>
       <strong><%= t("accounts.danger_zone.warning_title") %></strong>
-      <p class="mt-1"><%= t("accounts.danger_zone.warning_description") %></p>
+      <p class="mt-1"><%= t("accounts.danger_zone.warning_description", days: SoftDeletable::RETENTION_DAYS) %></p>
     <% end %>
 
-    <%= button_to t("accounts.danger_zone.submit"),
-        account_path,
-        method: :delete,
-        data: {
-          component: "button",
-          variant: "destructive",
-          turbo_confirm: t("accounts.danger_zone.confirm")
-        } %>
+    <%# The password is the confirmation that cannot be clicked through by
+        accident, on the most destructive action in the product. %>
+    <%= form_with url: account_path, method: :delete, data: { component: "form" } do |form| %>
+      <div data-form-part="group">
+        <%= form.label :password, t("accounts.danger_zone.password_label"), data: { component: "label" } %>
+        <%= form.password_field :password,
+            required: true,
+            autocomplete: "current-password",
+            data: { component: "input" } %>
+      </div>
+      <div data-form-part="actions">
+        <%= form.submit t("accounts.danger_zone.submit"),
+            data: {
+              component: "button",
+              variant: "destructive",
+              turbo_confirm: t("accounts.danger_zone.confirm", days: SoftDeletable::RETENTION_DAYS),
+              confirm_severity: "destructive",
+              confirm_title: t("accounts.danger_zone.confirm_title", name: Current.account.name),
+              confirm_button: t("accounts.danger_zone.confirm_button")
+            } %>
+      </div>
+    <% end %>
   <% end %>
 <% end %>

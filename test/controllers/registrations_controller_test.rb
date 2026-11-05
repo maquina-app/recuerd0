@@ -20,6 +20,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_difference ["Account.count", "User.count"], 1 do
       post registration_url, params: {
         user: {
+          account_name: "Acme",
           email_address: "newuser@example.com",
           password: "password123",
           password_confirmation: "password123"
@@ -30,7 +31,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     user = User.find_by(email_address: "newuser@example.com")
     assert user.present?
     assert user.account.present?
-    assert_equal "newuser", user.account.name
+    assert_equal "Acme", user.account.name
     assert_redirected_to workspaces_path
   end
 
@@ -40,6 +41,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference ["Account.count", "User.count"] do
       post registration_url, params: {
         user: {
+          account_name: "Acme",
           email_address: "newuser@example.com",
           password: "password123",
           password_confirmation: "password123"
@@ -53,6 +55,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   test "POST create auto-logs in user" do
     post registration_url, params: {
       user: {
+        account_name: "Acme",
         email_address: "newuser@example.com",
         password: "password123",
         password_confirmation: "password123"
@@ -67,6 +70,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   test "POST create seeds My Workspace with memories" do
     post registration_url, params: {
       user: {
+        account_name: "Acme",
         email_address: "seedtest@example.com",
         password: "password123",
         password_confirmation: "password123"
@@ -83,6 +87,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference "Workspace.count" do
       post registration_url, params: {
         user: {
+          account_name: "Acme",
           email_address: "seedtest@example.com",
           password: "password123",
           password_confirmation: "different"
@@ -95,6 +100,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference ["Account.count", "User.count"] do
       post registration_url, params: {
         user: {
+          account_name: "Acme",
           email_address: "newuser@example.com",
           password: "password123",
           password_confirmation: "different"
@@ -116,6 +122,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference ["Account.count", "User.count"] do
       post registration_url, params: {
         user: {
+          account_name: "Acme",
           email_address: existing_user.email_address,
           password: "password123",
           password_confirmation: "password123"

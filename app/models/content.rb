@@ -8,6 +8,12 @@ class Content < ApplicationRecord
 
   after_save_commit :reindex_memory
 
+  # What an agent reads is the stored source, so it has to be the same document
+  # the editor showed, not just render like it.
+  def body=(value)
+    body.content = value.is_a?(String) ? ActionText::Markdown.separate_fences_from_lists(value) : value
+  end
+
   def self.strip_markdown(text)
     text
       .gsub(/^\#{1,6}\s+/, "")       # headings: "## Title" → "Title"
@@ -24,6 +30,16 @@ class Content < ApplicationRecord
 
   def plain_text
     self.class.strip_markdown(body.content.to_s)
+  end
+
+  # Card and history previews. A leading heading usually repeats the title sitting
+  # right above the preview, so it is left out.
+  def preview_text(title: nil)
+    text = plain_text.gsub(/\n{3,}/, "\n\n").strip
+    first_line, rest = text.split("\n", 2)
+    return text unless title.present? && first_line.to_s.strip.casecmp?(title.strip)
+
+    rest.to_s.strip
   end
 
   private

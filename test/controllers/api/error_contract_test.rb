@@ -185,6 +185,11 @@ class ApiErrorContractTest < ActionDispatch::IntegrationTest
       params: {version: {content: %w[a b]}}.to_json, headers: @headers
     assert_json_error :unprocessable_entity, "VALIDATION_ERROR"
 
+    post workspace_memory_versions_url(@workspace, @memory, format: :json),
+      params: {version: {content: "changed", change_note: %w[a b]}}.to_json, headers: @headers
+    assert_json_error :unprocessable_entity, "VALIDATION_ERROR"
+    assert response.parsed_body.dig("error", "details").key?("change_note")
+
     patch workspace_memory_url(@workspace, @memory, format: :json),
       params: {memory: {tags: "one,two"}}.to_json, headers: @headers
     assert_json_error :unprocessable_entity, "VALIDATION_ERROR"

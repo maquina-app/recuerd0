@@ -1,6 +1,7 @@
 class Profile::AccessTokensController < ApplicationController
   def create
     @access_token = Current.user.access_tokens.manual.build(access_token_params)
+    @access_token.description = t(".default_description", date: l(Date.current, format: :long)) if @access_token.description.blank?
 
     if @access_token.save
       flash[:notice] = t(".created")

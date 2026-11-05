@@ -2,14 +2,18 @@ class Workspace < ApplicationRecord
   include SoftDeletable
   include Archivable
   include Pinnable
+  include Ownable
 
   belongs_to :account
   has_many :memories, dependent: :destroy
   attr_reader :starter_map
 
-  # Send false (or "0") to create a workspace with no seeded map. Anything else,
-  # including a client that never heard of it, gets the map.
+  # Send false (or "0", as the New Workspace form's checkbox does) to create a
+  # workspace with no seeded map. Anything else, including a client that never
+  # heard of it, gets the map.
   attr_accessor :start_with_map
+
+  normalizes :name, with: ->(name) { name.strip }
 
   # Validations
   validates :name, presence: true, length: {maximum: 100}
@@ -93,6 +97,18 @@ class Workspace < ApplicationRecord
     end
   end
 
+  # Whoever owns a workspace can delete it with what is inside, so the confirmation
+  # says when some of that belongs to other people.
+  def memories_of_others_count(user)
+    memories_count - memories.latest_versions.owned_by(user).count
+  end
+
+  # A workspace archived and then deleted carries both timestamps; deleted wins
+  # everywhere, because Deleted is the only place it can be recovered from.
+  def archived?
+    super && !deleted?
+  end
+
   # Check if workspace can be used (not deleted or archived)
   def active?
     !deleted? && !archived?
@@ -112,7 +128,7 @@ class Workspace < ApplicationRecord
       base_url: Rails.application.config.x.app_base_url
     )
     @starter_map = memories.create!(
-      attributes.except(:content).merge(source: "system", default_pinned: true)
+      attributes.except(:content).merge(source: "system", default_pinned: true, created_by: created_by)
     )
     starter_map.create_content!(body: attributes[:content])
 

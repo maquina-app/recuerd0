@@ -2,11 +2,12 @@ class Memory < ApplicationRecord
   include Pinnable
   include Searchable
   include Embeddable
+  include Ownable
 
-  belongs_to :workspace, touch: true, counter_cache: true
+  belongs_to :workspace, touch: true
   belongs_to :parent_memory, class_name: "Memory", optional: true
   has_one :content, dependent: :destroy
-  has_many :child_versions, class_name: "Memory", foreign_key: "parent_memory_id", dependent: :destroy
+  has_many :child_versions, class_name: "Memory", foreign_key: "parent_memory_id", dependent: :destroy, inverse_of: :parent_memory
   # Only the newest child, so a result list can show each memory's current
   # version without loading its history. Preload it; current_version and
   # versioned? read it when loaded.
@@ -19,6 +20,8 @@ class Memory < ApplicationRecord
 
   # Serialize tags as an array - Rails 7+ syntax
   serialize :tags, coder: JSON, type: Array
+  # Null, not empty, until a root's tags part ways with the current version's.
+  serialize :first_version_tags, coder: JSON
 
   # Inherit workspace lifecycle state
   delegate :archived?, :deleted?, :active?, to: :workspace
@@ -170,14 +173,28 @@ class Memory < ApplicationRecord
   validate :tags_within_limits, if: :tags_changed?
   validate :incoming_body_within_limit
 
+  validates :change_note, length: {maximum: 280}
+
   # Callbacks
   before_validation :set_version, on: :create
+  before_validation :drop_repeated_tags
+  # memories_count answers "how many memories", and a version is not a memory,
+  # so this replaces a counter cache that counted every row.
+  after_create :increment_workspace_memories_count, if: :root_version?
+  after_destroy :decrement_workspace_memories_count, if: :root_version?
 
+  # Every door refuses an empty memory, so one can never reach an agent. Direct
+  # memories.create! is reserved for system-authored rows.
   def self.create_with_content(workspace, attributes)
     memory = workspace.memories.build(
-      attributes.slice(:title, :tags, :source, :category, :default_pinned).compact
+      attributes.slice(:title, :tags, :source, :category, :default_pinned, :created_by).compact
     )
     memory.incoming_body = attributes[:content]
+
+    if attributes[:title].blank? && attributes[:content].blank?
+      memory.errors.add(:base, :blank_memory)
+      return memory
+    end
 
     transaction do
       memory.save!
@@ -222,9 +239,33 @@ class Memory < ApplicationRecord
     workspace.active?
   end
 
+  def ownership_record
+    root_memory
+  end
+
+  # Delete is the one thing a workspace's owner can do to what others put in it.
+  def deletable_by?(user)
+    manageable_by?(user) || workspace.owned_by?(user)
+  end
+
+  # What this version itself held. A root row's own columns follow the current
+  # version, for filters and rollups, so v1 has to answer from what it kept.
+  def version_tags
+    first_version_tags || tags
+  end
+
+  def version_category
+    first_version_category || category
+  end
+
   # Check if this is the root version (no parent)
   def root_version?
     parent_memory_id.nil?
+  end
+
+  # The id a person links to: the root's URL always opens the current version.
+  def stable_id
+    parent_memory_id || id
   end
 
   # Get the root memory (parent of all versions)
@@ -286,9 +327,11 @@ class Memory < ApplicationRecord
     new_version = root.child_versions.build(
       workspace: root.workspace,
       title: attributes[:title] || title,
-      tags: attributes[:tags] || tags,
+      tags: attributes[:tags] || version_tags,
       source: attributes[:source] || source,
-      category: attributes[:category].presence || category
+      category: attributes[:category].presence || version_category,
+      created_by: attributes[:created_by],
+      change_note: attributes[:change_note].presence
     )
     new_version.incoming_body = attributes[:content]
 
@@ -312,6 +355,66 @@ class Memory < ApplicationRecord
     new_version
   end
 
+  # Fingerprint of the current text and fields, carried by the edit form to notice
+  # that someone saved while this person was typing. Includes the id, so a new
+  # version by anyone counts.
+  def edit_digest
+    Digest::SHA256.hexdigest([id, title, source, category, tags, content&.body&.content.to_s].to_json)
+  end
+
+  # The editor's "Save as new version": the new version, or nil with the reason in
+  # errors. Unlike create_version!, whose callers may legitimately copy (restore,
+  # or an API client relying on inherited fields), this one refuses a version that
+  # records nothing and a blank overwrite of existing content.
+  def save_as_new_version(attributes)
+    if attributes.key?(:content) && attributes[:content].blank? && content&.body&.content.present?
+      errors.add(:content, :blank_overwrite)
+    elsif !differs_from?(attributes)
+      errors.add(:base, :no_changes)
+    else
+      version = create_version!(attributes)
+      version.errors.each { |error| errors.add(error.attribute, error.message) }
+    end
+
+    version if errors.empty?
+  end
+
+  # REST and MCP's way in: the same as create_version!, unless the result would
+  # repeat the current version. That adds a row to the history and tells a reader
+  # nothing, and it is what a retrying agent produces. `ignoring` is for fields the
+  # caller did not choose: MCP stamps every call with the client's name as its source.
+  def create_changed_version(attributes, ignoring: [])
+    return create_version!(attributes) unless repeats_current_version?(attributes.except(*ignoring))
+
+    Memory.new.tap { |version| version.errors.add(:base, :no_changes) }
+  end
+
+  # What this row would become with these attributes, as create_version! fills them:
+  # a nil or a blank category inherits. Versioning an older row with no changes is
+  # not a repeat, because the result differs from the current version.
+  def repeats_current_version?(attributes)
+    given = attributes.compact
+    given = given.except(:category) if given[:category].blank?
+    inherited = {title: title, source: source, category: version_category, tags: version_tags, content: content&.body&.content.to_s}
+
+    !root_memory.current_version.differs_from?(inherited.merge(given))
+  end
+
+  # Compares what would be stored, so text the save normalizes and tags differing
+  # only in case do not read as changes.
+  def differs_from?(attributes)
+    %i[title source category].any? { |field| attributes.key?(field) && attributes[field].to_s != self[field].to_s } ||
+      (attributes.key?(:tags) && self.class.distinct_tags(attributes[:tags]) != self.class.distinct_tags(tags)) ||
+      (attributes.key?(:content) &&
+        ActionText::Markdown.separate_fences_from_lists(attributes[:content]) != content&.body&.content.to_s)
+  end
+
+  # Search and filters treat tags by name, so Deploy and deploy are one tag, and so are
+  # " ops " and ops. The first spelling wins.
+  def self.distinct_tags(tags)
+    Array(tags).map { |tag| tag.to_s.strip }.compact_blank.uniq(&:downcase)
+  end
+
   # Keep the root row's category in sync with the current (latest) version's.
   # The root's category is what DB-level filters (by_category) and rollups
   # (group(:category)) read, but every surface displays resolve_current_version's
@@ -320,7 +423,9 @@ class Memory < ApplicationRecord
   def sync_root_category!
     root = root_memory
     current_category = root.current_version.category
-    root.update_column(:category, current_category) if root.category != current_category
+    return if root.category == current_category
+
+    root.update_columns(category: current_category, first_version_category: root.version_category)
   end
 
   # Keep the root row's tags in sync with the current (latest) version's.
@@ -331,12 +436,35 @@ class Memory < ApplicationRecord
   def sync_root_tags!
     root = root_memory
     current_tags = root.current_version.tags
-    root.update_column(:tags, current_tags) if root.tags != current_tags
+    return if root.tags == current_tags
+
+    root.update_columns(tags: current_tags, first_version_tags: root.version_tags)
+  end
+
+  # What changed besides the body, as [field, before, after]. A root that kept no first
+  # version value either never differed or dates from before it was kept, and in both
+  # cases its own columns say nothing about v1.
+  def field_changes_from(previous)
+    known = if previous.root_version?
+      {category: previous.first_version_category, tags: previous.first_version_tags}.compact
+    else
+      {category: previous.category, tags: previous.tags}
+    end
+
+    {title: previous.title, source: previous.source, **known}.filter_map do |field, before|
+      after = self[field]
+      [field, before, after] if before.presence != after.presence
+    end
   end
 
   # Human-readable version label
   def version_label
     "v#{version}"
+  end
+
+  # Numbers only ever go up, even after a purge.
+  def next_version_label
+    "v#{root_memory.all_versions.maximum(:version).to_i + 1}"
   end
 
   # Ruby-side twin of the without_obsolete scope, for views and for the
@@ -374,7 +502,8 @@ class Memory < ApplicationRecord
       root.adopt_pins_from(Memory.where(id: removed_ids))
       root.adopt_links_from(removed_ids, version_ids: versions.map(&:id))
 
-      root.update!(anchor.slice(:title, :tags, :source, :category, :version, :created_at))
+      root.update!(anchor.slice(:title, :tags, :source, :category, :version, :created_at)
+        .merge(first_version_tags: nil, first_version_category: nil))
       body = anchor.content&.body&.content.to_s
       root.content ? root.content.update!(body: body) : root.create_content!(body: body)
 
@@ -427,6 +556,8 @@ class Memory < ApplicationRecord
 
   # Cross-workspace "see also" links
   def linked_memory_ids
+    return root_memory.linked_memory_ids if parent_memory_id
+
     outgoing_links.pluck(:to_memory_id) + incoming_links.pluck(:from_memory_id)
   end
 
@@ -437,7 +568,10 @@ class Memory < ApplicationRecord
     Memory.where(id: linked_memory_ids).in_undeleted_workspaces.includes(:content, :workspace)
   end
 
+  # Links live on the root, so a version reports its memory's count.
   def links_count
+    return root_memory.links_count if parent_memory_id
+
     outgoing_links.size + incoming_links.size
   end
 
@@ -462,6 +596,28 @@ class Memory < ApplicationRecord
     return if incoming_body.to_s.bytesize <= MAX_CONTENT_BYTES
 
     errors.add(:content, :too_long, count: "1 MB")
+  end
+
+  def drop_repeated_tags
+    self.tags = self.class.distinct_tags(tags)
+  end
+
+  def increment_workspace_memories_count
+    adjust_workspace_memories_count(1)
+  end
+
+  def decrement_workspace_memories_count
+    adjust_workspace_memories_count(-1)
+  end
+
+  # Keeps the loaded workspace honest too, as a counter cache would, without
+  # leaving it dirty.
+  def adjust_workspace_memories_count(by)
+    Workspace.update_counters(workspace_id, memories_count: by)
+    return if workspace.frozen?
+
+    workspace[:memories_count] += by
+    workspace.clear_attribute_changes([:memories_count])
   end
 
   def set_version
