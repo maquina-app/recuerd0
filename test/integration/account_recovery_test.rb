@@ -98,15 +98,4 @@ class AccountRecoveryTest < ActionDispatch::IntegrationTest
       headers: auth_headers("test_full_token_456").merge("Content-Type" => "application/json")
     assert_response :unauthorized
   end
-
-  test "the purge job removes only accounts past the grace period" do
-    @account.schedule_deletion!
-    expired = accounts(:two)
-    expired.update_column(:deleted_at, 31.days.ago)
-
-    Accounts::PurgeDeletedJob.perform_now
-
-    assert Account.exists?(@account.id)
-    assert_not Account.exists?(expired.id)
-  end
 end

@@ -115,7 +115,7 @@ Members delete, archive and purge only what they created; admins can do it to an
 
 ### Account deletion
 
-`Account#schedule_deletion!` locks the account and keeps every row and email for `RETENTION_DAYS`; signing in lands on `Account::RecoveriesController` (Restore, Export), the only place besides sign-out that `allow_deleted_account` opens. `Accounts::PurgeDeletedJob` ends it. `Account#purge!` destroys workspaces one by one first, because `dependent: :destroy` would only soft-delete them.
+`Account#schedule_deletion!` locks the account and keeps every row and email for `RETENTION_DAYS`; signing in lands on `Account::RecoveriesController` (Restore, Export), the only place besides sign-out that `allow_deleted_account` opens. `Accounts::PurgeDeletedJob` (hourly) ends it, for deleted workspaces too, once `RETENTION_DAYS` have passed. `Account#purge!` destroys workspaces one by one first, because `dependent: :destroy` would only soft-delete them.
 
 ### Asset Paths
 

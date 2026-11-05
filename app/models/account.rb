@@ -100,8 +100,6 @@ class Account < ApplicationRecord
     (deleted_at + RETENTION_DAYS.days).to_date
   end
 
-  scope :past_retention, -> { deleted.where(deleted_at: ...RETENTION_DAYS.days.ago) }
-
   # The end of the grace period. Workspaces first, one by one: dependent: :destroy
   # would only soft-delete them (SoftDeletable#destroy) and then trip the foreign
   # key on accounts.
