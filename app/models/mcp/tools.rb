@@ -78,6 +78,8 @@ module Mcp
       include_obsolete = include_obsolete?(args)
       limit = clamp_limit(args["limit"])
       offset = [args["offset"].to_i, 0].max
+      raise ToolError, "query must be a string" unless args["query"].nil? || args["query"].is_a?(String)
+
       query = Memory.normalize_search_query(args["query"])
 
       retrieval = resolve_retrieval(args)
@@ -489,8 +491,14 @@ module Mcp
     end
     private_class_method :parse_tags
 
+    # find_by would happily read [12] as 12, which REST refuses.
+    def one_id(value)
+      value if value.is_a?(String) || value.is_a?(Integer)
+    end
+    private_class_method :one_id
+
     def find_workspace(account, workspace_id)
-      account.workspaces.active.find_by(id: workspace_id) ||
+      account.workspaces.active.find_by(id: one_id(workspace_id)) ||
         raise(ToolError, "Workspace not found")
     end
     private_class_method :find_workspace
@@ -502,7 +510,7 @@ module Mcp
       Memory.joins(:workspace)
         .where(workspaces: {account_id: account.id, deleted_at: nil})
         .latest_versions
-        .find_by(id: memory_id) ||
+        .find_by(id: one_id(memory_id)) ||
         raise(ToolError, "Memory not found")
     end
     private_class_method :find_memory
@@ -510,7 +518,7 @@ module Mcp
     def find_memory_for_update(account, memory_id)
       Memory.joins(:workspace)
         .where(workspaces: {account_id: account.id, deleted_at: nil})
-        .find_by(id: memory_id) ||
+        .find_by(id: one_id(memory_id)) ||
         raise(ToolError, "Memory not found")
     end
     private_class_method :find_memory_for_update

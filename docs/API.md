@@ -84,7 +84,7 @@ List endpoints take `page` (default 1) and report their position in `X-Page`, `X
 
 A limit applies to a value you set. An older memory can hold more than these from before they existed: editing it or adding a version that leaves the value alone still works.
 
-A query parameter sent as a list or an object, such as `tags[]=x`, is a `422`. Only `include` also accepts a list.
+A query parameter sent as a list or an object, such as `tags[]=x`, is a `422`. Only `include` also accepts a list. A `per_page` or `limit` that isn't a positive integer falls back to its default.
 
 Going over a limit is a `422` naming the field. Limits apply when a value changes, so an older row over a limit can still be edited in other ways.
 

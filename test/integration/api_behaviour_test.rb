@@ -426,6 +426,82 @@ class ApiBehaviourTest < ActionDispatch::IntegrationTest
     assert_equal 1, memory.current_version.version
   end
 
+  # A refused save and the editor
+
+  test "the editor survives a morph, and each memory has its own" do
+    sign_in_as users(:one)
+    one = Memory.create_with_content(@workspace, title: "One", content: "b")
+    two = Memory.create_with_content(@workspace, title: "Two", content: "b")
+
+    get edit_workspace_memory_url(@workspace, one)
+    assert_select "house-md[data-turbo-permanent][id=?]", "editor_memory_#{one.id}"
+
+    get edit_workspace_memory_url(@workspace, two)
+    assert_select "house-md[data-turbo-permanent][id=?]", "editor_memory_#{two.id}"
+
+    get new_workspace_memory_url(@workspace)
+    assert_select "house-md[data-turbo-permanent][id]"
+  end
+
+  test "a refused new memory keeps everything the person typed" do
+    sign_in_as users(:one)
+
+    assert_no_difference "Memory.count" do
+      post workspace_memories_url(@workspace),
+        params: {memory: {title: "Typed title", content: "typed body", source: "typed source", tags: ["x" * 101]}}
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "[data-form-part=error]", text: /limited to 100 characters/
+    assert_select "house-md", text: /typed body/
+    assert_select "input[name='memory[title]'][value=?]", "Typed title"
+    assert_select "input[name='memory[source]'][value=?]", "typed source"
+  end
+
+  test "a refused update in place keeps everything the person typed" do
+    sign_in_as users(:one)
+    memory = Memory.create_with_content(@workspace, title: "Saved title", content: "saved body")
+
+    patch workspace_memory_url(@workspace, memory),
+      params: {memory: {title: "Typed title", content: "typed body", tags: Array.new(51) { |n| "t#{n}" }}}
+
+    assert_response :unprocessable_entity
+    assert_select "house-md", text: /typed body/
+    assert_select "input[name='memory[title]'][value=?]", "Typed title"
+    assert_equal "saved body", memory.reload.content.body.content
+  end
+
+  test "content over the limit says so, not that it is blank" do
+    sign_in_as users(:one)
+    memory = Memory.create_with_content(@workspace, title: "Sized", content: "b")
+
+    patch workspace_memory_url(@workspace, memory),
+      params: {save_as: "new_version", memory: {title: "Sized", content: "x" * (Memory::MAX_CONTENT_BYTES + 1)}}
+
+    assert_response :unprocessable_entity
+    assert_select "[data-form-part=error]", text: /Content is too long/
+    assert_select "[data-form-part=error]", text: /blank/, count: 0
+  end
+
+  test "the form carries the copy for the app's own leave dialog" do
+    sign_in_as users(:one)
+
+    get new_workspace_memory_url(@workspace)
+
+    assert_select "form.memory-form[data-confirm-title=?]", I18n.t("memories.form.status.leave_title")
+    assert_select "form.memory-form[data-confirm-button=?]", I18n.t("memories.form.status.leave_button")
+    assert_select "form.memory-form[data-memory-editor-editor-lost-label-value=?]", I18n.t("memories.form.status.editor_lost")
+  end
+
+  test "the tag box knows the limits before anything is submitted" do
+    sign_in_as users(:one)
+
+    get new_workspace_memory_url(@workspace)
+
+    assert_select "[data-controller=tag-input][data-tag-input-max-tags-value=?]", Memory::MAX_TAGS.to_s
+    assert_select "[data-controller=tag-input][data-tag-input-max-length-value=?]", Memory::MAX_TAG_LENGTH.to_s
+  end
+
   # Bad requests from a browser
 
   test "a browser with a bad page gets the first page" do

@@ -21,7 +21,7 @@ module ApiHelpers
   # a bad link just gets the first page.
   def requested_page
     page = params[:page]
-    return 1 if page.blank?
+    return 1 if page.nil?
     return page.to_i if page.is_a?(String) && page.match?(/\A[1-9]\d*\z/) && page.to_i <= MAX_PAGE
     raise InvalidPage if api_request?
 

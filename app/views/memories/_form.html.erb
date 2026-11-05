@@ -23,7 +23,11 @@
         memory_editor_focus_editor_value: params[:focus] == "editor",
         memory_editor_start_dirty_value: memory.errors.any? && memory.errors.where(:base, :no_changes).none?,
         memory_editor_unsaved_label_value: t("memories.form.status.unsaved"),
-        memory_editor_unload_prompt_value: t("memories.form.status.unload_prompt")
+        memory_editor_unload_prompt_value: t("memories.form.status.unload_prompt"),
+        memory_editor_editor_lost_label_value: t("memories.form.status.editor_lost"),
+        confirm_title: t("memories.form.status.leave_title"),
+        confirm_button: t("memories.form.status.leave_button"),
+        confirm_severity: "warning"
       } do |form| %>
     <%# What the person started from, to notice a save by anyone else since. %>
     <%= hidden_field_tag :edit_base, edit_base, id: nil if edit_base %>
@@ -105,7 +109,8 @@
       <%# Tags — full width below; chips use the tag-badge vocabulary %>
       <div class="min-w-0" data-form-part="group">
         <%= form.label :tags, for: "memory_tags_entry", data: { component: "label" } %>
-        <%= render "application/components/tag_input", form: form, field: :tags, value: memory.tags %>
+        <%= render "application/components/tag_input", form: form, field: :tags, value: memory.tags,
+              max_tags: Memory::MAX_TAGS, max_length: Memory::MAX_TAG_LENGTH %>
         <% if memory.errors[:tags].any? %>
           <p data-form-part="error"><%= memory.errors.full_messages_for(:tags).first %></p>
         <% end %>
@@ -135,20 +140,26 @@
       <%= render "shared/house_toolbar" %>
       <%# The editor adds its own inner .house-md-content contenteditable; these
           classes size/scroll the host. Content is read from the inner text.
+          Permanent, because a failed save comes back as a morph, which would wipe the
+          editable area and hidden input it builds once on connect, and the next save
+          would then send no content at all. The id is per memory because permanent
+          elements are matched by id across pages, so one memory's text can't follow
+          the person into another's form.
           The placeholder is a sibling rather than a ::before on the
           contenteditable: House MD renders an empty line element into it, so
           :empty never matches and the controller toggles data-empty instead. %>
       <div class="editor-well relative flex-1 min-h-0 flex flex-col">
         <%= tag.house_md memory.content&.body&.content.to_s,
+            id: dom_id(memory, :editor),
             name: "memory[content]",
             toolbar: "house_toolbar",
-            data: { memory_editor_target: "editor" },
+            data: { memory_editor_target: "editor", turbo_permanent: true },
             class: "flex-1 min-h-0 overflow-y-auto p-3 text-sm" %>
         <p class="editor-placeholder" aria-hidden="true"><%= t("memories.form.content_placeholder") %></p>
       </div>
     </div>
     <% if memory.errors[:content].any? %>
-      <p data-form-part="error" class="shrink-0"><%= t("memories.form.content_blank") %></p>
+      <p data-form-part="error" class="shrink-0"><%= memory.errors.full_messages_for(:content).first %></p>
     <% end %>
 
     <%# The one action row. Absolutely positioned into the header on sm+; a

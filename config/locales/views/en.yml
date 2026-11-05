@@ -240,7 +240,8 @@ en:
       title_placeholder: "Untitled Memory"
       source_placeholder: "e.g., Claude, Book Title, URL..."
       content_placeholder: "Markdown is supported."
-      content_blank: "Content can't be blank when overwriting existing content."
+      tags_too_many: "A memory can have up to %{count} tags. Remove one to add another."
+      tag_too_long: "A tag can be up to %{count} characters."
       cancel: "Cancel"
       create: "Create"
       save_as_new_version: "Save as new version"
@@ -252,6 +253,9 @@ en:
       status:
         unsaved: "Unsaved changes"
         unload_prompt: "You have unsaved changes. Leave this page and lose them?"
+        leave_title: "Leave without saving?"
+        leave_button: "Leave"
+        editor_lost: "The editor stopped working, so nothing was saved. Copy your text, then reload the page."
       toolbar:
         mod: "Ctrl+"
         bold: "Bold"

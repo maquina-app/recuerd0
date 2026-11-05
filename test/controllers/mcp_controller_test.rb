@@ -907,6 +907,19 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_empty memory.reload.tags
   end
 
+  test "a query or an id sent as a list is refused like REST refuses it" do
+    a = Memory.create_with_content(@workspace, title: "A", content: "b")
+    b = Memory.create_with_content(@workspace, title: "B", content: "b")
+
+    assert_tool_error "query must be a string", "list_memories", {workspace_id: @workspace.id.to_s, query: ["a"]}, token: @full_token.raw_token
+    assert_tool_error "Workspace not found", "list_memories", {workspace_id: [@workspace.id.to_s]}, token: @full_token.raw_token
+
+    assert_no_difference "MemoryLink.count" do
+      assert_tool_error "Memory not found", "link_memories", {memory_id: a.id.to_s, to_memory_id: [b.id]}, token: @full_token.raw_token
+      assert_tool_error "Memory not found", "link_memories", {memory_id: [a.id], to_memory_id: b.id.to_s}, token: @full_token.raw_token
+    end
+  end
+
   test "link_memories says plainly when a pair is already linked" do
     a = Memory.create_with_content(@workspace, title: "A", content: "b")
     b = Memory.create_with_content(@workspace, title: "B", content: "b")

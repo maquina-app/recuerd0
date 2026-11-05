@@ -169,7 +169,7 @@
       <div class="api-section" id="pagination-limits">
         <div class="resource-header">
           <h2>Pagination and Limits</h2>
-          <p>Lists report their position in <code>X-Page</code>, <code>X-Per-Page</code>, <code>X-Total</code>, <code>X-Total-Pages</code> and <code>Link</code> headers. A <code>page</code> past the end returns an empty list. A <code>page</code> that isn't a positive integer is a <code>422</code>, and so is any query parameter sent as a list or an object, such as <code>tags[]=x</code>; only <code>include</code> also accepts a list. A limit applies to a value you set: a new version can carry forward an older value over it.</p>
+          <p>Lists report their position in <code>X-Page</code>, <code>X-Per-Page</code>, <code>X-Total</code>, <code>X-Total-Pages</code> and <code>Link</code> headers. A <code>page</code> past the end returns an empty list. A <code>page</code> that isn't a positive integer is a <code>422</code>, and so is any query parameter sent as a list or an object, such as <code>tags[]=x</code>; only <code>include</code> also accepts a list. A <code>per_page</code> or <code>limit</code> that isn't a positive integer falls back to its default. A limit applies to a value you set: a new version can carry forward an older value over it.</p>
         </div>
         <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Field</th><th>Limit</th></tr></thead>

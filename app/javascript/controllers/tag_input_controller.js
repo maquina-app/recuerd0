@@ -1,8 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["input", "hiddenInputs"]
-  static values = { field: String }
+  static targets = ["input", "hiddenInputs", "error"]
+  static values = { field: String, maxTags: Number, maxLength: Number, tooManyMessage: String, tooLongMessage: String }
 
   connect() {
     this.tags = this.getCurrentTags()
@@ -31,7 +31,13 @@ export default class extends Controller {
 
     if (!tagName) return
 
-    if (!this.tags.some(tag => tag.toLowerCase() === tagName.toLowerCase())) {
+    // Say so here rather than at save, and leave what was typed in the box to fix.
+    const isNew = !this.tags.some(tag => tag.toLowerCase() === tagName.toLowerCase())
+    if (this.maxLengthValue && tagName.length > this.maxLengthValue) return this.showError(this.tooLongMessageValue)
+    if (isNew && this.maxTagsValue && this.tags.length >= this.maxTagsValue) return this.showError(this.tooManyMessageValue)
+
+    this.clearError()
+    if (isNew) {
       this.tags.push(tagName)
       this.renderTag(tagName)
       this.updateHiddenInputs()
@@ -47,6 +53,7 @@ export default class extends Controller {
       this.tags.splice(index, 1)
       event.currentTarget.closest("span").remove()
       this.updateHiddenInputs()
+      this.clearError()
     }
   }
 
@@ -60,6 +67,20 @@ export default class extends Controller {
       }
       this.updateHiddenInputs()
     }
+  }
+
+  showError(message) {
+    if (!this.hasErrorTarget) return
+
+    this.errorTarget.textContent = message
+    this.errorTarget.hidden = false
+  }
+
+  clearError() {
+    if (!this.hasErrorTarget) return
+
+    this.errorTarget.textContent = ""
+    this.errorTarget.hidden = true
   }
 
   getCurrentTags() {

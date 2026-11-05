@@ -80,7 +80,7 @@ class ApiErrorContractTest < ActionDispatch::IntegrationTest
   end
 
   test "a page that can't be read is a 422 however it is written" do
-    %w[1.5 1e3 9223372036854775807 100000000000000000000].each do |page|
+    ["1.5", "1e3", "9223372036854775807", "100000000000000000000", "", " "].each do |page|
       get workspaces_url(format: :json), params: {page: page}, headers: @headers
 
       assert_json_error :unprocessable_entity, "VALIDATION_ERROR", page
@@ -113,6 +113,14 @@ class ApiErrorContractTest < ActionDispatch::IntegrationTest
 
       assert_json_error :unprocessable_entity, "VALIDATION_ERROR", url
     end
+  end
+
+  test "a min_score that isn't a number is a 422 rather than the lowest score" do
+    get workspace_merge_candidates_url(@workspace, format: :json), params: {min_score: "abc"}, headers: @headers
+    assert_json_error :unprocessable_entity, "VALIDATION_ERROR"
+
+    get workspace_merge_candidates_url(@workspace, format: :json), params: {min_score: "0.5"}, headers: @headers
+    assert_response :success
   end
 
   test "a query string that isn't valid UTF-8 is a JSON 400" do

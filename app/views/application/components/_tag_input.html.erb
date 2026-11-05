@@ -1,9 +1,13 @@
-<%# locals: (form:, field:, value: []) %>
+<%# locals: (form:, field:, value: [], max_tags: nil, max_length: nil) %>
 <% entry_id = "#{form.object_name}_#{field}_entry" %>
 
 <div
   data-controller="tag-input"
   data-tag-input-field-value="<%= form.object_name %>[<%= field %>]"
+  data-tag-input-max-tags-value="<%= max_tags %>"
+  data-tag-input-max-length-value="<%= max_length %>"
+  data-tag-input-too-many-message-value="<%= t("memories.form.tags_too_many", count: max_tags) %>"
+  data-tag-input-too-long-message-value="<%= t("memories.form.tag_too_long", count: max_length) %>"
 >
   <div
     class="
@@ -46,9 +50,11 @@
       placeholder="Add a tag"
       autocomplete="off"
       data-tag-input-target="input"
-      data-action="keydown->tag-input#handleKeydown"
+      data-action="keydown->tag-input#handleKeydown input->tag-input#clearError"
     >
   </div>
+
+  <p data-form-part="error" data-tag-input-target="error" aria-live="polite" hidden></p>
 
   <%# Hidden inputs for form submission %>
   <div data-tag-input-target="hiddenInputs">

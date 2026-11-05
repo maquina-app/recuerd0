@@ -83,6 +83,7 @@ class MemoriesController < ApplicationController
     else
       respond_to do |format|
         format.html do
+          keep_what_was_typed
           flash.now[:alert] = t(".errors")
           render :new, status: :unprocessable_entity
         end
@@ -123,7 +124,7 @@ class MemoriesController < ApplicationController
     else
       respond_to do |format|
         format.html do
-          keep_what_was_typed if save_as_new_version?
+          keep_what_was_typed
           flash.now[:alert] = t(".errors")
           render :edit, status: :unprocessable_entity
         end
@@ -182,7 +183,13 @@ class MemoriesController < ApplicationController
     attributes = memory_params
 
     @memory.assign_attributes(attributes.slice(:title, :source, :category, :tags))
-    (@memory.content || @memory.build_content).body.content = attributes[:content] if attributes.key?(:content)
+    return unless attributes.key?(:content)
+
+    if @memory.content
+      @memory.content.body.content = attributes[:content]
+    else
+      @memory.build_content(body: attributes[:content])
+    end
   end
 
   # Overwriting can erase someone's work as surely as deleting it. Anyone can add a
