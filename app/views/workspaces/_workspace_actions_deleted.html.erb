@@ -1,23 +1,28 @@
 <%# locals: (workspace:) -%>
-<%= render "components/dropdown_menu/item",
-    href: restore_deleted_workspace_path(workspace),
-    data: { turbo_method: :post } do %>
-  <%= icon_for(:rotate_ccw, class: "w-4 h-4") %>
-  <%= t("workspaces.actions.restore") %>
-<% end %>
+<% if workspace.manageable_by?(Current.user) %>
+  <%= render "components/dropdown_menu/item",
+      href: restore_deleted_workspace_path(workspace),
+      data: { turbo_method: :post } do %>
+    <%= icon_for(:rotate_ccw, class: "w-4 h-4") %>
+    <%= t("workspaces.actions.restore") %>
+  <% end %>
 
-<%= render "components/dropdown_menu/separator" %>
+  <%= render "components/dropdown_menu/separator" %>
 
-<%= render "components/dropdown_menu/item",
-    href: destroy_deleted_workspace_path(workspace),
-    variant: :destructive,
-    data: {
-      turbo_method: :delete,
-      turbo_confirm: t("workspaces.actions.confirm.destroy_body", count: workspace.memories_count),
-      confirm_severity: "destructive",
-      confirm_title: t("workspaces.actions.confirm.destroy_title", name: workspace.name),
-      confirm_button: t("workspaces.actions.confirm.destroy_button")
-    } do %>
-  <%= icon_for(:trash, class: "w-4 h-4") %>
-  <%= t("workspaces.actions.delete_permanently") %>
+  <%= render "components/dropdown_menu/item",
+      href: destroy_deleted_workspace_path(workspace),
+      variant: :destructive,
+      data: {
+        turbo_method: :delete,
+        turbo_confirm: [
+          t("workspaces.actions.confirm.destroy_body", count: workspace.memories_count),
+          memories_of_others_warning(workspace)
+        ].compact.join(" "),
+        confirm_severity: "destructive",
+        confirm_title: t("workspaces.actions.confirm.destroy_title", name: workspace.name),
+        confirm_button: t("workspaces.actions.confirm.destroy_button")
+      } do %>
+    <%= icon_for(:trash, class: "w-4 h-4") %>
+    <%= t("workspaces.actions.delete_permanently") %>
+  <% end %>
 <% end %>

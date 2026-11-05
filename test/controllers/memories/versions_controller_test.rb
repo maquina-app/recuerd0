@@ -13,20 +13,28 @@ class Memories::VersionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "index renders branch buttons when the memory has other versions" do
+  test "index offers restore on every version except the current one" do
     child = @memory.create_version!(content: "v2 body")
 
     get workspace_memory_versions_url(@workspace, @memory)
 
     assert_response :success
-    assert_select "form[action=?]", workspace_memory_versions_path(@workspace, child)
-    assert_select "form[action=?]", workspace_memory_versions_path(@workspace, @memory)
+    assert_select "form[action=?]", workspace_memory_version_restoration_path(@workspace, @memory, @memory), text: /Restore as new version/
+    assert_select "form[action=?]", workspace_memory_version_restoration_path(@workspace, @memory, child), count: 0
   end
 
   test "create makes new version" do
     assert_difference("Memory.count") do
+      post workspace_memory_versions_url(@workspace, @memory), params: {version: {title: "Changed"}}
+    end
+  end
+
+  test "a request that isn't JSON is refused the same way when nothing changed" do
+    assert_no_difference("Memory.count") do
       post workspace_memory_versions_url(@workspace, @memory)
     end
+
+    assert_equal I18n.t("memories.versions.create.failed"), flash[:alert]
   end
 
   test "create version via json with custom title and content" do

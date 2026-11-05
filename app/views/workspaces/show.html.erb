@@ -55,8 +55,10 @@
               fix one click away rather than three levels into a kebab menu. %>
           <p class="mt-1 text-sm text-muted-foreground">
             <%= t("workspaces.show.no_description") %>
-            <%= link_to t("workspaces.show.add_description"), edit_workspace_path(@workspace),
-                  class: "underline underline-offset-2 hover:text-foreground" %>
+            <% if @workspace.manageable_by?(Current.user) %>
+              <%= link_to t("workspaces.show.add_description"), edit_workspace_path(@workspace),
+                    class: "underline underline-offset-2 hover:text-foreground" %>
+            <% end %>
           </p>
         <% end %>
 
@@ -65,7 +67,7 @@
             landed on your clipboard, and left nothing to select by hand when
             the Clipboard API is unavailable on a plain-http install. %>
         <p class="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span class="sr-only"><%= t("workspaces.show.workspace_id_label") %></span>
+          <span><%= t("workspaces.show.workspace_id_label") %></span>
           <code class="ws-id font-mono select-all"><%= @workspace.id %></code>
         </p>
 
@@ -106,6 +108,7 @@
         <%= render "shared/pin_button", pinnable: @workspace %>
       <% end %>
 
+      <% if workspace_actions?(@workspace) %>
       <%= render "components/dropdown_menu", auto_close: true do %>
         <%= render "components/dropdown_menu/trigger", as_child: true do %>
           <button
@@ -126,6 +129,7 @@
         <%= render "components/dropdown_menu/content", align: :end, css_classes: "w-48" do %>
           <%= render "workspaces/workspace_actions", workspace: @workspace %>
         <% end %>
+      <% end %>
       <% end %>
     </div>
   </div>

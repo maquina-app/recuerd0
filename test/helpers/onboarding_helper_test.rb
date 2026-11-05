@@ -5,6 +5,7 @@ class OnboardingHelperTest < ActionView::TestCase
 
   setup do
     @user = Account.create_with_user(
+      account_name: "Test account",
       email_address: "onboarding-helper@example.com",
       password: "password",
       password_confirmation: "password"
@@ -21,6 +22,7 @@ class OnboardingHelperTest < ActionView::TestCase
   test "onboarding state matrix keeps connection paths, content, and dismissal independent" do
     [false, true].repeated_permutation(4).each_with_index do |(manual, oauth, content, dismissed), index|
       user = Account.create_with_user(
+        account_name: "Test account",
         email_address: "onboarding-matrix-#{index}@example.com",
         password: "password",
         password_confirmation: "password"
@@ -57,7 +59,7 @@ class OnboardingHelperTest < ActionView::TestCase
     end
   end
 
-  test "content is account-wide while agent connection is user-specific" do
+  test "content and agent connection are both per person" do
     Memory.create_with_content(
       @workspace,
       title: "User content",
@@ -72,8 +74,8 @@ class OnboardingHelperTest < ActionView::TestCase
     Current.user = teammate
 
     assert_not onboarding_agent_connected?
-    assert onboarding_first_content?
-    assert_equal 1, onboarding_completed_count
+    assert_not onboarding_first_content?
+    assert_equal 0, onboarding_completed_count
     assert show_onboarding_alert?
   end
 

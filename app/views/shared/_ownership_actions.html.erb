@@ -1,0 +1,23 @@
+<%# locals: (record:, pass_path:, take_path:) -%>
+<%# The owner passes it on; an admin who does not own it takes it first. -%>
+<% if record.owned_by?(Current.user) %>
+  <% if Current.account.active_users_count > 1 %>
+    <%= render "components/dropdown_menu/item", href: pass_path do %>
+      <%= icon_for(:users, class: "w-4 h-4") %>
+      <%= t("ownership.actions.pass") %>
+    <% end %>
+  <% end %>
+<% elsif Current.user.admin? %>
+  <%= render "components/dropdown_menu/item",
+      href: take_path,
+      data: {
+        turbo_method: :patch,
+        turbo_confirm: t("ownership.actions.take_confirm"),
+        confirm_severity: "warning",
+        confirm_title: t("ownership.actions.take_title"),
+        confirm_button: t("ownership.actions.take_button")
+      } do %>
+    <%= icon_for(:users, class: "w-4 h-4") %>
+    <%= t("ownership.actions.take") %>
+  <% end %>
+<% end %>

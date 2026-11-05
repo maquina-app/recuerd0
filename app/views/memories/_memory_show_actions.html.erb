@@ -1,7 +1,9 @@
 <%# locals: (memory:, workspace:, viewing_old_version: false) -%>
+<% can_manage = memory.manageable_by?(Current.user) -%>
 <% if memory.content&.body&.content.present? %>
+  <%# A version's page hands out that version; the memory's page, the current one. %>
   <%= render "components/dropdown_menu/item",
-      href: workspace_memory_markdown_path(workspace, memory),
+      href: viewing_old_version ? workspace_memory_version_markdown_path(workspace, memory.stable_id, memory) : workspace_memory_markdown_path(workspace, memory.stable_id),
       target: "_blank" do %>
     <%= icon_for(:file_text, class: "size-4") %>
     <%= t("memories.show.view_markdown") %>
@@ -11,61 +13,70 @@
 
 <% if memory.versioned? %>
   <%= render "components/dropdown_menu/item",
-      href: workspace_memory_versions_path(workspace, memory) do %>
+      href: workspace_memory_versions_path(workspace, memory.stable_id) do %>
     <%= icon_for(:git_branch, class: "size-4") %>
     <%= t("memories.memory_show_actions.versions") %>
   <% end %>
 <% end %>
 
-<% if workspace.active? && memory.versioned? %>
+<% if workspace.active? && memory.versioned? && can_manage %>
   <%= render "components/dropdown_menu/item",
-      href: new_workspace_memory_versions_purge_path(workspace, memory.root_memory),
+      href: new_workspace_memory_versions_purge_path(workspace, memory.stable_id),
       variant: :destructive do %>
     <%= icon_for(:trash_2, class: "size-4") %>
     <%= t("memories.memory_show_actions.purge_versions") %>
   <% end %>
 <% end %>
 
-<% if workspace.active? && !viewing_old_version %>
+<% if workspace.active? && viewing_old_version %>
   <%= render "components/dropdown_menu/item",
-      href: workspace_memory_versions_path(workspace, memory),
+      href: workspace_memory_version_restoration_path(workspace, memory.stable_id, memory),
       method: :post,
       data: {
-        turbo_confirm: t("memories.memory_show_actions.new_version_confirm", version: memory.version_label),
+        turbo_confirm: t("memories.versions.index.restore_confirm", next: memory.next_version_label, current: memory.current_version.version_label),
         confirm_severity: "warning",
-        confirm_title: t("memories.memory_show_actions.new_version_title"),
-        confirm_button: t("memories.memory_show_actions.new_version_button")
+        confirm_title: t("memories.versions.index.restore_title", version: memory.version_label),
+        confirm_button: t("memories.versions.index.restore_button")
       } do %>
+    <%= icon_for(:copy_plus, class: "size-4") %>
+    <%= t("memories.versions.index.restore") %>
+  <% end %>
+<% end %>
+
+<% if workspace.active? && !viewing_old_version %>
+  <%# Opens the editor, whose primary action creates the version on save. An
+      immediate copy left an identical version in the history every time. %>
+  <%= render "components/dropdown_menu/item",
+      href: edit_workspace_memory_path(workspace, memory.stable_id) do %>
     <%= icon_for(:copy_plus, class: "size-4") %>
     <%= t("memories.memory_show_actions.new_version") %>
   <% end %>
 
-  <%= render "components/dropdown_menu/separator" %>
+  <%= render "shared/ownership_actions",
+      record: memory,
+      pass_path: edit_workspace_memory_ownership_path(workspace, memory.stable_id),
+      take_path: workspace_memory_ownership_path(workspace, memory.stable_id, user_id: Current.user.id) %>
 
-  <%= render "components/dropdown_menu/item",
-      href: edit_workspace_memory_path(workspace, memory) do %>
-    <%= icon_for(:edit, class: "size-4") %>
-    <%= t("memories.memory_show_actions.edit") %>
-  <% end %>
+  <% if memory.deletable_by?(Current.user) %>
+    <%= render "components/dropdown_menu/separator" %>
 
-  <%= render "components/dropdown_menu/separator" %>
-
-  <%= render "components/dropdown_menu/item",
-      href: workspace_memory_path(workspace, memory),
-      method: :delete,
-      variant: :destructive,
-      data: {
-        turbo_confirm: [
-          t("memories.memory_show_actions.delete_confirm",
-            versions: pluralize(memory.all_versions.size, "version")),
-          (t("memories.memory_show_actions.delete_confirm_links",
-             links: pluralize(memory.links_count, "link")) if memory.links_count > 0)
-        ].compact.join(" "),
-        confirm_severity: "destructive",
-        confirm_title: t("memories.memory_show_actions.delete_title", title: memory.display_title),
-        confirm_button: t("memories.memory_show_actions.delete_button")
-      } do %>
-    <%= icon_for(:trash_2, class: "size-4") %>
-    <%= t("memories.memory_show_actions.delete") %>
+    <%= render "components/dropdown_menu/item",
+        href: stable_memory_path(workspace, memory),
+        method: :delete,
+        variant: :destructive,
+        data: {
+          turbo_confirm: [
+            t("memories.memory_show_actions.delete_confirm", count: memory.all_versions.size - 1),
+            (t("memories.memory_show_actions.delete_confirm_links",
+               links: pluralize(memory.root_memory.links_count, "link")) if memory.root_memory.links_count > 0),
+            memory_owner_note(memory)
+          ].compact.join(" "),
+          confirm_severity: "destructive",
+          confirm_title: t("memories.memory_show_actions.delete_title", title: memory.display_title),
+          confirm_button: t("memories.memory_show_actions.delete_button")
+        } do %>
+      <%= icon_for(:trash_2, class: "size-4") %>
+      <%= t("memories.memory_show_actions.delete") %>
+    <% end %>
   <% end %>
 <% end %>

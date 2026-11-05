@@ -40,6 +40,7 @@ class FirstRunControllerTest < ActionDispatch::IntegrationTest
     assert_difference ["Account.count", "User.count"], 1 do
       post first_run_url, params: {
         user: {
+          account_name: "Acme",
           email_address: "admin@example.com",
           password: "password123",
           password_confirmation: "password123"
@@ -59,6 +60,7 @@ class FirstRunControllerTest < ActionDispatch::IntegrationTest
 
     post first_run_url, params: {
       user: {
+        account_name: "Acme",
         email_address: "admin@example.com",
         password: "password123",
         password_confirmation: "password123"
@@ -73,6 +75,7 @@ class FirstRunControllerTest < ActionDispatch::IntegrationTest
 
     post first_run_url, params: {
       user: {
+        account_name: "Acme",
         email_address: "admin@example.com",
         password: "password123",
         password_confirmation: "password123"
@@ -90,6 +93,7 @@ class FirstRunControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference ["Account.count", "User.count"] do
       post first_run_url, params: {
         user: {
+          account_name: "Acme",
           email_address: "admin@example.com",
           password: "password123",
           password_confirmation: "different"
@@ -109,6 +113,7 @@ class FirstRunControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference ["Account.count", "User.count"] do
       post first_run_url, params: {
         user: {
+          account_name: "Acme",
           email_address: "admin@example.com",
           password: "password123",
           password_confirmation: "password123"

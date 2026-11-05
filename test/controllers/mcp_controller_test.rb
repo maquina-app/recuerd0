@@ -76,6 +76,31 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       "Mechanics: appends a new current version and leaves earlier versions intact."
   end
 
+  test "create_version refuses a repeat end to end, despite the source it stamps" do
+    token = oauth_token(permission: "full_access", scope: "memories:read memories:write").raw_token
+    memory = Memory.create_with_content(@workspace, title: "Repeat", content: "v1", source: "manual", created_by: users(:one))
+    memory.create_version!(content: "latest", source: "manual")
+
+    assert_no_difference("Memory.count") do
+      [
+        {"memory_id" => memory.id.to_s},
+        {"memory_id" => memory.id.to_s, "content" => "latest"},
+        {"memory_id" => memory.id.to_s, "change_note" => "Only a note"}
+      ].each do |arguments|
+        result = mcp_post(mcp_rpc("tools/call", name: "create_version", arguments: arguments), token: token)
+        assert result.dig("result", "isError"), arguments.inspect
+        assert_match "Nothing has changed", result.dig("result", "content", 0, "text")
+      end
+    end
+
+    assert_difference("Memory.count", 1) do
+      result = mcp_post(mcp_rpc("tools/call", name: "create_version",
+        arguments: {"memory_id" => memory.id.to_s, "content" => "new"}), token: token)
+      assert_not result.dig("result", "isError")
+      assert_equal "new", memory.reload.current_version.content.body.content
+    end
+  end
+
   test "tools/list advertises tags and category inputs on write tools" do
     result = mcp_post(mcp_rpc("tools/list"), token: @read_token.raw_token)
     tools = result["result"]["tools"].index_by { |t| t["name"] }
@@ -702,6 +727,25 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal [gone.id.to_s], payload["missing"]
   end
 
+  test "an archived workspace's memory can't be written to" do
+    owner = @read_token.user
+    workspace = owner.account.workspaces.create!(name: "To archive", created_by: owner)
+    memory = Memory.create_with_content(workspace, title: "Frozen", content: "body", created_by: owner)
+    workspace.archive
+
+    assert_no_difference("Memory.count") do
+      %w[update_memory create_version].each do |tool|
+        error = assert_raises(Mcp::ToolError) do
+          Mcp::Tools.public_send(tool, owner.account, {"memory_id" => memory.id.to_s, "title" => "Changed"}, user: owner)
+        end
+        assert_match(/archived/, error.message)
+      end
+    end
+
+    assert_equal "Frozen", memory.reload.title
+    assert_equal "Frozen", Mcp::Tools.read_memory(owner.account, {"memory_id" => memory.id.to_s}, user: owner)[:title]
+  end
+
   test "an archived workspace's memory stays readable by id" do
     memory = Memory.create_with_content(workspaces(:archived), title: "Old", content: "body")
 
@@ -1170,6 +1214,19 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     assert_equal(-32_601, result["error"]["code"])
     assert_includes result["error"]["message"], "2026-07-28"
+  end
+
+  test "a client opening with the old handshake is told which versions to speak" do
+    payload = {jsonrpc: "2.0", id: 1, method: "initialize",
+               params: {protocolVersion: "2025-06-18", capabilities: {}, clientInfo: {name: "old", version: "1"}}}
+
+    post mcp_endpoint_url, params: payload.to_json,
+      headers: auth_headers(@read_token.raw_token).merge("Content-Type" => "application/json")
+
+    assert_response :bad_request
+    result = response.parsed_body
+    assert_equal(-32_022, result["error"]["code"])
+    assert_equal({"supported" => ["2026-07-28"], "requested" => "2025-06-18"}, result["error"]["data"])
   end
 
   test "ping is not a method on 2026-07-28" do

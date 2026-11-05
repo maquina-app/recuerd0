@@ -60,7 +60,19 @@ module WorkspaceScoped
     @memory_sort = Memory.resolve_sort(@memory_sort_param, query: @memory_query)
     scope = scope.ordered_by(@memory_sort)
 
-    @pagy, @memories = pagy(scope, items: 10)
-    @pinned_memories, @regular_memories = @memories.partition { |m| m.pinned_by?(Current.user) }
+    # Pinned memories lead page 1 whatever the sort, and never spend a regular
+    # slot. A search ranks by relevance instead, and archived or deleted workspaces
+    # show no pins, so both stay a single list.
+    if @workspace.active? && @memory_query.blank?
+      pinned_ids = Current.user.pins.where(pinnable_type: "Memory").select(:pinnable_id)
+      @pagy, @regular_memories = pagy(scope.where.not(id: pinned_ids))
+      @regular_memories = @regular_memories.to_a
+      @pinned_memories = (@pagy.page == 1) ? scope.where(id: pinned_ids).to_a : []
+      @memories = @pinned_memories + @regular_memories
+    else
+      @pagy, @memories = pagy(scope)
+      @pinned_memories = []
+      @regular_memories = @memories.to_a
+    end
   end
 end

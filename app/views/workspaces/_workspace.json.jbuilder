@@ -6,6 +6,9 @@ json.cache! workspace do
   json.url workspace_url(workspace)
 end
 
+# Passing ownership touches nothing, so it would never expire the fragment.
+json.owner_id workspace.owner_id
+
 # Outside the cache block for the same reason as memories/_memory.json.jbuilder:
 # json.cache! is keyed on the workspace, and pins are per user.
 json.pinned pinned_for?(workspace)

@@ -16,10 +16,9 @@ class AccountIntegrationTest < ActionDispatch::IntegrationTest
     # Soft-delete the account (simulate admin deleting it)
     @account.soft_delete
 
-    # Next request should be blocked
+    # Next request lands on the recovery page, and nothing else is reachable
     get workspaces_url
-    assert_redirected_to new_session_path
-    assert_equal I18n.t("authentication.account_deleted"), flash[:alert]
+    assert_redirected_to account_recovery_path
   end
 
   test "API request blocked when account is soft-deleted via token" do
@@ -68,7 +67,7 @@ class AccountIntegrationTest < ActionDispatch::IntegrationTest
     assert initial_session_count > 0
 
     sign_in_as(@admin)
-    delete account_url
+    delete account_url, params: {password: "password"}
 
     assert_equal 0, Session.where(user_id: @account.user_ids).count
   end

@@ -178,6 +178,7 @@ module Mcp
         description: "Update an existing memory in place (title, content, category, " \
           "or tags). Omitted fields remain unchanged, and blank content cannot overwrite " \
           "a non-empty body. Does not create a new version — use create_version to preserve history. " \
+          "Only the memory's owner or an account admin can do this; anyone else uses create_version. " \
           "Mechanics: edits the current version in place and does not add a history entry.",
         annotations: {readOnlyHint: false, destructiveHint: false},
         inputSchema: {
@@ -188,17 +189,20 @@ module Mcp
             content: {type: "string"},
             category: {type: "string", enum: CATEGORIES},
             tags: {type: "array", items: {type: "string"},
-                   description: "Optional tags for search and filtering"}
+                   description: "Optional tags for search and filtering"},
+            change_note: {type: "string",
+                          description: "Optional. Why this version exists, in one line (max 280 characters)"}
           },
           required: ["memory_id"]
         }
       },
       {
         name: "create_version",
-        description: "Append a new immutable version to an existing memory, " \
+        description: "Append a new version to an existing memory, " \
           "preserving prior versions as history. Any omitted field inherits its " \
           "value from the latest version. Mechanics: appends a new current version and " \
-          "leaves earlier versions intact.",
+          "leaves earlier versions intact. Refused when nothing would differ from the latest " \
+          "version; a change_note alone is not a change.",
         annotations: {readOnlyHint: false, destructiveHint: false},
         inputSchema: {
           type: "object",

@@ -14,30 +14,15 @@
     {
       "Workspaces" => workspaces_path,
       @workspace.name => workspace_path(@workspace),
-      @memory.display_title => workspace_memory_path(@workspace, @memory)
+      @memory.display_title => stable_memory_path(@workspace, @memory)
     },
     "Edit"
   ) %>
 <% end %>
 
 <div class="mx-auto flex h-full w-full max-w-5xl flex-col">
-  <% unless @memory.root_version? %>
-    <div class="shrink-0 mb-3">
-      <%= render "components/alert", variant: :warning, icon: :alert_triangle, css_classes: "py-2" do %>
-        <p class="text-sm">
-          Editing <%= @memory.version_label %> — changes update this version directly.
-          <%= button_to workspace_memory_versions_path(@workspace, @memory),
-              method: :post,
-              class: "inline-flex items-center gap-1 underline font-medium ml-1",
-              data: { turbo_confirm: "Create a new version from #{@memory.version_label}?" } do %>
-            Create new version instead
-          <% end %>
-        </p>
-      <% end %>
-    </div>
-  <% end %>
-
   <div class="flex-1 min-h-0">
-    <%= render "memories/form", memory: @memory, workspace: @workspace %>
+    <%= render "memories/form", memory: @memory, workspace: @workspace,
+          edit_base: @edit_base || params[:edit_base] || @memory.edit_digest %>
   </div>
 </div>

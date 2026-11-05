@@ -23,40 +23,50 @@
   <% end %>
 <% end %>
 
-<%= render "components/dropdown_menu/item",
-    href: edit_workspace_path(workspace) do %>
-  <%= icon_for(:edit, class: "w-4 h-4") %>
-  <%= t("workspaces.actions.edit") %>
+<% if workspace.manageable_by?(Current.user) %>
+  <%= render "components/dropdown_menu/item",
+      href: edit_workspace_path(workspace) do %>
+    <%= icon_for(:edit, class: "w-4 h-4") %>
+    <%= t("workspaces.actions.edit") %>
+  <% end %>
 <% end %>
 
-<%= render "components/dropdown_menu/separator" %>
+<%= render "shared/ownership_actions",
+    record: workspace,
+    pass_path: edit_workspace_ownership_path(workspace),
+    take_path: workspace_ownership_path(workspace, user_id: Current.user.id) %>
 
-<%# Archive is reversible, so its confirmation is a warning, not an alarm. %>
-<%= render "components/dropdown_menu/item",
-    href: archive_workspace_path(workspace),
-    data: {
-      turbo_method: :post,
-      turbo_confirm: t("workspaces.actions.confirm.archive_body"),
-      confirm_severity: "warning",
-      confirm_title: t("workspaces.actions.confirm.archive_title", name: workspace.name),
-      confirm_button: t("workspaces.actions.confirm.archive_button")
-    } do %>
-  <%= icon_for(:archive, class: "w-4 h-4") %>
-  <%= t("workspaces.actions.archive") %>
-<% end %>
+<% if workspace.manageable_by?(Current.user) %>
+  <%= render "components/dropdown_menu/separator" %>
 
-<%= render "components/dropdown_menu/item",
-    href: workspace_path(workspace),
-    variant: :destructive,
-    data: {
-      turbo_method: :delete,
-      turbo_confirm: t("workspaces.actions.confirm.delete_body",
-                       count: workspace.memories_count,
-                       days: SoftDeletable::RETENTION_DAYS),
-      confirm_severity: "destructive",
-      confirm_title: t("workspaces.actions.confirm.delete_title", name: workspace.name),
-      confirm_button: t("workspaces.actions.confirm.delete_button")
-    } do %>
-  <%= icon_for(:trash_2, class: "w-4 h-4") %>
-  <%= t("workspaces.actions.delete") %>
+  <%# Archive is reversible, so its confirmation is a warning, not an alarm. %>
+  <%= render "components/dropdown_menu/item",
+      href: archive_workspace_path(workspace),
+      data: {
+        turbo_method: :post,
+        turbo_confirm: t("workspaces.actions.confirm.archive_body"),
+        confirm_severity: "warning",
+        confirm_title: t("workspaces.actions.confirm.archive_title", name: workspace.name),
+        confirm_button: t("workspaces.actions.confirm.archive_button")
+      } do %>
+    <%= icon_for(:archive, class: "w-4 h-4") %>
+    <%= t("workspaces.actions.archive") %>
+  <% end %>
+
+  <%= render "components/dropdown_menu/item",
+      href: workspace_path(workspace),
+      variant: :destructive,
+      data: {
+        turbo_method: :delete,
+        turbo_confirm: [
+          t("workspaces.actions.confirm.delete_body", count: workspace.memories_count, days: SoftDeletable::RETENTION_DAYS),
+          memories_of_others_warning(workspace)
+        ].compact.join(" "),
+        confirm_severity: "destructive",
+        confirm_title: t("workspaces.actions.confirm.delete_title", name: workspace.name),
+        confirm_button: t("workspaces.actions.confirm.delete_button")
+      } do %>
+    <%= icon_for(:trash_2, class: "w-4 h-4") %>
+    <%= t("workspaces.actions.delete") %>
+  <% end %>
 <% end %>

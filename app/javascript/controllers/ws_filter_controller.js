@@ -39,6 +39,11 @@ export default class extends Controller {
     this._timer = setTimeout(() => this.formTarget.requestSubmit(), this.delayValue)
   }
 
+  // For a filter that lives inside a <details>: open means ready to type.
+  focusWhenOpened(event) {
+    if (event.target.open && this.hasInputTarget) this.inputTarget.focus()
+  }
+
   clear(event) {
     event?.preventDefault()
     if (this.inputTarget.value === "") {

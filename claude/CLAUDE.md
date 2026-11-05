@@ -105,6 +105,28 @@ One search contract for web, REST and MCP: `Memory.search` (`app/models/memory.r
 
 Semantic fallback (`HYBRID_RETRIEVAL=true`): `Memory.related_to` (`Embeddable`) runs only when keyword search found fewer than `MemoryRetrieval::RELATED_WHEN_FEWER_THAN` hits and appends up to `RELATED_LIMIT` roots at cosine ≥ `RELATED_FLOOR`, labelled `match: "related"` on every surface. Never fuse or reorder the keyword list with embeddings — unweighted RRF demoted exact matches on the retrieval bench (recuerd0 decision D022). Tests use `FakeEmbeddingProvider` + `with_hybrid_retrieval` + `create_memory_embedding`; create memories with the flag off so callbacks don't embed them first.
 
+### Ownership (edit, delete, archive, purge)
+
+Every workspace and root memory has an owner (`owner_id`) as well as a creator (`created_by_id`). Whoever creates something owns it until it is passed on, and the creator never changes, so history stays honest ("Owned by Ana, created by a former member"). A version belongs to whoever owns its memory (`Memory#ownership_record`), and only roots carry an owner.
+
+Members rename, delete, archive, unarchive, restore, purge and overwrite in place only what they own; admins can do it to anything. Anyone can add a new version. A workspace's owner can also delete any memory in it and permanently delete it with everything inside, including what an admin or a third person put there, and the confirmation says how many belong to others (`Workspace#memories_of_others_count`). That reaches delete only: overwriting and purging someone else's memory stay with its owner and admins, and nothing works the other way round.
+
+`Ownable#manageable_by?` is the rule, `Memory#deletable_by?` adds the workspace owner, `OwnershipAuthorizable` enforces both on web and REST, `update_memory` checks it on MCP, and the views hide what fails it. MCP has no delete, archive or purge tool; if one is added it needs the same check. Its `update_memory` and `create_version` refuse an archived workspace themselves, because `find_memory` keeps archived memories readable. `owner_id` is nullable on purpose: no owner means the account admin (everything older than the column, and the seeded "My Workspace"), so `owned_by?` is true for an admin there and they can pass it without taking it first.
+
+The owner passes something on, to anyone still on the account, and an admin takes it for themselves first; the receiver doesn't accept, so `/profile/ownership` lists what someone owns (`OwnershipTransferring`, `Ownable#pass_ownership_to`). A handover moves one record, so memories in a passed workspace keep their owners. It deliberately touches nothing, so it doesn't count as activity; that means `owner_id` has to stay out of `json.cache!` and be part of any ETag on a record that reports it. `User#remove_from_account!` is the only way to remove someone: it also revokes their tokens and OAuth grants, passes what they own to `transfer_to` (the first admin by default), and revokes every unused invitation link.
+
+### Invitations
+
+A link is for one person. The token is a `signed_id` with a 7-day expiry and the `Invitation` row is what makes it single use: `Invitation#redeem` saves the person and claims the row in one transaction, so a failed signup leaves it usable and two people racing can't both join. Used rows stay so the link can say it was used. Generating a link leaves other unused ones working; revoking deletes the unused rows.
+
+### Memory URLs and versions
+
+`/memories/<root id>` always opens the current version and `/memories/<root id>/versions/<id>` opens a specific one; a URL holding a version's own id redirects to whichever of those it now is. Link with `stable_memory_path` / `version_page_path`, not `workspace_memory_path(workspace, version)`. Editing has two explicit outcomes on one form, `save_as=new_version` (primary, Cmd+S) and `save_as=in_place`; there is no autosave. A plain PATCH, which is the REST contract, still means in place. Deleting takes the whole memory, so an older version's id is refused with a 422; the root's id and the current version's both mean the memory. The form carries `edit_base` (`Memory#edit_digest`), so a save over someone else's comes back as a conflict with the text intact; REST stays last-write-wins. The primary button is first in the DOM and last on screen, because Enter presses the first submit button. A root row is v1 and also what filters read, so its `tags` and `category` follow the current version and `first_version_tags` / `first_version_category` keep what v1 held once they differ; anything showing one specific version reads `version_tags` / `version_category`. `create_version!` fills omitted fields from the row it is called on, so callers choose that row deliberately: REST and MCP resolve to the current version and use `create_changed_version`, which refuses a result identical to the current version (MCP ignores its stamped source for this), and `Memories::Versions::RestorationsController` (browser only) copies the version in its URL. `memories_count` counts roots only. Links always attach to the root (`MemoryLink#point_at_roots`).
+
+### Account deletion
+
+`Account#schedule_deletion!` locks the account and keeps every row and email for `RETENTION_DAYS`; signing in lands on `Account::RecoveriesController` (Restore, Export), the only place besides sign-out that `allow_deleted_account` opens. `Accounts::PurgeDeletedJob` (hourly) ends it, for deleted workspaces too, once `RETENTION_DAYS` have passed. `Account#purge!` destroys workspaces one by one first, because `dependent: :destroy` would only soft-delete them.
+
 ### Asset Paths
 
 - Static assets (favicons, icons, `manifest.json`) go in `public/`, NOT `app/assets/images/`

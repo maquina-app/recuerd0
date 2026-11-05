@@ -1,0 +1,36 @@
+<%# locals: () %>
+<% record = @ownable.ownership_record %>
+<% name = record.is_a?(Workspace) ? record.name : record.current_version.display_title %>
+<% back_path = ownership_return_path %>
+<% content_for :page_title, t("ownership.edit.page_title") %>
+
+<% content_for :breadcrumb do %>
+  <%= responsive_breadcrumbs({ name => back_path }, t("ownership.edit.page_title")) %>
+<% end %>
+
+<div class="mx-auto max-w-xl">
+  <%= render "components/card" do %>
+    <%= render "components/card/header" do %>
+      <%= render "components/card/title", text: t("ownership.edit.heading", name: name) %>
+      <%= render "components/card/description", text: t("ownership.edit.description") %>
+    <% end %>
+
+    <%= render "components/card/content" do %>
+      <% if @recipients.any? %>
+        <%= form_with url: url_for(action: :update), method: :patch, data: { component: "form" } do |form| %>
+          <div data-form-part="group">
+            <%= form.label :user_id, t("ownership.edit.recipient_label"), data: { component: "label" } %>
+            <%= form.select :user_id, @recipients.map { |user| [user.display_name, user.id] }, {}, data: { component: "select" } %>
+          </div>
+
+          <div data-form-part="actions" class="flex flex-wrap gap-2">
+            <%= form.submit t("ownership.edit.submit"), data: { component: "button", variant: "primary" } %>
+            <%= link_to t("ownership.edit.cancel"), back_path, data: { component: "button", variant: "outline" } %>
+          </div>
+        <% end %>
+      <% else %>
+        <p class="text-sm text-muted-foreground"><%= t("ownership.edit.nobody") %></p>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

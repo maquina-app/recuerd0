@@ -1,4 +1,4 @@
-<%# locals: (workspace:, memory:) %>
+<%# locals: (workspace:, memory:, edit_base: nil) %>
 
 <div class="h-full flex flex-col">
   <%# Custom form layout — intentionally omits data-component="form" to avoid the
@@ -19,17 +19,18 @@
       class: "memory-form relative flex flex-col h-full gap-3",
       data: {
         controller: "memory-editor",
-        action: "house-md:change->memory-editor#change submit->memory-editor#submit",
-        memory_editor_autosave_value: memory.persisted?,
-        memory_editor_saved_label_value: t("memories.form.status.saved"),
-        memory_editor_saving_label_value: t("memories.form.status.saving"),
+        action: "house-md:change->memory-editor#change submit->memory-editor#submit turbo:morph@document->memory-editor#morphed",
+        memory_editor_focus_editor_value: params[:focus] == "editor",
+        memory_editor_start_dirty_value: memory.errors.any? && memory.errors.where(:base, :no_changes).none?,
         memory_editor_unsaved_label_value: t("memories.form.status.unsaved"),
-        memory_editor_failed_label_value: t("memories.form.status.failed"),
         memory_editor_unload_prompt_value: t("memories.form.status.unload_prompt")
       } do |form| %>
+    <%# What the person started from, to notice a save by anyone else since. %>
+    <%= hidden_field_tag :edit_base, edit_base, id: nil if edit_base %>
+
     <%# Borderless document title. sm:pr-* reserves the strip the absolutely
         positioned actions occupy so a long title never runs under them. %>
-    <div class="shrink-0 sm:pr-64">
+    <div class="shrink-0 <%= memory.persisted? ? "lg:pr-[27rem]" : "sm:pr-64" %>">
       <div class="relative" data-form-part="group">
         <%= form.label :title, t("memories.form.title_label"), data: { component: "label" }, class: "sr-only" %>
         <%= form.text_field :title,
@@ -51,6 +52,18 @@
         <% end %>
       </div>
     </div>
+
+    <%# Below the title, not above it: the actions sit absolutely at the top right and
+        a long message would run under them. %>
+    <% if memory.errors[:base].any? %>
+      <p data-form-part="error" class="shrink-0">
+        <%= memory.errors[:base].first %>
+        <% if memory.errors.where(:base, :edit_conflict).any? %>
+          <%= link_to t("memories.form.open_current"), stable_memory_path(workspace, memory),
+                target: "_blank", class: "underline underline-offset-2" %>
+        <% end %>
+      </p>
+    <% end %>
 
     <%# Metadata: Source + Category on one aligned row; Tags full-width below %>
     <div class="shrink-0 flex flex-col gap-3">
@@ -94,6 +107,21 @@
         <%= form.label :tags, for: "memory_tags_entry", data: { component: "label" } %>
         <%= render "application/components/tag_input", form: form, field: :tags, value: memory.tags %>
       </div>
+
+      <% if memory.persisted? %>
+        <%# Never prefilled from the record: the note belongs to the version about
+            to be created, not the one being edited. %>
+        <div class="min-w-0" data-form-part="group">
+          <%= form.label :change_note, t("memories.form.change_note_label"), data: { component: "label" } %>
+          <%= form.text_field :change_note,
+              value: params.dig(:memory, :change_note),
+              aria: field_error_aria(form, :change_note),
+              placeholder: t("memories.form.change_note_placeholder"),
+              maxlength: 280,
+              autocomplete: "off",
+              data: { component: "input" } %>
+        </div>
+      <% end %>
     </div>
 
     <%# Editor area: maquina-styled toolbar + House MD editor.
@@ -116,17 +144,36 @@
         <p class="editor-placeholder" aria-hidden="true"><%= t("memories.form.content_placeholder") %></p>
       </div>
     </div>
+    <% if memory.errors[:content].any? %>
+      <p data-form-part="error" class="shrink-0"><%= t("memories.form.content_blank") %></p>
+    <% end %>
 
     <%# The one action row. Absolutely positioned into the header on sm+; a
         normal bottom row on phones, where it stays reachable instead of
         scrolling away above the editor. %>
-    <div class="form-actions shrink-0 flex items-center gap-2 sm:absolute sm:right-0 sm:top-0">
+    <div class="form-actions shrink-0 flex flex-wrap items-center gap-2 <%= memory.persisted? ? "lg:absolute" : "sm:absolute" %> sm:right-0 sm:top-0">
       <span class="save-status" data-memory-editor-target="status" aria-live="polite" role="status"></span>
       <%= link_to t("memories.form.cancel"),
-          memory.persisted? ? workspace_memory_path(workspace, memory) : workspace_path(workspace),
+          memory.persisted? ? stable_memory_path(workspace, memory) : workspace_path(workspace),
           data: { component: "button", variant: "outline", size: "sm" } %>
-      <%= form.submit memory.persisted? ? t("memories.form.save") : t("memories.form.create"),
-          data: { component: "button", variant: "primary", size: "sm" } %>
+      <% if memory.persisted? %>
+        <%# First in the DOM, last on screen: pressing Enter in a field presses the
+            form's first submit button, and that has to be the highlighted one. %>
+        <%= form.button t("memories.form.save_as_new_version"),
+            name: "save_as", value: "new_version", type: :submit,
+            title: t("memories.form.save_as_new_version_title", version: memory.next_version_label),
+            class: "order-last",
+            data: { component: "button", variant: "primary", size: "sm", memory_editor_target: "primarySubmit" } %>
+        <%# Not after a conflict: it would replace what the other person just saved. %>
+        <% if memory.manageable_by?(Current.user) && memory.errors.where(:base, :edit_conflict).none? %>
+          <%= form.button t("memories.form.update_in_place", version: memory.version_label),
+              name: "save_as", value: "in_place", type: :submit,
+              data: { component: "button", variant: "outline", size: "sm" } %>
+        <% end %>
+      <% else %>
+        <%= form.submit t("memories.form.create"),
+            data: { component: "button", variant: "primary", size: "sm", memory_editor_target: "primarySubmit" } %>
+      <% end %>
     </div>
   <% end %>
 </div>

@@ -7,6 +7,8 @@ class InvitationViewsTest < ActionDispatch::IntegrationTest
   end
 
   test "invitation show page renders registration form with account name" do
+    @account.update!(name: "Maquina")
+
     get invitation_url(token: @token)
 
     assert_response :success

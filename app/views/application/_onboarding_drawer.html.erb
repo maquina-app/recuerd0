@@ -114,12 +114,12 @@
             <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
               Create a full-access token in
               <%= link_to "Access Tokens",
-                profile_path(anchor: "access-tokens"),
+                profile_path(anchor: "access-tokens", token_permission: "full_access", token_description: "recuerd0 CLI"),
                 class: "text-primary underline underline-offset-2" %>
               first.
             </p>
             <%= render "application/onboarding_command", command: "brew install maquina-app/tap/recuerd0" %>
-            <%= render "application/onboarding_command", command: "recuerd0 account add personal --token <token>" %>
+            <%= render "application/onboarding_command", command: cli_account_add_command %>
             <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
               Confirms the connection.
             </p>
@@ -143,6 +143,13 @@
               class="min-w-0 flex-1 text-[13.5px] leading-5 <%= onboarding_complete ? "font-medium text-muted-foreground" : "font-semibold" %>"
               data-onboarding-item-title
             >Give your agent the skill</h3>
+            <%= render "components/badge",
+              variant: :outline,
+              size: :sm,
+              css_classes: "h-auto px-1.5 py-px font-mono text-[9.5px] uppercase tracking-[0.08em] text-muted-foreground",
+              data: { onboarding_optional: true } do %>
+              optional
+            <% end %>
             <% if onboarding_complete %>
               <button
                 type="button"
@@ -218,7 +225,7 @@
             <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
               Propose, read the plan, then commit.
             </p>
-            <%= render "application/onboarding_command", command: "recuerd0 import propose <path> --workspace <id>" %>
+            <%= render "application/onboarding_command", command: "recuerd0 import propose <path> --workspace #{onboarding_workspace_id}" %>
             <p class="mb-2 text-xs leading-[1.5] text-muted-foreground">
               Propose writes import.plan.yaml in your current directory. Open it — the manifest lists one entry per file with the title, category and tags it will use.
             </p>
@@ -242,6 +249,13 @@
               class="min-w-0 flex-1 text-[13.5px] leading-5 <%= onboarding_complete ? "font-medium text-muted-foreground" : "font-semibold" %>"
               data-onboarding-item-title
             >Have your agent organise the import</h3>
+            <%= render "components/badge",
+              variant: :outline,
+              size: :sm,
+              css_classes: "h-auto px-1.5 py-px font-mono text-[9.5px] uppercase tracking-[0.08em] text-muted-foreground",
+              data: { onboarding_optional: true } do %>
+              optional
+            <% end %>
             <% if onboarding_complete %>
               <button
                 type="button"
@@ -263,7 +277,7 @@
             <%= "hidden" if onboarding_complete %>
           >
             <p class="text-xs leading-[1.5] text-muted-foreground">
-              Ask your agent: "I just imported notes into recuerd0 workspace &lt;id&gt;. Do the after-import pass." It will cluster the memories, fix weak titles, and propose hubs for review.
+              Ask your agent: "I just imported notes into recuerd0 workspace <%= onboarding_workspace_id %>. Do the after-import pass." It will cluster the memories, fix weak titles, and propose hubs for review.
             </p>
           </div>
         </div>
@@ -314,7 +328,7 @@
             <%= "hidden" if first_content %>
           >
             <p class="text-xs leading-[1.5] text-muted-foreground">
-              Ask your agent to save something here.
+              Save one in the browser, or ask your agent to save something here.
             </p>
           </div>
         </div>
@@ -370,7 +384,7 @@
             data-onboarding-item-body
             <%= "hidden" if chat_connected %>
           >
-            <%= render "application/onboarding_command", command: "https://recuerd0.ai/mcp" %>
+            <%= render "application/onboarding_command", command: mcp_endpoint_url %>
           </div>
         </div>
 
@@ -390,6 +404,13 @@
               class="min-w-0 flex-1 text-[13.5px] leading-5 <%= onboarding_complete ? "font-medium text-muted-foreground" : "font-semibold" %>"
               data-onboarding-item-title
             >Add the MCP skill</h3>
+            <%= render "components/badge",
+              variant: :outline,
+              size: :sm,
+              css_classes: "h-auto px-1.5 py-px font-mono text-[9.5px] uppercase tracking-[0.08em] text-muted-foreground",
+              data: { onboarding_optional: true } do %>
+              optional
+            <% end %>
             <% if onboarding_complete %>
               <button
                 type="button"
@@ -465,7 +486,7 @@
             <%= "hidden" if first_content %>
           >
             <p class="text-xs leading-[1.5] text-muted-foreground">
-              Ask your agent to save something here.
+              Save one in the browser, or ask your agent to save something here.
             </p>
           </div>
         </div>

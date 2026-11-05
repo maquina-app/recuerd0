@@ -20,6 +20,8 @@ en:
       name_label: "Name"
       cancel: "Cancel"
       create: "Create workspace"
+      start_with_map: "Start with a map"
+      start_with_map_hint: "Adds a pinned memory telling people and agents how this workspace is kept. Edit or delete it any time."
       update: "Save"
     index:
       page_title: "Workspaces"
@@ -88,6 +90,9 @@ en:
           other: "It moves to Deleted. You can restore it for %{days} days, after which it and its %{count} memories are permanently removed."
         destroy_title: "Permanently delete %{name}?"
         destroy_button: "Delete permanently"
+        includes_others:
+          one: "That includes 1 memory belonging to someone else."
+          other: "That includes %{count} memories belonging to other people."
         destroy_body:
           zero: "This cannot be undone. The workspace is removed immediately."
           one: "This cannot be undone. The workspace and its memory are removed immediately."
@@ -112,10 +117,10 @@ en:
         category: "the category %{category}"
         tag: "the tag %{tag}"
       archived_title: "This workspace is archived"
-      archived_description: "This workspace is in read-only mode. You can view its contents but cannot make changes. Restore it to continue adding memories."
+      archived_description: "This workspace is in read-only mode. You can view its contents but cannot make changes. Unarchive it to continue adding memories."
       deleted_title: "This workspace is deleted"
-      deleted_description_with_days: "This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories. This workspace will be permanently deleted in %{days}."
-      deleted_description_scheduled: "This workspace has been deleted and is in read-only mode. You can restore it or permanently delete it along with all its memories. This workspace is scheduled for permanent deletion."
+      deleted_description_with_days: "This workspace has been deleted and is in read-only mode. Restoring it returns it to Workspaces. Otherwise it will be permanently deleted in %{days}."
+      deleted_description_scheduled: "This workspace has been deleted and is in read-only mode. Restoring it returns it to Workspaces. Otherwise it is scheduled for permanent deletion."
       archived_badge: "Archived"
       deleted_badge: "Deleted"
       pinned_badge: "Pinned"
@@ -131,7 +136,7 @@ en:
         category_all: "All"
         filter_label: "Filter by category"
         search_placeholder: "Filter memories in this workspace…"
-        search_label: "Search memories in this workspace"
+        search_label: "Filter memories in this workspace"
         sort_label: "Sort memories"
         sort_relevance: "Relevance"
         sort_updated: "Updated"
@@ -153,22 +158,42 @@ en:
         heading: "Archived Workspaces"
         breadcrumb: "Archived Workspaces"
         alert_title: "About Archived Workspaces"
-        alert_description: "Archived workspaces are read-only and cannot be modified. You can restore them at any time to continue working with them."
+        alert_description: "Archived workspaces are read-only and cannot be modified. A workspace's owner or an admin can unarchive it at any time."
         empty_title: "No archived workspaces"
-        empty_description: "You haven't archived any workspaces yet."
+        empty_description: "Workspaces you archive appear here."
     deleted:
       index:
         page_title: "Deleted Workspaces"
         heading: "Deleted Workspaces"
         breadcrumb: "Deleted Workspaces"
         alert_title: "About Deleted Workspaces"
-        alert_description: "Deleted workspaces can be restored or permanently removed. Permanently deleting a workspace will also delete all associated memories and cannot be undone."
+        alert_description: "A workspace's owner or an admin can restore it, which returns it to Workspaces, or permanently delete it, which also deletes all its memories and cannot be undone."
         empty_title: "No deleted workspaces"
-        empty_description: "You haven't deleted any workspaces yet."
+        empty_description: "Workspaces you delete appear here until they are removed."
   memories:
     versions:
       index:
         purge: "Purge versions…"
+        subtitle: "Version history"
+        breadcrumb: "Versions"
+        back: "Back to Memory"
+        current: "Current Version"
+        view: "View"
+        saved_by: "Saved %{time} ago by %{name}"
+        restore: "Restore as new version"
+        restore_title: "Restore %{version} as a new version?"
+        restore_confirm: "%{next} will become current. %{current} stays in history."
+        restore_button: "Restore"
+        changes_from: "Changes from %{version}"
+        no_content_changes: "Same content as %{version}."
+        field_empty: "none"
+        fields:
+          title: "Title"
+          source: "Source"
+          category: "Category"
+          tags: "Tags"
+        line_added: "Added: "
+        line_removed: "Removed: "
       purges:
         new:
           page_title: "%{title} - Purge versions"
@@ -214,15 +239,18 @@ en:
       title_label: "Title"
       title_placeholder: "Untitled Memory"
       source_placeholder: "e.g., Claude, Book Title, URL..."
-      content_placeholder: "Start with ## a heading. Markdown is supported."
+      content_placeholder: "Markdown is supported."
+      content_blank: "Content can't be blank when overwriting existing content."
       cancel: "Cancel"
-      save: "Save"
       create: "Create"
+      save_as_new_version: "Save as new version"
+      save_as_new_version_title: "Creates %{version} and keeps this version in history"
+      update_in_place: "Update %{version} in place"
+      open_current: "Open what they saved"
+      change_note_label: "What changed?"
+      change_note_placeholder: "Optional. Saved with the new version."
       status:
-        saved: "Saved"
-        saving: "Saving\u2026"
         unsaved: "Unsaved changes"
-        failed: "Not saved \u2014 retrying"
         unload_prompt: "You have unsaved changes. Leave this page and lose them?"
       toolbar:
         mod: "Ctrl+"
@@ -242,7 +270,9 @@ en:
       pinned_badge: "Pinned"
       switch_version: "Switch version"
       old_version_title: "You are viewing %{version}"
-      old_version_description: "This is an older version of this memory. Switch to the current version to make changes."
+      old_version_description: "This is an older version of this memory. The current version is %{version}."
+      version_saved_ago: "%{version} saved %{time} ago"
+      change_note: "%{version}: %{note}"
       archived_workspace_title: "This memory is in an archived workspace"
       archived_workspace_description: "This workspace is in read-only mode. You can view its contents but cannot make changes."
       deleted_workspace_title: "This memory is in a deleted workspace"
@@ -256,9 +286,6 @@ en:
       version_info_title: "Version Information"
       view_all_versions: "View All Versions"
       current_version_html: "Current: <strong>%{version}</strong>"
-      child_versions_count:
-        one: "%{count} version created from this"
-        other: "%{count} versions created from this"
       of_versions:
         one: "of %{count} version"
         other: "of %{count} versions"
@@ -289,19 +316,20 @@ en:
     memory_show_actions:
       versions: "Versions"
       new_version: "New Version"
-      new_version_confirm: "Create a new version from %{version}?"
       edit: "Edit"
       purge_versions: "Purge versions…"
       delete: "Delete"
       delete_title: "Delete %{title}?"
       delete_button: "Delete"
-      delete_confirm: "This is permanent, and it also deletes %{versions}."
+      delete_confirm:
+        zero: "This is permanent."
+        one: "This is permanent, and it also deletes its older version."
+        other: "This is permanent, and it also deletes its %{count} older versions."
       delete_confirm_links: "It removes %{links}, including any pointing here from other workspaces."
-      new_version_title: "Start a new version?"
-      new_version_button: "New version"
     memory:
       view_details: "View Details"
       source_label: "Source:"
+      source_system: "Added by recuerd0"
     actions:
       menu_label: "Memory actions"
       open: "Open"
@@ -310,19 +338,18 @@ en:
       versions: "Versions"
       edit: "Edit"
       delete: "Delete"
-      delete_confirm: "Delete this memory? This cannot be undone."
       tag_filter_scoped_aria: "Filter %{workspace} by the tag %{tag}"
     pinned:
       index:
         title: "Pinned Memories"
-        summary: "%{memories} across %{projects}"
+        summary: "%{memories} across %{workspaces}"
         summary_filtered: "%{memories} in %{workspace}"
         summary_memories:
           one: "1 memory"
           other: "%{count} memories"
-        summary_projects:
-          one: "1 project"
-          other: "%{count} projects"
+        summary_workspaces:
+          one: "1 workspace"
+          other: "%{count} workspaces"
         budget: "%{used} of %{limit} pins used"
         budget_with_system: "%{used} of %{limit} pins used · %{system} added by recuerd0"
         system_pin_badge: "Auto-pinned"
@@ -331,12 +358,12 @@ en:
         empty_title: "No pinned memories"
         empty_description: "Open any memory's ⋯ menu and choose Pin. Pinned memories from every workspace collect here."
         empty_cta: "Browse workspaces"
-        filtered_empty_title: "Nothing pinned in this project"
+        filtered_empty_title: "Nothing pinned in this workspace"
         filtered_empty_description: "You have no pinned memories in %{workspace}."
-        filtered_empty_clear: "Show all projects"
+        filtered_empty_clear: "Show all workspaces"
         toolbar:
-          filter_label: "Filter by project"
-          all_projects: "All projects"
+          filter_label: "Filter by workspace"
+          all_workspaces: "All workspaces"
           sort_label: "Sort pinned memories"
           sort_pinned: "Recently pinned"
           sort_updated: "Recently updated"
@@ -349,13 +376,16 @@ en:
     command:
       label: "Search"
       input_label: "Search workspaces and memories"
-      hint: "Type at least %{count} characters. ↑↓ to move, Enter to open, Esc to close."
+      hint_min_length: "Type at least %{count} characters."
+      hint: "↑↓ to select, Enter to open, Esc to close."
       hint_operators: "Supports AND, OR, NOT, \"phrases\" and title: / body:"
       results_label: "Search results"
       suggestions_label: "Suggestions"
-      pinned_workspaces: "Pinned projects"
+      pinned_workspaces: "Pinned workspaces"
       jump_back_in: "Jump back in"
-      see_all: "Press Enter to see all %{count} results"
+      see_all:
+        one: "With nothing selected, Enter opens this result on the search page."
+        other: "With nothing selected, Enter opens all %{count} results."
       related: "Related"
       scope_workspace: "Only in %{workspace}"
       empty_query: "Type something to search."
@@ -408,6 +438,35 @@ en:
         one: "%{count} in inactive workspaces hidden — open in search"
         other: "%{count} in inactive workspaces hidden — open in search"
 
+  ownership:
+    belongs_to: "It belongs to %{name}."
+    created_by: "Created by %{name}"
+    you: "you"
+    account_admin: "the account admin"
+    former_member: "a former member"
+    owned_and_created_by: "Owned by %{owner}, created by %{creator}"
+    denied: "Only its owner or an admin can do that."
+    update_denied: "Only this memory's owner or an account admin can update it in place. Use create_version to add a new version instead."
+    passed: "%{name} now owns this."
+    taken: "You now own this."
+    restore_first: "A deleted workspace has to be restored before it can change hands."
+    pass_denied: "Only its owner can pass this on. An admin can take it first."
+    invalid_recipient: "Choose someone on this account who doesn't already own it."
+    actions:
+      pass: "Pass ownership"
+      take: "Take ownership"
+      take_title: "Take ownership?"
+      take_confirm: "You become its owner, and you can then pass it to someone else. It still shows who created it."
+      take_button: "Take ownership"
+    edit:
+      page_title: "Pass ownership"
+      heading: "Pass ownership of %{name}"
+      description: "They become its owner straight away, without having to accept, and you keep access like anyone else on the account. It still shows who created it."
+      recipient_label: "New owner"
+      submit: "Pass ownership"
+      cancel: "Cancel"
+      nobody: "There is nobody else on this account to pass this to."
+
   components:
     sidebar:
       nav_user:
@@ -420,6 +479,10 @@ en:
         theme_dark: "Dark"
 
   profiles:
+    ownership:
+      title: "What you own"
+      description: "%{workspaces} and %{memories}, including anything passed to you."
+      link: "See what you own"
     show:
       page_title: "Profile"
       role_admin: "Admin"
@@ -430,8 +493,8 @@ en:
         other: "%{count} tokens"
     personal_info:
       title: "Personal Information"
-      description: "Manage your name and email address."
-      email_label: "Email:"
+      description: "Your display name and sign-in email."
+      email_label: "Email"
       name_label: "Name"
       name_placeholder: "Your display name"
       submit: "Update Profile"
@@ -469,10 +532,21 @@ en:
       title: "Connected applications"
       description: "Apps connected through MCP that can access your memories."
       revoke: "Disconnect"
-      revoke_confirm: "Disconnect this application? It will need to reconnect to regain access."
+      revoke_title: "Disconnect this application?"
+      revoke_confirm: "It will need to reconnect to regain access."
       connected_ago: "Connected %{time} ago"
       empty_title: "No connected applications"
       empty_description: "Connect Recuerd0 to Claude or another MCP client to see it here."
+
+  account:
+    recoveries:
+      show:
+        title: "Scheduled for deletion"
+        scheduled: "%{account} will be permanently deleted on %{date}."
+        admin_description: "Restoring brings everything back as it was, for everyone. You can also export your data first."
+        member_description: "An admin of this account can sign in to restore it before then."
+        restore: "Restore account"
+        sign_out: "Sign out"
 
   accounts:
     show:
@@ -500,15 +574,31 @@ en:
       remove_aria: "Remove %{email} from this account"
       remove_title: "Remove %{email}?"
       remove_button: "Remove user"
-      remove_confirm: "Remove %{email}? This permanently revokes their access and cannot be undone — they will not be able to log in again."
+      remove_confirm: "This permanently revokes their access, including their API tokens and connected apps, and cannot be undone. Every unused invitation link stops working too, so anyone invited but not yet joined needs a new one."
+      remove_owns: "They own %{workspaces} and %{memories}."
+      remove_owns_deleted: "That counts %{items} under Deleted."
+      remove_recipient: "Who should own these now?"
+      remove_recipient_hint: "Everything still shows who created it."
+      workspaces_count:
+        one: "1 workspace"
+        other: "%{count} workspaces"
+      memories_count:
+        one: "1 memory"
+        other: "%{count} memories"
     invitations:
       title: "Invite Users"
-      description: "Generate a shareable link for new members to join your account."
+      description: "Generate a link for one new member to join your account. Generate one per person: earlier unused links keep working."
       limit_reached: "Your account has reached the maximum of %{limit} users. Remove a user to generate a new invitation."
       link_label: "Invitation Link"
       copy_tooltip: "Copy to clipboard"
-      link_hint: "Share this link with the person you want to invite. Expires in 7 days."
+      link_hint: "This link is for one person. It stops working once they join, after 7 days, or if you revoke it."
       generate: "Generate Invitation Link"
+      permissions: "Members can use every workspace in this account and add new versions to any memory. Only a thing's owner or an admin can rename, delete, archive, restore, purge or overwrite it, and a workspace's owner can also delete any memory in it. Whoever creates something owns it until it is passed on."
+      name_hint: "Invitations say only \"this team\" until you give this account a name."
+      revoke: "Revoke all invitation links"
+      revoke_title: "Revoke all invitation links?"
+      revoke_confirm: "Every unused link stops working. People who already joined keep their access."
+      revoke_button: "Revoke links"
     data_export:
       title: "Data Export"
       description: "Download a complete backup of your workspaces and memories."
@@ -518,15 +608,23 @@ en:
       expires: "Expires %{date}"
       request: "Request Export"
       confirm: "This will create a full backup of all your workspaces and memories. You will receive an email when it's ready."
+      confirm_title: "Request a data export?"
+      confirm_button: "Request export"
     danger_zone:
       title: "Delete Account"
-      warning_title: "This action cannot be undone."
-      warning_description: "Deleting your account will permanently remove all workspaces, memories, and user data after 30 days. All users will lose access immediately."
+      warning_title: "Everyone loses access immediately."
+      warning_description: "For %{days} days an admin can sign in to restore the account or export its data. After that, all workspaces, memories, and user data are permanently removed."
+      password_label: "Your password"
       submit: "Delete Account"
-      confirm: "This will permanently delete your account and all data after 30 days. All users will lose access immediately. This action cannot be undone."
+      confirm_title: "Delete %{name}?"
+      confirm: "All users lose access now, and everything is permanently removed after %{days} days unless an admin restores the account first."
+      confirm_button: "Delete account"
 
   first_run:
     new:
+      account_name_label: "Account name"
+      account_name_placeholder: "Your team or company"
+      account_name_hint: "People you invite see this. You can change it later."
       page_title: "Set up your instance — recuerd0"
       heading: "Set up your instance"
       description: "Create the admin account for your recuerd0 instance."
@@ -544,10 +642,31 @@ en:
       email_placeholder: "m@example.com"
       password_placeholder: "Enter your password"
 
+  profile:
+    ownerships:
+      show:
+        page_title: "What you own"
+        heading: "What you own"
+        description: "You answer for these, including anything passed to you, which needs no acceptance. Anything deleted is under Deleted."
+        workspaces_title:
+          one: "1 workspace"
+          other: "%{count} workspaces"
+        memories_title:
+          one: "1 memory"
+          other: "%{count} memories"
+        archived: "Archived"
+        no_workspaces: "You don't own any workspaces."
+        no_memories: "You don't own any memories."
+
   registrations:
     new:
+      account_name_label: "Account name"
+      account_name_placeholder: "Your team or company"
+      account_name_hint: "People you invite see this. You can change it later."
       email_placeholder: "m@example.com"
       password_placeholder: "Choose a password"
+      password_hint: "At least 8 characters."
+      sign_in_instead: "Sign in instead"
       password_confirmation_placeholder: "Confirm your password"
 
   passwords:
@@ -561,7 +680,15 @@ en:
     show:
       page_title: "Join %{account}"
       heading: "Join %{account}"
-      description: "Create your account to join this workspace."
+      description: "Create your login to join this account."
+      heading_unnamed: "Join this team"
+      signed_in: "You're signed in as %{email}. An email can belong to one account only, so joining here needs a different email."
+      email_taken: "This email already has an account, and an email can belong to one account only."
+      sign_in_instead: "Sign in"
+      legal_prefix: "By joining, you agree to our"
+      legal_terms: "Terms of Service"
+      legal_and: "and"
+      legal_privacy: "Privacy Policy"
       email_label: "Email"
       email_placeholder: "you@example.com"
       password_placeholder: "At least 8 characters"
@@ -569,6 +696,10 @@ en:
       password_confirmation_placeholder: "Repeat your password"
       submit: "Create Account & Join"
       back_to_sign_in: "Back to sign in"
+    used:
+      page_title: "Invitation already used"
+      heading: "This invitation has already been used"
+      description: "Each invitation link works for one person. Ask an admin on the account for a new one."
     error:
       page_title: "Invalid Invitation"
       heading: "Invalid Invitation"

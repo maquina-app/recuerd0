@@ -7,6 +7,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     @user = Account.create_with_user(
+      account_name: "Test account",
       email_address: "onboarding@example.com",
       password: "password",
       password_confirmation: "password"
@@ -65,10 +66,10 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_onboarding_state(terminal: :complete, chat: :complete, content: :incomplete)
   end
 
-  test "teammate account content folds both content steps but does not connect either path" do
+  test "a teammate's own memory completes their content step, and nobody else's does" do
     Memory.create_with_content(
       @workspace,
-      title: "Account content",
+      title: "Admin's content",
       content: "Body",
       source: "manual"
     )
@@ -83,6 +84,11 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     get workspaces_url
 
     assert_response :success
+    assert_onboarding_state(terminal: :incomplete, chat: :incomplete, content: :incomplete)
+
+    Memory.create_with_content(@workspace, title: "Mine", content: "Body", source: "manual", created_by: teammate)
+    get workspaces_url
+
     assert_onboarding_state(terminal: :incomplete, chat: :incomplete, content: :complete)
   end
 
@@ -177,10 +183,10 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       .map { |command| command.text.strip }
     assert_equal [
       "brew install maquina-app/tap/recuerd0",
-      "recuerd0 account add personal --token <token>",
+      "recuerd0 account add personal --api-url http://www.example.com --token <token>",
       "recuerd0 workspace list",
       "recuerd0 skills install",
-      "recuerd0 import propose <path> --workspace <id>",
+      "recuerd0 import propose <path> --workspace #{@account.workspaces.active.order(:created_at).first.id}",
       "recuerd0 import commit import.plan.yaml"
     ], commands
     assert_not_includes commands, "recuerd0 import commit import.plan.yaml --yes"
@@ -189,7 +195,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-onboarding-command] code[data-clipboard-target='source']", count: 7
     assert_select "[data-onboarding-panel='terminal'] [data-onboarding-item][data-onboarding-step='1']" do
       assert_select "p", text: "Create a full-access token in Access Tokens first." do
-        assert_select "a[href='#{profile_path(anchor: "access-tokens")}'].text-primary",
+        assert_select "a[href='#{profile_path(anchor: "access-tokens", token_permission: "full_access", token_description: "recuerd0 CLI")}'].text-primary",
           text: "Access Tokens"
       end
       assert_select "a[data-component='button']", text: "Create access token", count: 0
@@ -202,7 +208,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       .map { |command| command.text.strip }
     assert_equal [
       "brew install maquina-app/tap/recuerd0",
-      "recuerd0 account add personal --token <token>",
+      "recuerd0 account add personal --api-url http://www.example.com --token <token>",
       "recuerd0 workspace list"
     ], terminal_connect_commands
     assert_equal "Confirms the connection.", terminal_connect_body.element_children[-2].text.squish
@@ -214,7 +220,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       .css("[data-onboarding-command] code")
       .map { |command| command.text.strip }
     assert_equal [
-      "recuerd0 import propose <path> --workspace <id>",
+      "recuerd0 import propose <path> --workspace #{@account.workspaces.active.order(:created_at).first.id}",
       "recuerd0 import commit import.plan.yaml"
     ], terminal_import_commands
     assert_not_includes terminal_import_body.text, "recuerd0 workspace list"
@@ -234,11 +240,11 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
     assert_equal "guidance", organise_item["data-onboarding-kind"]
     assert_equal "•", organise_item.at_css("[data-onboarding-marker='guidance']").text.squish
     assert_equal(
-      'Ask your agent: "I just imported notes into recuerd0 workspace <id>. Do the after-import pass." ' \
+      "Ask your agent: \"I just imported notes into recuerd0 workspace #{@account.workspaces.active.order(:created_at).first.id}. Do the after-import pass.\" " \
         "It will cluster the memories, fix weak titles, and propose hubs for review.",
       organise_item.at_css("[data-onboarding-item-body] p").text.squish
     )
-    assert_empty organise_item.css("[data-onboarding-optional]")
+    assert_equal 1, organise_item.css("[data-onboarding-optional]").size
     assert_empty organise_item.css("[data-onboarding-command]")
 
     assert_select "[data-onboarding-panel='terminal'] p",
@@ -251,15 +257,15 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       text: "Teaches your agent how to read, write and search here. Claude Code loads it automatically. Other agents need the file added manually.",
       count: 1
     assert_select "[data-onboarding-panel='terminal'] p",
-      text: "Ask your agent to save something here.",
+      text: "Save one in the browser, or ask your agent to save something here.",
       count: 1
 
     assert_select "[data-onboarding-panel='chat'][hidden]" do
-      assert_select "[data-onboarding-command] code", text: "https://recuerd0.ai/mcp"
+      assert_select "[data-onboarding-command] code", text: "http://www.example.com/mcp"
       assert_select "a[href='#{recuerd0_mcp_skill_path}'][data-component='button'][data-variant='outline']",
         text: "Download skill"
       assert_select "p", text: "Teaches your agent how to read, write and search here."
-      assert_select "p", text: "Ask your agent to save something here."
+      assert_select "p", text: "Save one in the browser, or ask your agent to save something here."
       assert_select "p",
         text: "In Claude Desktop or Claude.ai, open Settings → Connectors and add a custom connector with this URL. Browser sign-in — no token to copy.",
         count: 0
@@ -293,7 +299,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "[data-onboarding-optional][data-component='badge'][data-variant='outline']",
       text: "optional",
-      count: 1
+      count: 4
     assert_select "[data-onboarding-item]", count: 8
     assert_select "[data-drawer-part='header']" do
       assert_select "p", text: "Getting started", count: 1
@@ -345,7 +351,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
       if agent
         assert_alert_message(
           title: "Almost there",
-          text: "Almost there — ask your agent to save its first memory."
+          text: "Almost there — save your first memory, here or through your agent."
         )
       else
         assert_alert_message(

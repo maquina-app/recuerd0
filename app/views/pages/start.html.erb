@@ -1,4 +1,4 @@
-<% content_for :title, "Getting Started" %>
+<% content_for :title, "Getting Started — recuerd0" %>
 <% content_for :description, "Go from zero to working with recuerd0: create a token, connect the CLI, install the agent skill, import knowledge, or connect over MCP." %>
 <% content_for :canonical_url, "https://recuerd0.ai/start" %>
 
@@ -39,7 +39,7 @@
         <div class="code-block" data-controller="clipboard">
           <div class="code-head"><span class="code-label">shell</span><%= render "pages/code_copy" %></div>
           <div class="code-body"><code data-clipboard-target="source">brew install maquina-app/tap/recuerd0
-recuerd0 account add personal --api-url https://your-server.com --token YOUR_TOKEN</code></div>
+<%= cli_account_add_command(token: "YOUR_TOKEN") %></code></div>
         </div>
 
         <div class="endpoint-head">
@@ -110,6 +110,7 @@ recuerd0 import propose ./vault --workspace 12 --pretty</code></div>
             <li>Index — decisions</li>
             <li>D001 — the first decision</li>
           </ul>
+          <p>Any workspace you create later starts with its own pinned Map memory unless you untick <strong>Start with a map</strong>. Edit it or delete it; a blank workspace is a fine workspace.</p>
         </div>
 
         <div class="endpoint-head">

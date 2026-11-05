@@ -7,11 +7,12 @@ class Profile::PasswordsController < ApplicationController
       return
     end
 
-    if @user.update(password_params)
+    if @user.change_password(password_params)
+      @user.sessions.where.not(id: Current.session.id).delete_all
       ProfileMailer.password_changed(@user).deliver_later
       redirect_to profile_path, notice: t(".updated"), status: :see_other
     else
-      redirect_to profile_path, alert: @user.errors.full_messages.to_sentence, status: :see_other
+      redirect_to profile_path, alert: @user.errors.map(&:message).to_sentence, status: :see_other
     end
   end
 

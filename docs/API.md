@@ -353,7 +353,7 @@ POST /workspaces.json
 
 ### Update Workspace
 
-Updates an existing workspace. Requires `full_access` token.
+Updates an existing workspace. Requires `full_access` token, and the token's owner must own it or be an account admin; otherwise `403 FORBIDDEN`.
 
 ```
 PATCH /workspaces/:id.json
@@ -384,7 +384,7 @@ Returns the updated workspace object.
 
 ### Archive Workspace
 
-Archives a workspace. Requires `full_access` token. Archived workspaces become read-only.
+Archives a workspace. Requires `full_access` token, and the token's owner must own it or be an account admin; otherwise `403 FORBIDDEN`. Archived workspaces become read-only.
 
 ```
 POST /workspaces/:id/archive.json
@@ -393,6 +393,16 @@ POST /workspaces/:id/archive.json
 **Response** `200 OK`
 
 Returns the updated workspace object with `archived: true`.
+
+---
+
+### Export Workspace
+
+Returns every memory in a workspace, with all its versions, as one JSON document. Requires `read_only` or `full_access` token. Available at any time and not subject to the monthly limit on full account exports.
+
+```
+GET /workspaces/:id/export.json
+```
 
 ---
 
@@ -733,7 +743,7 @@ There is no `head=` or `tail=` query parameter — head and tail are expressed a
 
 ### Create Memory
 
-Creates a new memory with content. Requires `full_access` token.
+Creates a new memory with content. Requires `full_access` token. A memory needs a title or some content: with neither, the response is `422`.
 
 ```
 POST /workspaces/:workspace_id/memories.json
@@ -769,7 +779,7 @@ Returns the created memory object with content.
 
 ### Update Memory
 
-Updates an existing memory. Requires `full_access` token.
+Updates an existing memory in place. Requires `full_access` token, and the token's owner must own the memory or be an account admin; otherwise `403 FORBIDDEN`. Anyone else can add a version instead.
 
 ```
 PATCH /workspaces/:workspace_id/memories/:id.json
@@ -793,7 +803,9 @@ Returns the updated memory object with content.
 
 ### Delete Memory
 
-Deletes a memory and all its versions. Requires `full_access` token.
+Deletes a memory and all its versions. Requires `full_access` token, and the token's owner must own the memory, own its workspace, or be an account admin; otherwise `403 FORBIDDEN`.
+
+`:id` is the memory's root id or its current version's id. An older version's id returns `422` and deletes nothing, because versions can't be deleted one by one here: use `root_id` from the response, or purge old versions from the web.
 
 ```
 DELETE /workspaces/:workspace_id/memories/:id.json
@@ -823,6 +835,35 @@ GET /memories/pinned.json?include=obsolete,inactive
 Obsolete pins and pins in archived or deleted workspaces are withheld by default. The
 pinned **page** still shows every pin, including the group it labels "Inactive" — curation
 is not retrieval.
+
+---
+
+## Ownership
+
+Workspaces and memories report an `owner_id`: the user who answers for them. It starts as whoever created the record and can be passed on. `null` means the account admin.
+
+### Pass or Take Ownership
+
+Requires `full_access` token. The owner can pass a record to anyone still on the account. An admin who doesn't own it can only name themselves, and can pass it on once they do. Anyone else gets `403 FORBIDDEN`. The receiver doesn't have to accept. Passing a workspace moves the workspace only: the memories in it keep their owners.
+
+```
+PATCH /workspaces/:id/ownership.json
+PATCH /workspaces/:workspace_id/memories/:id/ownership.json
+```
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| user_id | integer | Who receives it (required) |
+
+**Response** `200 OK`
+
+```json
+{"id": 12, "owner_id": 7}
+```
+
+A `user_id` that isn't on the account, or that already owns the record, returns `422`. A deleted workspace returns `404`, and a memory in an archived workspace `403`.
 
 ---
 
@@ -930,7 +971,7 @@ GET /workspaces/:workspace_id/memories/:memory_id/versions/:id.json
 
 ### Create Version
 
-Creates a new version of a memory. Requires `full_access` token.
+Creates a new version of a memory. Requires `full_access` token. Omitted fields come from its current version, or from the version whose id is in the URL. A result identical to the current version is refused with `422`; a `change_note` alone is not a change. Anyone in the account can do this; updating a memory in place (`PATCH`) needs its creator or an account admin, otherwise `403 FORBIDDEN`.
 
 ```
 POST /workspaces/:workspace_id/memories/:memory_id/versions.json
@@ -940,11 +981,12 @@ POST /workspaces/:workspace_id/memories/:memory_id/versions.json
 
 | Name | Type | Description |
 |------|------|-------------|
-| version[title] | string | Version title (defaults to parent) |
-| version[content] | string | Version body (defaults to parent) |
-| version[source] | string | Source identifier (defaults to parent) |
-| version[tags] | array | Tags (defaults to parent) |
-| version[category] | string | Category (defaults to parent) |
+| version[title] | string | Version title (defaults to the current version) |
+| version[content] | string | Version body (defaults to the current version) |
+| version[source] | string | Source identifier (defaults to the current version) |
+| version[tags] | array | Tags (defaults to the current version) |
+| version[category] | string | Category (defaults to the current version) |
+| version[change_note] | string | Why this version exists, in one line (optional, max 280 characters) |
 
 **Request**
 

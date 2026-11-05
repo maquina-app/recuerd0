@@ -10,6 +10,7 @@ module SoftDeletable
     scope :deleted, -> { where.not(deleted_at: nil) }
     scope :not_deleted, -> { where(deleted_at: nil) }
     scope :deleted_ordered, -> { deleted.order(deleted_at: :desc) }
+    scope :past_retention, -> { deleted.where(deleted_at: ...RETENTION_DAYS.days.ago) }
   end
 
   # Soft delete the record

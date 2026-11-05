@@ -106,6 +106,7 @@
           <div data-form-part="group" class="flex-1 w-full">
             <%= form.label "access_token[description]", t("profiles.access_tokens.description_label"), data: { component: "label" } %>
             <%= form.text_field "access_token[description]",
+                value: params[:token_description],
                 placeholder: t("profiles.access_tokens.description_placeholder"),
                 maxlength: 60,
                 autocomplete: "off",
@@ -118,7 +119,7 @@
                 options_for_select([
                   [t("profiles.access_tokens.read_only"), "read_only"],
                   [t("profiles.access_tokens.full_access"), "full_access"]
-                ], "read_only"),
+                ], params[:token_permission].presence_in(%w[read_only full_access]) || "read_only"),
                 {},
                 data: { component: "input" } %>
           </div>

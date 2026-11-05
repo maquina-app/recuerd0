@@ -79,6 +79,7 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
 
   test "fresh account context contains only the map and continuation brief" do
     user = Account.create_with_user(
+      account_name: "Test account",
       email_address: "fresh-context@example.com",
       password: "password123",
       password_confirmation: "password123"
@@ -98,6 +99,7 @@ class Workspaces::ContextsControllerTest < ActionDispatch::IntegrationTest
 
   test "creator and teammate receive the same ordered seeded context" do
     creator = Account.create_with_user(
+      account_name: "Test account",
       email_address: "context-creator@example.com",
       password: "password123",
       password_confirmation: "password123"

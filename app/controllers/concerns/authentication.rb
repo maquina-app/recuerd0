@@ -12,6 +12,10 @@ module Authentication
     # so a leaked or read-only agent credential cannot manage its owner's
     # credentials or escalate through an HTML action.
     class_attribute :token_authentication_allowed, default: false, instance_predicate: false
+
+    # A deleted account is locked out of everything except the few actions that
+    # opt in: the recovery page, its export, and signing out.
+    class_attribute :deleted_account_allowed, default: false, instance_predicate: false
   end
 
   class_methods do
@@ -21,6 +25,10 @@ module Authentication
 
     def allow_token_authentication
       self.token_authentication_allowed = true
+    end
+
+    def allow_deleted_account
+      self.deleted_account_allowed = true
     end
   end
 
@@ -129,12 +137,12 @@ module Authentication
 
   def check_account_not_deleted
     return unless Current.account&.deleted?
+    return if deleted_account_allowed
 
-    if api_request?
+    if current_access_token || api_request?
       render_unauthorized
     else
-      terminate_session if Current.session
-      redirect_to new_session_path, alert: I18n.t("authentication.account_deleted")
+      redirect_to account_recovery_path, status: :see_other
     end
   end
 end

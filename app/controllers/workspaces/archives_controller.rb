@@ -1,10 +1,13 @@
 class Workspaces::ArchivesController < ApplicationController
   include WorkspaceScoped
   include WorkspaceViewMode
+  include OwnershipAuthorizable
 
   allow_token_authentication
 
   before_action :set_workspace, except: [:index]
+  before_action :redirect_deleted_workspace, only: %i[create destroy]
+  before_action -> { require_manage_access(@workspace) }, only: %i[create destroy]
 
   # GET /workspaces/archived
   def index
@@ -15,12 +18,15 @@ class Workspaces::ArchivesController < ApplicationController
     @total = scope.count
     scope = scope.search(@query) if @query
 
-    @pagy, @workspaces = pagy(scope)
+    @pagy, @workspaces = pagy(scope.includes(:created_by, :owner))
   end
 
   # GET /workspaces/archived/:id
   def show
-    unless @workspace.archived?
+    if @workspace.deleted?
+      redirect_to deleted_workspace_path(@workspace)
+      return
+    elsif !@workspace.archived?
       redirect_to workspaces_path, alert: t("workspaces/archives.not_archived")
       return
     end
@@ -59,6 +65,19 @@ class Workspaces::ArchivesController < ApplicationController
         format.html { redirect_to workspaces_path, alert: t("workspaces/archives.destroy.error"), status: :see_other }
         format.json { render_validation_errors(@workspace) }
       end
+    end
+  end
+
+  private
+
+  # A deleted workspace can only come back through Restore. Unarchiving one used
+  # to clear archived_at, report success and leave it deleted.
+  def redirect_deleted_workspace
+    return unless @workspace.deleted?
+
+    respond_to do |format|
+      format.html { redirect_to deleted_workspaces_path, alert: t("workspaces/archives.deleted", name: @workspace.name), status: :see_other }
+      format.json { render_not_found }
     end
   end
 end

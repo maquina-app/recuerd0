@@ -10,7 +10,10 @@
       <%= form_with(model: account, url: account_path, method: :patch, data: { component: "form" }) do |form| %>
         <div data-form-part="group">
           <%= form.label :name, data: { component: "label" } %>
+          <%# An email prefix in this field looks like a name someone chose, and saving
+              it would report success while invitations stay generic. %>
           <%= form.text_field :name,
+              value: (account.name if account.named?),
               aria: field_error_aria(form, :name),
               autofocus: true,
               placeholder: t("accounts.details.name_placeholder"),

@@ -1089,7 +1089,7 @@
 .marketing .page-header p { font-size: 1.05rem; color: var(--m-text-secondary); line-height: 1.7; max-width: 580px; }
 .marketing .base-url-bar { display: inline-flex; align-items: center; gap: 0.75rem; margin-top: 1.25rem; padding: 0.55rem 1rem; background: var(--m-code-bg); border: 1px solid var(--m-code-border); border-radius: 6px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-code); color: var(--m-text-secondary); }
 .marketing .base-url-bar .label { font-size: var(--doc-label); letter-spacing: 1.5px; text-transform: uppercase; color: var(--m-text-dim); }
-.marketing .base-url-bar code { color: var(--m-primary); font-family: inherit; }
+.marketing .base-url-bar code { color: var(--m-primary); font-family: inherit; min-width: 0; overflow-wrap: anywhere; }
 
 /* Sections & endpoints */
 .marketing .api-section { margin-bottom: 2rem; scroll-margin-top: calc(var(--m-header-h) + 1.5rem); }
@@ -1114,7 +1114,7 @@
 .marketing .route-bar.post .route-method { color: var(--m-post); background: oklch(0.480 0.190 150 / 0.1); }
 .marketing .route-bar.patch .route-method { color: var(--m-patch); background: oklch(0.520 0.160 70 / 0.1); }
 .marketing .route-bar.delete .route-method { color: var(--m-delete); background: oklch(0.500 0.170 25 / 0.1); }
-.marketing .route-path { color: var(--m-text); }
+.marketing .route-path { color: var(--m-text); min-width: 0; overflow-wrap: anywhere; }
 .marketing .route-path .param { color: var(--m-primary-dim); }
 .marketing .route-badge { margin-left: auto; font-family: 'Geist Mono', ui-monospace, monospace; font-size: var(--doc-label); letter-spacing: 1px; text-transform: uppercase; color: var(--m-text-dim); padding: 0.15rem 0.5rem; border: 1px solid var(--m-border); border-radius: 3px; background: var(--m-bg-elevated); }
 

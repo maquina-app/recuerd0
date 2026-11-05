@@ -1,0 +1,58 @@
+<% content_for :title, "#{t("account.recoveries.show.title")} — recuerd0" %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+
+<%= render "components/card" do %>
+  <%= render "components/card/header", css_classes: "text-center" do %>
+    <%= render "components/card/title", text: t("account.recoveries.show.title") %>
+    <%= render "components/card/description", text: t("account.recoveries.show.scheduled", account: @account.name, date: l(@account.permanent_deletion_on, format: :long)) %>
+  <% end %>
+
+  <%= render "components/card/content" do %>
+    <div class="space-y-4">
+      <% if Current.user.admin? %>
+        <p class="text-sm text-muted-foreground"><%= t("account.recoveries.show.admin_description") %></p>
+
+        <%= button_to t("account.recoveries.show.restore"), account_recovery_path,
+            method: :post,
+            form: { class: "w-full" },
+            class: "w-full",
+            data: { component: "button", variant: "primary" } %>
+
+        <% if @latest_export&.downloadable? %>
+          <a href="<%= account_export_path(@latest_export) %>" class="w-full"
+             data-component="button" data-variant="outline">
+            <%= icon_for(:download, class: "size-4") %>
+            <%= t("accounts.data_export.download") %>
+          </a>
+          <p class="text-center text-xs text-muted-foreground">
+            <%= t("accounts.data_export.expires", date: l(@latest_export.expires_at, format: :short)) %>
+          </p>
+        <% end %>
+
+        <% if @export_in_progress %>
+          <p class="text-center text-sm text-muted-foreground"><%= t("accounts.data_export.in_progress") %></p>
+        <% else %>
+          <%= button_to t("accounts.data_export.request"), account_exports_path,
+              method: :post,
+              disabled: @exports_this_month >= AccountExport::MONTHLY_LIMIT,
+              form: { class: "w-full" },
+              class: "w-full",
+              data: { component: "button", variant: "outline" } %>
+          <p class="text-center text-xs text-muted-foreground">
+            <%= t("accounts.data_export.usage", count: @exports_this_month, limit: AccountExport::MONTHLY_LIMIT) %>
+          </p>
+        <% end %>
+      <% else %>
+        <p class="text-sm text-muted-foreground"><%= t("account.recoveries.show.member_description") %></p>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+
+<div class="text-center">
+  <%= button_to t("account.recoveries.show.sign_out"), session_path,
+      method: :delete,
+      class: "text-sm underline underline-offset-4 hover:text-primary cursor-pointer" %>
+</div>

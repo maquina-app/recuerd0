@@ -1,0 +1,69 @@
+<%# locals: (user:, users:) %>
+<%# An icon-only button announced as just "button" while doing the irreversible thing
+    on this page, so the control names the person. A dialog of its own rather than the
+    turbo-confirm one, which cannot ask who receives their work. %>
+<% workspaces_count = user.owned_workspaces.count %>
+<% memories_count = user.owned_memories.count %>
+<% owns_anything = (workspaces_count + memories_count).positive? %>
+<%# Their What you own page leaves deleted things out, so say these numbers don't. %>
+<% deleted_workspaces_count = user.owned_workspaces.deleted.count %>
+<% memories_in_deleted_count = memories_count - user.owned_memories.in_undeleted_workspaces.count %>
+<% recipients = users.reject { |candidate| candidate == user } %>
+<div data-controller="modal">
+  <button type="button"
+          data-action="modal#open"
+          aria-label="<%= t("accounts.users.remove_aria", email: user.email_address) %>"
+          data-component="button"
+          data-variant="ghost"
+          data-size="icon-sm"
+          class="text-destructive hover:text-destructive">
+    <%= icon_for :x, class: "size-4" %>
+  </button>
+
+  <dialog data-modal-target="dialog"
+          aria-labelledby="<%= dom_id(user, :remove_title) %>"
+          class="p-0 m-0 backdrop:bg-black/80 max-w-none bg-transparent">
+    <div class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="bg-background fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg sm:max-w-[425px]">
+        <div class="flex flex-col gap-2 text-left">
+          <h2 id="<%= dom_id(user, :remove_title) %>" class="font-display text-lg leading-none font-medium break-words">
+            <%= t("accounts.users.remove_title", email: user.email_address) %>
+          </h2>
+          <p class="text-muted-foreground text-sm"><%= t("accounts.users.remove_confirm") %></p>
+        </div>
+
+        <%= form_with url: account_user_path(user), method: :delete, data: { component: "form" } do |form| %>
+          <% if owns_anything %>
+            <div data-form-part="group">
+              <p class="text-sm mb-2">
+                <%= t("accounts.users.remove_owns",
+                      workspaces: t("accounts.users.workspaces_count", count: workspaces_count),
+                      memories: t("accounts.users.memories_count", count: memories_count)) %>
+                <% if (deleted_workspaces_count + memories_in_deleted_count).positive? %>
+                  <%= t("accounts.users.remove_owns_deleted",
+                        items: [
+                          (t("accounts.users.workspaces_count", count: deleted_workspaces_count) if deleted_workspaces_count.positive?),
+                          (t("accounts.users.memories_count", count: memories_in_deleted_count) if memories_in_deleted_count.positive?)
+                        ].compact.to_sentence) %>
+                <% end %>
+              </p>
+              <%= form.label :transfer_to, t("accounts.users.remove_recipient"), data: { component: "label" }, for: dom_id(user, :transfer_to) %>
+              <%= form.select :transfer_to,
+                  recipients.map { |candidate| [candidate.display_name, candidate.id] },
+                  { selected: Current.account.first_admin&.id },
+                  id: dom_id(user, :transfer_to), data: { component: "select" } %>
+              <p class="text-xs text-muted-foreground"><%= t("accounts.users.remove_recipient_hint") %></p>
+            </div>
+          <% end %>
+
+          <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <button type="button" data-action="modal#close" data-component="button" data-variant="outline">
+              <%= t("shared.confirm.cancel") %>
+            </button>
+            <%= form.submit t("accounts.users.remove_button"), data: { component: "button", variant: "destructive" } %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </dialog>
+</div>

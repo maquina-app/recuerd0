@@ -138,4 +138,92 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
       assert_response :unprocessable_entity
     end
   end
+
+  test "an email that already has an account gets an inline error, not a crash" do
+    assert_no_difference("User.count") do
+      post invitations_url, params: {token: @token, user: {email_address: users(:two).email_address, password: "password123", password_confirmation: "password123"}}
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "[data-form-part='error']", text: /#{I18n.t("invitations.show.email_taken")}/
+    assert_select "[data-form-part='error'] a[href=?]", new_session_path
+  end
+
+  test "losing a race for the same email is handled too" do
+    @account.users.create!(email_address: "racer@example.com", password: "password123", password_confirmation: "password123", role: "member")
+    User.class_eval { alias_method :__valid, :valid? }
+    User.define_method(:valid?) { |*| true }
+
+    assert_no_difference("User.count") do
+      post invitations_url, params: {token: @token, user: {email_address: "racer@example.com", password: "password123", password_confirmation: "password123"}}
+    end
+    assert_response :unprocessable_entity
+  ensure
+    User.class_eval do
+      alias_method :valid?, :__valid
+      remove_method :__valid
+    end
+  end
+
+  test "a signed-in visitor is told why a second account needs another email" do
+    sign_in_as(users(:two))
+
+    get invitation_url(token: @token)
+
+    assert_match users(:two).email_address, response.body
+  end
+
+  test "an admin can revoke every link" do
+    sign_in_as(users(:one))
+
+    delete account_invitation_url
+
+    assert_redirected_to account_path
+    delete session_url
+    get invitation_url(token: @token)
+    assert_response :unprocessable_entity
+  end
+
+  test "a member cannot revoke links" do
+    sign_in_as(users(:member))
+
+    assert_no_difference("@account.invitations.unused.count") do
+      delete account_invitation_url
+    end
+  end
+
+  test "an account never named reveals nothing about its owner" do
+    @account.update!(name: users(:one).email_address.split("@").first)
+
+    get invitation_url(token: @token)
+
+    assert_match I18n.t("invitations.show.heading_unnamed"), response.body
+    assert_no_match(/#{Regexp.escape(users(:one).email_address)}/, response.body)
+    assert_select "[data-card-part='title']", text: /#{I18n.t("invitations.show.heading_unnamed")}/
+    assert_no_match(/>Join one</, response.body)
+    assert_match I18n.t("invitations.show.description"), response.body
+    assert_no_match(/join this workspace/, response.body)
+    assert_select "a[href=?]", terms_path
+    assert_select "a[href=?]", privacy_path
+  end
+
+  test "an admin is told why an unnamed account's invitation is generic" do
+    sign_in_as(users(:one))
+    @account.update!(name: users(:one).email_address.split("@").first)
+
+    get account_url
+    assert_match ERB::Util.html_escape(I18n.t("accounts.invitations.name_hint")), response.body
+
+    @account.update!(name: "Maquina")
+    get account_url
+    assert_no_match(/until you give this account a name/, response.body)
+  end
+
+  test "a chosen account name is used as it is" do
+    @account.update!(name: "Maquina")
+
+    get invitation_url(token: @token)
+
+    assert_match "Join Maquina", response.body
+  end
 end

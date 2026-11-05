@@ -214,7 +214,8 @@ module Mcp
         category: category,
         content: args["content"],
         tags: normalize_tags(args["tags"]),
-        source: args["source"] # server-injected by McpController, never client-supplied
+        source: args["source"], # server-injected by McpController, never client-supplied
+        created_by: user
       )
       raise ToolError, memory.errors.full_messages.to_sentence if memory.errors.any?
 
@@ -223,6 +224,9 @@ module Mcp
 
     def update_memory(account, args = {}, user: nil)
       memory = find_memory_for_update(account, args["memory_id"]).resolve_current_version
+      refuse_if_archived!(memory)
+      raise ToolError, I18n.t("ownership.update_denied") unless memory.manageable_by?(user)
+
       unless memory.current_version?
         raise ToolError,
           I18n.t("activerecord.errors.models.memory.attributes.base.historical_version_immutable")
@@ -244,19 +248,25 @@ module Mcp
       memory_json(memory.reload)
     end
 
-    # Appends a new immutable version to an existing memory (vs. update_memory,
+    # Appends a new version to an existing memory (vs. update_memory,
     # which overwrites in place). Omitted fields inherit from the latest version.
     def create_version(account, args = {}, user: nil)
       memory = find_memory(account, args["memory_id"])
+      refuse_if_archived!(memory)
       validate_category!(args["category"])
       category = args["category"].presence
 
-      version = memory.create_version!(
-        title: args["title"],
-        category: category,
-        content: args["content"],
-        tags: (normalize_tags(args["tags"]) if args.key?("tags")),
-        source: args["source"] # server-injected — provenance of this version
+      version = memory.resolve_current_version.create_changed_version(
+        {
+          title: args["title"],
+          category: category,
+          content: args["content"],
+          tags: (normalize_tags(args["tags"]) if args.key?("tags")),
+          source: args["source"], # server-injected — provenance of this version
+          change_note: args["change_note"],
+          created_by: user
+        },
+        ignoring: [:source]
       )
       raise ToolError, version.errors.full_messages.to_sentence if version.errors.any?
 
@@ -357,10 +367,11 @@ module Mcp
       {
         id: memory.root_memory.id.to_s, # stable id clients use for read/update/version
         title: memory.title,
-        category: memory.category,
-        tags: memory.tags,
+        category: memory.version_category,
+        tags: memory.version_tags,
         source: memory.source,
         version: memory.version,
+        change_note: memory.change_note,
         # Stated rather than inferred: a client gating context injection should
         # not have to parse tags or compare version numbers.
         obsolete: memory.obsolete?,
@@ -483,5 +494,13 @@ module Mcp
         raise(ToolError, "Memory not found")
     end
     private_class_method :find_memory_for_update
+
+    # find_memory keeps archived workspaces readable, so writes have to ask.
+    def refuse_if_archived!(memory)
+      return unless memory.archived?
+
+      raise ToolError, "This memory's workspace is archived, so it is read-only. Unarchive the workspace to change it."
+    end
+    private_class_method :refuse_if_archived!
   end
 end

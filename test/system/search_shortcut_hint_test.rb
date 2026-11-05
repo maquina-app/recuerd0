@@ -10,6 +10,7 @@ class SearchShortcutHintTest < ApplicationSystemTestCase
 
   setup do
     @user = Account.create_with_user(
+      account_name: "Test account",
       email_address: "system-shortcut-hint@example.com",
       password: "password",
       password_confirmation: "password"
