@@ -6,6 +6,14 @@
     <%= icon_for(:archive_restore, class: "w-4 h-4") %>
     <%= t("workspaces.actions.unarchive") %>
   <% end %>
+<% end %>
+
+<%= render "shared/ownership_actions",
+    record: workspace,
+    pass_path: edit_workspace_ownership_path(workspace),
+    take_path: workspace_ownership_path(workspace, user_id: Current.user.id) %>
+
+<% if workspace.manageable_by?(Current.user) %>
 
   <%= render "components/dropdown_menu/separator" %>
 
@@ -14,9 +22,10 @@
       variant: :destructive,
       data: {
         turbo_method: :delete,
-        turbo_confirm: t("workspaces.actions.confirm.delete_body",
-                         count: workspace.memories_count,
-                         days: SoftDeletable::RETENTION_DAYS),
+        turbo_confirm: [
+          t("workspaces.actions.confirm.delete_body", count: workspace.memories_count, days: SoftDeletable::RETENTION_DAYS),
+          memories_of_others_warning(workspace)
+        ].compact.join(" "),
         confirm_severity: "destructive",
         confirm_title: t("workspaces.actions.confirm.delete_title", name: workspace.name),
         confirm_button: t("workspaces.actions.confirm.delete_button")

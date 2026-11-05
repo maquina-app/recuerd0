@@ -3,10 +3,17 @@ module WorkspacesHelper
     @view_mode || "list"
   end
 
-  # On an archived or deleted workspace every action belongs to its creator or an
+  # On an archived or deleted workspace every action belongs to its owner or an
   # admin, so anyone else would open an empty menu.
   def workspace_actions?(workspace)
     workspace.active? || workspace.manageable_by?(Current.user)
+  end
+
+  # What a delete confirmation adds when some of what goes belongs to other people.
+  def memories_of_others_warning(workspace)
+    others = workspace.memories_of_others_count(Current.user)
+
+    t("workspaces.actions.confirm.includes_others", count: others) if others.positive?
   end
 
   def workspace_link_path(workspace)

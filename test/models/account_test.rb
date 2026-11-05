@@ -58,6 +58,7 @@ class AccountTest < ActiveSupport::TestCase
   # create_with_user sets first user as admin
   test "create_with_user sets first user as admin" do
     user = Account.create_with_user(
+      account_name: "Test account",
       email_address: "newadmin@test.com",
       password: "password123",
       password_confirmation: "password123"
@@ -126,36 +127,6 @@ class AccountTest < ActiveSupport::TestCase
   end
 
   # Invitation token tests
-  test "generate_invitation_token creates a valid encrypted token" do
-    account = accounts(:one)
-    token = account.generate_invitation_token
-    assert_not_nil token
-
-    found = Account.find_by_invitation_token(token)
-    assert_equal account, found
-  end
-
-  test "find_by_invitation_token returns nil for expired token" do
-    account = accounts(:one)
-    token = account.generate_invitation_token
-
-    travel 8.days do
-      assert_nil Account.find_by_invitation_token(token)
-    end
-  end
-
-  test "find_by_invitation_token returns nil for invalid token" do
-    assert_nil Account.find_by_invitation_token("garbage-token")
-  end
-
-  test "find_by_invitation_token returns nil for deleted account" do
-    account = accounts(:one)
-    token = account.generate_invitation_token
-    account.soft_delete
-
-    assert_nil Account.find_by_invitation_token(token)
-  end
-
   # seed_start_here_workspace tests
   test "seed_start_here_workspace creates My Workspace" do
     account = accounts(:one)
@@ -314,6 +285,7 @@ class AccountTest < ActiveSupport::TestCase
 
   test "create_with_user seeds My Workspace" do
     user = Account.create_with_user(
+      account_name: "Test account",
       email_address: "starhere@test.com",
       password: "password123",
       password_confirmation: "password123"
@@ -339,7 +311,7 @@ class AccountTest < ActiveSupport::TestCase
   end
 
   test "purge! removes the account and everything under it" do
-    account = Account.create_with_user(email_address: "purge-me@example.com", password: "password123", password_confirmation: "password123").account
+    account = Account.create_with_user(account_name: "Test account", email_address: "purge-me@example.com", password: "password123", password_confirmation: "password123").account
     workspace = account.workspaces.first
     workspace.memories.latest_versions.first.create_version!(content: "second version")
     client = OauthClient.create!(client_name: "Claude", redirect_uris: JSON.generate(["https://claude.ai/cb"]))

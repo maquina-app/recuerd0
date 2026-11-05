@@ -365,8 +365,8 @@ module Mcp
       {
         id: memory.root_memory.id.to_s, # stable id clients use for read/update/version
         title: memory.title,
-        category: memory.category,
-        tags: memory.tags,
+        category: memory.version_category,
+        tags: memory.version_tags,
         source: memory.source,
         version: memory.version,
         change_note: memory.change_note,

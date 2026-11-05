@@ -91,7 +91,7 @@ module Accounts
     def write_memory_file(memory, filename, workspace_dir)
       frontmatter = {
         "title" => memory.title,
-        "tags" => memory.tags.presence,
+        "tags" => memory.version_tags.presence,
         "source" => memory.source.presence,
         "version" => memory.version,
         "change_note" => memory.change_note.presence,

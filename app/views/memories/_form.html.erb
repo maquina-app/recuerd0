@@ -21,7 +21,7 @@
         controller: "memory-editor",
         action: "house-md:change->memory-editor#change submit->memory-editor#submit turbo:morph@document->memory-editor#morphed",
         memory_editor_focus_editor_value: params[:focus] == "editor",
-        memory_editor_start_dirty_value: memory.errors.any?,
+        memory_editor_start_dirty_value: memory.errors.any? && memory.errors.where(:base, :no_changes).none?,
         memory_editor_unsaved_label_value: t("memories.form.status.unsaved"),
         memory_editor_unload_prompt_value: t("memories.form.status.unload_prompt")
       } do |form| %>
@@ -164,7 +164,8 @@
             title: t("memories.form.save_as_new_version_title", version: memory.next_version_label),
             class: "order-last",
             data: { component: "button", variant: "primary", size: "sm", memory_editor_target: "primarySubmit" } %>
-        <% if memory.manageable_by?(Current.user) %>
+        <%# Not after a conflict: it would replace what the other person just saved. %>
+        <% if memory.manageable_by?(Current.user) && memory.errors.where(:base, :edit_conflict).none? %>
           <%= form.button t("memories.form.update_in_place", version: memory.version_label),
               name: "save_as", value: "in_place", type: :submit,
               data: { component: "button", variant: "outline", size: "sm" } %>

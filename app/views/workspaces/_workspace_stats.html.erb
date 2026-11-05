@@ -7,7 +7,7 @@
 
 <span class="stat-chip">
   <%= icon_for(:user) %>
-  <%= t("ownership.created_by", name: creator_name(workspace)) %>
+  <%= ownership_label(workspace) %>
 </span>
 
 <% freshness = workspace_freshness(workspace, stale_after: stale_after) -%>

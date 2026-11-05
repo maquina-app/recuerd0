@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_05_000006) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_05_000009) do
   create_table "access_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
@@ -48,7 +48,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_000006) do
   create_table "accounts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "deleted_at"
-    t.integer "invitation_generation", default: 0, null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.index ["deleted_at"], name: "index_accounts_on_deleted_at"
@@ -132,12 +131,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_000006) do
     t.index ["memory_id"], name: "index_contents_on_memory_id"
   end
 
+  create_table "invitations", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "used_at"
+    t.index ["account_id"], name: "index_invitations_on_account_id"
+  end
+
   create_table "memories", force: :cascade do |t|
     t.string "category", default: "general", null: false
     t.string "change_note"
     t.datetime "created_at", null: false
     t.integer "created_by_id"
     t.boolean "default_pinned", default: false, null: false
+    t.string "first_version_category"
+    t.text "first_version_tags"
+    t.integer "owner_id"
     t.integer "parent_memory_id"
     t.string "source"
     t.text "tags"
@@ -147,6 +157,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_000006) do
     t.integer "workspace_id", null: false
     t.index ["category"], name: "index_memories_on_category"
     t.index ["created_by_id"], name: "index_memories_on_created_by_id"
+    t.index ["owner_id"], name: "index_memories_on_owner_id"
     t.index ["parent_memory_id", "version"], name: "index_memories_on_parent_memory_id_and_version"
     t.index ["parent_memory_id"], name: "index_memories_on_parent_memory_id"
     t.index ["version"], name: "index_memories_on_version"
@@ -252,11 +263,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_000006) do
     t.text "description"
     t.integer "memories_count", default: 0, null: false
     t.string "name"
+    t.integer "owner_id"
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_workspaces_on_account_id"
     t.index ["archived_at"], name: "index_workspaces_on_archived_at"
     t.index ["created_by_id"], name: "index_workspaces_on_created_by_id"
     t.index ["deleted_at"], name: "index_workspaces_on_deleted_at"
+    t.index ["owner_id"], name: "index_workspaces_on_owner_id"
   end
 
   add_foreign_key "access_tokens", "oauth_clients"
@@ -266,8 +279,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_000006) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "contents", "memories"
+  add_foreign_key "invitations", "accounts"
   add_foreign_key "memories", "memories", column: "parent_memory_id"
   add_foreign_key "memories", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "memories", "users", column: "owner_id", on_delete: :nullify
   add_foreign_key "memories", "workspaces"
   add_foreign_key "memory_embeddings", "memories", on_delete: :cascade
   add_foreign_key "memory_links", "memories", column: "from_memory_id"
@@ -279,6 +294,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_000006) do
   add_foreign_key "users", "accounts"
   add_foreign_key "workspaces", "accounts"
   add_foreign_key "workspaces", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "workspaces", "users", column: "owner_id", on_delete: :nullify
 
   # Virtual tables defined in this database.
   # Note that virtual tables may not work with other database engines. Be careful if changing database.

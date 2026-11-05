@@ -90,6 +90,9 @@ en:
           other: "It moves to Deleted. You can restore it for %{days} days, after which it and its %{count} memories are permanently removed."
         destroy_title: "Permanently delete %{name}?"
         destroy_button: "Delete permanently"
+        includes_others:
+          one: "That includes 1 memory belonging to someone else."
+          other: "That includes %{count} memories belonging to other people."
         destroy_body:
           zero: "This cannot be undone. The workspace is removed immediately."
           one: "This cannot be undone. The workspace and its memory are removed immediately."
@@ -155,7 +158,7 @@ en:
         heading: "Archived Workspaces"
         breadcrumb: "Archived Workspaces"
         alert_title: "About Archived Workspaces"
-        alert_description: "Archived workspaces are read-only and cannot be modified. You can unarchive them at any time to continue working with them."
+        alert_description: "Archived workspaces are read-only and cannot be modified. A workspace's owner or an admin can unarchive it at any time."
         empty_title: "No archived workspaces"
         empty_description: "Workspaces you archive appear here."
     deleted:
@@ -164,7 +167,7 @@ en:
         heading: "Deleted Workspaces"
         breadcrumb: "Deleted Workspaces"
         alert_title: "About Deleted Workspaces"
-        alert_description: "Restoring a deleted workspace returns it to Workspaces. Permanently deleting one also deletes all its memories and cannot be undone."
+        alert_description: "A workspace's owner or an admin can restore it, which returns it to Workspaces, or permanently delete it, which also deletes all its memories and cannot be undone."
         empty_title: "No deleted workspaces"
         empty_description: "Workspaces you delete appear here until they are removed."
   memories:
@@ -437,9 +440,26 @@ en:
     you: "you"
     account_admin: "the account admin"
     former_member: "a former member"
-    denied: "Only its creator or an admin can do that."
-    update_denied: "Only this memory's creator or an account admin can update it in place. Use create_version to add a new version instead."
-    holds_others: "This workspace holds other people's memories, so only an admin can permanently delete it."
+    owned_and_created_by: "Owned by %{owner}, created by %{creator}"
+    denied: "Only its owner or an admin can do that."
+    update_denied: "Only this memory's owner or an account admin can update it in place. Use create_version to add a new version instead."
+    passed: "%{name} now owns this."
+    pass_denied: "Only its owner can pass this on. An admin can take it first."
+    invalid_recipient: "Choose someone on this account who doesn't already own it."
+    actions:
+      pass: "Pass ownership"
+      take: "Take ownership"
+      take_title: "Take ownership?"
+      take_confirm: "You become its owner, and you can then pass it to someone else. It still shows who created it."
+      take_button: "Take ownership"
+    edit:
+      page_title: "Pass ownership"
+      heading: "Pass ownership of %{name}"
+      description: "They become its owner straight away, without having to accept, and you keep access like anyone else on the account. It still shows who created it."
+      recipient_label: "New owner"
+      submit: "Pass ownership"
+      cancel: "Cancel"
+      nobody: "There is nobody else on this account to pass this to."
 
   components:
     sidebar:
@@ -453,6 +473,10 @@ en:
         theme_dark: "Dark"
 
   profiles:
+    ownership:
+      title: "What you own"
+      description: "%{workspaces} and %{memories}, including anything passed to you."
+      link: "See what you own"
     show:
       page_title: "Profile"
       role_admin: "Admin"
@@ -544,20 +568,29 @@ en:
       remove_aria: "Remove %{email} from this account"
       remove_title: "Remove %{email}?"
       remove_button: "Remove user"
-      remove_confirm: "This permanently revokes their access, including their API tokens and connected apps, and cannot be undone."
+      remove_confirm: "This permanently revokes their access, including their API tokens and connected apps, and cannot be undone. Every unused invitation link stops working too, so anyone invited but not yet joined needs a new one."
+      remove_owns: "They own %{workspaces} and %{memories}."
+      remove_recipient: "Who should own these now?"
+      remove_recipient_hint: "Everything still shows who created it."
+      workspaces_count:
+        one: "1 workspace"
+        other: "%{count} workspaces"
+      memories_count:
+        one: "1 memory"
+        other: "%{count} memories"
     invitations:
       title: "Invite Users"
-      description: "Generate a shareable link for new members to join your account."
+      description: "Generate a link for one new member to join your account. Generate one per person: earlier unused links keep working."
       limit_reached: "Your account has reached the maximum of %{limit} users. Remove a user to generate a new invitation."
       link_label: "Invitation Link"
       copy_tooltip: "Copy to clipboard"
-      link_hint: "Anyone with this link can join until it expires in 7 days or you revoke it."
+      link_hint: "This link is for one person. It stops working once they join, after 7 days, or if you revoke it."
       generate: "Generate Invitation Link"
-      permissions: "Members can use every workspace in this account and add new versions to any memory. Only a thing's creator or an admin can delete, archive, restore, purge or overwrite it, and only an admin can permanently delete a workspace holding someone else's memories."
-      name_hint: "Invitations say only \"a team\" until you give this account a name."
+      permissions: "Members can use every workspace in this account and add new versions to any memory. Only a thing's owner or an admin can rename, delete, archive, restore, purge or overwrite it, and a workspace's owner can also delete any memory in it. Whoever creates something owns it until it is passed on."
+      name_hint: "Invitations say only \"this team\" until you give this account a name."
       revoke: "Revoke all invitation links"
       revoke_title: "Revoke all invitation links?"
-      revoke_confirm: "Every link generated so far stops working. People who already joined keep their access."
+      revoke_confirm: "Every unused link stops working. People who already joined keep their access."
       revoke_button: "Revoke links"
     data_export:
       title: "Data Export"
@@ -582,6 +615,9 @@ en:
 
   first_run:
     new:
+      account_name_label: "Account name"
+      account_name_placeholder: "Your team or company"
+      account_name_hint: "People you invite see this. You can change it later."
       page_title: "Set up your instance — recuerd0"
       heading: "Set up your instance"
       description: "Create the admin account for your recuerd0 instance."
@@ -599,8 +635,27 @@ en:
       email_placeholder: "m@example.com"
       password_placeholder: "Enter your password"
 
+  profile:
+    ownerships:
+      show:
+        page_title: "What you own"
+        heading: "What you own"
+        description: "You answer for these, including anything passed to you, which needs no acceptance. Anything deleted is under Deleted."
+        workspaces_title:
+          one: "1 workspace"
+          other: "%{count} workspaces"
+        memories_title:
+          one: "1 memory"
+          other: "%{count} memories"
+        archived: "Archived"
+        no_workspaces: "You don't own any workspaces."
+        no_memories: "You don't own any memories."
+
   registrations:
     new:
+      account_name_label: "Account name"
+      account_name_placeholder: "Your team or company"
+      account_name_hint: "People you invite see this. You can change it later."
       email_placeholder: "m@example.com"
       password_placeholder: "Choose a password"
       password_hint: "At least 8 characters."
@@ -619,7 +674,7 @@ en:
       page_title: "Join %{account}"
       heading: "Join %{account}"
       description: "Create your login to join this account."
-      heading_unnamed: "Join a team on recuerd0"
+      heading_unnamed: "Join this team"
       signed_in: "You're signed in as %{email}. An email can belong to one account only, so joining here needs a different email."
       email_taken: "This email already has an account, and an email can belong to one account only."
       sign_in_instead: "Sign in"
@@ -634,6 +689,10 @@ en:
       password_confirmation_placeholder: "Repeat your password"
       submit: "Create Account & Join"
       back_to_sign_in: "Back to sign in"
+    used:
+      page_title: "Invitation already used"
+      heading: "This invitation has already been used"
+      description: "Each invitation link works for one person. Ask an admin on the account for a new one."
     error:
       page_title: "Invalid Invitation"
       heading: "Invalid Invitation"

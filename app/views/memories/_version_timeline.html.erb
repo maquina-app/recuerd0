@@ -71,9 +71,9 @@
             </p>
           <% end %>
 
-          <% if version.tags.any? %>
+          <% if version.version_tags.any? %>
             <div class="flex flex-wrap gap-1 mt-3">
-              <% version.tags.each do |tag| %>
+              <% version.version_tags.each do |tag| %>
                 <%= render "components/badge", variant: :outline, css_classes: "text-xs" do %>
                   <%= icon_for(:tag, class: "w-3 h-3") %>
                   <%= tag %>

@@ -966,7 +966,14 @@ house-md-toolbar button svg {
 .ws-row:hover {
   background: color-mix(in oklch, var(--accent) 50%, transparent);
 }
-.ws-row.is-deleted {
+/* On the parts, not the row: opacity makes a stacking context, which traps an open
+   menu underneath the next row and fades it too. */
+.ws-row.is-deleted > :not(.ws-row-actions) {
+  opacity: 0.7;
+}
+.ws-card-deleted [data-card-part="footer"],
+.ws-card-deleted [data-card-part="header"] > :not(:has([data-component="dropdown-menu"])),
+.ws-card-deleted [data-card-part="header"] > :has([data-component="dropdown-menu"]) > :not(:has([data-component="dropdown-menu"])) {
   opacity: 0.7;
 }
 
@@ -982,6 +989,11 @@ house-md-toolbar button svg {
   position: relative;
   z-index: 1;
   align-self: center;
+}
+/* Every row's actions share that z-index, so the next row's button would paint over
+   an open menu and take clicks at its edge. */
+.ws-row-actions:has([aria-expanded="true"]) {
+  z-index: 20;
 }
 /* The stretched overlay otherwise swallows every pointer event, so a
    description could not be selected or copied. Lift the text above it. */
@@ -1775,7 +1787,7 @@ a {
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
 }
 .link-picker-body { padding: 0 0.75rem 0.75rem; }
-.memory-row.is-deleted {
+.memory-row.is-deleted > :not(:has([data-component="dropdown-menu"])) {
   opacity: 0.7;
 }
 

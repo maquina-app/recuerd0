@@ -11,7 +11,7 @@ class MemoriesController < ApplicationController
   before_action :set_workspace
   before_action :ensure_not_deleted
   before_action :set_memory, only: %i[show edit update destroy]
-  before_action -> { require_manage_access(@memory) }, only: :destroy
+  before_action -> { require_delete_access(@memory) }, only: :destroy
   before_action :require_in_place_access, only: :update
   before_action :require_active_workspace, only: %i[new create edit update destroy]
 
@@ -53,7 +53,7 @@ class MemoriesController < ApplicationController
         return validate_content_params if content_filtered?
         # The viewer is part of the validator because pinned/pinned_at are
         # rendered per user, outside the record-keyed json.cache! block.
-        return unless stale?(etag: [@memory, Current.user])
+        return unless stale?(etag: [@memory, @memory.ownership_record.owner_id, Current.user])
       end
     end
   end

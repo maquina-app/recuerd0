@@ -52,7 +52,12 @@
     <%= t("memories.memory_show_actions.new_version") %>
   <% end %>
 
-  <% if can_manage %>
+  <%= render "shared/ownership_actions",
+      record: memory,
+      pass_path: edit_workspace_memory_ownership_path(workspace, memory.stable_id),
+      take_path: workspace_memory_ownership_path(workspace, memory.stable_id, user_id: Current.user.id) %>
+
+  <% if memory.deletable_by?(Current.user) %>
     <%= render "components/dropdown_menu/separator" %>
 
     <%= render "components/dropdown_menu/item",

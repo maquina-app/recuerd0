@@ -5,6 +5,7 @@ class OnboardingHelperTest < ActionView::TestCase
 
   setup do
     @user = Account.create_with_user(
+      account_name: "Test account",
       email_address: "onboarding-helper@example.com",
       password: "password",
       password_confirmation: "password"
@@ -21,6 +22,7 @@ class OnboardingHelperTest < ActionView::TestCase
   test "onboarding state matrix keeps connection paths, content, and dismissal independent" do
     [false, true].repeated_permutation(4).each_with_index do |(manual, oauth, content, dismissed), index|
       user = Account.create_with_user(
+        account_name: "Test account",
         email_address: "onboarding-matrix-#{index}@example.com",
         password: "password",
         password_confirmation: "password"

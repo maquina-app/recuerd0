@@ -56,6 +56,22 @@
         <% end %>
       </div>
 
+      <div data-form-part="group">
+        <%= form.label :account_name, t("first_run.new.account_name_label"), data: { component: "label" } %>
+        <%= form.text_field :account_name,
+            aria: field_error_aria(form, :account_name),
+            required: true,
+            maxlength: 100,
+            autocomplete: "organization",
+            placeholder: t("first_run.new.account_name_placeholder"),
+            data: { component: "input" } %>
+        <% if @user.errors[:account_name].any? %>
+          <p data-form-part="error" id="<%= form.field_id(:account_name, :error) %>"><%= @user.errors[:account_name].first %></p>
+        <% else %>
+          <p class="text-xs text-muted-foreground"><%= t("first_run.new.account_name_hint") %></p>
+        <% end %>
+      </div>
+
       <div data-form-part="actions">
         <%= form.submit t("first_run.new.submit"),
             data: { component: "button", variant: "primary" }, class: "w-full" %>

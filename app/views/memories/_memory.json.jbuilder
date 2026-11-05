@@ -2,7 +2,11 @@
 # touch its memories, so a record-keyed fragment would keep reporting the old
 # workspace.state long after the state changed.
 json.cache! [memory, memory.workspace, "links_count:#{memory.links_count}"] do
-  json.call(memory, :id, :title, :tags, :source, :category, :version, :change_note)
+  json.call(memory, :id, :title)
+  json.tags memory.version_tags
+  json.source memory.source
+  json.category memory.version_category
+  json.call(memory, :version, :change_note)
   json.version_label memory.version_label
   json.has_versions memory.versioned?
   # Status stated outright, so a client can gate context injection without
@@ -32,8 +36,10 @@ end
 # Opt-out because the export renders this partial once per historical version:
 # a version is not individually pinnable, so every one of them would report the
 # root's pinned: true. Pin state is per-user UI state and has no place in a
-# portable data dump.
+# portable data dump, and neither does an id only this account can read. Passing
+# ownership touches nothing, so owner_id could not sit in the fragment either.
 if defined?(include_pin_state) ? include_pin_state : true
+  json.owner_id memory.ownership_record.owner_id
   json.pinned pinned_for?(memory)
   json.pinned_at pinned_at_for(memory)
   json.pin_origin pin_origin_for_record(memory)

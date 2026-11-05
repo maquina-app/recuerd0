@@ -89,8 +89,8 @@
   <%# ===== META (flush-left, aligned with tags + content) ===== %>
   <div class="mb-2 flex flex-wrap items-center gap-2">
     <%= render "components/badge", variant: category_variant, size: :sm do %>
-      <span class="category-dot" data-cat="<%= @memory.category %>"></span>
-      <%= t("memories.categories.#{@memory.category}") %>
+      <span class="category-dot" data-cat="<%= @memory.version_category %>"></span>
+      <%= t("memories.categories.#{@memory.version_category}") %>
     <% end %>
 
     <% if @memory.versioned? %>
@@ -118,7 +118,7 @@
     </span>
     <span class="stat-chip">
       <%= icon_for(:user) %>
-      <%= t("ownership.created_by", name: creator_name(@memory)) %>
+      <%= ownership_label(@memory) %>
     </span>
     <% saved_at = version_saved_at(@memory) %>
     <span class="stat-chip">
@@ -174,10 +174,10 @@
   <% end %>
 
   <%# ===== TAGS + VERSION SWITCHER ===== %>
-  <% if @memory.tags.any? || @memory.versioned? %>
+  <% if @memory.version_tags.any? || @memory.versioned? %>
     <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div class="flex flex-wrap gap-1.5">
-        <% @memory.tags.each do |tag| %>
+        <% @memory.version_tags.each do |tag| %>
           <span class="tag-badge">
             <%= icon_for(:tag) %>
             <span class="tag-label"><%= tag %></span>

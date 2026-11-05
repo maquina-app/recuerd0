@@ -1,0 +1,14 @@
+<% content_for :title, "#{t('invitations.used.page_title')} — recuerd0" %>
+
+<div>
+  <%= render "components/alert", variant: :warning, icon: :alert_triangle do %>
+    <strong><%= t("invitations.used.heading") %></strong>
+    <p class="mt-1"><%= t("invitations.used.description") %></p>
+  <% end %>
+
+  <div class="text-center mt-6">
+    <%= link_to new_session_path, class: "inline-flex items-center gap-1 text-sm underline underline-offset-4 hover:text-primary" do %>
+      <%= icon_for :arrow_left, class: "size-4" %> <%= t("invitations.error.back_to_sign_in") %>
+    <% end %>
+  </div>
+</div>

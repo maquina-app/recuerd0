@@ -1197,6 +1197,19 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_includes result["error"]["message"], "2026-07-28"
   end
 
+  test "a client opening with the old handshake is told which versions to speak" do
+    payload = {jsonrpc: "2.0", id: 1, method: "initialize",
+               params: {protocolVersion: "2025-06-18", capabilities: {}, clientInfo: {name: "old", version: "1"}}}
+
+    post mcp_endpoint_url, params: payload.to_json,
+      headers: auth_headers(@read_token.raw_token).merge("Content-Type" => "application/json")
+
+    assert_response :bad_request
+    result = response.parsed_body
+    assert_equal(-32_022, result["error"]["code"])
+    assert_equal({"supported" => ["2026-07-28"], "requested" => "2025-06-18"}, result["error"]["data"])
+  end
+
   test "ping is not a method on 2026-07-28" do
     result = mcp_post(mcp_rpc("ping"), token: @read_token.raw_token)
 

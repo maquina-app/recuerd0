@@ -18,7 +18,7 @@ class Workspaces::ArchivesController < ApplicationController
     @total = scope.count
     scope = scope.search(@query) if @query
 
-    @pagy, @workspaces = pagy(scope.includes(:created_by))
+    @pagy, @workspaces = pagy(scope.includes(:created_by, :owner))
   end
 
   # GET /workspaces/archived/:id

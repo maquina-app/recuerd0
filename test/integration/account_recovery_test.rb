@@ -36,7 +36,7 @@ class AccountRecoveryTest < ActionDispatch::IntegrationTest
     @account.schedule_deletion!
 
     assert_no_difference("Account.count") do
-      post registration_url, params: {user: {email_address: @admin.email_address, password: "password123", password_confirmation: "password123"}}
+      post registration_url, params: {user: {account_name: "Acme", email_address: @admin.email_address, password: "password123", password_confirmation: "password123"}}
     end
     assert_response :unprocessable_entity
     assert_select "[data-form-part='error'] a[href=?]", new_session_path

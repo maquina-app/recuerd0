@@ -4,7 +4,7 @@ class Workspaces::DeletedController < ApplicationController
   include OwnershipAuthorizable
 
   before_action :set_workspace, except: [:index]
-  before_action :require_permanent_delete_access, only: :destroy
+  before_action -> { require_manage_access(@workspace) }, only: :destroy
 
   # GET /workspaces/deleted
   def index
@@ -15,7 +15,7 @@ class Workspaces::DeletedController < ApplicationController
     @total = scope.count
     scope = scope.search(@query) if @query
 
-    @pagy, @workspaces = pagy(scope.includes(:created_by))
+    @pagy, @workspaces = pagy(scope.includes(:created_by, :owner))
   end
 
   # GET /workspaces/deleted/:id
@@ -38,14 +38,5 @@ class Workspaces::DeletedController < ApplicationController
     @workspace.destroy!
     track_event("workspace.permanent_destroy", metadata: {workspace_name: name})
     redirect_to deleted_workspaces_path, notice: t("workspaces/deleted.destroy.destroyed", name: name), status: :see_other
-  end
-
-  private
-
-  def require_permanent_delete_access
-    return if @workspace.permanently_deletable_by?(Current.user)
-
-    message = @workspace.owned_by?(Current.user) ? t("ownership.holds_others") : t("ownership.denied")
-    redirect_back_or_to deleted_workspaces_path, alert: message, status: :see_other
   end
 end

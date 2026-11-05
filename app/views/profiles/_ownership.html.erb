@@ -1,0 +1,12 @@
+<%# locals: (user:) %>
+<%= render "components/card" do %>
+  <%= render "components/card/header" do %>
+    <%= render "components/card/title", text: t("profiles.ownership.title") %>
+    <%= render "components/card/description", text: t("profiles.ownership.description",
+          workspaces: t("accounts.users.workspaces_count", count: user.owned_workspaces.not_deleted.count),
+          memories: t("accounts.users.memories_count", count: user.owned_memories.in_undeleted_workspaces.count)) %>
+  <% end %>
+  <%= render "components/card/content" do %>
+    <%= link_to t("profiles.ownership.link"), profile_ownership_path, data: { component: "button", variant: "outline", size: "sm" } %>
+  <% end %>
+<% end %>

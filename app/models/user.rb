@@ -26,6 +26,9 @@ class User < ApplicationRecord
     source: :pinnable,
     source_type: "Memory"
 
+  # Signup asks for it next to the person's own details; it lands on the account.
+  attr_accessor :account_name
+
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
   scope :active, -> { where.not("email_address LIKE 'deleted-%'") }
@@ -56,20 +59,35 @@ class User < ApplicationRecord
   end
 
   # has_secure_password ignores a blank password, which would otherwise report a
-  # reset that changed nothing.
-  def reset_password(attributes)
+  # change that changed nothing.
+  def change_password(attributes)
     if attributes[:password].blank?
       errors.add(:password, :blank)
       return false
     end
 
-    update(attributes).tap { |updated| sessions.destroy_all if updated }
+    update(attributes)
+  end
+
+  def reset_password(attributes)
+    change_password(attributes).tap { |changed| sessions.destroy_all if changed }
+  end
+
+  def owned_workspaces
+    account.workspaces.owned_by(self)
+  end
+
+  def owned_memories
+    Memory.latest_versions.owned_by(self).joins(:workspace).where(workspaces: {account_id: account_id})
   end
 
   # Ends every way in at once. The email goes last because it is what makes sign-in
-  # impossible; tokens and OAuth grants survive that unless revoked here.
-  def remove_from_account!
+  # impossible; tokens and OAuth grants survive that unless revoked here. Unused
+  # invitation links go too, because this person may be holding one.
+  def remove_from_account!(transfer_to: account.first_admin)
     transaction do
+      hand_over_ownership_to(transfer_to)
+      account.revoke_invitations!
       sessions.delete_all
       oauth_authorization_codes.delete_all
       access_tokens.where(revoked_at: nil).find_each(&:revoke!)
@@ -109,6 +127,13 @@ class User < ApplicationRecord
   end
 
   private
+
+  def hand_over_ownership_to(recipient)
+    return unless recipient
+
+    Workspace.where(owner_id: id).update_all(owner_id: recipient.id)
+    Memory.where(owner_id: id).update_all(owner_id: recipient.id)
+  end
 
   def pin_account_defaults
     Memory.joins(:workspace)

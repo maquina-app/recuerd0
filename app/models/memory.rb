@@ -7,7 +7,7 @@ class Memory < ApplicationRecord
   belongs_to :workspace, touch: true
   belongs_to :parent_memory, class_name: "Memory", optional: true
   has_one :content, dependent: :destroy
-  has_many :child_versions, class_name: "Memory", foreign_key: "parent_memory_id", dependent: :destroy
+  has_many :child_versions, class_name: "Memory", foreign_key: "parent_memory_id", dependent: :destroy, inverse_of: :parent_memory
   # Only the newest child, so a result list can show each memory's current
   # version without loading its history. Preload it; current_version and
   # versioned? read it when loaded.
@@ -20,6 +20,8 @@ class Memory < ApplicationRecord
 
   # Serialize tags as an array - Rails 7+ syntax
   serialize :tags, coder: JSON, type: Array
+  # Null, not empty, until a root's tags part ways with the current version's.
+  serialize :first_version_tags, coder: JSON
 
   # Inherit workspace lifecycle state
   delegate :archived?, :deleted?, :active?, to: :workspace
@@ -224,6 +226,21 @@ class Memory < ApplicationRecord
     root_memory
   end
 
+  # Delete is the one thing a workspace's owner can do to what others put in it.
+  def deletable_by?(user)
+    manageable_by?(user) || workspace.owned_by?(user)
+  end
+
+  # What this version itself held. A root row's own columns follow the current
+  # version, for filters and rollups, so v1 has to answer from what it kept.
+  def version_tags
+    first_version_tags || tags
+  end
+
+  def version_category
+    first_version_category || category
+  end
+
   # Check if this is the root version (no parent)
   def root_version?
     parent_memory_id.nil?
@@ -293,9 +310,9 @@ class Memory < ApplicationRecord
     new_version = root.child_versions.build(
       workspace: root.workspace,
       title: attributes[:title] || title,
-      tags: attributes[:tags] || tags,
+      tags: attributes[:tags] || version_tags,
       source: attributes[:source] || source,
-      category: attributes[:category].presence || category,
+      category: attributes[:category].presence || version_category,
       created_by: attributes[:created_by],
       change_note: attributes[:change_note].presence
     )
@@ -353,7 +370,7 @@ class Memory < ApplicationRecord
   def repeats_current_version?(attributes)
     given = attributes.compact
     given = given.except(:category) if given[:category].blank?
-    inherited = {title: title, source: source, category: category, tags: tags, content: content&.body&.content.to_s}
+    inherited = {title: title, source: source, category: version_category, tags: version_tags, content: content&.body&.content.to_s}
 
     !root_memory.current_version.differs_from?(inherited.merge(given))
   end
@@ -367,10 +384,10 @@ class Memory < ApplicationRecord
         ActionText::Markdown.separate_fences_from_lists(attributes[:content]) != content&.body&.content.to_s)
   end
 
-  # Search and filters treat tags by name, so Deploy and deploy are one tag. The first
-  # spelling wins.
+  # Search and filters treat tags by name, so Deploy and deploy are one tag, and so are
+  # " ops " and ops. The first spelling wins.
   def self.distinct_tags(tags)
-    Array(tags).compact_blank.uniq { |tag| tag.to_s.strip.downcase }
+    Array(tags).map { |tag| tag.to_s.strip }.compact_blank.uniq(&:downcase)
   end
 
   # Keep the root row's category in sync with the current (latest) version's.
@@ -381,7 +398,9 @@ class Memory < ApplicationRecord
   def sync_root_category!
     root = root_memory
     current_category = root.current_version.category
-    root.update_column(:category, current_category) if root.category != current_category
+    return if root.category == current_category
+
+    root.update_columns(category: current_category, first_version_category: root.version_category)
   end
 
   # Keep the root row's tags in sync with the current (latest) version's.
@@ -392,16 +411,23 @@ class Memory < ApplicationRecord
   def sync_root_tags!
     root = root_memory
     current_tags = root.current_version.tags
-    root.update_column(:tags, current_tags) if root.tags != current_tags
+    return if root.tags == current_tags
+
+    root.update_columns(tags: current_tags, first_version_tags: root.version_tags)
   end
 
-  # What changed besides the body, as [field, before, after]. A root row's tags and
-  # category are kept synced to the current version, so they say nothing about v1.
+  # What changed besides the body, as [field, before, after]. A root that kept no first
+  # version value either never differed or dates from before it was kept, and in both
+  # cases its own columns say nothing about v1.
   def field_changes_from(previous)
-    fields = previous.root_version? ? %i[title source] : %i[title source category tags]
+    known = if previous.root_version?
+      {category: previous.first_version_category, tags: previous.first_version_tags}.compact
+    else
+      {category: previous.category, tags: previous.tags}
+    end
 
-    fields.filter_map do |field|
-      before, after = previous[field], self[field]
+    {title: previous.title, source: previous.source, **known}.filter_map do |field, before|
+      after = self[field]
       [field, before, after] if before.presence != after.presence
     end
   end
@@ -451,7 +477,8 @@ class Memory < ApplicationRecord
       root.adopt_pins_from(Memory.where(id: removed_ids))
       root.adopt_links_from(removed_ids, version_ids: versions.map(&:id))
 
-      root.update!(anchor.slice(:title, :tags, :source, :category, :version, :created_at))
+      root.update!(anchor.slice(:title, :tags, :source, :category, :version, :created_at)
+        .merge(first_version_tags: nil, first_version_category: nil))
       body = anchor.content&.body&.content.to_s
       root.content ? root.content.update!(body: body) : root.create_content!(body: body)
 

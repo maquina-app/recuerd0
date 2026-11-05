@@ -187,9 +187,9 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
   test "a member cannot revoke links" do
     sign_in_as(users(:member))
 
-    delete account_invitation_url
-
-    assert_equal 0, @account.reload.invitation_generation
+    assert_no_difference("@account.invitations.unused.count") do
+      delete account_invitation_url
+    end
   end
 
   test "an account never named reveals nothing about its owner" do

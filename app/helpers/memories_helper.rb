@@ -24,8 +24,16 @@ module MemoriesHelper
     (memory.root_version? && memory.versioned?) ? memory.created_at : memory.updated_at
   end
 
-  def creator_name(record)
-    person_name(record.ownership_record.created_by)
+  # Passing something on must not rewrite who wrote it, so both are said once they
+  # differ.
+  def ownership_label(record)
+    root = record.ownership_record
+    creator = person_name(root.created_by)
+    owner = root.owner_id && person_name(root.owner)
+
+    return t("ownership.created_by", name: creator) if owner.nil? || owner == creator
+
+    t("ownership.owned_and_created_by", owner: owner, creator: creator)
   end
 
   # nil means no recorded creator, which belongs to the account admin.
@@ -47,7 +55,6 @@ module MemoriesHelper
   private
 
   def account_admin_name
-    @account_admin_name ||= Current.account.users.where(role: "admin").order(:created_at).first&.display_name ||
-      t("ownership.account_admin")
+    @account_admin_name ||= Current.account.first_admin&.display_name || t("ownership.account_admin")
   end
 end

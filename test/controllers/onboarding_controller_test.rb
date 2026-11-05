@@ -7,6 +7,7 @@ class OnboardingControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     @user = Account.create_with_user(
+      account_name: "Test account",
       email_address: "onboarding@example.com",
       password: "password",
       password_confirmation: "password"

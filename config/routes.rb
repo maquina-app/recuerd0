@@ -66,6 +66,7 @@ Rails.application.routes.draw do
   resource :profile, only: %i[show update] do
     resource :password, only: %i[update], controller: "profile/passwords"
     resources :access_tokens, only: %i[create destroy], controller: "profile/access_tokens"
+    resource :ownership, only: %i[show], controller: "profile/ownerships"
   end
 
   post "onboarding/dismiss", to: "onboarding#dismiss", as: :onboarding_dismiss
@@ -79,8 +80,10 @@ Rails.application.routes.draw do
     resource :stats, only: %i[show], controller: "workspaces/stats", defaults: {format: :json}
     resource :merge_candidates, only: %i[show], controller: "workspaces/merge_candidates",
       defaults: {format: :json}
+    resource :ownership, only: %i[edit update], controller: "workspaces/ownerships"
 
     resources :memories do
+      resource :ownership, only: %i[edit update], controller: "memories/ownerships"
       resource :markdown, only: %i[show], controller: "memories/markdowns"
       resources :versions, only: %i[index show create], controller: "memories/versions" do
         resource :markdown, only: %i[show], controller: "memories/markdowns"

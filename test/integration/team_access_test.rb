@@ -54,37 +54,43 @@ class TeamAccessTest < ActionDispatch::IntegrationTest
 
     get account_url
 
-    confirm = css_select("[data-turbo-confirm]").map { |node| node["data-turbo-confirm"] }.find { |text| text.include?("API tokens") }
-    assert confirm
-    assert_no_match(/Remove/, confirm)
+    assert_select "dialog p", text: I18n.t("accounts.users.remove_confirm"), count: 1
   end
 
   # --- permanent deletion ------------------------------------------------------
 
-  test "a member cannot permanently delete their workspace once it holds someone else's memory" do
+  test "a member can permanently delete their workspace holding someone else's memory, and is told so first" do
     memory = Memory.create_with_content(@member_workspace, title: "Admin's", content: "x", created_by: @admin)
     @member_workspace.soft_delete
     sign_in_as(@member)
 
     get deleted_workspaces_url
-    assert_select "a[data-turbo-method='delete'][href=?]", destroy_deleted_workspace_path(@member_workspace), count: 0
-    assert_match ERB::Util.html_escape(I18n.t("ownership.holds_others")), response.body
-    assert_select "a[href=?]", restore_deleted_workspace_path(@member_workspace)
+    confirm = css_select("a[data-turbo-method='delete'][href='#{destroy_deleted_workspace_path(@member_workspace)}']").first["data-turbo-confirm"]
+    assert_includes confirm, I18n.t("workspaces.actions.confirm.includes_others", count: 1)
 
     delete destroy_deleted_workspace_url(@member_workspace)
-    assert_response :see_other
-    assert_equal I18n.t("ownership.holds_others"), flash[:alert]
-    assert Workspace.exists?(@member_workspace.id)
-    assert Memory.exists?(memory.id)
+    assert_not Workspace.exists?(@member_workspace.id)
+    assert_not Memory.exists?(memory.id)
   end
 
-  test "a memory with no recorded creator counts as someone else's" do
+  test "a memory with no owner counts as someone else's for the warning" do
     Memory.create_with_content(@member_workspace, title: "Unrecorded", content: "x")
-    @member_workspace.soft_delete
+
+    # The map that comes with a new workspace is the member's own.
+    assert_equal 1, @member_workspace.reload.memories_of_others_count(@member)
+    assert_equal 2, @member_workspace.memories_of_others_count(users(:one).tap { |admin| admin.role = "member" })
+  end
+
+  test "a member still cannot permanently delete a workspace someone else owns" do
+    @admin_workspace.soft_delete
     sign_in_as(@member)
 
-    delete destroy_deleted_workspace_url(@member_workspace)
-    assert Workspace.exists?(@member_workspace.id)
+    get deleted_workspaces_url
+    assert_select "a[data-turbo-method='delete'][href=?]", destroy_deleted_workspace_path(@admin_workspace), count: 0
+
+    delete destroy_deleted_workspace_url(@admin_workspace)
+    assert_equal I18n.t("ownership.denied"), flash[:alert]
+    assert Workspace.exists?(@admin_workspace.id)
   end
 
   test "a member can permanently delete a workspace holding only their own memories" do

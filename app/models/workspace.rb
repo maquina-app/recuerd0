@@ -96,17 +96,10 @@ class Workspace < ApplicationRecord
     end
   end
 
-  # Permanent deletion takes everything inside with it, so owning the workspace is
-  # not enough when it holds someone else's work. A memory with no recorded creator
-  # belongs to the admin.
-  def permanently_deletable_by?(user)
-    return false unless user
-
-    user.admin? || (owned_by?(user) && !holds_memories_from_others?(user))
-  end
-
-  def holds_memories_from_others?(user)
-    memories.latest_versions.where("memories.created_by_id IS NULL OR memories.created_by_id != ?", user.id).exists?
+  # Whoever owns a workspace can delete it with what is inside, so the confirmation
+  # says when some of that belongs to other people.
+  def memories_of_others_count(user)
+    memories_count - memories.latest_versions.owned_by(user).count
   end
 
   # A workspace archived and then deleted carries both timestamps; deleted wins

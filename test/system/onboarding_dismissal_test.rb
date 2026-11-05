@@ -7,6 +7,7 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
 
   setup do
     @user = Account.create_with_user(
+      account_name: "Test account",
       email_address: "system-onboarding@example.com",
       password: "password",
       password_confirmation: "password"

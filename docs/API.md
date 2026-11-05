@@ -353,7 +353,7 @@ POST /workspaces.json
 
 ### Update Workspace
 
-Updates an existing workspace. Requires `full_access` token.
+Updates an existing workspace. Requires `full_access` token, and the token's owner must own it or be an account admin; otherwise `403 FORBIDDEN`.
 
 ```
 PATCH /workspaces/:id.json
@@ -384,7 +384,7 @@ Returns the updated workspace object.
 
 ### Archive Workspace
 
-Archives a workspace. Requires `full_access` token, and the token's owner must have created it or be an account admin; otherwise `403 FORBIDDEN`. Archived workspaces become read-only.
+Archives a workspace. Requires `full_access` token, and the token's owner must own it or be an account admin; otherwise `403 FORBIDDEN`. Archived workspaces become read-only.
 
 ```
 POST /workspaces/:id/archive.json
@@ -779,7 +779,7 @@ Returns the created memory object with content.
 
 ### Update Memory
 
-Updates an existing memory. Requires `full_access` token.
+Updates an existing memory in place. Requires `full_access` token, and the token's owner must own the memory or be an account admin; otherwise `403 FORBIDDEN`. Anyone else can add a version instead.
 
 ```
 PATCH /workspaces/:workspace_id/memories/:id.json
@@ -803,7 +803,7 @@ Returns the updated memory object with content.
 
 ### Delete Memory
 
-Deletes a memory and all its versions. Requires `full_access` token, and the token's owner must have created the memory or be an account admin; otherwise `403 FORBIDDEN`.
+Deletes a memory and all its versions. Requires `full_access` token, and the token's owner must own the memory, own its workspace, or be an account admin; otherwise `403 FORBIDDEN`.
 
 ```
 DELETE /workspaces/:workspace_id/memories/:id.json
@@ -833,6 +833,35 @@ GET /memories/pinned.json?include=obsolete,inactive
 Obsolete pins and pins in archived or deleted workspaces are withheld by default. The
 pinned **page** still shows every pin, including the group it labels "Inactive" — curation
 is not retrieval.
+
+---
+
+## Ownership
+
+Workspaces and memories report an `owner_id`: the user who answers for them. It starts as whoever created the record and can be passed on. `null` means the account admin.
+
+### Pass or Take Ownership
+
+Requires `full_access` token. The owner can pass a record to anyone still on the account. An admin who doesn't own it can only name themselves, and can pass it on once they do. Anyone else gets `403 FORBIDDEN`. The receiver doesn't have to accept. Passing a workspace moves the workspace only: the memories in it keep their owners.
+
+```
+PATCH /workspaces/:id/ownership.json
+PATCH /workspaces/:workspace_id/memories/:id/ownership.json
+```
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| user_id | integer | Who receives it (required) |
+
+**Response** `200 OK`
+
+```json
+{"id": 12, "owner_id": 7}
+```
+
+A `user_id` that isn't on the account, or that already owns the record, returns `422`. A deleted workspace returns `404`, and a memory in an archived workspace `403`.
 
 ---
 

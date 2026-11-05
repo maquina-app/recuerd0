@@ -41,7 +41,7 @@
     <%= t("memories.actions.edit") %>
   <% end %>
 
-  <% if memory.manageable_by?(Current.user) %>
+  <% if memory.deletable_by?(Current.user) %>
     <%= render "components/dropdown_menu/item",
         href: stable_memory_path(workspace, memory),
         variant: :destructive,

@@ -127,10 +127,11 @@ class OwnershipTest < ActionDispatch::IntegrationTest
     get workspace_url(@admin_workspace)
     assert_select "a[data-turbo-method='delete'][href=?]", workspace_path(@admin_workspace), count: 0
     assert_select "a[href=?]", archive_workspace_path(@admin_workspace), count: 0
-    assert_select "a[href=?]", edit_workspace_path(@admin_workspace)
+    assert_select "a[href=?]", edit_workspace_path(@admin_workspace), count: 0
 
     get workspace_url(@member_workspace)
     assert_select "a[href=?]", archive_workspace_path(@member_workspace)
+    assert_select "a[href=?]", edit_workspace_path(@member_workspace)
   end
 
   test "REST answers 403 for a workspace the token's owner does not own" do
@@ -149,23 +150,23 @@ class OwnershipTest < ActionDispatch::IntegrationTest
   # --- memories ---------------------------------------------------------------
 
   test "a member cannot delete or purge someone else's memory, at any version" do
-    memory = Memory.create_with_content(@member_workspace, title: "Admin's memory", content: "v1", created_by: @admin)
+    memory = Memory.create_with_content(@admin_workspace, title: "Admin's memory", content: "v1", created_by: @admin)
     v2 = memory.create_version!(content: "v2", created_by: @member)
     memory.create_version!(content: "v3", created_by: @member)
     sign_in_as(@member)
 
     assert_no_difference("Memory.count") do
-      delete workspace_memory_url(@member_workspace, memory)
-      delete workspace_memory_url(@member_workspace, v2)
-      post workspace_memory_versions_purge_url(@member_workspace, memory), params: {keep: 1, current_version_id: memory.current_version.id}
+      delete workspace_memory_url(@admin_workspace, memory)
+      delete workspace_memory_url(@admin_workspace, v2)
+      post workspace_memory_versions_purge_url(@admin_workspace, memory), params: {keep: 1, current_version_id: memory.current_version.id}
     end
 
-    get new_workspace_memory_versions_purge_url(@member_workspace, memory)
+    get new_workspace_memory_versions_purge_url(@admin_workspace, memory)
     assert_response :see_other
 
-    get workspace_memory_url(@member_workspace, memory)
-    assert_select "a[data-turbo-method='delete'][href=?]", workspace_memory_path(@member_workspace, memory), count: 0
-    assert_select "a[href=?]", new_workspace_memory_versions_purge_path(@member_workspace, memory), count: 0
+    get workspace_memory_url(@admin_workspace, memory)
+    assert_select "a[data-turbo-method='delete'][href=?]", workspace_memory_path(@admin_workspace, memory), count: 0
+    assert_select "a[href=?]", new_workspace_memory_versions_purge_path(@admin_workspace, memory), count: 0
   end
 
   test "a member can delete their own memory, taking every version with it" do
@@ -179,10 +180,10 @@ class OwnershipTest < ActionDispatch::IntegrationTest
   end
 
   test "REST answers 403 for a memory the token's owner does not own" do
-    memory = Memory.create_with_content(@member_workspace, title: "Admin's memory", content: "v1", created_by: @admin)
+    memory = Memory.create_with_content(@admin_workspace, title: "Admin's memory", content: "v1", created_by: @admin)
 
     assert_no_difference("Memory.count") do
-      delete workspace_memory_url(@member_workspace, memory, format: :json), headers: auth_headers(@raw_member_token)
+      delete workspace_memory_url(@admin_workspace, memory, format: :json), headers: auth_headers(@raw_member_token)
     end
     assert_response :forbidden
   end

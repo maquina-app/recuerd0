@@ -55,8 +55,10 @@
               fix one click away rather than three levels into a kebab menu. %>
           <p class="mt-1 text-sm text-muted-foreground">
             <%= t("workspaces.show.no_description") %>
-            <%= link_to t("workspaces.show.add_description"), edit_workspace_path(@workspace),
-                  class: "underline underline-offset-2 hover:text-foreground" %>
+            <% if @workspace.manageable_by?(Current.user) %>
+              <%= link_to t("workspaces.show.add_description"), edit_workspace_path(@workspace),
+                    class: "underline underline-offset-2 hover:text-foreground" %>
+            <% end %>
           </p>
         <% end %>
 

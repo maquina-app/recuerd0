@@ -87,26 +87,6 @@ class MemoryUserTestFixesTest < ActiveSupport::TestCase
     assert_equal "Deploy notes\n\nWe use Kamal.", other.content.preview_text(title: other.title)
   end
 
-  test "revoking invitations invalidates links minted before, and only those" do
-    account = accounts(:one)
-    old_token = account.generate_invitation_token
-    assert_equal account, Account.find_by_invitation_token(old_token)
-
-    account.revoke_invitations!
-
-    assert_nil Account.find_by_invitation_token(old_token)
-    assert_equal account, Account.find_by_invitation_token(account.generate_invitation_token)
-  end
-
-  test "a link signed before generations existed still works until revoked" do
-    account = accounts(:one)
-    legacy = Rails.application.message_verifier(:account_invitations).generate(account.id, expires_in: 7.days)
-    assert_equal account, Account.find_by_invitation_token(legacy)
-
-    account.revoke_invitations!
-    assert_nil Account.find_by_invitation_token(legacy)
-  end
-
   test "a workspace name is trimmed" do
     workspace = accounts(:one).workspaces.build(name: "   ")
 

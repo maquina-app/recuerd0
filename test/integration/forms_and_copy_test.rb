@@ -66,7 +66,7 @@ class FormsAndCopyTest < ActionDispatch::IntegrationTest
     get new_registration_url
     assert_match I18n.t("registrations.new.password_hint"), response.body
 
-    post registration_url, params: {user: {email_address: users(:one).email_address, password: "password123", password_confirmation: "different"}}
+    post registration_url, params: {user: {account_name: "Acme", email_address: users(:one).email_address, password: "password123", password_confirmation: "different"}}
     assert_response :unprocessable_entity
     assert_match I18n.t("activerecord.errors.models.user.attributes.password_confirmation.confirmation").gsub("'", "&#39;"), response.body
     assert_no_match(/doesn&#39;t match Password/, response.body)
