@@ -7,6 +7,7 @@ class User < ApplicationRecord
   has_many :sessions, dependent: :destroy
   has_many :access_tokens, dependent: :destroy
   has_many :account_exports, dependent: :destroy
+  has_many :oauth_authorization_codes, dependent: :delete_all
 
   # Pin associations
   has_many :pins, dependent: :destroy
@@ -30,6 +31,7 @@ class User < ApplicationRecord
   scope :active, -> { where.not("email_address LIKE 'deleted-%'") }
 
   validates :role, presence: true, inclusion: {in: ROLES}
+  validates :email_address, uniqueness: true
   # The only 8-character floor was minlength: 8 on the form fields, which any
   # non-browser client ignores — on the page whose whole job is credential
   # hygiene. allow_nil so records that are not setting a password still save.
@@ -44,6 +46,13 @@ class User < ApplicationRecord
 
   def member?
     role == "member"
+  end
+
+  # What teammates see as the creator of a workspace or memory.
+  def display_name
+    return I18n.t("ownership.former_member") if anonymized?
+
+    name.presence || email_address
   end
 
   def anonymize_email!

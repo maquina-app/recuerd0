@@ -104,8 +104,9 @@ class Memories::LinksController < ApplicationController
     ).first
   end
 
+  # Links join memories, not versions, so a version's id means its memory.
   def set_memory
-    @memory = @workspace.memories.find(params[:memory_id])
+    @memory = @workspace.memories.find(params[:memory_id]).root_memory
   end
 
   # A memory in a soft-deleted workspace cannot be linked or unlinked: it is
@@ -115,5 +116,6 @@ class Memories::LinksController < ApplicationController
     Memory.joins(:workspace)
       .where(workspaces: {account_id: Current.account.id, deleted_at: nil})
       .find_by(id: id)
+      &.root_memory
   end
 end

@@ -1,6 +1,8 @@
 class Account::ExportsController < ApplicationController
   include AdminAuthorizable
 
+  allow_deleted_account
+
   before_action :require_admin
 
   def create
@@ -8,7 +10,7 @@ class Account::ExportsController < ApplicationController
     exports_this_month = account.account_exports.exports_this_month.count
 
     if exports_this_month >= AccountExport::MONTHLY_LIMIT
-      redirect_to account_path, alert: t(".limit_reached")
+      redirect_to return_path, alert: t(".limit_reached")
       return
     end
 
@@ -16,14 +18,14 @@ class Account::ExportsController < ApplicationController
     Accounts::ExportJob.perform_later(export.id)
     AccountExportMailer.started(export).deliver_later
 
-    redirect_to account_path, notice: t(".started")
+    redirect_to return_path, notice: t(".started")
   end
 
   def show
     export = Current.account.account_exports.find(params[:id])
 
     unless export.downloadable?
-      redirect_to account_path, alert: t(".expired")
+      redirect_to return_path, alert: t(".expired")
       return
     end
 
@@ -33,5 +35,12 @@ class Account::ExportsController < ApplicationController
       filename: export.archive.filename.to_s,
       content_type: export.archive.content_type,
       disposition: "attachment"
+  end
+
+  private
+
+  # During the grace period the export lives on the recovery page.
+  def return_path
+    Current.account.deleted? ? account_recovery_path : account_path
   end
 end

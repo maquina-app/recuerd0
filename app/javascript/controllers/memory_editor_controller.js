@@ -1,42 +1,29 @@
 import { Controller } from "@hotwired/stimulus"
-import { submitForm } from "helpers/form_helpers"
 
-// Keeps a memory edit from being lost.
+// Keeps a memory edit from being lost, without ever saving one on its own.
 //
-// Before this, the editor had no autosave, no dirty state and no navigation
-// guard: typing and then clicking any link discarded the work silently. Three
-// separate guards now overlap, because each one has a hole the others cover:
+// Saving is always a choice between a new version and overwriting the current
+// one, so there is no background write to make that choice for the person. Two
+// guards overlap:
 //
-//   1. Autosave, 3s after the last change — handles the common case.
-//   2. Cmd/Ctrl+S — the reflex this audience performs constantly. House MD
-//      binds Ctrl+S to `strikethrough` and stopPropagation()s it, so this
-//      listener runs in the CAPTURE phase to get there first.
-//   3. beforeunload + turbo:before-visit — covers the <3s window and any
-//      autosave that failed.
+//   1. Cmd/Ctrl+S — the reflex this audience performs constantly. It presses the
+//      form's primary button. House MD binds Ctrl+S to `strikethrough` and
+//      stopPropagation()s it, so this listener runs in the CAPTURE phase to get
+//      there first.
+//   2. beforeunload + turbo:before-visit — covers leaving with unsaved changes.
 //
 // Bound to `house-md:change`, not `input`. Both fire on the current editor
 // build, but `house-md:change` is documented as exactly one per commit while
 // `input` is dispatched on top of the browser's own during IME composition.
-const AUTOSAVE_DELAY = 3000
-
 export default class extends Controller {
-  static targets = ["status", "editor", "shell", "title", "titleCount"]
+  static targets = ["status", "editor", "shell", "title", "titleCount", "primarySubmit"]
   static values = {
-    // Off for an unpersisted memory: a background POST every 3 seconds would
-    // create a new record per keystroke burst. There, Cmd+S submits for real
-    // and the unload guard is the only protection.
-    autosave: { type: Boolean, default: false },
-    savedLabel: String,
-    savingLabel: String,
+    focusEditor: { type: Boolean, default: false },
     unsavedLabel: String,
-    failedLabel: String,
     unloadPrompt: String
   }
 
-  #timer = null
   #dirty = false
-  #saving = false
-  #failed = false
 
   connect() {
     this.onBeforeUnload = this.onBeforeUnload.bind(this)
@@ -51,62 +38,25 @@ export default class extends Controller {
 
     this.#render()
     this.#renderPlaceholder()
+    if (this.focusEditorValue) this.#focusEditor()
   }
 
   disconnect() {
-    this.teardown()
     window.removeEventListener("beforeunload", this.onBeforeUnload)
     document.removeEventListener("turbo:before-visit", this.onBeforeVisit)
     document.removeEventListener("keydown", this.onSaveShortcut, true)
-  }
-
-  // Called on turbo:before-cache via the application.js teardown convention.
-  teardown() {
-    clearTimeout(this.#timer)
-    this.#timer = null
   }
 
   // Actions
 
   change() {
     this.#dirty = true
-    clearTimeout(this.#timer)
-    if (this.autosaveValue) this.#timer = setTimeout(() => this.save(), AUTOSAVE_DELAY)
     this.#render()
     this.#renderPlaceholder()
   }
 
-  // The form's own submit — let it through, but stop a queued autosave from
-  // racing it.
   submit() {
     this.#dirty = false
-    this.teardown()
-  }
-
-  async save() {
-    if (!this.#dirty || this.#saving) return
-
-    // Nothing to autosave into yet — let the form create the record normally.
-    if (!this.autosaveValue) {
-      this.teardown()
-      this.element.requestSubmit()
-      return
-    }
-
-    this.teardown()
-    this.#saving = true
-    this.#render()
-
-    try {
-      const response = await submitForm(this.element, { autosave: "1" })
-      this.#dirty = !response.ok
-      this.#failed = !response.ok
-    } catch {
-      this.#failed = true
-    } finally {
-      this.#saving = false
-      this.#render()
-    }
   }
 
   // The title silently stops accepting keystrokes at maxlength. Show the
@@ -133,7 +83,7 @@ export default class extends Controller {
 
     event.preventDefault()
     event.stopPropagation()
-    this.save()
+    this.element.requestSubmit(this.hasPrimarySubmitTarget ? this.primarySubmitTarget : null)
   }
 
   onBeforeUnload(event) {
@@ -161,22 +111,19 @@ export default class extends Controller {
     this.shellTarget.toggleAttribute("data-empty", empty)
   }
 
+  // Silent until there is something to say: "Saved" on a form nothing has been
+  // written from implied an autosave that does not exist.
   #render() {
-    const form = this.element
-    form.classList.toggle("is-dirty", this.#dirty && !this.#saving)
-    form.classList.toggle("is-saving", this.#saving)
-    form.classList.toggle("is-clean", !this.#dirty && !this.#saving)
+    this.element.classList.toggle("is-dirty", this.#dirty)
+    this.element.classList.toggle("is-clean", !this.#dirty)
 
-    if (!this.hasStatusTarget) return
+    if (this.hasStatusTarget) this.statusTarget.textContent = this.#dirty ? this.unsavedLabelValue : ""
+  }
 
-    if (this.#saving) {
-      this.statusTarget.textContent = this.savingLabelValue
-    } else if (this.#failed) {
-      this.statusTarget.textContent = this.failedLabelValue
-    } else if (this.#dirty) {
-      this.statusTarget.textContent = this.unsavedLabelValue
-    } else {
-      this.statusTarget.textContent = this.savedLabelValue
-    }
+  async #focusEditor() {
+    if (!this.hasEditorTarget) return
+
+    await customElements.whenDefined(this.editorTarget.localName)
+    requestAnimationFrame(() => this.editorTarget.querySelector("[contenteditable]")?.focus())
   }
 }

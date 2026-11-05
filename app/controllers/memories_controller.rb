@@ -3,12 +3,15 @@ class MemoriesController < ApplicationController
   include MemoryFilterable
   include ObsoleteFilterable
   include ContentRenderable
+  include OwnershipAuthorizable
+  include MemoryPage
 
   allow_token_authentication
 
   before_action :set_workspace
   before_action :ensure_not_deleted
   before_action :set_memory, only: %i[show edit update destroy]
+  before_action -> { require_manage_access(@memory) }, only: :destroy
   before_action :require_active_workspace, only: %i[new create edit update destroy]
 
   def index
@@ -35,14 +38,16 @@ class MemoriesController < ApplicationController
   end
 
   def show
-    @all_versions = @memory.all_versions
-    @viewing_old_version = @memory.versioned? && !@memory.current_version?
-    load_link_candidates
-    track_event("memory.view", resource: @memory)
-
     respond_to do |format|
-      format.html
+      format.html do
+        return redirect_to_version_url if @memory.parent_memory_id
+
+        prepare_memory_page(@memory.current_version)
+        load_link_candidates
+        track_event("memory.view", resource: @memory)
+      end
       format.json do
+        track_event("memory.view", resource: @memory)
         @memory = @memory.resolve_current_version
         return validate_content_params if content_filtered?
         # The viewer is part of the validator because pinned/pinned_at are
@@ -59,7 +64,7 @@ class MemoriesController < ApplicationController
   end
 
   def create
-    @memory = Memory.create_with_content(@workspace, memory_params)
+    @memory = Memory.create_with_content(@workspace, memory_params.to_h.merge(created_by: Current.user))
 
     if @memory.persisted?
       track_event("memory.create", resource: @memory)
@@ -78,40 +83,38 @@ class MemoriesController < ApplicationController
     end
   end
 
+  # There is one thing to edit: the current version. An old version's edit URL
+  # used to open that version's text and then silently save over the current one.
   def edit
+    return redirect_to edit_workspace_memory_path(@workspace, @memory.stable_id) if @memory.parent_memory_id
+
+    @memory = @memory.current_version
     @memory.content || @memory.build_content(body: "")
   end
 
   def update
     @memory = @memory.resolve_current_version
 
-    if @memory.current_version?
-      @memory.update_with_content(memory_params)
-    else
+    if !@memory.current_version?
       @memory.errors.add(:base, :historical_version_immutable)
+    elsif save_as_new_version?
+      return if save_new_version
+    else
+      @memory.update_with_content(memory_params)
     end
 
     if @memory.errors.empty?
       @memory.root_memory.touch
       track_event("memory.update", resource: @memory)
       respond_to do |format|
-        # An autosave is a background write, not a navigation: redirecting would
-        # make the editor fetch and discard a full show page every few seconds.
-        format.html { autosave? ? head(:no_content) : redirect_to([@workspace, @memory], notice: t(".updated")) }
+        format.html { redirect_to workspace_memory_path(@workspace, @memory.stable_id), notice: t(".updated"), status: :see_other }
         format.json { render :show }
       end
     else
       respond_to do |format|
         format.html do
-          # The editor keeps its own copy of the text, so a failed autosave only
-          # needs a status code to flip the chip to "Not saved" — re-rendering
-          # the form underneath it would clobber what the person is typing.
-          if autosave?
-            head :unprocessable_entity
-          else
-            flash.now[:alert] = t(".errors")
-            render :edit, status: :unprocessable_entity
-          end
+          flash.now[:alert] = t(".errors")
+          render :edit, status: :unprocessable_entity
         end
         format.json { render_validation_errors(@memory) }
       end
@@ -120,7 +123,9 @@ class MemoriesController < ApplicationController
 
   def destroy
     track_event("memory.destroy", resource: @memory)
-    @memory.destroy
+    # The dialog promises every version goes. Destroying the row in the URL only
+    # removed that one version when the page was showing a later one.
+    @memory.root_memory.destroy
 
     respond_to do |format|
       format.html { redirect_to workspace_path(@workspace), notice: t(".destroyed"), status: :see_other }
@@ -130,15 +135,44 @@ class MemoriesController < ApplicationController
 
   private
 
+  # Only the editor's primary button asks for this. A plain PATCH, which is what
+  # the REST API sends, keeps meaning "update in place".
+  def save_as_new_version?
+    params[:save_as] == "new_version"
+  end
+
+  # true when it answered the request itself.
+  def save_new_version
+    version = @memory.save_as_new_version(memory_params.to_h.symbolize_keys.merge(created_by: Current.user))
+    return false unless version
+
+    track_event("version.create", resource: version)
+    redirect_to workspace_memory_path(@workspace, @memory.stable_id),
+      notice: t(".version_created", version: version.version_label), status: :see_other
+    true
+  end
+
+  # /memories/<root> always opens the current version, and an older one has its
+  # own explicit URL. Links saved before that, which point at a version's row,
+  # land on whichever of the two that version is now.
+  def redirect_to_version_url
+    if @memory.current_version?
+      redirect_to workspace_memory_path(@workspace, @memory.stable_id, request.query_parameters)
+    else
+      redirect_to workspace_memory_version_path(@workspace, @memory.stable_id, @memory)
+    end
+  end
+
   # Candidates for the "Link a memory" picker. Account-scoped (never just the
   # current workspace — links are explicitly allowed to cross them), with the
   # memory itself and anything already linked removed so the list only ever
   # offers a link that can actually be made.
   def load_link_candidates
+    @link_picker_open = params.key?(:link_q)
     @link_query = params[:link_q].to_s.strip.first(80).presence
     return if @link_query.blank?
 
-    excluded = [@memory.id] + @memory.linked_memory_ids
+    excluded = [@root_memory.id] + @root_memory.linked_memory_ids
 
     @link_candidates = Memory
       .joins(:workspace)
@@ -149,10 +183,6 @@ class MemoriesController < ApplicationController
       .includes(:workspace)
       .order(updated_at: :desc)
       .limit(8)
-  end
-
-  def autosave?
-    params[:autosave].present?
   end
 
   def set_memory
@@ -182,6 +212,6 @@ class MemoriesController < ApplicationController
   end
 
   def memory_params
-    params.require(:memory).permit(:title, :source, :content, :category, tags: [])
+    params.require(:memory).permit(:title, :source, :content, :category, :change_note, tags: [])
   end
 end

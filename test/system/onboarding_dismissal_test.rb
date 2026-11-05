@@ -34,7 +34,7 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
     refresh
 
     assert_alert_state(
-      message: "Almost there — ask your agent to save its first memory.",
+      message: "Almost there — save your first memory, here or through your agent.",
       agent: :complete,
       content: :incomplete,
       completed: 1
@@ -232,7 +232,7 @@ class OnboardingDismissalTest < ApplicationSystemTestCase
       click_link "Access Tokens"
     end
 
-    assert_current_path profile_path
+    assert_current_path profile_path(token_permission: "full_access", token_description: "recuerd0 CLI")
     assert_selector "#{DRAWER_SELECTOR}[data-state='closed']", visible: :all
   end
 

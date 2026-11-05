@@ -38,6 +38,15 @@ class Account < ApplicationRecord
     users.active
   end
 
+  # How an invitation names this account. An account name nobody chose is just
+  # the owner's email prefix, which means nothing to the person invited.
+  def invitation_name
+    owner_email = users.where(role: "admin").order(:created_at).pick(:email_address)
+    return name if owner_email.blank? || name != owner_email.split("@").first
+
+    I18n.t("invitations.show.owner_team", email: owner_email)
+  end
+
   def active_users_count
     active_users.count
   end
@@ -53,26 +62,53 @@ class Account < ApplicationRecord
   end
 
   def generate_invitation_token
-    Rails.application.message_verifier(:account_invitations).generate(id, expires_in: 7.days)
+    Rails.application.message_verifier(:account_invitations)
+      .generate([id, invitation_generation], expires_in: 7.days)
   end
 
+  # Links signed before generations existed carry a bare id, which reads as
+  # generation 0 and stays valid until they expire or the admin revokes.
   def self.find_by_invitation_token(token)
-    account_id = Rails.application.message_verifier(:account_invitations).verified(token)
-    return nil unless account_id
+    payload = Rails.application.message_verifier(:account_invitations).verified(token)
+    return nil unless payload
 
+    account_id, generation = Array(payload)
     account = find_by(id: account_id)
     return nil if account.nil? || account.deleted?
+    return nil unless account.invitation_generation == generation.to_i
 
     account
   end
 
-  def anonymize_users!
+  def revoke_invitations!
+    increment!(:invitation_generation)
+  end
+
+  # Deleting starts the grace period the Terms promise. Nothing is anonymized or
+  # removed, so signing back in can still reach Restore and Export, and the email
+  # cannot register a second account in the meantime. Every session ends now.
+  def schedule_deletion!
     transaction do
-      users.each do |user|
-        user.anonymize_email! unless user.anonymized?
-        user.sessions.delete_all
-      end
+      soft_delete
+      Session.where(user_id: users.select(:id)).delete_all
     end
+  end
+
+  def permanent_deletion_on
+    return unless deleted?
+
+    (deleted_at + RETENTION_DAYS.days).to_date
+  end
+
+  scope :past_retention, -> { deleted.where(deleted_at: ...RETENTION_DAYS.days.ago) }
+
+  # The end of the grace period. Workspaces first, one by one: dependent: :destroy
+  # would only soft-delete them (SoftDeletable#destroy) and then trip the foreign
+  # key on accounts.
+  def purge!
+    workspaces.find_each(&:destroy!)
+    workspaces.reset
+    destroy!
   end
 
   def seed_start_here_workspace(user)

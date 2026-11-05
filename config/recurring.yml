@@ -3,3 +3,7 @@ production:
     class: Accounts::ExportCleanupJob
     queue: default
     schedule: every day at 3am
+  purge_deleted_accounts:
+    class: Accounts::PurgeDeletedJob
+    queue: default
+    schedule: every day at 3:30am

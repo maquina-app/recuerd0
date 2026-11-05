@@ -384,7 +384,7 @@ Returns the updated workspace object.
 
 ### Archive Workspace
 
-Archives a workspace. Requires `full_access` token. Archived workspaces become read-only.
+Archives a workspace. Requires `full_access` token, and the token's owner must have created it or be an account admin; otherwise `403 FORBIDDEN`. Archived workspaces become read-only.
 
 ```
 POST /workspaces/:id/archive.json
@@ -393,6 +393,16 @@ POST /workspaces/:id/archive.json
 **Response** `200 OK`
 
 Returns the updated workspace object with `archived: true`.
+
+---
+
+### Export Workspace
+
+Returns every memory in a workspace, with all its versions, as one JSON document. Requires `read_only` or `full_access` token. Available at any time and not subject to the monthly limit on full account exports.
+
+```
+GET /workspaces/:id/export.json
+```
 
 ---
 
@@ -733,7 +743,7 @@ There is no `head=` or `tail=` query parameter — head and tail are expressed a
 
 ### Create Memory
 
-Creates a new memory with content. Requires `full_access` token.
+Creates a new memory with content. Requires `full_access` token. A memory needs a title or some content: with neither, the response is `422`.
 
 ```
 POST /workspaces/:workspace_id/memories.json
@@ -793,7 +803,7 @@ Returns the updated memory object with content.
 
 ### Delete Memory
 
-Deletes a memory and all its versions. Requires `full_access` token.
+Deletes a memory and all its versions. Requires `full_access` token, and the token's owner must have created the memory or be an account admin; otherwise `403 FORBIDDEN`.
 
 ```
 DELETE /workspaces/:workspace_id/memories/:id.json
@@ -945,6 +955,7 @@ POST /workspaces/:workspace_id/memories/:memory_id/versions.json
 | version[source] | string | Source identifier (defaults to parent) |
 | version[tags] | array | Tags (defaults to parent) |
 | version[category] | string | Category (defaults to parent) |
+| version[change_note] | string | Why this version exists, in one line (optional, max 280 characters) |
 
 **Request**
 

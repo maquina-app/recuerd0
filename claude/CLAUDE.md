@@ -105,6 +105,18 @@ One search contract for web, REST and MCP: `Memory.search` (`app/models/memory.r
 
 Semantic fallback (`HYBRID_RETRIEVAL=true`): `Memory.related_to` (`Embeddable`) runs only when keyword search found fewer than `MemoryRetrieval::RELATED_WHEN_FEWER_THAN` hits and appends up to `RELATED_LIMIT` roots at cosine ≥ `RELATED_FLOOR`, labelled `match: "related"` on every surface. Never fuse or reorder the keyword list with embeddings — unweighted RRF demoted exact matches on the retrieval bench (recuerd0 decision D022). Tests use `FakeEmbeddingProvider` + `with_hybrid_retrieval` + `create_memory_embedding`; create memories with the flag off so callbacks don't embed them first.
 
+### Ownership (delete, archive, purge)
+
+Members delete, archive and purge only what they created; admins can do it to anything. `Ownable#manageable_by?` is the rule, `OwnershipAuthorizable#require_manage_access` enforces it on web and REST, and the views hide what fails it. `created_by` is nullable on purpose: no recorded creator means it belongs to the account admin (everything older than the column, and the seeded "My Workspace"). A version belongs to whoever owns its memory (`Memory#ownership_record`). MCP has no destructive tool; if one is added it needs the same check.
+
+### Memory URLs and versions
+
+`/memories/<root id>` always opens the current version and `/memories/<root id>/versions/<id>` opens a specific one; a URL holding a version's own id redirects to whichever of those it now is. Link with `stable_memory_path` / `version_page_path`, not `workspace_memory_path(workspace, version)`. Editing has two explicit outcomes on one form, `save_as=new_version` (primary, Cmd+S) and `save_as=in_place`; there is no autosave. A plain PATCH, which is the REST contract, still means in place. `memories_count` counts roots only. Links always attach to the root (`MemoryLink#point_at_roots`).
+
+### Account deletion
+
+`Account#schedule_deletion!` locks the account and keeps every row and email for `RETENTION_DAYS`; signing in lands on `Account::RecoveriesController` (Restore, Export), the only place besides sign-out that `allow_deleted_account` opens. `Accounts::PurgeDeletedJob` ends it. `Account#purge!` destroys workspaces one by one first, because `dependent: :destroy` would only soft-delete them.
+
 ### Asset Paths
 
 - Static assets (favicons, icons, `manifest.json`) go in `public/`, NOT `app/assets/images/`

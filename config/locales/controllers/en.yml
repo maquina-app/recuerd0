@@ -1,7 +1,4 @@
 en:
-  authentication:
-    account_deleted: "This account has been deleted."
-
   workspaces:
     inactive_workspace: "This workspace cannot be modified."
     create:
@@ -22,13 +19,14 @@ en:
       errors: "Please review the errors below."
     update:
       updated: "Memory was successfully updated."
+      version_created: "Saved as %{version}."
       errors: "Please review the errors below."
     destroy:
       destroyed: "Memory was successfully deleted."
     versions:
       read_only: "Cannot modify versions in a read-only workspace."
       create:
-        created: "New version created successfully."
+        restored: "Restored %{from} as %{version}."
         failed: "Failed to create new version."
       purges:
         nothing_to_purge: "This memory has a single version, so there is nothing to purge."
@@ -82,6 +80,7 @@ en:
     access_tokens:
       create:
         created: "Token created successfully."
+        default_description: "Token created %{date}"
       destroy:
         deleted: "Token was permanently revoked."
         disconnected: "Application disconnected."
@@ -92,9 +91,13 @@ en:
       updated: "Account was successfully updated."
       errors: "Please review the errors below."
     destroy:
-      deleted: "Your account has been deleted. All data will be permanently removed in 30 days."
+      deleted: "Your account is scheduled for deletion on %{date}. Sign in before then to restore it or export your data."
+      wrong_password: "That password isn't right, so your account was not deleted."
 
   account:
+    recoveries:
+      create:
+        restored: "Your account has been restored."
     users:
       destroy:
         removed: "User was removed from the account."
@@ -104,6 +107,8 @@ en:
       create:
         created: "Invitation link generated."
         limit_reached: "Account has reached the maximum number of users."
+      destroy:
+        revoked: "All invitation links were revoked."
     exports:
       create:
         started: "Your data export has been started. You'll receive an email when it's ready."
@@ -120,6 +125,7 @@ en:
 
   workspaces/archives:
     not_archived: "This workspace is not archived."
+    deleted: "%{name} is deleted. Restore it from here instead."
     create:
       created: "Archived %{name}. Find it under Archived."
       error: "Could not archive that workspace."
@@ -135,5 +141,5 @@ en:
 
   workspaces/restores:
     create:
-      created: "Restored %{name}."
+      created: "Restored %{name}. It's back in Workspaces."
       error: "Could not restore that workspace."

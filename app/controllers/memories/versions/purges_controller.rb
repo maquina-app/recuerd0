@@ -1,9 +1,11 @@
 class Memories::Versions::PurgesController < ApplicationController
   include WorkspaceScoped
+  include OwnershipAuthorizable
 
   before_action :set_workspace
   before_action :ensure_not_deleted
   before_action :set_memory
+  before_action -> { require_manage_access(@root) }
   before_action :require_active_workspace
   before_action :require_history
 

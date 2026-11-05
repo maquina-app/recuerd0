@@ -1,8 +1,10 @@
 class Workspaces::DeletedController < ApplicationController
   include WorkspaceScoped
   include WorkspaceViewMode
+  include OwnershipAuthorizable
 
   before_action :set_workspace, except: [:index]
+  before_action -> { require_manage_access(@workspace) }, only: :destroy
 
   # GET /workspaces/deleted
   def index
@@ -13,7 +15,7 @@ class Workspaces::DeletedController < ApplicationController
     @total = scope.count
     scope = scope.search(@query) if @query
 
-    @pagy, @workspaces = pagy(scope)
+    @pagy, @workspaces = pagy(scope.includes(:created_by))
   end
 
   # GET /workspaces/deleted/:id

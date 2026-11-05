@@ -1,13 +1,19 @@
-<% content_for :title, "#{t('invitations.show.page_title', account: @account.name)} — recuerd0" %>
+<% content_for :title, "#{t('invitations.show.page_title', account: @account.invitation_name)} — recuerd0" %>
 
 <div>
   <%= render "components/card" do %>
     <%= render "components/card/header", css_classes: "text-center" do %>
-      <%= render "components/card/title", text: t("invitations.show.heading", account: @account.name) %>
+      <%= render "components/card/title", text: t("invitations.show.heading", account: @account.invitation_name) %>
       <%= render "components/card/description", text: t("invitations.show.description") %>
     <% end %>
 
     <%= render "components/card/content" do %>
+      <% if Current.user && @user.errors.empty? %>
+        <%= render "components/alert", variant: :default, icon: :info, css_classes: "mb-4" do %>
+          <p><%= t("invitations.show.signed_in", email: Current.user.email_address) %></p>
+        <% end %>
+      <% end %>
+
       <%= form_with(model: @user, url: invitations_path, data: { component: "form" }) do |form| %>
         <%= form.hidden_field :token, value: @token, name: "token" %>
 
@@ -17,7 +23,12 @@
               aria: field_error_aria(form, :email_address),
               autocomplete: "email", placeholder: t("invitations.show.email_placeholder"),
               data: { component: "input" } %>
-          <% if @user.errors[:email_address].any? %>
+          <% if @user.errors.where(:email_address, :taken).any? %>
+            <p data-form-part="error" id="<%= form.field_id(:email_address, :error) %>">
+              <%= t("invitations.show.email_taken") %>
+              <%= link_to t("invitations.show.sign_in_instead"), new_session_path, class: "underline underline-offset-2" %>
+            </p>
+          <% elsif @user.errors[:email_address].any? %>
             <p data-form-part="error" id="<%= form.field_id(:email_address, :error) %>"><%= @user.errors[:email_address].first %></p>
           <% end %>
         </div>
@@ -50,6 +61,15 @@
         </div>
       <% end %>
     <% end %>
+  <% end %>
+
+  <% if multi_tenant? %>
+    <div class="text-center text-xs text-muted-foreground mt-4">
+      <%= t("invitations.show.legal_prefix") %>
+      <%= link_to t("invitations.show.legal_terms"), terms_path, class: "underline underline-offset-4 hover:text-primary" %>
+      <%= t("invitations.show.legal_and") %>
+      <%= link_to t("invitations.show.legal_privacy"), privacy_path, class: "underline underline-offset-4 hover:text-primary" %>.
+    </div>
   <% end %>
 
   <div class="text-center mt-6">

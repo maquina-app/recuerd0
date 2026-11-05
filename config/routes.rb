@@ -57,7 +57,8 @@ Rails.application.routes.draw do
   # Account management
   resource :account, only: %i[show update destroy] do
     resources :users, only: %i[destroy], controller: "account/users"
-    resource :invitation, only: %i[create], controller: "account/invitations"
+    resource :invitation, only: %i[create destroy], controller: "account/invitations"
+    resource :recovery, only: %i[show create], controller: "account/recoveries"
     resources :exports, only: %i[create show], controller: "account/exports"
   end
 
@@ -81,7 +82,9 @@ Rails.application.routes.draw do
 
     resources :memories do
       resource :markdown, only: %i[show], controller: "memories/markdowns"
-      resources :versions, only: %i[index show create], controller: "memories/versions"
+      resources :versions, only: %i[index show create], controller: "memories/versions" do
+        resource :markdown, only: %i[show], controller: "memories/markdowns"
+      end
       resource :versions_purge, path: "versions/purge", only: %i[new create],
         controller: "memories/versions/purges"
       # Browser-facing link management. Deliberately on its own path segment so

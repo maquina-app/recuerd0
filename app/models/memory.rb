@@ -2,8 +2,9 @@ class Memory < ApplicationRecord
   include Pinnable
   include Searchable
   include Embeddable
+  include Ownable
 
-  belongs_to :workspace, touch: true, counter_cache: true
+  belongs_to :workspace, touch: true
   belongs_to :parent_memory, class_name: "Memory", optional: true
   has_one :content, dependent: :destroy
   has_many :child_versions, class_name: "Memory", foreign_key: "parent_memory_id", dependent: :destroy
@@ -156,13 +157,26 @@ class Memory < ApplicationRecord
   validates :version, presence: true, numericality: {greater_than: 0}
   validates :category, presence: true, inclusion: {in: CATEGORIES}
 
+  validates :change_note, length: {maximum: 280}
+
   # Callbacks
   before_validation :set_version, on: :create
+  # memories_count answers "how many memories", and a version is not a memory,
+  # so this replaces a counter cache that counted every row.
+  after_create :increment_workspace_memories_count, if: :root_version?
+  after_destroy :decrement_workspace_memories_count, if: :root_version?
 
+  # Every door refuses an empty memory, so one can never reach an agent. Direct
+  # memories.create! is reserved for system-authored rows.
   def self.create_with_content(workspace, attributes)
     memory = workspace.memories.build(
-      attributes.slice(:title, :tags, :source, :category, :default_pinned).compact
+      attributes.slice(:title, :tags, :source, :category, :default_pinned, :created_by).compact
     )
+
+    if attributes[:title].blank? && attributes[:content].blank?
+      memory.errors.add(:base, :blank_memory)
+      return memory
+    end
 
     transaction do
       memory.save!
@@ -205,9 +219,18 @@ class Memory < ApplicationRecord
     workspace.active?
   end
 
+  def ownership_record
+    root_memory
+  end
+
   # Check if this is the root version (no parent)
   def root_version?
     parent_memory_id.nil?
+  end
+
+  # The id a person links to: the root's URL always opens the current version.
+  def stable_id
+    parent_memory_id || id
   end
 
   # Get the root memory (parent of all versions)
@@ -271,7 +294,9 @@ class Memory < ApplicationRecord
       title: attributes[:title] || title,
       tags: attributes[:tags] || tags,
       source: attributes[:source] || source,
-      category: attributes[:category].presence || category
+      category: attributes[:category].presence || category,
+      created_by: attributes[:created_by],
+      change_note: attributes[:change_note].presence
     )
 
     transaction do
@@ -285,6 +310,29 @@ class Memory < ApplicationRecord
     new_version
   rescue ActiveRecord::RecordInvalid
     new_version
+  end
+
+  # The editor's "Save as new version": the new version, or nil with the reason in
+  # errors. Unlike create_version!, whose callers may legitimately copy (restore,
+  # or an API client relying on inherited fields), this one refuses a version that
+  # records nothing and a blank overwrite of existing content.
+  def save_as_new_version(attributes)
+    if attributes.key?(:content) && attributes[:content].blank? && content&.body&.content.present?
+      errors.add(:content, :blank_overwrite)
+    elsif !differs_from?(attributes)
+      errors.add(:base, :no_changes)
+    else
+      version = create_version!(attributes)
+      version.errors.each { |error| errors.add(error.attribute, error.message) }
+    end
+
+    version if errors.empty?
+  end
+
+  def differs_from?(attributes)
+    %i[title source category].any? { |field| attributes.key?(field) && attributes[field].to_s != self[field].to_s } ||
+      (attributes.key?(:tags) && Array(attributes[:tags]).compact_blank != tags) ||
+      (attributes.key?(:content) && attributes[:content].to_s != content&.body&.content.to_s)
   end
 
   # Keep the root row's category in sync with the current (latest) version's.
@@ -312,6 +360,11 @@ class Memory < ApplicationRecord
   # Human-readable version label
   def version_label
     "v#{version}"
+  end
+
+  # Numbers only ever go up, even after a purge.
+  def next_version_label
+    "v#{root_memory.all_versions.maximum(:version).to_i + 1}"
   end
 
   # Ruby-side twin of the without_obsolete scope, for views and for the
@@ -402,6 +455,8 @@ class Memory < ApplicationRecord
 
   # Cross-workspace "see also" links
   def linked_memory_ids
+    return root_memory.linked_memory_ids if parent_memory_id
+
     outgoing_links.pluck(:to_memory_id) + incoming_links.pluck(:from_memory_id)
   end
 
@@ -412,7 +467,10 @@ class Memory < ApplicationRecord
     Memory.where(id: linked_memory_ids).in_undeleted_workspaces.includes(:content, :workspace)
   end
 
+  # Links live on the root, so a version reports its memory's count.
   def links_count
+    return root_memory.links_count if parent_memory_id
+
     outgoing_links.size + incoming_links.size
   end
 
@@ -422,6 +480,24 @@ class Memory < ApplicationRecord
   end
 
   private
+
+  def increment_workspace_memories_count
+    adjust_workspace_memories_count(1)
+  end
+
+  def decrement_workspace_memories_count
+    adjust_workspace_memories_count(-1)
+  end
+
+  # Keeps the loaded workspace honest too, as a counter cache would, without
+  # leaving it dirty.
+  def adjust_workspace_memories_count(by)
+    Workspace.update_counters(workspace_id, memories_count: by)
+    return if workspace.frozen?
+
+    workspace[:memories_count] += by
+    workspace.clear_attribute_changes([:memories_count])
+  end
 
   def set_version
     self.version = next_version_number

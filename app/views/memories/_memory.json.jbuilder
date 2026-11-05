@@ -2,7 +2,7 @@
 # touch its memories, so a record-keyed fragment would keep reporting the old
 # workspace.state long after the state changed.
 json.cache! [memory, memory.workspace, "links_count:#{memory.links_count}"] do
-  json.call(memory, :id, :title, :tags, :source, :category, :version)
+  json.call(memory, :id, :title, :tags, :source, :category, :version, :change_note)
   json.version_label memory.version_label
   json.has_versions memory.versioned?
   # Status stated outright, so a client can gate context injection without

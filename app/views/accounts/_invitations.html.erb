@@ -3,6 +3,7 @@
   <%= render "components/card/header" do %>
     <%= render "components/card/title", text: t("accounts.invitations.title") %>
     <%= render "components/card/description", text: t("accounts.invitations.description") %>
+    <%= render "components/card/description", text: t("accounts.invitations.permissions") %>
   <% end %>
 
   <%= render "components/card/content" do %>
@@ -42,6 +43,18 @@
             account_invitation_path,
             method: :post,
             data: { component: "button", variant: "outline" } %>
+
+        <%= button_to t("accounts.invitations.revoke"),
+            account_invitation_path,
+            method: :delete,
+            data: {
+              component: "button",
+              variant: "ghost",
+              turbo_confirm: t("accounts.invitations.revoke_confirm"),
+              confirm_severity: "warning",
+              confirm_title: t("accounts.invitations.revoke_title"),
+              confirm_button: t("accounts.invitations.revoke_button")
+            } %>
       </div>
     <% end %>
   <% end %>

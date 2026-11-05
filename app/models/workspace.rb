@@ -2,17 +2,24 @@ class Workspace < ApplicationRecord
   include SoftDeletable
   include Archivable
   include Pinnable
+  include Ownable
 
   belongs_to :account
   has_many :memories, dependent: :destroy
   attr_reader :starter_map
+
+  # "0" from the New Workspace form's "Start with a map" checkbox. Everything
+  # else, including an API client that never heard of it, gets the map.
+  attr_accessor :start_with_map
+
+  normalizes :name, with: ->(name) { name.strip }
 
   # Validations
   validates :name, presence: true, length: {maximum: 100}
   validates :description, length: {maximum: 500}, allow_blank: true
 
   # Callbacks to unpin when archiving or soft deleting
-  after_create :create_starter_map
+  after_create :create_starter_map, unless: -> { start_with_map.to_s == "0" }
   after_update :unpin_if_inactive, if: -> { saved_change_to_archived_at? || saved_change_to_deleted_at? }
 
   # Scopes
@@ -89,6 +96,12 @@ class Workspace < ApplicationRecord
     end
   end
 
+  # A workspace archived and then deleted carries both timestamps; deleted wins
+  # everywhere, because Deleted is the only place it can be recovered from.
+  def archived?
+    super && !deleted?
+  end
+
   # Check if workspace can be used (not deleted or archived)
   def active?
     !deleted? && !archived?
@@ -108,7 +121,7 @@ class Workspace < ApplicationRecord
       base_url: Rails.application.config.x.app_base_url
     )
     @starter_map = memories.create!(
-      attributes.except(:content).merge(source: "system", default_pinned: true)
+      attributes.except(:content).merge(source: "system", default_pinned: true, created_by: created_by)
     )
     starter_map.create_content!(body: attributes[:content])
 

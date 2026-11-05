@@ -121,7 +121,8 @@
           <%= t("search.index.memories_heading") %>
         </h2>
         <% any_hidden = @obsolete_hidden_count.to_i.positive? || @inactive_hidden_count.to_i.positive? %>
-        <p class="text-sm text-muted-foreground <%= any_hidden ? "mb-1" : "mb-4" %>">
+        <%# Screen readers already hear this from #search-status above. %>
+        <p aria-hidden="true" class="text-sm text-muted-foreground <%= any_hidden ? "mb-1" : "mb-4" %>">
           <% if scoped_workspace %>
             <%= t(".results_count_scoped", count: @pagy.count, query: @query, workspace: scoped_workspace.name) %>
           <% else %>

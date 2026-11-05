@@ -7,13 +7,14 @@ class InvitationsController < ApplicationController
   before_action :set_account_from_token
 
   def show
+    resume_session
     @user = User.new
   end
 
   def create
     @user = @account.users.build(invitation_params.merge(role: "member"))
 
-    if @user.save
+    if save_new_member
       start_new_session_for @user
       redirect_to workspaces_path, notice: t(".success")
     else
@@ -22,6 +23,15 @@ class InvitationsController < ApplicationController
   end
 
   private
+
+  # The validation catches an email that is already registered; the unique index
+  # catches two people racing for it.
+  def save_new_member
+    @user.save
+  rescue ActiveRecord::RecordNotUnique
+    @user.errors.add(:email_address, :taken)
+    false
+  end
 
   def set_account_from_token
     @token = params[:token]

@@ -35,6 +35,7 @@
       <a href="#create-workspace" class="sidebar-link" data-section="create-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create</a>
       <a href="#update-workspace" class="sidebar-link" data-section="update-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method patch">PATCH</span> Update</a>
       <a href="#archive-workspace" class="sidebar-link" data-section="archive-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Archive</a>
+      <a href="#export-workspace" class="sidebar-link" data-section="export-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Export Workspace</a>
       <a href="#unarchive-workspace" class="sidebar-link" data-section="unarchive-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method delete">DEL</span> Unarchive</a>
     </div>
     <div class="sidebar-group">
@@ -146,7 +147,7 @@
           <thead><tr><th>Status</th><th>Code</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><code>401</code></td><td><code>UNAUTHORIZED</code></td><td>Invalid or missing access token</td></tr>
-            <tr><td><code>403</code></td><td><code>FORBIDDEN</code></td><td>Insufficient permissions or inactive workspace</td></tr>
+            <tr><td><code>403</code></td><td><code>FORBIDDEN</code></td><td>Insufficient permissions, inactive workspace, or deleting something you neither created nor administer</td></tr>
             <tr><td><code>404</code></td><td><code>NOT_FOUND</code></td><td>Resource not found</td></tr>
             <tr><td><code>422</code></td><td><code>VALIDATION_ERROR</code></td><td>Invalid request data (includes <code>details</code>)</td></tr>
             <tr><td><code>429</code></td><td><code>RATE_LIMITED</code></td><td>Rate limit exceeded</td></tr>
@@ -322,12 +323,17 @@
       </div>
 
       <div class="endpoint" id="archive-workspace">
-        <div class="endpoint-head"><h3>Archive Workspace</h3><p>Archives a workspace. Archived workspaces become read-only.</p></div>
+        <div class="endpoint-head"><h3>Archive Workspace</h3><p>Archives a workspace. Archived workspaces become read-only. Only the workspace's creator or an account admin can archive or delete it; anyone else gets <code>403</code>.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:id</span>/archive.json</span><span class="route-badge">full_access</span></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><span class="cc">Returns the workspace with</span> <span class="ck">"archived"</span>: <span class="cb">true</span></div>
         </div>
+      </div>
+
+      <div class="endpoint" id="export-workspace">
+        <div class="endpoint-head"><h3>Export Workspace</h3><p>Returns every memory in a workspace, with all its versions, as one JSON document. Available at any time and not subject to the monthly limit on full account exports.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:id</span>/export.json</span></div>
       </div>
 
       <div class="endpoint" id="unarchive-workspace">
@@ -772,6 +778,7 @@
             <tr><td><span class="param-name">version[content]</span></td><td><span class="param-type">string</span></td><td>Version body (defaults to parent)</td></tr>
             <tr><td><span class="param-name">version[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier (defaults to parent)</td></tr>
             <tr><td><span class="param-name">version[tags]</span></td><td><span class="param-type">array</span></td><td>Tags (defaults to parent)</td></tr>
+            <tr><td><span class="param-name">version[change_note]</span></td><td><span class="param-type">string</span></td><td>Why this version exists, in one line (optional, max 280 characters)</td></tr>
             <tr><td><span class="param-name">version[category]</span></td><td><span class="param-type">string</span></td><td>Category (defaults to the parent memory's category). See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
         </table></div>

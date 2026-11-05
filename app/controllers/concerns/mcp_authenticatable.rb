@@ -23,8 +23,10 @@ module McpAuthenticatable
       return render_mcp_unauthorized("Invalid or expired token")
     end
 
-    @current_oauth_token.touch_last_used!
     @mcp_account = @current_oauth_token.user.account
+    return render_mcp_unauthorized("Invalid or expired token") if @mcp_account.deleted?
+
+    @current_oauth_token.touch_last_used!
   end
 
   def canonical_resource

@@ -31,8 +31,8 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   test "POST create with invalid credentials shows error" do
     post session_url, params: {email_address: "wrong@example.com", password: "wrong"}
 
-    assert_redirected_to new_session_path
-    follow_redirect!
+    assert_response :unprocessable_entity
     assert_select "[data-variant='destructive']"
+    assert_select "input[name='email_address'][value='wrong@example.com']"
   end
 end

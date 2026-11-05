@@ -414,7 +414,7 @@ house-md-toolbar button svg {
 }
 .house-md-shell .house-md-content {
   max-inline-size: var(--house-measure);
-  margin-inline: auto;
+  margin-inline: 0;
   inline-size: 100%;
 }
 
@@ -423,8 +423,7 @@ house-md-toolbar button svg {
 .editor-placeholder {
   position: absolute;
   inset-block-start: 0.75rem;
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
+  inset-inline-start: 0;
   inline-size: min(100%, var(--house-measure, 74ch));
   padding-inline: 0.75rem;
   color: var(--muted-foreground);
@@ -469,19 +468,65 @@ house-md-toolbar button svg {
 .memory-form.is-dirty .save-status {
   color: var(--foreground);
 }
-.memory-form.is-saving .save-status {
-  opacity: 0.7;
-}
 
 /* .seg is inline-flex with no wrap, so a long set of labels overflowed its
-   parent rather than adapting. Let it scroll instead of clipping. */
+   parent rather than adapting. Wrap, so every option stays visible on a phone. */
 .seg-scroll {
   max-inline-size: 100%;
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex-wrap: wrap;
+  block-size: auto;
 }
-.seg-scroll::-webkit-scrollbar {
-  display: none;
+
+/* Version history: what changed since the previous version. */
+.version-diff > summary {
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+.vd-count {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.75rem;
+  margin-inline-start: 0.375rem;
+}
+.vd-count-added {
+  color: var(--primary);
+}
+.vd-count-removed {
+  color: var(--destructive-text, var(--destructive));
+}
+.vd-lines {
+  margin-block-start: 0.5rem;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.vd-line {
+  min-block-size: 1.125rem;
+  padding-inline: 0.625rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.vd-line.vd-unchanged,
+.vd-line.vd-gap {
+  color: var(--muted-foreground);
+}
+.vd-line.vd-added {
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+}
+.vd-line.vd-removed {
+  background: color-mix(in oklch, var(--destructive) 12%, transparent);
+}
+/* The sign carries the meaning too, so it never rests on colour alone. */
+.vd-line.vd-added::before {
+  content: "+ " / "";
+}
+.vd-line.vd-removed::before {
+  content: "\2212  " / "";
+}
+.vd-line.vd-unchanged::before {
+  content: "  " / "";
 }
 
 /* Mirror the published .memory-content reading style in the live editor.
@@ -1002,6 +1047,17 @@ house-md-toolbar button svg {
   padding: 0;
 }
 
+/* First paint on a desktop must already leave room for an expanded sidebar. The
+   server renders collapsible="offcanvas" and the controller only switches it to
+   "none" once it connects. The engine's guard for this (maquina-components 0.7.4)
+   is wrapped in :where(), so its own later offcanvas rule zeroes the gap anyway
+   and the whole page slid sideways on every full load. */
+@media (min-width: 768px) {
+  [data-sidebar-part="root"].sidebar-loading[data-state="expanded"] [data-sidebar-part="gap"] {
+    width: var(--sidebar-width);
+  }
+}
+
 /* First paint on a phone must not be a nav drawer over the content. The server
    only knows the desktop cookie, and the sidebar controller can only correct
    the state once it connects — so hold the sheet off-canvas until then.
@@ -1409,6 +1465,11 @@ a {
 .mc-source .src-val {
   color: var(--foreground);
   min-width: 0;
+}
+.mc-source .src-link {
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* excerpt-clamp — markdown-stripped preview clamped to ~3 lines */

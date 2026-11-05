@@ -325,16 +325,33 @@ class AccountTest < ActiveSupport::TestCase
     assert_equal 4, workspace.memories.count
   end
 
-  # Anonymize users test
-  test "anonymize_users! replaces all user emails and destroys sessions" do
+  test "schedule_deletion! ends every session and keeps every email" do
     account = accounts(:one)
-    assert account.users.count > 0
+    users(:one).sessions.create!(ip_address: "1.1.1.1", user_agent: "Test")
 
-    account.anonymize_users!
-
-    account.users.reload.each do |user|
-      assert user.anonymized?, "Expected #{user.email_address} to be anonymized"
+    assert_no_changes -> { account.users.reload.map(&:email_address).sort } do
+      account.schedule_deletion!
     end
+
+    assert account.reload.deleted?
     assert_equal 0, Session.where(user_id: account.user_ids).count
+    assert_equal (account.deleted_at + 30.days).to_date, account.permanent_deletion_on
+  end
+
+  test "purge! removes the account and everything under it" do
+    account = Account.create_with_user(email_address: "purge-me@example.com", password: "password123", password_confirmation: "password123").account
+    workspace = account.workspaces.first
+    workspace.memories.latest_versions.first.create_version!(content: "second version")
+    client = OauthClient.create!(client_name: "Claude", redirect_uris: JSON.generate(["https://claude.ai/cb"]))
+    client.oauth_authorization_codes.create!(user: account.users.first, code: "code", code_challenge: "challenge",
+      redirect_uri: "https://claude.ai/cb", expires_at: 10.minutes.from_now)
+    account.schedule_deletion!
+
+    account.purge!
+
+    assert_not Account.exists?(account.id)
+    assert_not Workspace.exists?(workspace.id)
+    assert_not User.exists?(email_address: "purge-me@example.com")
+    assert_equal 0, Memory.where(workspace_id: workspace.id).count
   end
 end

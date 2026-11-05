@@ -1,48 +1,45 @@
-<% content_for :page_title, "#{@root_memory.display_title} - Versions" %>
+<% content_for :page_title, "#{@current_version.display_title} - #{t("memories.versions.index.breadcrumb")}" %>
 
 <% content_for :breadcrumb do %>
   <%= responsive_breadcrumbs(
     {
       "Workspaces" => workspaces_path,
       @workspace.name => workspace_path(@workspace),
-      @root_memory.display_title => workspace_memory_path(@workspace, @root_memory)
+      @current_version.display_title => workspace_memory_path(@workspace, @root_memory)
     },
-    "Versions"
+    t("memories.versions.index.breadcrumb")
   ) %>
 <% end %>
 
 <div class="mx-auto max-w-4xl space-y-6">
-  <%# Header %>
-  <div class="flex justify-between items-start">
-    <div>
-      <h1 class="text-2xl font-bold"><%= @root_memory.display_title %></h1>
-      <p class="text-muted-foreground">Version history</p>
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div class="min-w-0">
+      <h1 class="font-display text-2xl font-medium tracking-tight break-words"><%= @current_version.display_title %></h1>
+      <p class="text-muted-foreground"><%= t("memories.versions.index.subtitle") %></p>
     </div>
-    <% if @workspace.active? %>
-      <div class="flex items-center gap-2">
-        <%= link_to "Back to Memory",
-            workspace_memory_path(@workspace, @memory),
-            data: { component: "button", variant: "ghost" } %>
-        <% if @all_versions.size > 1 %>
+    <div class="flex flex-wrap items-center gap-2">
+      <%= link_to t("memories.versions.index.back"),
+          stable_memory_path(@workspace, @root_memory),
+          data: { component: "button", variant: "ghost" } %>
+      <% if @workspace.active? %>
+        <% if @all_versions.size > 1 && @root_memory.manageable_by?(Current.user) %>
           <%= link_to new_workspace_memory_versions_purge_path(@workspace, @root_memory),
               data: { component: "button", variant: "ghost" } do %>
             <%= icon_for(:trash_2, class: "w-4 h-4") %>
             <%= t("memories.versions.index.purge") %>
           <% end %>
         <% end %>
-        <%= button_to workspace_memory_versions_path(@workspace, @memory),
-            method: :post,
-            data: { component: "button", variant: "secondary", turbo_confirm: "Create a new version from #{@memory.version_label}?" } do %>
+        <%= link_to edit_workspace_memory_path(@workspace, @root_memory),
+            data: { component: "button", variant: "secondary" } do %>
           <%= icon_for(:copy_plus, class: "w-4 h-4") %>
-          Create New Version
+          <%= t("memories.memory_show_actions.new_version") %>
         <% end %>
-      </div>
-    <% end %>
+      <% end %>
+    </div>
   </div>
 
-  <%# Version timeline %>
-  <%= render "memories/version_timeline", 
-      versions: @all_versions, 
-      current_memory: @memory,
+  <%= render "memories/version_timeline",
+      versions: @all_versions,
+      current_version: @current_version,
       workspace: @workspace %>
 </div>

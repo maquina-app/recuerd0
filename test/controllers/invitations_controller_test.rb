@@ -138,4 +138,80 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
       assert_response :unprocessable_entity
     end
   end
+
+  # U-01
+  test "an email that already has an account gets an inline error, not a crash" do
+    assert_no_difference("User.count") do
+      post invitations_url, params: {token: @token, user: {email_address: users(:two).email_address, password: "password123", password_confirmation: "password123"}}
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "[data-form-part='error']", text: /#{I18n.t("invitations.show.email_taken")}/
+    assert_select "[data-form-part='error'] a[href=?]", new_session_path
+  end
+
+  test "losing a race for the same email is handled too" do
+    @account.users.create!(email_address: "racer@example.com", password: "password123", password_confirmation: "password123", role: "member")
+    User.class_eval { alias_method :__valid, :valid? }
+    User.define_method(:valid?) { |*| true }
+
+    assert_no_difference("User.count") do
+      post invitations_url, params: {token: @token, user: {email_address: "racer@example.com", password: "password123", password_confirmation: "password123"}}
+    end
+    assert_response :unprocessable_entity
+  ensure
+    User.class_eval do
+      alias_method :valid?, :__valid
+      remove_method :__valid
+    end
+  end
+
+  test "a signed-in visitor is told why a second account needs another email" do
+    sign_in_as(users(:two))
+
+    get invitation_url(token: @token)
+
+    assert_match users(:two).email_address, response.body
+  end
+
+  # U-20
+  test "an admin can revoke every link" do
+    sign_in_as(users(:one))
+
+    delete account_invitation_url
+
+    assert_redirected_to account_path
+    delete session_url
+    get invitation_url(token: @token)
+    assert_response :unprocessable_entity
+  end
+
+  test "a member cannot revoke links" do
+    sign_in_as(users(:member))
+
+    delete account_invitation_url
+
+    assert_equal 0, @account.reload.invitation_generation
+  end
+
+  # U-22
+  test "an account never named reads as its owner's team, and the legal line shows" do
+    @account.update!(name: users(:one).email_address.split("@").first)
+
+    get invitation_url(token: @token)
+
+    assert_select "[data-card-part='title'], h3, h2", text: /#{users(:one).email_address}/
+    assert_match I18n.t("invitations.show.description"), response.body
+    assert_no_match(/join this workspace/, response.body)
+    assert_select "a[href=?]", terms_path
+    assert_select "a[href=?]", privacy_path
+  end
+
+  test "a chosen account name is used as it is" do
+    @account.update!(name: "Maquina")
+
+    get invitation_url(token: @token)
+
+    assert_match "Join Maquina", response.body
+  end
 end

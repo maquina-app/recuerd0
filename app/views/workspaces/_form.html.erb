@@ -12,7 +12,10 @@
 
       <div class="min-w-0 flex-1" data-form-part="group">
         <%= form.label :name, t("workspaces.form.name_label"), class: "sr-only", data: { component: "label" } %>
+        <%# The normalized value, not the raw one the helper would otherwise echo:
+            a whitespace-only name should come back empty. %>
         <%= form.text_field :name,
+            value: workspace.name,
             aria: field_error_aria(form, :name),
             class: "form-title",
             autofocus: true,
@@ -50,6 +53,17 @@
       <p data-form-part="error" id="<%= form.field_id(:description, :error) %>" class="mt-1"><%= workspace.errors[:description].first %></p>
     <% end %>
   </div>
+
+  <% unless workspace.persisted? %>
+    <%# On by default, and said out loud: this memory gets served to agents. %>
+    <div class="mt-5 flex items-start gap-2.5">
+      <%= form.check_box :start_with_map, { checked: workspace.start_with_map.to_s != "0", class: "mt-0.5", data: { component: "checkbox" } }, "1", "0" %>
+      <div>
+        <%= form.label :start_with_map, t("workspaces.form.start_with_map"), class: "text-sm font-medium" %>
+        <p class="text-xs text-muted-foreground"><%= t("workspaces.form.start_with_map_hint") %></p>
+      </div>
+    </div>
+  <% end %>
 
   <%# Mobile actions %>
   <div class="mt-5 flex items-center gap-2 sm:hidden">

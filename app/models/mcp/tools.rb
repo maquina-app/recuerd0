@@ -214,7 +214,8 @@ module Mcp
         category: category,
         content: args["content"],
         tags: normalize_tags(args["tags"]),
-        source: args["source"] # server-injected by McpController, never client-supplied
+        source: args["source"], # server-injected by McpController, never client-supplied
+        created_by: user
       )
       raise ToolError, memory.errors.full_messages.to_sentence if memory.errors.any?
 
@@ -244,7 +245,7 @@ module Mcp
       memory_json(memory.reload)
     end
 
-    # Appends a new immutable version to an existing memory (vs. update_memory,
+    # Appends a new version to an existing memory (vs. update_memory,
     # which overwrites in place). Omitted fields inherit from the latest version.
     def create_version(account, args = {}, user: nil)
       memory = find_memory(account, args["memory_id"])
@@ -256,7 +257,9 @@ module Mcp
         category: category,
         content: args["content"],
         tags: (normalize_tags(args["tags"]) if args.key?("tags")),
-        source: args["source"] # server-injected — provenance of this version
+        source: args["source"], # server-injected — provenance of this version
+        change_note: args["change_note"],
+        created_by: user
       )
       raise ToolError, version.errors.full_messages.to_sentence if version.errors.any?
 
@@ -361,6 +364,7 @@ module Mcp
         tags: memory.tags,
         source: memory.source,
         version: memory.version,
+        change_note: memory.change_note,
         # Stated rather than inferred: a client gating context injection should
         # not have to parse tags or compare version numbers.
         obsolete: memory.obsolete?,

@@ -9,7 +9,7 @@
   <span class="category-dot" data-cat="<%= display_version.category %>" title="<%= t("memories.categories.#{display_version.category}") %>"></span>
 
   <div class="mr-title min-w-0 flex-1">
-    <%= link_to display_version.display_title, workspace_memory_path(workspace, display_version) %>
+    <%= link_to display_version.display_title, stable_memory_path(workspace, memory) %>
   </div>
 
   <div class="flex flex-shrink-0 items-center gap-2">

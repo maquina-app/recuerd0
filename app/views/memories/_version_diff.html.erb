@@ -1,0 +1,24 @@
+<%# locals: (version:, previous:) %>
+<% diff = LineDiff.new(previous.content&.body&.content, version.content&.body&.content) %>
+<% if diff.changed? %>
+  <details class="version-diff">
+    <summary>
+      <%= t("memories.versions.index.changes_from", version: previous.version_label) %>
+      <span class="vd-count vd-count-added">+<%= diff.added_count %></span>
+      <span class="vd-count vd-count-removed">&minus;<%= diff.removed_count %></span>
+    </summary>
+    <div class="vd-lines" role="group" aria-label="<%= t("memories.versions.index.changes_from", version: previous.version_label) %>">
+      <%# On one line each: .vd-line is pre-wrap, so template whitespace would show. %>
+      <% labels = {added: t("memories.versions.index.line_added"), removed: t("memories.versions.index.line_removed")} %>
+      <% diff.lines.each do |line| %>
+        <% if line.kind == :gap %>
+          <div class="vd-line vd-gap" aria-hidden="true">&hellip;</div>
+        <% else %>
+          <div class="vd-line vd-<%= line.kind %>"><% if labels[line.kind] %><span class="sr-only"><%= labels[line.kind] %></span><% end %><%= line.text %></div>
+        <% end %>
+      <% end %>
+    </div>
+  </details>
+<% else %>
+  <p class="text-sm text-muted-foreground"><%= t("memories.versions.index.no_content_changes", version: previous.version_label) %></p>
+<% end %>

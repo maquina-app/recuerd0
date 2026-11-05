@@ -14,7 +14,7 @@
   >
     <p class="min-w-0 flex-1 text-[13.5px] text-muted-foreground">
       <% if agent_connected %>
-        <strong class="font-semibold text-foreground">Almost there</strong> — ask your agent to save its first memory.
+        <strong class="font-semibold text-foreground">Almost there</strong> — save your first memory, here or through your agent.
       <% else %>
         <strong class="font-semibold text-foreground">Finish setting up</strong> — connect an agent so it can read and write here.
       <% end %>
@@ -26,17 +26,25 @@
         data-onboarding-progress
         aria-label="<%= completed_count %> of <%= onboarding_total_steps %> setup steps complete"
       >
-        <span class="flex gap-[3px]" aria-hidden="true">
-          <span
-            class="h-1 w-[22px] rounded-full <%= agent_connected ? "bg-primary" : "bg-border" %>"
-            data-onboarding-pip="agent"
-            data-state="<%= agent_connected ? "complete" : "incomplete" %>"
-          ></span>
-          <span
-            class="h-1 w-[22px] rounded-full <%= first_content ? "bg-primary" : "bg-border" %>"
-            data-onboarding-pip="content"
-            data-state="<%= first_content ? "complete" : "incomplete" %>"
-          ></span>
+        <span class="flex items-center gap-2.5 text-[11.5px] text-muted-foreground">
+          <span class="flex items-center gap-1.5">
+            <span
+              class="h-1 w-[22px] rounded-full <%= agent_connected ? "bg-primary" : "bg-border" %>"
+              data-onboarding-pip="agent"
+              data-state="<%= agent_connected ? "complete" : "incomplete" %>"
+              aria-hidden="true"
+            ></span>
+            <span class="<%= "text-foreground" if agent_connected %>">Connect an agent<% if agent_connected %><span class="sr-only"> (done)</span><% end %></span>
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span
+              class="h-1 w-[22px] rounded-full <%= first_content ? "bg-primary" : "bg-border" %>"
+              data-onboarding-pip="content"
+              data-state="<%= first_content ? "complete" : "incomplete" %>"
+              aria-hidden="true"
+            ></span>
+            <span class="<%= "text-foreground" if first_content %>">Save a first memory<% if first_content %><span class="sr-only"> (done)</span><% end %></span>
+          </span>
         </span>
         <span class="whitespace-nowrap font-mono text-[11.5px] font-medium leading-none tracking-[0.04em] text-muted-foreground">
           <%= completed_count %> of <%= onboarding_total_steps %>

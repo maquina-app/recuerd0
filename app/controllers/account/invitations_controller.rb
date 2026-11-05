@@ -16,4 +16,9 @@ class Account::InvitationsController < ApplicationController
 
     redirect_to account_path, flash: {notice: t(".created"), invitation_url: invitation_url}
   end
+
+  def destroy
+    Current.account.revoke_invitations!
+    redirect_to account_path, notice: t(".revoked"), status: :see_other
+  end
 end
