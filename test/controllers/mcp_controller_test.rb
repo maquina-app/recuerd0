@@ -76,6 +76,31 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       "Mechanics: appends a new current version and leaves earlier versions intact."
   end
 
+  test "create_version refuses a repeat end to end, despite the source it stamps" do
+    token = oauth_token(permission: "full_access", scope: "memories:read memories:write").raw_token
+    memory = Memory.create_with_content(@workspace, title: "Repeat", content: "v1", source: "manual", created_by: users(:one))
+    memory.create_version!(content: "latest", source: "manual")
+
+    assert_no_difference("Memory.count") do
+      [
+        {"memory_id" => memory.id.to_s},
+        {"memory_id" => memory.id.to_s, "content" => "latest"},
+        {"memory_id" => memory.id.to_s, "change_note" => "Only a note"}
+      ].each do |arguments|
+        result = mcp_post(mcp_rpc("tools/call", name: "create_version", arguments: arguments), token: token)
+        assert result.dig("result", "isError"), arguments.inspect
+        assert_match "Nothing has changed", result.dig("result", "content", 0, "text")
+      end
+    end
+
+    assert_difference("Memory.count", 1) do
+      result = mcp_post(mcp_rpc("tools/call", name: "create_version",
+        arguments: {"memory_id" => memory.id.to_s, "content" => "new"}), token: token)
+      assert_not result.dig("result", "isError")
+      assert_equal "new", memory.reload.current_version.content.body.content
+    end
+  end
+
   test "tools/list advertises tags and category inputs on write tools" do
     result = mcp_post(mcp_rpc("tools/list"), token: @read_token.raw_token)
     tools = result["result"]["tools"].index_by { |t| t["name"] }
