@@ -279,7 +279,7 @@ module Mcp
       other = find_memory(account, args["to_memory_id"])
       raise ToolError, "Cannot link a memory to itself" if memory.id == other.id
 
-      link = MemoryLink.new(from_memory: memory, to_memory: other)
+      link = MemoryLink.new(from_memory: memory, to_memory: other, created_by: user)
       raise ToolError, link.errors.full_messages.to_sentence unless link.save
 
       {linked: true, memory_id: memory.id.to_s, to_memory_id: other.id.to_s}
@@ -294,6 +294,7 @@ module Mcp
         memory.id, other.id, other.id, memory.id
       ).first
       raise ToolError, "Link not found" unless link
+      raise ToolError, I18n.t("memories.links.remove_denied") unless link.manageable_by?(user)
 
       link.destroy
       {unlinked: true, memory_id: memory.id.to_s, to_memory_id: other.id.to_s}

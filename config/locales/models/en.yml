@@ -5,29 +5,47 @@ en:
         workspace:
           attributes:
             name:
+              format: "%{message}"
               blank: "Give your workspace a name so you can find it later."
               too_long: "Workspace name is too long (maximum is %{count} characters)."
             description:
+              format: "%{message}"
               too_long: "Description is too long (maximum is %{count} characters)."
         memory:
           attributes:
             base:
               historical_version_immutable: "historical versions are immutable — update the current version or create a new version"
+              historical_version_undeletable: "This id belongs to a historical version, which can't be deleted on its own. To delete the memory and all its versions, use its root id, %{root_id}."
             title:
+              format: "%{message}"
               too_long: "Title is too long (maximum is %{count} characters)."
             content:
               blank_overwrite: "can't be blank when overwriting existing content."
+              too_long: "is too long (maximum is %{count})."
+            source:
+              too_long: "is too long (maximum is %{count} characters)."
+            tags:
+              too_many: "are limited to %{count} on one memory."
+              tag_too_long: "are limited to %{count} characters each."
+        memory_link:
+          attributes:
+            from_memory_id:
+              format: "%{message}"
+              taken: "These memories are already linked."
         pin:
           attributes:
             position:
+              format: "%{message}"
               blank: "Pin position is required."
               not_a_number: "Pin position must be a number."
               greater_than_or_equal_to: "Pin position cannot be negative."
             user_id:
+              format: "%{message}"
               taken: "This item is already pinned."
         user:
           attributes:
             password:
+              format: "%{message}"
               too_short: "Password is too short (minimum is %{count} characters)."
 
     models:

@@ -819,6 +819,23 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_empty call_tool("list_memory_links", {memory_id: a.id.to_s})
   end
 
+  test "unlink_memories follows the link's ownership" do
+    a = Memory.create_with_content(@workspace, title: "A", content: "b")
+    b = Memory.create_with_content(@workspace, title: "B", content: "b")
+    member_token = AccessToken.create!(user: users(:member), description: "member", permission: "full_access")
+    paired = {memory_id: a.id.to_s, to_memory_id: b.id.to_s}
+
+    call_tool("link_memories", paired, token: @full_token.raw_token)
+    assert_equal @full_token.user, MemoryLink.last.created_by
+
+    assert_tool_error I18n.t("memories.links.remove_denied"), "unlink_memories", paired, token: member_token.raw_token
+    assert_equal 1, MemoryLink.involving(a).count
+
+    MemoryLink.involving(a).destroy_all
+    call_tool("link_memories", paired, token: member_token.raw_token)
+    assert call_tool("unlink_memories", paired, token: member_token.raw_token)["unlinked"]
+  end
+
   test "link_memories is denied for a read_only token" do
     a = Memory.create_with_content(@workspace, title: "A", content: "b")
     b = Memory.create_with_content(@workspace, title: "B", content: "b")

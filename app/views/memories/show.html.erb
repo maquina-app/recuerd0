@@ -257,7 +257,7 @@
               <% end %>
             <% end %>
 
-            <% if @workspace.active? && !@viewing_old_version %>
+            <% if @workspace.active? && !@viewing_old_version && @unlinkable_memory_ids.include?(linked.id) %>
               <%= button_to workspace_memory_memory_linking_remove_path(@workspace, @memory, other_id: linked.id),
                     method: :delete,
                     class: "mr-remove",

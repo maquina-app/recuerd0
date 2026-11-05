@@ -89,7 +89,7 @@ module Authentication
 
   def extract_bearer_token
     auth_header = request.headers["Authorization"]
-    return nil unless auth_header&.start_with?("Bearer ")
+    return nil unless auth_header&.match?(/\Abearer /i) # HTTP auth schemes are case-insensitive
     auth_header.split(" ", 2).last
   end
 

@@ -6,13 +6,17 @@ class SearchController < ApplicationController
   allow_token_authentication
 
   def index
-    @query = params[:q].to_s.strip.first(query_max_length)
+    submitted_query = params[:q].to_s.strip
+    @query = submitted_query.first(query_max_length)
 
     return if api_request? && !validate_category_param!
 
     if api_request?
       return render_validation_error("Query parameter is required") if @query.blank?
       return render_validation_error("Query must be at least #{Searchable::MIN_QUERY_LENGTH} characters") if @query.length < Searchable::MIN_QUERY_LENGTH
+      # Cutting a query changes what it means, so a client hears about it. The palette
+      # enforces the same cap with maxlength, so the page never gets here.
+      return render_validation_error("Query must be at most #{query_max_length} characters") if submitted_query.length > query_max_length
     end
 
     # An empty palette used to open onto a blank field, so every visit started

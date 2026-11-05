@@ -34,8 +34,11 @@
       <a href="#get-workspace-context" class="sidebar-link" data-section="get-workspace-context" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Context</a>
       <a href="#create-workspace" class="sidebar-link" data-section="create-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create</a>
       <a href="#update-workspace" class="sidebar-link" data-section="update-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method patch">PATCH</span> Update</a>
+      <a href="#delete-workspace" class="sidebar-link" data-section="delete-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method delete">DEL</span> Delete</a>
       <a href="#archive-workspace" class="sidebar-link" data-section="archive-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Archive</a>
       <a href="#unarchive-workspace" class="sidebar-link" data-section="unarchive-workspace" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method delete">DEL</span> Unarchive</a>
+      <a href="#workspace-stats" class="sidebar-link" data-section="workspace-stats" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Stats</a>
+      <a href="#merge-candidates" class="sidebar-link" data-section="merge-candidates" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Merge Candidates</a>
     </div>
     <div class="sidebar-group">
       <div class="sidebar-heading">Memories</div>
@@ -51,9 +54,12 @@
       <a href="#create-memory" class="sidebar-link" data-section="create-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create</a>
       <a href="#update-memory" class="sidebar-link" data-section="update-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method patch">PATCH</span> Update</a>
       <a href="#delete-memory" class="sidebar-link" data-section="delete-memory" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method delete">DEL</span> Delete</a>
+      <a href="#list-pinned-memories" class="sidebar-link" data-section="list-pinned-memories" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Pinned</a>
     </div>
     <div class="sidebar-group">
       <div class="sidebar-heading">Versions</div>
+      <a href="#list-versions" class="sidebar-link" data-section="list-versions" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> List Versions</a>
+      <a href="#get-version" class="sidebar-link" data-section="get-version" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method get">GET</span> Get Version</a>
       <a href="#create-version" class="sidebar-link" data-section="create-version" data-action="click->marketing-sidebar#closeSidebar"><span class="sidebar-method post">POST</span> Create Version</a>
     </div>
     <div class="sidebar-group">
@@ -71,7 +77,7 @@
         <p>Programmatic access to workspaces and memories. Organize, version, and serve project context to any LLM via REST.</p>
         <div class="base-url-bar">
           <span class="label">Base URL</span>
-          <code>https://recuerd0.ai</code>
+          <code><%= Rails.application.config.x.app_base_url %></code>
         </div>
       </div>
 
@@ -88,7 +94,7 @@
         </div>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
-          <span>All requests must include <code>Content-Type: application/json</code>. Responses use the same content type.</span>
+          <span>Requests with a body must include <code>Content-Type: application/json</code>. Responses use the same content type.</span>
         </div>
         <div class="token-grid">
           <div class="token-card">
@@ -108,7 +114,7 @@
       <div class="api-section" id="rate-limits">
         <div class="resource-header">
           <h2>Rate Limiting</h2>
-          <p>API requests are limited to <strong>100 requests per minute</strong> per token.</p>
+          <p>API requests are limited to <strong>100 requests per minute</strong> per token. A <code>429</code> carries a <code>Retry-After: 60</code> header.</p>
         </div>
         <div class="code-block">
           <div class="code-head">
@@ -118,7 +124,7 @@
           <div class="code-body"><code>{
   <span class="ck">"error"</span>: {
     <span class="ck">"code"</span>: <span class="cs">"RATE_LIMITED"</span>,
-    <span class="ck">"message"</span>: <span class="cs">"Rate limit exceeded. Please try again later."</span>,
+    <span class="ck">"message"</span>: <span class="cs">"Too many requests"</span>,
     <span class="ck">"status"</span>: <span class="cn">429</span>
   }
 }</code></div>
@@ -145,11 +151,33 @@
         <div class="table-scroll"><table class="op-table">
           <thead><tr><th>Status</th><th>Code</th><th>Description</th></tr></thead>
           <tbody>
+            <tr><td><code>400</code></td><td><code>BAD_REQUEST</code></td><td>The request body isn't valid JSON</td></tr>
             <tr><td><code>401</code></td><td><code>UNAUTHORIZED</code></td><td>Invalid or missing access token</td></tr>
-            <tr><td><code>403</code></td><td><code>FORBIDDEN</code></td><td>Insufficient permissions or inactive workspace</td></tr>
-            <tr><td><code>404</code></td><td><code>NOT_FOUND</code></td><td>Resource not found</td></tr>
-            <tr><td><code>422</code></td><td><code>VALIDATION_ERROR</code></td><td>Invalid request data (includes <code>details</code>)</td></tr>
+            <tr><td><code>403</code></td><td><code>FORBIDDEN</code></td><td>Insufficient permissions, an inactive workspace, or a link only an admin or its creator can remove</td></tr>
+            <tr><td><code>404</code></td><td><code>NOT_FOUND</code></td><td>Resource or path not found</td></tr>
+            <tr><td><code>406</code></td><td><code>NOT_ACCEPTABLE</code></td><td>The endpoint has no JSON representation</td></tr>
+            <tr><td><code>422</code></td><td><code>VALIDATION_ERROR</code></td><td>Invalid request data (may include <code>details</code>)</td></tr>
             <tr><td><code>429</code></td><td><code>RATE_LIMITED</code></td><td>Rate limit exceeded</td></tr>
+            <tr><td><code>500</code></td><td><code>INTERNAL_SERVER_ERROR</code></td><td>Something went wrong on the server</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <%# ===== PAGINATION AND LIMITS ===== %>
+      <div class="api-section" id="pagination-limits">
+        <div class="resource-header">
+          <h2>Pagination and Limits</h2>
+          <p>Lists report their position in <code>X-Page</code>, <code>X-Per-Page</code>, <code>X-Total</code>, <code>X-Total-Pages</code> and <code>Link</code> headers. A <code>page</code> past the end returns an empty list. A <code>page</code> that isn't a positive integer is a <code>422</code>.</p>
+        </div>
+        <div class="table-scroll"><table class="op-table">
+          <thead><tr><th>Field</th><th>Limit</th></tr></thead>
+          <tbody>
+            <tr><td><code>workspace[name]</code></td><td>100 characters</td></tr>
+            <tr><td><code>workspace[description]</code></td><td>500 characters</td></tr>
+            <tr><td><code>memory[title]</code></td><td>255 characters</td></tr>
+            <tr><td><code>memory[content]</code></td><td>1 MB</td></tr>
+            <tr><td><code>memory[source]</code></td><td>255 characters</td></tr>
+            <tr><td><code>memory[tags]</code></td><td>50 tags, each up to 100 characters</td></tr>
           </tbody>
         </table></div>
       </div>
@@ -196,7 +224,7 @@
       </div>
 
       <div class="endpoint" id="get-workspace">
-        <div class="endpoint-head"><h3>Get Workspace</h3><p>Returns a single workspace with memory count and pinned status.</p></div>
+        <div class="endpoint-head"><h3>Get Workspace</h3><p>Returns a single workspace with memory count, state and pinned status. <code>state</code> is <code>active</code> or <code>archived</code>; a deleted workspace answers <code>404</code>.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:id</span>.json</span></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
@@ -206,15 +234,19 @@
   <span class="ck">"description"</span>: <span class="cs">"Main project workspace"</span>,
   <span class="ck">"memories_count"</span>: <span class="cn">42</span>,
   <span class="ck">"archived"</span>: <span class="cb">false</span>,
+  <span class="ck">"state"</span>: <span class="cs">"active"</span>,
   <span class="ck">"created_at"</span>: <span class="cs">"2026-01-15T10:30:00Z"</span>,
   <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T14:22:00Z"</span>,
-  <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>
+  <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span>,
+  <span class="ck">"pinned"</span>: <span class="cb">true</span>,
+  <span class="ck">"pinned_at"</span>: <span class="cs">"2026-02-01T09:00:00Z"</span>,
+  <span class="ck">"pin_origin"</span>: <span class="cs">"user"</span>
 }</code></div>
         </div>
       </div>
 
       <div class="endpoint" id="get-workspace-context">
-        <div class="endpoint-head"><h3>Get Workspace Context</h3><p>Returns a compact "wake-up" snapshot of a workspace for AI agents — workspace metadata, a small set of orienting memories, and stats. When the requesting user has no pinned memories in the workspace, the endpoint returns the most recently updated memories instead of an empty list; context_source reports pins or recent. Supports HTTP caching via ETag.</p></div>
+        <div class="endpoint-head"><h3>Get Workspace Context</h3><p>Returns a compact "wake-up" snapshot of a workspace for AI agents — workspace metadata, a small set of orienting memories, and stats. If the requesting user chose any pins in the workspace, you get those, and <code>context_source</code> is <code>pins</code>. If their only pins are ones recuerd0 placed, such as the seeded Map, those come first, followed by the workspace's most recently updated memories up to <code>limit</code>. With no pins at all, you get the most recently updated memories. Both of those report <code>recent</code>, unless the workspace holds nothing beyond its placed pins. Supports HTTP caching via ETag.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:id</span>/context.json</span></div>
         <div class="param-table-label">Query Parameters</div>
         <div class="table-scroll"><table class="param-table">
@@ -270,14 +302,15 @@
       </div>
 
       <div class="endpoint" id="create-workspace">
-        <div class="endpoint-head"><h3>Create Workspace</h3><p>Creates a new workspace.</p></div>
+        <div class="endpoint-head"><h3>Create Workspace</h3><p>Creates a new workspace. It starts with a seeded, auto-pinned <strong>Map</strong> memory explaining how to use it, so <code>memories_count</code> is <code>1</code>. Pass <code>start_with_map: false</code> to start empty. The <code>Location</code> header holds the new workspace's URL.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
         <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th></th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">workspace[name]</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>Workspace name (max 100 characters)</td></tr>
-            <tr><td><span class="param-name">workspace[description]</span></td><td><span class="param-type">string</span></td><td></td><td>Workspace description</td></tr>
+            <tr><td><span class="param-name">workspace[description]</span></td><td><span class="param-type">string</span></td><td></td><td>Workspace description (max 500 characters)</td></tr>
+            <tr><td><span class="param-name">workspace[start_with_map]</span></td><td><span class="param-type">boolean</span></td><td></td><td><code>false</code> skips the seeded Map (default: <code>true</code>)</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">
@@ -295,8 +328,9 @@
   <span class="ck">"id"</span>: <span class="cn">2</span>,
   <span class="ck">"name"</span>: <span class="cs">"New Project"</span>,
   <span class="ck">"description"</span>: <span class="cs">"A new workspace for the team"</span>,
-  <span class="ck">"memories_count"</span>: <span class="cn">0</span>,
+  <span class="ck">"memories_count"</span>: <span class="cn">1</span>,
   <span class="ck">"archived"</span>: <span class="cb">false</span>,
+  <span class="ck">"state"</span>: <span class="cs">"active"</span>,
   <span class="ck">"created_at"</span>: <span class="cs">"2026-02-04T15:00:00Z"</span>,
   <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-04T15:00:00Z"</span>,
   <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/2"</span>
@@ -321,6 +355,19 @@
         </div>
       </div>
 
+      <div class="endpoint" id="delete-workspace">
+        <div class="endpoint-head"><h3>Delete Workspace</h3><p>Soft-deletes a workspace and everything in it. From then on the workspace, its memories and everything under them answer <code>404</code> over the API. The export keeps working, so you can still take a copy.</p></div>
+        <div class="route-bar delete"><span class="route-method">DELETE</span><span class="route-path">/workspaces/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s204">204 No Content</span></div>
+          <div class="code-body"><span class="cc">Empty response body.</span></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>A deleted workspace stays recoverable for 30 days. Restoring is browser-only: an account member does it from the Deleted Workspaces page in the web app, and there is no REST endpoint for it.</span>
+        </div>
+      </div>
+
       <div class="endpoint" id="archive-workspace">
         <div class="endpoint-head"><h3>Archive Workspace</h3><p>Archives a workspace. Archived workspaces become read-only.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:id</span>/archive.json</span><span class="route-badge">full_access</span></div>
@@ -336,6 +383,43 @@
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><span class="cc">Returns the workspace with</span> <span class="ck">"archived"</span>: <span class="cb">false</span></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="workspace-stats">
+        <div class="endpoint-head"><h3>Get Workspace Stats</h3><p>Returns counts and trends for a workspace, computed server-side, without shipping memory bodies. Takes the same <code>include</code> parameter as the lists.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/stats.json</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"workspace"</span>: { <span class="ck">"id"</span>: <span class="cn">1</span>, <span class="ck">"name"</span>: <span class="cs">"Engineering"</span>, <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span> },
+  <span class="ck">"total_memories"</span>: <span class="cn">495</span>,
+  <span class="ck">"total_versions"</span>: <span class="cn">631</span>,
+  <span class="ck">"total_links"</span>: <span class="cn">42</span>,
+  <span class="ck">"counts_by_category"</span>: { <span class="ck">"decision"</span>: <span class="cn">120</span>, <span class="ck">"discovery"</span>: <span class="cn">88</span>, <span class="ck">"preference"</span>: <span class="cn">15</span>, <span class="ck">"general"</span>: <span class="cn">272</span> },
+  <span class="ck">"top_tags"</span>: [ { <span class="ck">"tag"</span>: <span class="cs">"api"</span>, <span class="ck">"count"</span>: <span class="cn">37</span> } ],
+  <span class="ck">"memories_by_week"</span>: { <span class="ck">"2026-18"</span>: <span class="cn">12</span> },
+  <span class="ck">"generated_at"</span>: <span class="cs">"2026-07-15T12:00:00Z"</span>
+}</code></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="merge-candidates">
+        <div class="endpoint-head"><h3>Get Merge Candidates</h3><p>Returns clusters of likely-duplicate memories, scored by shared tags and title similarity. These are read-only suggestions: merging stays a manual action. Takes <code>min_score</code> (<code>0</code>–<code>1</code>, default <code>0.5</code>) and <code>include</code>.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/merge_candidates.json</span></div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
+          <div class="code-body"><code>{
+  <span class="ck">"workspace"</span>: { <span class="ck">"id"</span>: <span class="cn">1</span>, <span class="ck">"name"</span>: <span class="cs">"Engineering"</span>, <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span> },
+  <span class="ck">"candidates"</span>: [
+    {
+      <span class="ck">"score"</span>: <span class="cn">0.82</span>,
+      <span class="ck">"reasons"</span>: [<span class="cs">"similar title"</span>, <span class="cs">"shared tags"</span>],
+      <span class="ck">"memories"</span>: [ <span class="cc">/* two or more memories */</span> ]
+    }
+  ],
+  <span class="ck">"generated_at"</span>: <span class="cs">"2026-07-15T12:00:00Z"</span>
+}</code></div>
         </div>
       </div>
 
@@ -497,7 +581,7 @@
       </div>
 
       <div class="endpoint" id="delete-memory-link">
-        <div class="endpoint-head"><h3>Delete Memory Link</h3><p>Removes a link between two memories. The path <code>:id</code> is the <em>other</em> memory's id — not a separate join row id.</p></div>
+        <div class="endpoint-head"><h3>Delete Memory Link</h3><p>Removes a link between two memories. The path <code>:id</code> is the <em>other</em> memory's id — not a separate join row id. Only an admin or the person who created the link can remove it; anyone else gets <code>403</code>. A link with no recorded creator belongs to the admin.</p></div>
         <div class="route-bar delete"><span class="route-method">DELETE</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/links/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s204">204 No Content</span></div>
@@ -514,8 +598,8 @@
           <tbody>
             <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr>
             <tr><td><span class="param-name">per_page</span></td><td><span class="param-type">integer</span></td><td>Items per page (1–100, default: 25)</td></tr>
-            <tr><td><span class="param-name">title</span></td><td><span class="param-type">string</span></td><td>Glob pattern for title matching. <code>*</code> matches any characters, <code>?</code> matches one</td></tr>
-            <tr><td><span class="param-name">tags</span></td><td><span class="param-type">string</span></td><td>Comma-separated tag list. Returns memories with ALL specified tags</td></tr>
+            <tr><td><span class="param-name">title</span></td><td><span class="param-type">string</span></td><td>Glob pattern for title matching. <code>*</code> matches any characters, <code>?</code> matches one. Every other character, including <code>%</code> and <code>_</code>, means itself</td></tr>
+            <tr><td><span class="param-name">tags</span></td><td><span class="param-type">string</span></td><td>Comma-separated tag list, ignoring case. Returns memories with ALL specified tags. A tag that itself contains a comma can't be filtered on</td></tr>
             <tr><td><span class="param-name">source</span></td><td><span class="param-type">string</span></td><td>Exact match on source field</td></tr>
             <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
             <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
@@ -535,15 +619,29 @@
   {
     <span class="ck">"id"</span>: <span class="cn">1</span>,
     <span class="ck">"title"</span>: <span class="cs">"Meeting Notes"</span>,
-    <span class="ck">"version"</span>: <span class="cn">1</span>,
+    <span class="ck">"tags"</span>: [<span class="cs">"meetings"</span>, <span class="cs">"q1"</span>],
     <span class="ck">"source"</span>: <span class="cs">"manual"</span>,
     <span class="ck">"category"</span>: <span class="cs">"decision"</span>,
-    <span class="ck">"tags"</span>: [<span class="cs">"meetings"</span>, <span class="cs">"q1"</span>],
+    <span class="ck">"version"</span>: <span class="cn">1</span>,
+    <span class="ck">"version_label"</span>: <span class="cs">"v1"</span>,
+    <span class="ck">"has_versions"</span>: <span class="cb">false</span>,
+    <span class="ck">"obsolete"</span>: <span class="cb">false</span>,
+    <span class="ck">"current"</span>: <span class="cb">true</span>,
+    <span class="ck">"root_id"</span>: <span class="cn">1</span>,
+    <span class="ck">"links_count"</span>: <span class="cn">0</span>,
     <span class="ck">"created_at"</span>: <span class="cs">"2026-01-20T09:00:00Z"</span>,
     <span class="ck">"updated_at"</span>: <span class="cs">"2026-02-03T16:45:00Z"</span>,
-    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1/memories/1"</span>
+    <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1/memories/1"</span>,
+    <span class="ck">"workspace"</span>: { <span class="ck">"id"</span>: <span class="cn">1</span>, <span class="ck">"name"</span>: <span class="cs">"Project Alpha"</span>, <span class="ck">"state"</span>: <span class="cs">"active"</span>, <span class="ck">"url"</span>: <span class="cs">"https://recuerd0.ai/workspaces/1"</span> },
+    <span class="ck">"pinned"</span>: <span class="cb">false</span>,
+    <span class="ck">"pinned_at"</span>: <span class="cb">null</span>,
+    <span class="ck">"pin_origin"</span>: <span class="cb">null</span>
   }
 ]</code></div>
+        </div>
+        <div class="info-box note">
+          <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Each new version gets its own <code>id</code>, while <code>root_id</code> stays the same, so <code>root_id</code> is the one to store if you want to refer to the memory across saves.</span>
         </div>
       </div>
 
@@ -557,9 +655,9 @@
             <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td>Page number (default: 1)</td></tr>
             <tr><td><span class="param-name">per_page</span></td><td><span class="param-type">integer</span></td><td>Items per page (1–100, default: 25)</td></tr>
             <tr><td><span class="param-name">workspace_id</span></td><td><span class="param-type">integer</span></td><td>Filter to a specific workspace</td></tr>
-            <tr><td><span class="param-name">ids</span></td><td><span class="param-type">string</span></td><td>Comma-separated memory ids. Batch-fetches exactly those memories, still account-scoped and paginated</td></tr>
-            <tr><td><span class="param-name">title</span></td><td><span class="param-type">string</span></td><td>Glob pattern for title matching. <code>*</code> matches any characters, <code>?</code> matches one</td></tr>
-            <tr><td><span class="param-name">tags</span></td><td><span class="param-type">string</span></td><td>Comma-separated tag list. Returns memories with ALL specified tags</td></tr>
+            <tr><td><span class="param-name">ids</span></td><td><span class="param-type">string</span></td><td>Comma-separated memory ids. Batch-fetches exactly those memories, still account-scoped and paginated. An old version's id returns its memory, as the current version</td></tr>
+            <tr><td><span class="param-name">title</span></td><td><span class="param-type">string</span></td><td>Glob pattern for title matching. <code>*</code> matches any characters, <code>?</code> matches one. Every other character, including <code>%</code> and <code>_</code>, means itself</td></tr>
+            <tr><td><span class="param-name">tags</span></td><td><span class="param-type">string</span></td><td>Comma-separated tag list, ignoring case. Returns memories with ALL specified tags. A tag that itself contains a comma can't be filtered on</td></tr>
             <tr><td><span class="param-name">source</span></td><td><span class="param-type">string</span></td><td>Exact match on source field</td></tr>
             <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category. See <a href="#memory-categories">Memory Categories</a>.</td></tr>
             <tr><td><span class="param-name">sort</span></td><td><span class="param-type">string</span></td><td>Sort field: <code>updated_at</code> (default), <code>created_at</code>, <code>title</code></td></tr>
@@ -624,7 +722,7 @@
         </div>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
-          <span>The <code>content</code> object always includes <code>total_lines</code>, <code>line_start</code>, and <code>line_end</code>. When line range parameters are provided, <code>body</code> contains only the requested lines. Returns <code>422</code> if <code>line_start</code> > <code>line_end</code>.</span>
+          <span>The <code>content</code> object always includes <code>total_lines</code>, <code>line_start</code>, and <code>line_end</code>. When line range parameters are provided, <code>body</code> contains only the requested lines. A <code>line_start</code> past the last line returns an empty <code>body</code>, because a memory can shrink between two reads. Returns <code>422</code> if <code>line_start</code> > <code>line_end</code>.</span>
         </div>
         <div class="param-table-label">Grep Mode Parameters</div>
         <div class="table-scroll"><table class="param-table">
@@ -702,9 +800,9 @@
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">memory[title]</span></td><td><span class="param-type">string</span></td><td>Memory title (max 255 characters)</td></tr>
-            <tr><td><span class="param-name">memory[content]</span></td><td><span class="param-type">string</span></td><td>Memory body (Markdown)</td></tr>
-            <tr><td><span class="param-name">memory[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier</td></tr>
-            <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Array of tag strings</td></tr>
+            <tr><td><span class="param-name">memory[content]</span></td><td><span class="param-type">string</span></td><td>Memory body (Markdown, max 1 MB)</td></tr>
+            <tr><td><span class="param-name">memory[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier (max 255 characters)</td></tr>
+            <tr><td><span class="param-name">memory[tags]</span></td><td><span class="param-type">array</span></td><td>Array of tag strings (max 50 tags, 100 characters each). A value of the wrong type is a <code>422</code> naming the field.</td></tr>
             <tr><td><span class="param-name">memory[category]</span></td><td><span class="param-type">string</span></td><td>One of <code>decision</code>, <code>discovery</code>, <code>preference</code>, <code>general</code> (defaults to <code>general</code>). See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
         </table></div>
@@ -746,12 +844,17 @@
       </div>
 
       <div class="endpoint" id="delete-memory">
-        <div class="endpoint-head"><h3>Delete Memory</h3><p>Deletes a memory and all its versions.</p></div>
+        <div class="endpoint-head"><h3>Delete Memory</h3><p>Deletes a memory and all its versions. <code>:id</code> is the memory's root id or its current version's id; either one removes the whole memory. An older version's id is refused with <code>422</code>, and the message gives the root id.</p></div>
         <div class="route-bar delete"><span class="route-method">DELETE</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s204">204 No Content</span></div>
           <div class="code-body"><span class="cc">Empty response body.</span></div>
         </div>
+      </div>
+
+      <div class="endpoint" id="list-pinned-memories">
+        <div class="endpoint-head"><h3>List Pinned Memories</h3><p>Returns the current user's pinned memories across all workspaces, in the same shape as List Memories. The list isn't paginated, because the number of pins a user can have is capped. Obsolete pins and pins in archived or deleted workspaces are hidden unless you pass <code>include=obsolete,inactive</code>.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/memories/pinned.json</span></div>
       </div>
 
       <div class="section-divider"></div>
@@ -761,8 +864,18 @@
         <div class="resource-header"><h2>Memory Versions</h2></div>
       </div>
 
+      <div class="endpoint" id="list-versions">
+        <div class="endpoint-head"><h3>List Versions</h3><p>Lists every version of a memory, oldest to newest, in the same shape as List Memories without the pin fields. <code>:memory_id</code> can be any version's id.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/versions.json</span></div>
+      </div>
+
+      <div class="endpoint" id="get-version">
+        <div class="endpoint-head"><h3>Get Version</h3><p>Returns a single version with its content, in the same shape as Get Memory.</p></div>
+        <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/versions/<span class="param">:id</span>.json</span></div>
+      </div>
+
       <div class="endpoint" id="create-version">
-        <div class="endpoint-head"><h3>Create Version</h3><p>Creates a new version of a memory. Fields default to the parent version values if not provided.</p></div>
+        <div class="endpoint-head"><h3>Create Version</h3><p>Creates a new version of a memory. Fields default to the parent version values if not provided. Sending <code>content</code> blank is a <code>422</code>, because it would wipe the memory's current text.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/versions.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
         <div class="table-scroll"><table class="param-table">

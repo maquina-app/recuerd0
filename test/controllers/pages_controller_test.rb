@@ -176,9 +176,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "shares one search contract with the web UI"
     assert_select "a[href='/mcp#memory-search']"
     assert_includes response.body,
-      "When the requesting user has no pinned memories in the workspace, the endpoint returns " \
-        "the most recently updated memories instead of an empty list; context_source reports " \
-        "pins or recent."
+      "With no pins at all, you get the most recently updated memories."
     assert_select "#get-workspace-context", text: /pinned_memories.*deprecated/m
     assert_select "#get-workspace-context", text: /stats\.returned_pinned.*deprecated/m
   end

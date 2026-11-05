@@ -280,6 +280,7 @@ en:
       created: "Linked to %{title}."
       removed: "Removed the link to %{title}."
       not_found: "That memory is no longer available in your account."
+      remove_denied: "Only an admin or the person who created this link can remove it."
       remove_title: "Remove this link?"
       remove_button: "Remove link"
       remove_confirm: "The link to %{title} is removed. Neither memory is deleted, and you can link them again at any time."

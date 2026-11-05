@@ -18,8 +18,9 @@ module Mcp
         name: "workspace_context",
         description: "Wake up a session on a workspace. Returns the workspace, a small set of " \
           "orienting memories, and counts. Returns " \
-          "the caller's pinned memories when they have any, and the most recently updated " \
-          "memories otherwise; `context_source` says which. Call this before searching or " \
+          "the pinned memories the caller chose when they have any, and otherwise any pins " \
+          "recuerd0 placed followed by the most recently updated memories; `context_source` " \
+          "says which. Call this before searching or " \
           "writing, so later work is informed by what the workspace already holds and does " \
           "not duplicate it. " + OBSOLETE_NOTE,
         annotations: {readOnlyHint: true, destructiveHint: false},
@@ -143,7 +144,8 @@ module Mcp
       },
       {
         name: "unlink_memories",
-        description: "Remove the \"see also\" link between two memories.",
+        description: "Remove the \"see also\" link between two memories. Only an admin or the " \
+          "person who created the link can remove it.",
         annotations: {readOnlyHint: false, destructiveHint: true},
         inputSchema: {
           type: "object",

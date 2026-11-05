@@ -5,6 +5,7 @@ class Workspaces::ArchivesController < ApplicationController
   allow_token_authentication
 
   before_action :set_workspace, except: [:index]
+  before_action :ensure_not_deleted, only: %i[create destroy]
 
   # GET /workspaces/archived
   def index

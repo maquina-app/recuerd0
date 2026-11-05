@@ -32,8 +32,9 @@ module MemoryFilterable
   def apply_title_filter(scope, pattern)
     return scope if pattern.blank?
 
-    like_pattern = pattern.gsub("*", "%").gsub("?", "_")
-    scope.where("LOWER(memories.title) LIKE LOWER(?)", like_pattern)
+    # Only * and ? are wildcards here; a % or _ in the pattern means itself.
+    like_pattern = ActiveRecord::Base.sanitize_sql_like(pattern).gsub("*", "%").gsub("?", "_")
+    scope.where("LOWER(memories.title) LIKE LOWER(?) ESCAPE '\\'", like_pattern)
   end
 
   def apply_tags_filter(scope, tags_param)
@@ -43,7 +44,7 @@ module MemoryFilterable
     return scope if tags.empty?
 
     tags.each do |tag|
-      scope = scope.where("EXISTS (SELECT 1 FROM json_each(memories.tags) WHERE json_each.value = ?)", tag)
+      scope = scope.where("EXISTS (SELECT 1 FROM json_each(memories.tags) WHERE json_each.value = ? COLLATE NOCASE)", tag)
     end
     scope
   end

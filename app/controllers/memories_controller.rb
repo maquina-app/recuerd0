@@ -3,13 +3,19 @@ class MemoriesController < ApplicationController
   include MemoryFilterable
   include ObsoleteFilterable
   include ContentRenderable
+  include MemoryPayload
 
   allow_token_authentication
+
+  # Memory has no content column, so the default wrapper would drop it from a flat
+  # {"title": "...", "content": "..."} body.
+  wrap_parameters :memory, include: %i[title content source category tags]
 
   before_action :set_workspace
   before_action :ensure_not_deleted
   before_action :set_memory, only: %i[show edit update destroy]
   before_action :require_active_workspace, only: %i[new create edit update destroy]
+  before_action -> { reject_misshaped_fields(:memory) }, only: %i[create update]
 
   def index
     scope = @workspace.memories
@@ -41,7 +47,7 @@ class MemoriesController < ApplicationController
     track_event("memory.view", resource: @memory)
 
     respond_to do |format|
-      format.html
+      format.html { @unlinkable_memory_ids = @memory.unlinkable_memory_ids_for(Current.user) }
       format.json do
         @memory = @memory.resolve_current_version
         return validate_content_params if content_filtered?
@@ -65,7 +71,7 @@ class MemoriesController < ApplicationController
       track_event("memory.create", resource: @memory)
       respond_to do |format|
         format.html { redirect_to [@workspace, @memory], notice: t(".created") }
-        format.json { render :show, status: :created }
+        format.json { render :show, status: :created, location: workspace_memory_url(@workspace, @memory) }
       end
     else
       respond_to do |format|
@@ -118,9 +124,14 @@ class MemoriesController < ApplicationController
     end
   end
 
+  # A memory goes as a whole, by its root id or its current version's id. Destroying
+  # the row in the URL would quietly drop one version, roll the memory back if it was
+  # the newest, and take the memory out of search, because the index is keyed by root.
   def destroy
+    return refuse_historical_delete if @memory.historical_version?
+
     track_event("memory.destroy", resource: @memory)
-    @memory.destroy
+    @memory.root_memory.destroy
 
     respond_to do |format|
       format.html { redirect_to workspace_path(@workspace), notice: t(".destroyed"), status: :see_other }
@@ -129,6 +140,15 @@ class MemoriesController < ApplicationController
   end
 
   private
+
+  def refuse_historical_delete
+    @memory.errors.add(:base, :historical_version_undeletable, root_id: @memory.root_memory.id)
+
+    respond_to do |format|
+      format.html { redirect_to [@workspace, @memory], alert: @memory.errors.full_messages.to_sentence, status: :see_other }
+      format.json { render_validation_errors(@memory) }
+    end
+  end
 
   # Candidates for the "Link a memory" picker. Account-scoped (never just the
   # current workspace — links are explicitly allowed to cross them), with the
@@ -182,6 +202,6 @@ class MemoriesController < ApplicationController
   end
 
   def memory_params
-    params.require(:memory).permit(:title, :source, :content, :category, tags: [])
+    params.expect(memory: [:title, :source, :content, :category, tags: []])
   end
 end

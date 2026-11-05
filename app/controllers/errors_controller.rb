@@ -1,37 +1,45 @@
 class ErrorsController < ApplicationController
   allow_unauthenticated_access
+  skip_forgery_protection # the catch-all route lets a POST in, and nothing here writes
+  skip_before_action :reject_null_characters
 
   layout false
 
   def bad_request
-    respond_to do |format|
-      format.json { render json: error_json("BAD_REQUEST", t("errors.bad_request"), 400), status: :bad_request }
-      format.all { render html: static_page("400"), status: :bad_request, content_type: "text/html" }
-    end
+    render_error("BAD_REQUEST", :bad_request)
   end
 
   def not_found
-    respond_to do |format|
-      format.json { render json: error_json("NOT_FOUND", t("errors.not_found"), 404), status: :not_found }
-      format.all { render html: static_page("404"), status: :not_found, content_type: "text/html" }
-    end
+    render_error("NOT_FOUND", :not_found)
   end
 
   def unprocessable_entity
-    respond_to do |format|
-      format.json { render json: error_json("UNPROCESSABLE_ENTITY", t("errors.unprocessable_entity"), 422), status: :unprocessable_entity }
-      format.all { render html: static_page("422"), status: :unprocessable_entity, content_type: "text/html" }
-    end
+    render_error("UNPROCESSABLE_ENTITY", :unprocessable_entity)
   end
 
   def internal_server_error
-    respond_to do |format|
-      format.json { render json: error_json("INTERNAL_SERVER_ERROR", t("errors.internal_server_error"), 500), status: :internal_server_error }
-      format.all { render html: static_page("500"), status: :internal_server_error, content_type: "text/html" }
-    end
+    render_error("INTERNAL_SERVER_ERROR", :internal_server_error)
   end
 
   private
+
+  def render_error(code, status)
+    number = Rack::Utils.status_code(status)
+
+    if json_error?
+      render json: error_json(code, t("errors.#{status}"), number), status: status
+    else
+      render html: static_page(number), status: status, content_type: "text/html"
+    end
+  end
+
+  # By the time the exceptions app runs the path is /500, so the request's format
+  # no longer says it came in as /workspaces.json. The original path does.
+  def json_error?
+    api_request? ||
+      extract_bearer_token.present? ||
+      request.get_header("action_dispatch.original_path").to_s.end_with?(".json")
+  end
 
   def error_json(code, message, status)
     {error: {code: code, message: message, status: status}}

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_05_000010) do
   create_table "access_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
@@ -162,9 +162,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_000000) do
 
   create_table "memory_links", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.integer "created_by_id"
     t.integer "from_memory_id", null: false
     t.integer "to_memory_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_memory_links_on_created_by_id"
     t.index ["from_memory_id", "to_memory_id"], name: "index_memory_links_on_from_memory_id_and_to_memory_id", unique: true
     t.index ["from_memory_id"], name: "index_memory_links_on_from_memory_id"
     t.index ["to_memory_id"], name: "index_memory_links_on_to_memory_id"
@@ -265,6 +267,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_000000) do
   add_foreign_key "memory_embeddings", "memories", on_delete: :cascade
   add_foreign_key "memory_links", "memories", column: "from_memory_id"
   add_foreign_key "memory_links", "memories", column: "to_memory_id"
+  add_foreign_key "memory_links", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "oauth_authorization_codes", "oauth_clients"
   add_foreign_key "oauth_authorization_codes", "users"
   add_foreign_key "pins", "users"

@@ -22,7 +22,7 @@ module WorkspaceScoped
     return if @workspace.active?
 
     respond_to do |format|
-      format.html { redirect_to workspaces_path, alert: t("workspaces.inactive_workspace") }
+      format.html { redirect_to workspaces_path, alert: t("workspaces.inactive_workspace"), status: :see_other }
       format.json { render_forbidden("Workspace is not active") }
     end
   end

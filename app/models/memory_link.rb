@@ -1,6 +1,8 @@
 class MemoryLink < ApplicationRecord
   belongs_to :from_memory, class_name: "Memory"
   belongs_to :to_memory, class_name: "Memory"
+  # Nullable on purpose: a link with no recorded creator belongs to the account admin.
+  belongs_to :created_by, class_name: "User", optional: true
 
   before_validation :normalize_order
   validate :different_memories
@@ -13,6 +15,17 @@ class MemoryLink < ApplicationRecord
 
   def other_side(memory)
     (from_memory_id == memory.id) ? to_memory : from_memory
+  end
+
+  def other_side_id(memory)
+    (from_memory_id == memory.id) ? to_memory_id : from_memory_id
+  end
+
+  # Who may remove this link: an admin, or whoever created it.
+  def manageable_by?(user)
+    return false unless user
+
+    user.admin? || (created_by_id.present? && created_by_id == user.id)
   end
 
   private

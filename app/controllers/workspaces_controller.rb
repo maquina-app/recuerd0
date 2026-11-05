@@ -5,6 +5,7 @@ class WorkspacesController < ApplicationController
   allow_token_authentication
 
   before_action :set_workspace, only: %i[show edit update destroy]
+  before_action :ensure_not_deleted, only: %i[show update destroy]
   before_action :require_active_workspace, only: %i[edit update]
 
   def index
@@ -75,7 +76,7 @@ class WorkspacesController < ApplicationController
       track_event("workspace.create", resource: @workspace)
       respond_to do |format|
         format.html { redirect_to @workspace, notice: t(".created", name: @workspace.name) }
-        format.json { render :show, status: :created }
+        format.json { render :show, status: :created, location: workspace_url(@workspace) }
       end
     else
       respond_to do |format|
@@ -119,6 +120,6 @@ class WorkspacesController < ApplicationController
   private
 
   def workspace_params
-    params.require(:workspace).permit(:name, :description)
+    params.expect(workspace: [:name, :description, :start_with_map])
   end
 end
