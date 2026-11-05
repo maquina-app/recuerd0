@@ -17,7 +17,7 @@ class Oauth::RegistrationsController < ApplicationController
       redirect_uris: JSON.generate(Array(params[:redirect_uris])),
       grant_types: "authorization_code",
       token_endpoint_auth_method: "none",
-      scope: "memories:read memories:write workspaces:read"
+      scope: OauthClient::SCOPES.join(" ")
     )
 
     unless client.save

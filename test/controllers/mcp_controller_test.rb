@@ -29,54 +29,22 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "rejects requests without a Bearer token" do
-    post "/mcp", params: rpc("tools/list").to_json, headers: json_headers
+    mcp_post(mcp_rpc("tools/list"))
     assert_response :unauthorized
     assert_match "resource_metadata", response.headers["WWW-Authenticate"]
+    assert_includes response.headers["WWW-Authenticate"], 'scope="memories:read"'
     assert_equal(-32_001, JSON.parse(response.body)["error"]["code"])
   end
 
   test "rejects an expired token" do
     expired = oauth_token(permission: "read_only", scope: "memories:read", expires_at: 1.hour.ago)
-    result = mcp(rpc("tools/list"), token: expired.raw_token)
+    result = mcp_post(mcp_rpc("tools/list"), token: expired.raw_token)
     assert_response :unauthorized
     assert_nil result["result"]
   end
 
-  test "initialize echoes a supported protocol version and sets a session id" do
-    payload = rpc("initialize")
-    payload[:params][:protocolVersion] = "2025-03-26"
-    result = mcp(payload, token: @read_token.raw_token)
-
-    assert_response :success
-    assert_equal "2025-03-26", result["result"]["protocolVersion"]
-    assert_equal(
-      "Before writing to or searching a workspace, call workspace_context on it. " \
-        "Workspaces carry their own conventions, and the context response tells you what the " \
-        "workspace already holds so your work fits it and does not duplicate it.",
-      result["result"]["instructions"]
-    )
-    assert response.headers["Mcp-Session-Id"].present?
-  end
-
-  test "initialize falls back to the latest version for an unknown request" do
-    payload = rpc("initialize")
-    payload[:params][:protocolVersion] = "2099-01-01"
-    result = mcp(payload, token: @read_token.raw_token)
-
-    assert_equal McpController::LATEST_PROTOCOL_VERSION, result["result"]["protocolVersion"]
-  end
-
-  test "notifications are acknowledged with 202 and no body" do
-    post "/mcp",
-      params: {jsonrpc: "2.0", method: "notifications/initialized"}.to_json,
-      headers: auth_headers(@read_token.raw_token).merge(json_headers)
-
-    assert_response :accepted
-    assert_predicate response.body.strip, :empty?
-  end
-
   test "tools/list returns every defined tool" do
-    result = mcp(rpc("tools/list"), token: @read_token.raw_token)
+    result = mcp_post(mcp_rpc("tools/list"), token: @read_token.raw_token)
     tools = result["result"]["tools"]
     names = tools.map { |t| t["name"] }
     assert_equal 13, names.size
@@ -97,7 +65,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "tools/list appends the write mechanics descriptions" do
-    result = mcp(rpc("tools/list"), token: @read_token.raw_token)
+    result = mcp_post(mcp_rpc("tools/list"), token: @read_token.raw_token)
     tools = result["result"]["tools"].index_by { |tool| tool["name"] }
 
     assert_includes tools["create_memory"]["description"],
@@ -109,7 +77,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "tools/list advertises tags and category inputs on write tools" do
-    result = mcp(rpc("tools/list"), token: @read_token.raw_token)
+    result = mcp_post(mcp_rpc("tools/list"), token: @read_token.raw_token)
     tools = result["result"]["tools"].index_by { |t| t["name"] }
 
     create_props = tools["create_memory"]["inputSchema"]["properties"]
@@ -121,7 +89,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "tools/list advertises relevance sort and the complete search contract" do
-    result = mcp(rpc("tools/list"), token: @read_token.raw_token)
+    result = mcp_post(mcp_rpc("tools/list"), token: @read_token.raw_token)
     tool = result["result"]["tools"].find { |candidate| candidate["name"] == "list_memories" }
     properties = tool["inputSchema"]["properties"]
 
@@ -143,7 +111,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "tools/list advertises omitted field and blank overwrite update semantics" do
-    result = mcp(rpc("tools/list"), token: @read_token.raw_token)
+    result = mcp_post(mcp_rpc("tools/list"), token: @read_token.raw_token)
     update_tool = result["result"]["tools"].find { |tool| tool["name"] == "update_memory" }
 
     assert_includes update_tool["description"], "Omitted fields remain unchanged"
@@ -152,7 +120,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_workspaces returns the account's workspaces" do
-    result = mcp(rpc("tools/call", name: "list_workspaces"), token: @read_token.raw_token)
+    result = mcp_post(mcp_rpc("tools/call", name: "list_workspaces"), token: @read_token.raw_token)
     payload = JSON.parse(result["result"]["content"].first["text"])
     assert_includes payload.map { |w| w["name"] }, @workspace.name
   end
@@ -230,8 +198,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "workspace_context validates category and account-scopes active workspaces" do
-    invalid = mcp(
-      rpc(
+    invalid = mcp_post(
+      mcp_rpc(
         "tools/call",
         name: "workspace_context",
         arguments: {workspace_id: @workspace.id.to_s, category: "bogus"}
@@ -241,8 +209,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert invalid.dig("result", "isError")
     assert_match "Invalid category", invalid.dig("result", "content", 0, "text")
 
-    foreign = mcp(
-      rpc(
+    foreign = mcp_post(
+      mcp_rpc(
         "tools/call",
         name: "workspace_context",
         arguments: {workspace_id: workspaces(:two).id.to_s}
@@ -287,19 +255,19 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create_memory is denied for a read_only token" do
-    result = mcp(
-      rpc("tools/call", name: "create_memory",
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "create_memory",
         arguments: {workspace_id: @workspace.id.to_s, title: "X", content: "Y"}),
       token: @read_token.raw_token
     )
-    assert_equal(-32_001, result["error"]["code"])
+    assert_insufficient_scope(result)
   end
 
   test "create_memory persists tags and stamps source with the client name" do
     result = nil
     assert_difference -> { @workspace.memories.count }, 1 do
-      result = mcp(
-        rpc("tools/call", name: "create_memory",
+      result = mcp_post(
+        mcp_rpc("tools/call", name: "create_memory",
           arguments: {workspace_id: @workspace.id.to_s, title: "From MCP", content: "Body",
                       category: "decision", tags: ["newsletter", "mailer"]}),
         token: @full_token.raw_token
@@ -317,8 +285,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create_memory ignores a client-supplied source and uses the OAuth client name" do
-    result = mcp(
-      rpc("tools/call", name: "create_memory",
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "create_memory",
         arguments: {workspace_id: @workspace.id.to_s, title: "Spoof", content: "x", source: "Evil App"}),
       token: @full_token.raw_token
     )
@@ -331,8 +299,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     memory = Memory.create_with_content(@workspace,
       title: "Tagged", content: "Body", tags: ["a", "b"], source: "Claude")
 
-    result = mcp(
-      rpc("tools/call", name: "read_memory", arguments: {memory_id: memory.id.to_s}),
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "read_memory", arguments: {memory_id: memory.id.to_s}),
       token: @read_token.raw_token
     )
     payload = JSON.parse(result["result"]["content"].first["text"])
@@ -447,8 +415,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   test "enabled retrieval validation rejects explicit null blank and unknown modes" do
     with_hybrid_retrieval(true) do
       [nil, "", "unknown", "hybrid", "hybrid_decay"].each do |retrieval|
-        result = mcp(
-          rpc(
+        result = mcp_post(
+          mcp_rpc(
             "tools/call",
             name: "list_memories",
             arguments: {workspace_id: @workspace.id.to_s, retrieval: retrieval}
@@ -571,8 +539,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     end
 
     with_hybrid_retrieval(provider: provider) do
-      result = mcp(
-        rpc(
+      result = mcp_post(
+        mcp_rpc(
           "tools/call",
           name: "list_memories",
           arguments: {
@@ -673,8 +641,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_memories rejects an invalid category" do
-    result = mcp(
-      rpc("tools/call", name: "list_memories",
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "list_memories",
         arguments: {workspace_id: @workspace.id.to_s, category: "bogus"}),
       token: @read_token.raw_token
     )
@@ -715,8 +683,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   test "read_memory refuses a memory in a soft-deleted workspace" do
     memory = Memory.create_with_content(workspaces(:deleted), title: "Gone", content: "body")
 
-    result = mcp(
-      rpc("tools/call", name: "read_memory", arguments: {memory_id: memory.id.to_s}),
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "read_memory", arguments: {memory_id: memory.id.to_s}),
       token: @read_token.raw_token
     )
 
@@ -753,7 +721,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       ["unlink_memories", {memory_id: live.id.to_s, to_memory_id: gone.id.to_s}],
       ["update_memory", {memory_id: gone.id.to_s, content: "edited"}]
     ].each do |name, arguments|
-      result = mcp(rpc("tools/call", name: name, arguments: arguments), token: write_token.raw_token)
+      result = mcp_post(mcp_rpc("tools/call", name: name, arguments: arguments), token: write_token.raw_token)
 
       assert result["result"]["isError"], name
       assert_equal "Memory not found", result["result"]["content"].first["text"], name
@@ -761,8 +729,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the inactive token stays REST-only" do
-    result = mcp(
-      rpc("tools/call", name: "list_memories",
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "list_memories",
         arguments: {workspace_id: @workspace.id.to_s, include: ["inactive"]}),
       token: @read_token.raw_token
     )
@@ -804,8 +772,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "an unadvertised include token is a JSON-RPC error" do
-    result = mcp(
-      rpc("tools/call", name: "list_memories",
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "list_memories",
         arguments: {workspace_id: @workspace.id.to_s, include: ["nope"]}),
       token: @read_token.raw_token
     )
@@ -814,8 +782,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "include must be an array, not a bare string" do
-    result = mcp(
-      rpc("tools/call", name: "list_memories",
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "list_memories",
         arguments: {workspace_id: @workspace.id.to_s, include: "obsolete"}),
       token: @read_token.raw_token
     )
@@ -854,12 +822,12 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   test "link_memories is denied for a read_only token" do
     a = Memory.create_with_content(@workspace, title: "A", content: "b")
     b = Memory.create_with_content(@workspace, title: "B", content: "b")
-    result = mcp(
-      rpc("tools/call", name: "link_memories",
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "link_memories",
         arguments: {memory_id: a.id.to_s, to_memory_id: b.id.to_s}),
       token: @read_token.raw_token
     )
-    assert_equal(-32_001, result["error"]["code"])
+    assert_insufficient_scope(result)
   end
 
   test "workspace_stats returns category counts and totals" do
@@ -889,8 +857,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     memory = Memory.create_with_content(@workspace, title: "Edit me", content: "Body")
 
     assert_no_difference -> { memory.all_versions.count } do
-      result = mcp(
-        rpc("tools/call", name: "update_memory",
+      result = mcp_post(
+        mcp_rpc("tools/call", name: "update_memory",
           arguments: {memory_id: memory.id.to_s, category: "preference", tags: ["edited"]}),
         token: @full_token.raw_token
       )
@@ -915,8 +883,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     payload = nil
 
     assert_no_difference -> { root.all_versions.count } do
-      result = mcp(
-        rpc("tools/call", name: "update_memory",
+      result = mcp_post(
+        mcp_rpc("tools/call", name: "update_memory",
           arguments: {
             memory_id: root.id.to_s,
             title: "Updated current",
@@ -967,8 +935,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     result = nil
 
     assert_no_difference -> { root.all_versions.count } do
-      result = mcp(
-        rpc("tools/call", name: "update_memory",
+      result = mcp_post(
+        mcp_rpc("tools/call", name: "update_memory",
           arguments: {
             memory_id: historical.id.to_s,
             title: "Corrupted",
@@ -1012,8 +980,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     payload = nil
 
     travel_to 30.minutes.from_now do
-      result = mcp(
-        rpc("tools/call", name: "update_memory",
+      result = mcp_post(
+        mcp_rpc("tools/call", name: "update_memory",
           arguments: {memory_id: current.id.to_s, title: "Direct current update"}),
         token: @full_token.raw_token
       )
@@ -1042,8 +1010,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     current_updated_at = current.reload.updated_at
 
     assert_no_difference -> { root.all_versions.count } do
-      result = mcp(
-        rpc("tools/call", name: "update_memory",
+      result = mcp_post(
+        mcp_rpc("tools/call", name: "update_memory",
           arguments: {memory_id: root.id.to_s, title: "Must roll back", content: ""}),
         token: @full_token.raw_token
       )
@@ -1065,8 +1033,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     body = "# Exact Markdown\n\n- one\n- two\n\nTrailing line\n"
     memory = Memory.create_with_content(@workspace, title: "Keep body", content: body)
 
-    result = mcp(
-      rpc("tools/call", name: "update_memory",
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "update_memory",
         arguments: {memory_id: memory.id.to_s, tags: ["edited"]}),
       token: @full_token.raw_token
     )
@@ -1079,8 +1047,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   test "update_memory surfaces blank content overwrite as a tool error" do
     memory = Memory.create_with_content(@workspace, title: "Before", content: "Existing body")
 
-    result = mcp(
-      rpc("tools/call", name: "update_memory",
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "update_memory",
         arguments: {memory_id: memory.id.to_s, title: "After", content: ""}),
       token: @full_token.raw_token
     )
@@ -1096,8 +1064,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     memory = Memory.create_with_content(@workspace, title: "v1", content: "First")
 
     assert_difference -> { memory.all_versions.count }, 1 do
-      result = mcp(
-        rpc("tools/call", name: "create_version",
+      result = mcp_post(
+        mcp_rpc("tools/call", name: "create_version",
           arguments: {memory_id: memory.id.to_s, content: "Second", tags: ["v2"]}),
         token: @full_token.raw_token
       )
@@ -1106,8 +1074,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert_equal ["v2"], payload["tags"]
     end
 
-    read = mcp(
-      rpc("tools/call", name: "read_memory", arguments: {memory_id: memory.id.to_s}),
+    read = mcp_post(
+      mcp_rpc("tools/call", name: "read_memory", arguments: {memory_id: memory.id.to_s}),
       token: @read_token.raw_token
     )
     read_payload = JSON.parse(read["result"]["content"].first["text"])
@@ -1117,18 +1085,18 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
   test "create_version is denied for a read_only token" do
     memory = Memory.create_with_content(@workspace, title: "v1", content: "First")
-    result = mcp(
-      rpc("tools/call", name: "create_version",
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "create_version",
         arguments: {memory_id: memory.id.to_s, content: "Second"}),
       token: @read_token.raw_token
     )
-    assert_equal(-32_001, result["error"]["code"])
+    assert_insufficient_scope(result)
   end
 
   test "tools enforce account isolation" do
     other_memory = memories(:two) # belongs to account two
-    result = mcp(
-      rpc("tools/call", name: "read_memory", arguments: {memory_id: other_memory.id.to_s}),
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "read_memory", arguments: {memory_id: other_memory.id.to_s}),
       token: @full_token.raw_token
     )
     assert result["result"]["isError"]
@@ -1194,6 +1162,246 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_includes ids, workspaces(:two).id.to_s
   end
 
+  # --- MCP 2026-07-28 transport ----------------------------------------------
+
+  test "initialize is not a method on 2026-07-28" do
+    result = mcp_post(mcp_rpc("initialize"), token: @read_token.raw_token)
+
+    assert_response :not_found
+    assert_equal(-32_601, result["error"]["code"])
+    assert_includes result["error"]["message"], "2026-07-28"
+  end
+
+  test "ping is not a method on 2026-07-28" do
+    result = mcp_post(mcp_rpc("ping"), token: @read_token.raw_token)
+
+    assert_response :not_found
+    assert_equal(-32_601, result["error"]["code"])
+  end
+
+  test "server/discover describes the server" do
+    result = mcp_post(mcp_rpc("server/discover"), token: @read_token.raw_token)["result"]
+
+    assert_response :success
+    assert_equal ["2026-07-28"], result["supportedVersions"]
+    assert_equal({"tools" => {}}, result["capabilities"])
+    assert_equal "complete", result["resultType"]
+    assert_equal 3_600_000, result["ttlMs"]
+    assert_equal "private", result["cacheScope"]
+    assert_equal({"name" => "recuerd0", "version" => "1.0.0"}, result["_meta"]["io.modelcontextprotocol/serverInfo"])
+  end
+
+  test "server/discover requires a token" do
+    mcp_post(mcp_rpc("server/discover"))
+
+    assert_response :unauthorized
+  end
+
+  test "tools/list carries cache hints and the result type" do
+    result = mcp_post(mcp_rpc("tools/list"), token: @read_token.raw_token)["result"]
+
+    assert_equal 300_000, result["ttlMs"]
+    assert_equal "private", result["cacheScope"]
+    assert_equal "complete", result["resultType"]
+    assert result["_meta"]["io.modelcontextprotocol/serverInfo"].present?
+  end
+
+  test "tool results carry the result type and server info, errors included" do
+    result = mcp_post(mcp_rpc("tools/call", name: "read_memory", arguments: {memory_id: "0"}), token: @read_token.raw_token)
+
+    assert result.dig("result", "isError")
+    assert_equal "complete", result.dig("result", "resultType")
+    assert result.dig("result", "_meta", "io.modelcontextprotocol/serverInfo").present?
+  end
+
+  test "the server never issues a session id" do
+    mcp_post(mcp_rpc("tools/list"), token: @read_token.raw_token, headers: {"Mcp-Session-Id" => "abc"})
+
+    assert_response :success
+    assert_nil response.headers["Mcp-Session-Id"]
+  end
+
+  test "a request missing a required _meta key is invalid params" do
+    [McpController::PROTOCOL_VERSION_META, McpController::CLIENT_CAPABILITIES_META].each do |key|
+      payload = mcp_rpc("tools/list", meta: mcp_meta.except(key))
+      result = mcp_post(payload, token: @read_token.raw_token)
+
+      assert_response :bad_request
+      assert_equal(-32_602, result["error"]["code"])
+      assert_equal "Missing required _meta key: #{key}", result["error"]["message"]
+    end
+  end
+
+  test "an unsupported protocol version names the supported ones" do
+    result = mcp_post(mcp_rpc("tools/list", meta: mcp_meta(version: "2025-06-18")), token: @read_token.raw_token)
+
+    assert_response :bad_request
+    assert_equal(-32_022, result["error"]["code"])
+    assert_equal({"supported" => ["2026-07-28"], "requested" => "2025-06-18"}, result["error"]["data"])
+  end
+
+  test "each transport header must be present and match the body" do
+    payload = mcp_rpc("tools/call", name: "list_workspaces", arguments: {})
+
+    %w[MCP-Protocol-Version Mcp-Method Mcp-Name].each do |header|
+      [nil, "wrong"].each do |value|
+        result = mcp_post(payload, token: @read_token.raw_token, headers: {header => value})
+
+        assert_response :bad_request, "#{header}=#{value.inspect}"
+        assert_equal(-32_020, result["error"]["code"])
+        assert_includes result["error"]["message"], header
+      end
+    end
+  end
+
+  test "a base64-encoded Mcp-Name header is decoded before comparing" do
+    payload = mcp_rpc("tools/call", name: "list_workspaces", arguments: {})
+    encoded = "=?base64?#{Base64.strict_encode64("list_workspaces")}?="
+    result = mcp_post(payload, token: @read_token.raw_token, headers: {"Mcp-Name" => encoded})
+
+    assert_response :success
+    assert_nil result["error"]
+  end
+
+  test "an unknown tool is invalid params" do
+    result = mcp_post(mcp_rpc("tools/call", name: "nope", arguments: {}), token: @read_token.raw_token)
+
+    assert_response :success
+    assert_equal(-32_602, result["error"]["code"])
+    assert_equal "Unknown tool: nope", result["error"]["message"]
+  end
+
+  test "a null id is an invalid request" do
+    result = mcp_post(mcp_rpc("tools/list", id: nil), token: @read_token.raw_token)
+
+    assert_response :bad_request
+    assert_equal(-32_600, result["error"]["code"])
+    assert_equal "Invalid Request: id must not be null", result["error"]["message"]
+  end
+
+  test "a notification without an id is acknowledged with 202 and no body" do
+    mcp_post(mcp_rpc("notifications/cancelled").except(:id), token: @read_token.raw_token)
+
+    assert_response :accepted
+    assert_empty response.body
+  end
+
+  test "GET and DELETE on /mcp answer 405 with or without a token" do
+    requests = [
+      ->(headers) { get "/mcp", headers: headers.merge("Accept" => "text/event-stream") },
+      ->(headers) { get "/mcp", headers: headers.merge("MCP-Protocol-Version" => "2026-07-28") },
+      ->(headers) { delete "/mcp", headers: headers }
+    ]
+    requests.product([{}, auth_headers(@read_token.raw_token)]).each do |request, headers|
+      request.call(headers)
+
+      assert_response :method_not_allowed
+      assert_equal "POST", response.headers["Allow"]
+      assert_empty response.body
+    end
+  end
+
+  test "a browser still gets the MCP docs page" do
+    get "/mcp"
+
+    assert_response :success
+    assert_equal "text/html", response.media_type
+  end
+
+  test "CORS preflight allows the 2026-07-28 headers and no session header" do
+    process :options, "/mcp"
+
+    allowed = response.headers["access-control-allow-headers"]
+    assert_includes allowed, "Mcp-Method"
+    assert_includes allowed, "Mcp-Name"
+    assert_not_includes allowed, "Mcp-Session-Id"
+  end
+
+  # --- Audience binding (RFC 8707) --------------------------------------------
+
+  test "an OAuth token issued for another resource is refused" do
+    token = oauth_token(permission: "read_only", scope: "memories:read", audience: "https://elsewhere.example/mcp")
+    mcp_post(mcp_rpc("tools/list"), token: token.raw_token)
+
+    assert_response :unauthorized
+  end
+
+  test "an OAuth token without an audience is refused" do
+    token = oauth_token(permission: "read_only", scope: "memories:read", audience: nil)
+    mcp_post(mcp_rpc("tools/list"), token: token.raw_token)
+
+    assert_response :unauthorized
+  end
+
+  test "an OAuth token for this resource is accepted" do
+    mcp_post(mcp_rpc("tools/list"), token: @read_token.raw_token)
+
+    assert_response :success
+  end
+
+  test "a manual API token is accepted on /mcp" do
+    result = mcp_post(mcp_rpc("tools/list"), token: "test_read_token_123")
+
+    assert_response :success
+    assert_equal 13, result["result"]["tools"].size
+  end
+
+  # --- Insufficient scope ------------------------------------------------------
+
+  test "unlink_memories is denied for a read_only token" do
+    a = Memory.create_with_content(@workspace, title: "A", content: "b")
+    b = Memory.create_with_content(@workspace, title: "B", content: "b")
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "unlink_memories", arguments: {memory_id: a.id.to_s, to_memory_id: b.id.to_s}),
+      token: @read_token.raw_token
+    )
+    assert_insufficient_scope(result)
+  end
+
+  test "update_memory is denied for a read_only token" do
+    memory = Memory.create_with_content(@workspace, title: "A", content: "b")
+    result = mcp_post(
+      mcp_rpc("tools/call", name: "update_memory", arguments: {memory_id: memory.id.to_s, title: "Z"}),
+      token: @read_token.raw_token
+    )
+    assert_insufficient_scope(result)
+    assert_equal "A", memory.reload.title
+  end
+
+  # --- Malformed bodies --------------------------------------------------------
+
+  test "a non-object body is an invalid request" do
+    ["[]", "\"text\"", "42"].each do |body|
+      post "/mcp", params: body, headers: mcp_headers({method: "tools/list"}).merge(auth_headers(@read_token.raw_token))
+
+      assert_response :bad_request
+      assert_equal(-32_600, JSON.parse(response.body)["error"]["code"])
+    end
+  end
+
+  test "params that are not an object read as missing meta" do
+    ["text", []].each do |params|
+      result = mcp_post({jsonrpc: "2.0", id: 1, method: "tools/list", params: params}, token: @read_token.raw_token)
+
+      assert_response :bad_request
+      assert_equal(-32_602, result["error"]["code"])
+    end
+  end
+
+  test "string arguments on create_memory never raise" do
+    result = mcp_post(mcp_rpc("tools/call", name: "create_memory", arguments: "nope"), token: @full_token.raw_token)
+
+    assert_response :success
+    assert(result.dig("result", "isError") || result.dig("error", "code") == -32_602, result.inspect)
+  end
+
+  test "string arguments on list_workspaces are ignored" do
+    result = mcp_post(mcp_rpc("tools/call", name: "list_workspaces", arguments: "nope"), token: @read_token.raw_token)
+
+    assert_response :success
+    assert_nil result["result"]["isError"]
+  end
+
   private
 
   # An OAuth token for account two, used to prove account one is out of reach.
@@ -1202,12 +1410,22 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       oauth_client: @client,
       permission: "full_access",
       oauth_scope: "memories:read memories:write",
+      audience: "http://www.example.com/mcp",
       expires_at: 1.hour.from_now
     ).raw_token
   end
 
+  def assert_insufficient_scope(result)
+    assert_response :forbidden
+    assert_equal 'Bearer error="insufficient_scope", scope="memories:write", ' \
+      'resource_metadata="http://www.example.com/.well-known/oauth-protected-resource/mcp"',
+      response.headers["WWW-Authenticate"]
+    assert_equal(-32_001, result["error"]["code"])
+    assert_equal "Insufficient scope — write access required", result["error"]["message"]
+  end
+
   def assert_tool_error(message, name, arguments, token:)
-    result = mcp(rpc("tools/call", name: name, arguments: arguments), token: token)
+    result = mcp_post(mcp_rpc("tools/call", name: name, arguments: arguments), token: token)
 
     assert result.dig("result", "isError"), "#{name} did not report an error: #{result.inspect}"
     assert_equal message, result.dig("result", "content").first["text"], name
@@ -1219,35 +1437,20 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  def oauth_token(permission:, scope:, expires_at: 1.hour.from_now)
+  def oauth_token(permission:, scope:, expires_at: 1.hour.from_now, audience: "http://www.example.com/mcp")
     @user.access_tokens.create!(
       oauth_client: @client,
       permission: permission,
       oauth_scope: scope,
+      audience: audience,
       expires_at: expires_at
     )
-  end
-
-  def rpc(method, name: nil, arguments: nil)
-    params = {}
-    params[:name] = name if name
-    params[:arguments] = arguments if arguments
-    {jsonrpc: "2.0", id: 1, method: method, params: params}
-  end
-
-  def json_headers
-    {"Content-Type" => "application/json"}
-  end
-
-  def mcp(payload, token:)
-    post "/mcp", params: payload.to_json, headers: auth_headers(token).merge(json_headers)
-    JSON.parse(response.body)
   end
 
   # Calls a tool and returns its parsed JSON result (the value tools return),
   # not the JSON-RPC envelope. Defaults to the read-only token.
   def call_tool(name, arguments, token: @read_token.raw_token)
-    result = mcp(rpc("tools/call", name: name, arguments: arguments), token: token)
+    result = mcp_post(mcp_rpc("tools/call", name: name, arguments: arguments), token: token)
     JSON.parse(result["result"]["content"].first["text"])
   end
 end

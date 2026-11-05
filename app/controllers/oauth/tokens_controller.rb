@@ -13,6 +13,11 @@ class Oauth::TokensController < ApplicationController
 
   # POST /oauth/token
   def create
+    # RFC 8707: tokens are only ever issued for this server's /mcp resource.
+    if params[:resource].present? && params[:resource] != canonical_resource
+      return render_error("invalid_target", "resource must be #{canonical_resource}")
+    end
+
     case params[:grant_type]
     when "authorization_code" then exchange_code
     when "refresh_token" then refresh
@@ -36,6 +41,7 @@ class Oauth::TokensController < ApplicationController
       permission: AccessToken.permission_for_scope(auth_code.scope),
       oauth_scope: auth_code.scope,
       description: client.client_name,
+      audience: auth_code.resource.presence || canonical_resource,
       expires_at: 1.hour.from_now
     )
     token.assign_refresh_token!
@@ -67,9 +73,14 @@ class Oauth::TokensController < ApplicationController
     token.assign_access_token!
     token.assign_refresh_token!
     token.expires_at = 1.hour.from_now
+    token.audience = canonical_resource
     token.save!
 
     render json: token_response(token)
+  end
+
+  def canonical_resource
+    "#{request.base_url}/mcp"
   end
 
   def token_response(token)

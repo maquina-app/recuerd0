@@ -89,7 +89,7 @@
       <div class="api-section" id="supported-clients">
         <div class="resource-header">
           <h2>Supported clients</h2>
-          <p>Any client that speaks the Model Context Protocol over HTTP can connect.</p>
+          <p>Any client that speaks the Model Context Protocol over HTTP can connect. Clients must support MCP <strong>2026-07-28</strong>; earlier protocol revisions are not supported.</p>
         </div>
         <div class="table-scroll">
           <table class="op-table">
@@ -97,7 +97,7 @@
             <tbody>
               <tr><td>Claude Desktop</td><td>Add a custom connector with your server URL</td></tr>
               <tr><td>Claude.ai</td><td>Add the connector in settings</td></tr>
-              <tr><td>Any MCP client</td><td>Send JSON-RPC 2.0 to <code>POST /mcp</code> (Streamable HTTP)</td></tr>
+              <tr><td>Any MCP client</td><td>Send JSON-RPC 2.0 to <code>POST /mcp</code> (Streamable HTTP, MCP 2026-07-28; earlier revisions are not supported)</td></tr>
             </tbody>
           </table>
         </div>
@@ -156,6 +156,7 @@
             <thead><tr><th>Endpoint</th><th>Purpose</th></tr></thead>
             <tbody>
               <tr><td><code>GET /.well-known/oauth-authorization-server</code></td><td>Authorization server metadata (RFC 8414)</td></tr>
+              <tr><td><code>GET /.well-known/openid-configuration</code></td><td>Same authorization server metadata, for clients that probe OpenID discovery first</td></tr>
               <tr><td><code>GET /.well-known/oauth-protected-resource</code></td><td>Protected resource metadata (RFC 9728)</td></tr>
               <tr><td><code>GET /.well-known/oauth-protected-resource/mcp</code></td><td>Path-suffixed variant clients probe first</td></tr>
               <tr><td><code>POST /oauth/register</code></td><td>Dynamic Client Registration (RFC 7591)</td></tr>
@@ -357,6 +358,7 @@
               <tr><td>Client can't authorize</td><td>The instance URL isn't reachable, or the URL is wrong</td><td>Use the full <code>https://&lt;instance&gt;/mcp</code> URL; confirm the instance is public</td></tr>
               <tr><td>Consent screen sends you to sign in</td><td>No active recuerd0 session in that browser</td><td>Sign in to recuerd0 first, then retry the connection</td></tr>
               <tr><td>Write tools are missing</td><td>The token is <code>read_only</code></td><td>Reconnect and approve <em>Create and update memories</em></td></tr>
+              <tr><td>Client fails with 'Method not found … supports protocol versions: 2026-07-28'</td><td>Client predates MCP 2026-07-28</td><td>Update the client</td></tr>
               <tr><td>App stopped working after a disconnect</td><td>Its token was revoked</td><td>Reconnect — the client re-registers and re-consents</td></tr>
             </tbody>
           </table>
