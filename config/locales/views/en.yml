@@ -185,8 +185,6 @@ en:
         no_content_changes: "Same content as %{version}."
         line_added: "Added: "
         line_removed: "Removed: "
-      create:
-        restored_note: "Restored from %{from}"
       purges:
         new:
           page_title: "%{title} - Purge versions"

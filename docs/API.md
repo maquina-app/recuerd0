@@ -950,11 +950,11 @@ POST /workspaces/:workspace_id/memories/:memory_id/versions.json
 
 | Name | Type | Description |
 |------|------|-------------|
-| version[title] | string | Version title (defaults to parent) |
-| version[content] | string | Version body (defaults to parent) |
-| version[source] | string | Source identifier (defaults to parent) |
-| version[tags] | array | Tags (defaults to parent) |
-| version[category] | string | Category (defaults to parent) |
+| version[title] | string | Version title (defaults to the current version) |
+| version[content] | string | Version body (defaults to the current version) |
+| version[source] | string | Source identifier (defaults to the current version) |
+| version[tags] | array | Tags (defaults to the current version) |
+| version[category] | string | Category (defaults to the current version) |
 | version[change_note] | string | Why this version exists, in one line (optional, max 280 characters) |
 
 **Request**

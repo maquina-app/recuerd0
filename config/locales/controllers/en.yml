@@ -26,8 +26,13 @@ en:
     versions:
       read_only: "Cannot modify versions in a read-only workspace."
       create:
-        restored: "Restored %{from} as %{version}."
+        created: "New version created."
         failed: "Failed to create new version."
+      restorations:
+        create:
+          note: "Restored from %{from}"
+          restored: "Restored %{from} as %{version}."
+          failed: "Could not restore that version."
       purges:
         nothing_to_purge: "This memory has a single version, so there is nothing to purge."
         stale: "A new version was added since you opened this preview, so nothing was deleted. Review the updated preview and confirm again."

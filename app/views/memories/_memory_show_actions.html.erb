@@ -30,7 +30,7 @@
 
 <% if workspace.active? && viewing_old_version %>
   <%= render "components/dropdown_menu/item",
-      href: workspace_memory_versions_path(workspace, memory),
+      href: workspace_memory_version_restoration_path(workspace, memory.stable_id, memory),
       method: :post,
       data: {
         turbo_confirm: t("memories.versions.index.restore_confirm", next: memory.next_version_label, current: memory.current_version.version_label),

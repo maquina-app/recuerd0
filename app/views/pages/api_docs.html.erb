@@ -768,18 +768,18 @@
       </div>
 
       <div class="endpoint" id="create-version">
-        <div class="endpoint-head"><h3>Create Version</h3><p>Creates a new version of a memory. Fields default to the parent version values if not provided.</p></div>
+        <div class="endpoint-head"><h3>Create Version</h3><p>Creates a new version of a memory. Omitted fields come from its current version. Given the id of a specific version, they come from that version instead.</p></div>
         <div class="route-bar post"><span class="route-method">POST</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/versions.json</span><span class="route-badge">full_access</span></div>
         <div class="param-table-label">Parameters</div>
         <div class="table-scroll"><table class="param-table">
           <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><span class="param-name">version[title]</span></td><td><span class="param-type">string</span></td><td>Version title (defaults to parent)</td></tr>
-            <tr><td><span class="param-name">version[content]</span></td><td><span class="param-type">string</span></td><td>Version body (defaults to parent)</td></tr>
-            <tr><td><span class="param-name">version[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier (defaults to parent)</td></tr>
-            <tr><td><span class="param-name">version[tags]</span></td><td><span class="param-type">array</span></td><td>Tags (defaults to parent)</td></tr>
+            <tr><td><span class="param-name">version[title]</span></td><td><span class="param-type">string</span></td><td>Version title (defaults to the current version)</td></tr>
+            <tr><td><span class="param-name">version[content]</span></td><td><span class="param-type">string</span></td><td>Version body (defaults to the current version)</td></tr>
+            <tr><td><span class="param-name">version[source]</span></td><td><span class="param-type">string</span></td><td>Source identifier (defaults to the current version)</td></tr>
+            <tr><td><span class="param-name">version[tags]</span></td><td><span class="param-type">array</span></td><td>Tags (defaults to the current version)</td></tr>
             <tr><td><span class="param-name">version[change_note]</span></td><td><span class="param-type">string</span></td><td>Why this version exists, in one line (optional, max 280 characters)</td></tr>
-            <tr><td><span class="param-name">version[category]</span></td><td><span class="param-type">string</span></td><td>Category (defaults to the parent memory's category). See <a href="#memory-categories">Memory Categories</a>.</td></tr>
+            <tr><td><span class="param-name">version[category]</span></td><td><span class="param-type">string</span></td><td>Category (defaults to the current version). See <a href="#memory-categories">Memory Categories</a>.</td></tr>
           </tbody>
         </table></div>
         <div class="code-block">

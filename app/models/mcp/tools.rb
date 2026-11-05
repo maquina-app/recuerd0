@@ -252,7 +252,7 @@ module Mcp
       validate_category!(args["category"])
       category = args["category"].presence
 
-      version = memory.create_version!(
+      version = memory.resolve_current_version.create_version!(
         title: args["title"],
         category: category,
         content: args["content"],

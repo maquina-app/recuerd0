@@ -84,6 +84,7 @@ Rails.application.routes.draw do
       resource :markdown, only: %i[show], controller: "memories/markdowns"
       resources :versions, only: %i[index show create], controller: "memories/versions" do
         resource :markdown, only: %i[show], controller: "memories/markdowns"
+        resource :restoration, only: %i[create], controller: "memories/versions/restorations"
       end
       resource :versions_purge, path: "versions/purge", only: %i[new create],
         controller: "memories/versions/purges"

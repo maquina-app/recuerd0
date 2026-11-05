@@ -19,8 +19,8 @@ class Memories::VersionsControllerTest < ActionDispatch::IntegrationTest
     get workspace_memory_versions_url(@workspace, @memory)
 
     assert_response :success
-    assert_select "form[action=?]", workspace_memory_versions_path(@workspace, @memory), text: /Restore as new version/
-    assert_select "form[action=?]", workspace_memory_versions_path(@workspace, child), count: 0
+    assert_select "form[action=?]", workspace_memory_version_restoration_path(@workspace, @memory, @memory), text: /Restore as new version/
+    assert_select "form[action=?]", workspace_memory_version_restoration_path(@workspace, @memory, child), count: 0
   end
 
   test "create makes new version" do

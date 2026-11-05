@@ -43,7 +43,7 @@
                   version_page_path(workspace, version, current: is_current),
                   data: { component: "button", variant: "ghost", size: "sm" } %>
               <% if workspace.active? && !is_current %>
-                <%= button_to workspace_memory_versions_path(workspace, version),
+                <%= button_to workspace_memory_version_restoration_path(workspace, version.stable_id, version),
                     method: :post,
                     data: {
                       component: "button",

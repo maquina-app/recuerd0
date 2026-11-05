@@ -111,7 +111,7 @@ Members delete, archive and purge only what they created; admins can do it to an
 
 ### Memory URLs and versions
 
-`/memories/<root id>` always opens the current version and `/memories/<root id>/versions/<id>` opens a specific one; a URL holding a version's own id redirects to whichever of those it now is. Link with `stable_memory_path` / `version_page_path`, not `workspace_memory_path(workspace, version)`. Editing has two explicit outcomes on one form, `save_as=new_version` (primary, Cmd+S) and `save_as=in_place`; there is no autosave. A plain PATCH, which is the REST contract, still means in place. `memories_count` counts roots only. Links always attach to the root (`MemoryLink#point_at_roots`).
+`/memories/<root id>` always opens the current version and `/memories/<root id>/versions/<id>` opens a specific one; a URL holding a version's own id redirects to whichever of those it now is. Link with `stable_memory_path` / `version_page_path`, not `workspace_memory_path(workspace, version)`. Editing has two explicit outcomes on one form, `save_as=new_version` (primary, Cmd+S) and `save_as=in_place`; there is no autosave. A plain PATCH, which is the REST contract, still means in place. `create_version!` fills omitted fields from the row it is called on, so callers choose that row deliberately: REST and MCP resolve to the current version, and `Memories::Versions::RestorationsController` (browser only) copies the version in its URL. `memories_count` counts roots only. Links always attach to the root (`MemoryLink#point_at_roots`).
 
 ### Account deletion
 

@@ -118,14 +118,104 @@ class VersioningFlowTest < ActionDispatch::IntegrationTest
     assert_select "[data-turbo-confirm=?]", I18n.t("memories.versions.index.restore_confirm", next: "v3", current: "v2")
     assert_no_match(/Branch/, response.body)
 
-    post workspace_memory_versions_url(@workspace, @memory)
+    post workspace_memory_version_restoration_url(@workspace, @memory, @memory)
 
     assert_redirected_to workspace_memory_url(@workspace, @memory)
-    assert_equal I18n.t("memories.versions.create.restored", from: "v1", version: "v3"), flash[:notice]
+    assert_equal I18n.t("memories.versions.restorations.create.restored", from: "v1", version: "v3"), flash[:notice]
     current = @memory.reload.current_version
     assert_equal "first line", current.content.body.content
     assert_equal "Restored from v1", current.change_note
     assert_equal "second line", v2.reload.content.body.content
+  end
+
+  test "restoring works from any version, and only for a browser session" do
+    v2 = @memory.create_version!(content: "second line")
+    @memory.create_version!(content: "third line")
+
+    post workspace_memory_version_restoration_url(@workspace, @memory, v2)
+
+    current = @memory.reload.current_version
+    assert_equal "second line", current.content.body.content
+    assert_equal "Restored from v2", current.change_note
+    assert_equal users(:one), current.created_by
+
+    delete session_url
+    assert_no_difference("Memory.count") do
+      post workspace_memory_version_restoration_url(@workspace, @memory, v2), headers: auth_headers("test_full_token_456")
+    end
+    assert_response :unauthorized
+  end
+
+  test "a read-only workspace refuses a restoration" do
+    v2 = @memory.create_version!(content: "second line")
+    @workspace.archive
+
+    assert_no_difference("Memory.count") do
+      post workspace_memory_version_restoration_url(@workspace, @memory, v2)
+    end
+  end
+
+  # Omitted fields come from the latest version, not from v1. Two versions needed:
+  # with one, the root and the latest are the same row.
+  test "REST: omitted fields come from the current version when given the memory's id" do
+    latest = @memory.create_version!(title: "Renamed", content: "latest body", source: "newer", category: "decision", tags: ["newer"])
+
+    post workspace_memory_versions_url(@workspace, @memory, format: :json),
+      params: {version: {change_note: "No other changes"}},
+      headers: auth_headers("test_full_token_456")
+
+    assert_response :created
+    created = @memory.reload.current_version
+    assert_not_equal latest, created
+    assert_equal "Renamed", created.title
+    assert_equal "latest body", created.content.body.content
+    assert_equal "newer", created.source
+    assert_equal "decision", created.category
+    assert_equal ["newer"], created.tags
+  end
+
+  test "REST: without a change note or a browser, nothing claims to be a restoration" do
+    @memory.create_version!(content: "latest body")
+
+    post workspace_memory_versions_url(@workspace, @memory),
+      params: {version: {title: "Named"}},
+      headers: auth_headers("test_full_token_456").merge("Accept" => "*/*")
+
+    created = @memory.reload.current_version
+    assert_equal "latest body", created.content.body.content
+    assert_nil created.change_note
+  end
+
+  test "REST: a specific version's id still inherits from that version" do
+    v2 = @memory.create_version!(title: "Second", content: "second line")
+    @memory.create_version!(title: "Third", content: "third line")
+
+    post workspace_memory_versions_url(@workspace, v2, format: :json),
+      params: {version: {change_note: "From v2"}},
+      headers: auth_headers("test_full_token_456")
+
+    created = @memory.reload.current_version
+    assert_equal "Second", created.title
+    assert_equal "second line", created.content.body.content
+  end
+
+  test "MCP: omitted fields come from the current version" do
+    @memory.create_version!(title: "Renamed", content: "latest body", source: "newer", tags: ["newer"])
+
+    result = Mcp::Tools.create_version(accounts(:one), {"memory_id" => @memory.id.to_s, "change_note" => "Note only"}, user: users(:one))
+
+    assert_equal "Renamed", result[:title]
+    assert_equal ["newer"], result[:tags]
+    assert_equal "latest body", @memory.reload.current_version.content.body.content
+  end
+
+  test "MCP: a given field still wins over the inherited one" do
+    @memory.create_version!(title: "Renamed", content: "latest body")
+
+    result = Mcp::Tools.create_version(accounts(:one), {"memory_id" => @memory.id.to_s, "content" => "brand new"}, user: users(:one))
+
+    assert_equal "Renamed", result[:title]
+    assert_equal "brand new", @memory.reload.current_version.content.body.content
   end
 
   # U-11

@@ -24,18 +24,18 @@ class Memories::VersionsController < ApplicationController
     render "memories/show"
   end
 
-  # A browser only reaches this through "Restore as new version", which copies
-  # the version in the URL. Writing a new version goes through the editor.
+  # Omitted fields come from the version in the URL. The memory's own id means its
+  # current version, the same as every other surface, and never v1. A specific
+  # version's id means that version.
   def create
-    @new_version = @memory.create_version!(version_attributes)
+    @new_version = @memory.resolve_current_version.create_version!(
+      version_params.to_h.symbolize_keys.merge(created_by: Current.user)
+    )
 
     if @new_version.persisted?
       track_event("version.create", resource: @new_version)
       respond_to do |format|
-        format.html do
-          redirect_to workspace_memory_path(@workspace, @memory.stable_id),
-            notice: t(".restored", from: @memory.version_label, version: @new_version.version_label)
-        end
+        format.html { redirect_to workspace_memory_path(@workspace, @memory.stable_id), notice: t(".created") }
         format.json do
           @memory = @new_version
           render "memories/show", status: :created
@@ -66,12 +66,5 @@ class Memories::VersionsController < ApplicationController
 
   def version_params
     params.fetch(:version, {}).permit(:title, :content, :source, :category, :change_note, tags: [])
-  end
-
-  def version_attributes
-    attributes = version_params.to_h.symbolize_keys.merge(created_by: Current.user)
-    return attributes unless request.format.html?
-
-    attributes.merge(change_note: t("memories.versions.create.restored_note", from: @memory.version_label))
   end
 end
