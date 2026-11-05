@@ -52,11 +52,12 @@ module Mcp
           "(same query language as web and REST search) and also matches case-insensitive whole tags. " \
           "FTS matches come first by relevance, followed by tag-only matches by recency; " \
           "a memory matching both appears once as an FTS match. Queries under 3 characters " \
-          "search exact tags only. When a search finds fewer than 3 matches, up to 5 memories " \
+          "search exact tags only. In a longer query, unquoted words under 3 characters are left " \
+          "out and listed in ignored_words. When a search finds fewer than 3 matches, up to 5 memories " \
           "close in meaning follow on the first page, marked match: \"related\" with a similarity " \
           "(keyword hits are match: \"keyword\"); they don't contain the query words. " \
           "Returns a paginated envelope: " \
-          "{memories, total_count, has_more, next_offset}, plus related_count when searching; " \
+          "{memories, total_count, has_more, next_offset}, plus related_count and ignored_words when searching; " \
           "total_count counts keyword matches only. Pass `offset: next_offset` " \
           "to fetch the following page. Defaults to 50 per page (max 200). " + OBSOLETE_NOTE,
         annotations: {readOnlyHint: true, destructiveHint: false},
@@ -70,7 +71,8 @@ module Mcp
                 "unioned with case-insensitive whole-tag equality. Words are ANDed; AND, OR, NOT, " \
                 "\"exact phrase\", (grouping), title:term and body:term are honoured. Punctuation " \
                 "inside a word is searched literally (`deploy.sh`), and an expression that does not " \
-                "parse falls back to its words ANDed, never an error. " \
+                "parse falls back to its words ANDed, never an error. Unquoted words under 3 characters " \
+                "are left out and returned in ignored_words; a quoted phrase stays exact. " \
                 "Matching is substring-level (trigram tokenizer): a word can match inside " \
                 "longer words — `rank` matches `ranking`. " \
                 "FTS hits rank first, dual hits are deduplicated, and tag-only hits follow by " \
@@ -131,7 +133,8 @@ module Mcp
       {
         name: "link_memories",
         description: "Create an undirected \"see also\" link between two memories in the " \
-          "same account (may be in different workspaces). Idempotent per pair.",
+          "same account (may be in different workspaces). A pair can only be linked once. " \
+          "Refused when either memory's workspace is archived.",
         annotations: {readOnlyHint: false, destructiveHint: false},
         inputSchema: {
           type: "object",
@@ -145,7 +148,7 @@ module Mcp
       {
         name: "unlink_memories",
         description: "Remove the \"see also\" link between two memories. Only an admin or the " \
-          "person who created the link can remove it.",
+          "person who created the link can remove it. Refused when either memory's workspace is archived.",
         annotations: {readOnlyHint: false, destructiveHint: true},
         inputSchema: {
           type: "object",

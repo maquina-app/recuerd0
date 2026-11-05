@@ -120,6 +120,7 @@ module Mcp
       end
 
       envelope.merge(
+        ignored_words: Memory.ignored_search_words(query),
         memories: envelope[:memories].map { |memory| memory.merge(match: "keyword") } +
           related.map do |match|
             memory_json(match.memory.resolve_current_version)
@@ -279,6 +280,8 @@ module Mcp
       other = find_memory(account, args["to_memory_id"])
       raise ToolError, "Cannot link a memory to itself" if memory.id == other.id
 
+      refuse_link_change_if_archived!(memory, other)
+
       link = MemoryLink.new(from_memory: memory, to_memory: other, created_by: user)
       raise ToolError, link.errors.full_messages.to_sentence unless link.save
 
@@ -294,6 +297,8 @@ module Mcp
         memory.id, other.id, other.id, memory.id
       ).first
       raise ToolError, "Link not found" unless link
+
+      refuse_link_change_if_archived!(memory, other)
       raise ToolError, I18n.t("memories.links.remove_denied") unless link.manageable_by?(user)
 
       link.destroy
@@ -484,5 +489,13 @@ module Mcp
         raise(ToolError, "Memory not found")
     end
     private_class_method :find_memory_for_update
+
+    # find_memory keeps archived workspaces readable, so writes have to ask. A link
+    # shows on both memories' pages, so either side being read-only is enough.
+    def refuse_link_change_if_archived!(memory, other)
+      raise ToolError, "This memory's workspace is archived, so it is read-only. Unarchive the workspace to change it." if memory.archived?
+      raise ToolError, I18n.t("memories.links.other_archived") if other.archived?
+    end
+    private_class_method :refuse_link_change_if_archived!
   end
 end

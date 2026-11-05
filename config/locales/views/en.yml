@@ -281,6 +281,7 @@ en:
       removed: "Removed the link to %{title}."
       not_found: "That memory is no longer available in your account."
       remove_denied: "Only an admin or the person who created this link can remove it."
+      other_archived: "The other memory's workspace is archived, so this link can't change. Unarchive that workspace first."
       remove_title: "Remove this link?"
       remove_button: "Remove link"
       remove_confirm: "The link to %{title} is removed. Neither memory is deleted, and you can link them again at any time."
@@ -347,6 +348,7 @@ en:
           view_compact: "Compact view"
   search:
     placeholder: "Search workspaces and memories…"
+    ignored_words: "Left out %{words}. Search skips words under %{minimum} characters."
     command:
       label: "Search"
       input_label: "Search workspaces and memories"

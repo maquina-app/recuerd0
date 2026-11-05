@@ -8,11 +8,12 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     "whole tags. " \
     "FTS matches come first by relevance, followed by tag-only matches by recency; " \
     "a memory matching both appears once as an FTS match. Queries under 3 characters " \
-    "search exact tags only. When a search finds fewer than 3 matches, up to 5 memories " \
+    "search exact tags only. In a longer query, unquoted words under 3 characters are left " \
+    "out and listed in ignored_words. When a search finds fewer than 3 matches, up to 5 memories " \
     "close in meaning follow on the first page, marked match: \"related\" with a similarity " \
     "(keyword hits are match: \"keyword\"); they don't contain the query words. " \
     "Returns a paginated envelope: " \
-    "{memories, total_count, has_more, next_offset}, plus related_count when searching; " \
+    "{memories, total_count, has_more, next_offset}, plus related_count and ignored_words when searching; " \
     "total_count counts keyword matches only. Pass `offset: next_offset` " \
     "to fetch the following page. Defaults to 50 per page (max 200). " \
     "Memories tagged obsolete, superseded or deprecated are excluded by default; " \
@@ -834,6 +835,46 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     MemoryLink.involving(a).destroy_all
     call_tool("link_memories", paired, token: member_token.raw_token)
     assert call_tool("unlink_memories", paired, token: member_token.raw_token)["unlinked"]
+  end
+
+  test "link_memories says plainly when a pair is already linked" do
+    a = Memory.create_with_content(@workspace, title: "A", content: "b")
+    b = Memory.create_with_content(@workspace, title: "B", content: "b")
+    paired = {memory_id: a.id.to_s, to_memory_id: b.id.to_s}
+
+    call_tool("link_memories", paired, token: @full_token.raw_token)
+
+    assert_tool_error "These memories are already linked.", "link_memories", paired, token: @full_token.raw_token
+  end
+
+  test "links can't change when either memory's workspace is archived" do
+    frozen = Memory.create_with_content(workspaces(:archived), title: "Frozen", content: "b")
+    live = Memory.create_with_content(@workspace, title: "Live", content: "b")
+    read_only = "This memory's workspace is archived, so it is read-only. Unarchive the workspace to change it."
+    from_frozen = {memory_id: frozen.id.to_s, to_memory_id: live.id.to_s}
+    from_live = {memory_id: live.id.to_s, to_memory_id: frozen.id.to_s}
+
+    assert_no_difference "MemoryLink.count" do
+      assert_tool_error read_only, "link_memories", from_frozen, token: @full_token.raw_token
+      assert_tool_error I18n.t("memories.links.other_archived"), "link_memories", from_live, token: @full_token.raw_token
+    end
+
+    MemoryLink.create!(from_memory: live, to_memory: frozen, created_by: @full_token.user)
+
+    assert_no_difference "MemoryLink.count" do
+      assert_tool_error read_only, "unlink_memories", from_frozen, token: @full_token.raw_token
+      assert_tool_error I18n.t("memories.links.other_archived"), "unlink_memories", from_live, token: @full_token.raw_token
+    end
+  end
+
+  test "list_memories names the words a search left out" do
+    memory = Memory.create_with_content(@workspace, title: "How to deploy the app", content: "b")
+    memory.rebuild_search_index
+
+    payload = call_tool("list_memories", {workspace_id: @workspace.id.to_s, query: "how to deploy"})
+
+    assert_equal [memory.id.to_s], payload["memories"].map { |m| m["id"].to_s }
+    assert_equal ["to"], payload["ignored_words"]
   end
 
   test "link_memories is denied for a read_only token" do

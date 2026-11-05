@@ -30,6 +30,14 @@ module SearchHelper
     end
   end
 
+  # Says which words a search left out, so "no results" can't read as "it doesn't exist".
+  def ignored_words_notice(query)
+    words = Memory.ignored_search_words(query)
+    return if words.empty?
+
+    t("search.ignored_words", words: words.map { |word| %("#{word}") }.to_sentence, minimum: Searchable::MIN_QUERY_LENGTH)
+  end
+
   def memory_snippet(memory, length: 200)
     plain = Content.strip_markdown(memory.content&.body&.content.to_s)
       .gsub(/\n+/, " ").squish

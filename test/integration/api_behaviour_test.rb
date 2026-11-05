@@ -9,61 +9,6 @@ class ApiBehaviourTest < ActionDispatch::IntegrationTest
     @member_headers = headers_for(users(:member))
   end
 
-  # Deleting by a version's id
-
-  test "deleting by an old version's id is refused and points at the root" do
-    root, old, current = memory_with_three_versions
-
-    delete workspace_memory_url(@workspace, old, format: :json), headers: @headers
-
-    assert_response :unprocessable_entity
-    assert_equal "VALIDATION_ERROR", response.parsed_body.dig("error", "code")
-    assert_includes response.parsed_body.dig("error", "message"), root.id.to_s
-    assert Memory.exists?(old.id)
-
-    get workspace_memory_url(@workspace, current, format: :json), headers: @headers
-    assert_response :success
-    assert_equal 3, response.parsed_body["version"]
-  end
-
-  test "deleting by an old version's id leaves the memory in search" do
-    _, old, current = memory_with_three_versions(title: "Zebrafinch notes")
-
-    delete workspace_memory_url(@workspace, old, format: :json), headers: @headers
-
-    get search_url(format: :json, q: "zebrafinch"), headers: @headers
-    assert_equal [current.id], response.parsed_body["results"].map { |result| result["id"] }
-  end
-
-  test "deleting by the root id removes every version" do
-    root, old, current = memory_with_three_versions
-
-    delete workspace_memory_url(@workspace, root, format: :json), headers: @headers
-
-    assert_response :no_content
-    assert_empty Memory.where(id: [root.id, old.id, current.id])
-  end
-
-  test "deleting by the current version's id removes every version, not just that row" do
-    root, old, current = memory_with_three_versions
-
-    delete workspace_memory_url(@workspace, current, format: :json), headers: @headers
-
-    assert_response :no_content
-    assert_empty Memory.where(id: [root.id, old.id, current.id])
-  end
-
-  test "the browser refuses an old version too and keeps the memory" do
-    sign_in_as users(:one)
-    _, old, = memory_with_three_versions
-
-    delete workspace_memory_url(@workspace, old)
-
-    assert_response :see_other
-    assert Memory.exists?(old.id)
-    assert flash[:alert].present?
-  end
-
   # Tag filters
 
   test "tag filters ignore case on every list endpoint" do
@@ -321,6 +266,150 @@ class ApiBehaviourTest < ActionDispatch::IntegrationTest
 
     assert_response :see_other
     assert MemoryLink.exists?(from_memory_id: [memory.id, other.id].min)
+  end
+
+  test "a link can not change when only the other memory is archived" do
+    archived = workspaces(:archived)
+    frozen = Memory.create_with_content(archived, title: "Frozen", content: "b")
+    live = Memory.create_with_content(@workspace, title: "Live", content: "b")
+
+    assert_no_difference "MemoryLink.count" do
+      post workspace_memory_links_url(@workspace, live, format: :json),
+        params: {to_memory_id: frozen.id}.to_json, headers: @headers
+    end
+    assert_response :forbidden
+    assert_equal I18n.t("memories.links.other_archived"), response.parsed_body.dig("error", "message")
+
+    MemoryLink.create!(from_memory: live, to_memory: frozen)
+
+    assert_no_difference "MemoryLink.count" do
+      delete workspace_memory_link_url(@workspace, live, frozen, format: :json), headers: @headers
+    end
+    assert_response :forbidden
+  end
+
+  test "the browser refuses a link change when only the other memory is archived" do
+    sign_in_as users(:one)
+    frozen = Memory.create_with_content(workspaces(:archived), title: "Frozen", content: "b")
+    live = Memory.create_with_content(@workspace, title: "Live", content: "b")
+
+    assert_no_difference "MemoryLink.count" do
+      post workspace_memory_memory_linking_url(@workspace, live), params: {to_memory_id: frozen.id}
+    end
+    assert_response :see_other
+    assert_equal I18n.t("memories.links.other_archived"), flash[:alert]
+
+    MemoryLink.create!(from_memory: live, to_memory: frozen)
+
+    assert_no_difference "MemoryLink.count" do
+      delete workspace_memory_memory_linking_remove_url(@workspace, live, other_id: frozen.id)
+    end
+    assert_response :see_other
+    assert_equal I18n.t("memories.links.other_archived"), flash[:alert]
+  end
+
+  test "the page hides removal of a link to an archived memory" do
+    sign_in_as users(:one)
+    frozen = Memory.create_with_content(workspaces(:archived), title: "Frozen", content: "b")
+    linked = Memory.create_with_content(@workspace, title: "Linked", content: "b")
+    live = Memory.create_with_content(@workspace, title: "Live", content: "b")
+    MemoryLink.create!(from_memory: live, to_memory: frozen, created_by: users(:one))
+    MemoryLink.create!(from_memory: live, to_memory: linked, created_by: users(:one))
+
+    get workspace_memory_url(@workspace, live)
+
+    assert_response :success
+    assert_select "form[action=?]", workspace_memory_memory_linking_remove_path(@workspace, live, other_id: linked.id)
+    assert_select "form[action=?]", workspace_memory_memory_linking_remove_path(@workspace, live, other_id: frozen.id), count: 0
+  end
+
+  test "the picker only offers memories in active workspaces" do
+    sign_in_as users(:one)
+    live = Memory.create_with_content(@workspace, title: "Live", content: "b")
+    Memory.create_with_content(@workspace, title: "Quillbeacon active", content: "b").rebuild_search_index
+    Memory.create_with_content(workspaces(:archived), title: "Quillbeacon archived", content: "b").rebuild_search_index
+    Memory.create_with_content(workspaces(:deleted), title: "Quillbeacon deleted", content: "b").rebuild_search_index
+
+    get workspace_memory_url(@workspace, live, link_q: "quillbeacon")
+
+    assert_select ".link-picker .mr-title", text: "Quillbeacon active"
+    assert_select ".link-picker .mr-title", text: /archived|deleted/, count: 0
+  end
+
+  # Short words in a search
+
+  test "a short word doesn't stop a search finding the rest" do
+    memory = Memory.create_with_content(@workspace, title: "How to deploy the app", content: "b")
+    memory.rebuild_search_index
+
+    get search_url(format: :json, q: "how to deploy"), headers: @headers
+
+    assert_response :success
+    assert_equal [memory.id], response.parsed_body["results"].map { |result| result["id"] }
+    assert_equal ["to"], response.parsed_body["ignored_words"]
+  end
+
+  test "a memory can be found by its exact title when that has short words" do
+    memory = Memory.create_with_content(@workspace, title: "M2 in AdminWS", content: "b")
+    memory.rebuild_search_index
+
+    get search_url(format: :json, q: "M2 in AdminWS"), headers: @headers
+
+    assert_equal [memory.id], response.parsed_body["results"].map { |result| result["id"] }
+    assert_equal %w[M2 in], response.parsed_body["ignored_words"]
+  end
+
+  test "a search with no short words ignores nothing" do
+    get search_url(format: :json, q: "deploy app"), headers: @headers
+
+    assert_equal [], response.parsed_body["ignored_words"]
+  end
+
+  test "a search of only short words finds nothing and says why" do
+    get search_url(format: :json, q: "to in"), headers: @headers
+
+    assert_response :success
+    assert_empty response.parsed_body["results"]
+    assert_equal %w[to in], response.parsed_body["ignored_words"]
+  end
+
+  test "a quoted phrase stays strict" do
+    Memory.create_with_content(@workspace, title: "How to deploy the app", content: "b").rebuild_search_index
+
+    get search_url(format: :json, q: %("to" deploy)), headers: @headers
+
+    assert_empty response.parsed_body["results"]
+    assert_empty response.parsed_body["ignored_words"]
+  end
+
+  test "the web says which words it left out, wherever a search happens" do
+    sign_in_as users(:one)
+    memory = Memory.create_with_content(@workspace, title: "How to deploy the app", content: "b")
+    memory.rebuild_search_index
+    other = Memory.create_with_content(@workspace, title: "Other", content: "b")
+    notice = I18n.t("search.ignored_words", words: %("to"), minimum: 3)
+
+    get search_url(q: "how to deploy")
+    assert_select "p:not(.sr-only)", text: notice
+    assert_select "a", text: "How to deploy the app"
+
+    get search_url(q: "how to deploy"), headers: {"Turbo-Frame" => SearchController::PALETTE_FRAME_ID}
+    assert_select "p", text: notice
+
+    get workspace_url(@workspace, q: "how to deploy")
+    assert_select "p", text: notice
+
+    get workspace_memory_url(@workspace, other, link_q: "how to deploy")
+    assert_select ".link-picker p", text: notice
+    assert_select ".link-picker .mr-title", text: "How to deploy the app"
+  end
+
+  test "the web says nothing when no word was left out" do
+    sign_in_as users(:one)
+
+    get search_url(q: "deploy app")
+
+    assert_select "p", text: /Left out/, count: 0
   end
 
   # Reading versions

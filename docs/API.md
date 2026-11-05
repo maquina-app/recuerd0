@@ -879,19 +879,13 @@ Returns the updated memory object with content.
 
 ### Delete Memory
 
-Deletes a memory and all its versions. Requires `full_access` token. This can't be undone over the API.
+Deletes a memory and all its versions. Requires `full_access` token.
 
 ```
 DELETE /workspaces/:workspace_id/memories/:id.json
 ```
 
-`:id` is the memory's root id or its current version's id. Either one removes the whole memory.
-
 **Response** `204 No Content`
-
-**Errors**
-
-An older version's id is refused with `422`, and the message gives the root id. Versions can't be deleted one at a time.
 
 ---
 
@@ -974,7 +968,7 @@ POST /workspaces/:workspace_id/memories/:memory_id/links.json
 **Errors**
 
 - `422 VALIDATION_ERROR` — `to_memory_id` is missing, equals `:memory_id` (self-link), references a memory in another account, or the link already exists (in either direction).
-- `403 FORBIDDEN` — token lacks `full_access`, or `:memory_id` is in an archived workspace.
+- `403 FORBIDDEN` — token lacks `full_access`, or either memory is in an archived workspace.
 - `404 NOT_FOUND` — `:workspace_id` or `:memory_id` is not visible to the current account.
 
 ### Delete Memory Link
@@ -992,7 +986,7 @@ DELETE /workspaces/:workspace_id/memories/:memory_id/links/:id.json
 **Errors**
 
 - `404 NOT_FOUND` — no such link exists, or the other memory is not visible to the current account.
-- `403 FORBIDDEN` — token lacks `full_access`, the caller is a member who didn't create the link, or `:memory_id` is in an archived workspace.
+- `403 FORBIDDEN` — token lacks `full_access`, the caller is a member who didn't create the link, or either memory is in an archived workspace.
 
 ---
 
@@ -1095,6 +1089,10 @@ account (optionally one workspace), MCP and the workspace filter search one work
   search never fails on syntax.
 - Matching is substring-level (trigram tokenizer): a word can match inside longer
   words — `rank` matches `ranking`. A trailing `*` is accepted and ignored.
+- An unquoted word under three characters can't be searched, so it is left out and the
+  rest of the query still matches: `how to deploy` searches `how` and `deploy`. REST and
+  MCP name what was left out in `ignored_words`, and the web says so under the search
+  field. A quoted phrase stays exact.
 - FTS matches come first by rank. A memory that also has the exact tag appears once
   in the FTS group. Tag-only matches follow by `updated_at DESC`, with stable
   memory-ID tie-breakers so pagination is deterministic.
@@ -1147,11 +1145,14 @@ The search query supports FTS5 operators:
 | Column filter | `body:implementation` | Search only in body field |
 | Grouping | `(meeting OR standup) AND notes` | Parentheses for precedence |
 
+Unquoted words under three characters can't be searched, so they are left out and the rest of the query still matches. `how to deploy` searches `how` and `deploy`, and the response lists `to` in `ignored_words`. A quoted phrase stays exact.
+
 **Response (snippet mode — default)**
 
 ```json
 {
   "query": "architecture AND design",
+  "ignored_words": [],
   "total_results": 3,
   "related_results": 0,
   "obsolete_hidden": 1,
@@ -1192,6 +1193,7 @@ When `mode=grep`, each result includes `matches` (line-level matches with contex
 ```json
 {
   "query": "architecture",
+  "ignored_words": [],
   "total_results": 2,
   "obsolete_hidden": 0,
   "results": [

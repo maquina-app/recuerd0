@@ -94,7 +94,12 @@
   <%# Debounced keystrokes swap the results in place, which a screen reader
       never hears. One region outlives every branch below, so a morph changes
       its text and the change is announced. The id pins the morph's pairing. %>
-  <p id="search-status" class="sr-only" role="status"><%= search_status_message(query: @query, count: @pagy&.count.to_i, workspace: scoped_workspace) %></p>
+  <% ignored_notice = ignored_words_notice(@query) %>
+  <p id="search-status" class="sr-only" role="status"><%= search_status_message(query: @query, count: @pagy&.count.to_i, workspace: scoped_workspace) %> <%= ignored_notice %></p>
+
+  <% if ignored_notice %>
+    <p class="mb-4 text-xs text-muted-foreground"><%= ignored_notice %></p>
+  <% end %>
 
   <% if @query.present? && @query.length < Searchable::MIN_QUERY_LENGTH %>
     <%= render "components/alert", variant: :warning, icon: :alert_triangle, css_classes: "mb-6" do %>

@@ -32,9 +32,19 @@ module Searchable
     # model should see. `"csp nonce" NOT title:draft` becomes `csp nonce draft`.
     def plain_query(query)
       query.to_s.scan(FTS_TOKEN).excluding(FTS_SYNTAX)
-        .map { |token| token.delete('"').sub(/\A(?:title|body):/, "").delete_suffix("*") }
+        .map { |token| bare_word(token.delete('"')) }
         .compact_blank
         .join(" ")
+    end
+
+    # The words a query searches without, so every surface can say so. A query
+    # too short overall isn't full-text searched at all, so nothing is left out of it.
+    def ignored_search_words(query)
+      return [] if query.to_s.length < MIN_QUERY_LENGTH
+
+      query.to_s.scan(FTS_TOKEN).select { |token| too_short_to_search?(token) }
+        .map { |token| bare_word(token) }
+        .uniq
     end
 
     # Turns what a person or agent typed into an FTS5 expression that cannot be
@@ -43,8 +53,14 @@ module Searchable
     # phrases, parentheses and column filters keep their meaning. When the
     # operators themselves don't parse (`kamal OR`, `(sqlite`), the words are
     # searched on their own, ANDed, instead of failing the request.
+    #
+    # A word too short for the trigram tokenizer can never match, and ANDed with
+    # the rest it would empty the whole result, so it's left out. A quoted phrase
+    # asked for exactly that text, so it stays. A leading NOT has nothing to
+    # subtract from: searching its words would return what was excluded.
     def fts_expression(query)
-      tokens = query.to_s.scan(FTS_TOKEN)
+      tokens = query.to_s.scan(FTS_TOKEN).reject { |token| too_short_to_search?(token) }
+      return "" if tokens.first == "NOT"
 
       expression = fts_join(tokens.filter_map { |token| fts_token(token) })
       return expression if fts_expression_valid?(expression)
@@ -53,6 +69,16 @@ module Searchable
     end
 
     private
+
+    def bare_word(token)
+      token.sub(/\A(?:title|body):/, "").delete_suffix("*")
+    end
+
+    def too_short_to_search?(token)
+      return false if token.in?(FTS_SYNTAX) || token.start_with?('"')
+
+      bare_word(token).length.between?(1, MIN_QUERY_LENGTH - 1)
+    end
 
     # FTS5 only applies its implicit AND between plain phrases; `(a OR b) notes`
     # is a syntax error. Spelling the AND out between adjacent operands means

@@ -255,12 +255,6 @@ class Memory < ApplicationRecord
     end
   end
 
-  # An older version, as opposed to the two ids that stand for the memory as a whole:
-  # its root's and its current version's.
-  def historical_version?
-    !root_version? && !current_version?
-  end
-
   # Returns the latest (highest version number) version of this memory
   def current_version
     if root_version?

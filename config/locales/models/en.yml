@@ -15,7 +15,6 @@ en:
           attributes:
             base:
               historical_version_immutable: "historical versions are immutable — update the current version or create a new version"
-              historical_version_undeletable: "This id belongs to a historical version, which can't be deleted on its own. To delete the memory and all its versions, use its root id, %{root_id}."
             title:
               format: "%{message}"
               too_long: "Title is too long (maximum is %{count} characters)."

@@ -34,6 +34,7 @@ class Memories::LinksController < ApplicationController
     unless other
       return render_validation_error("to_memory_id must reference a memory in your account")
     end
+    return render_forbidden(t("memories.links.other_archived")) if other.archived?
 
     @link = MemoryLink.new(from_memory: @memory, to_memory: other, created_by: Current.user)
     if @link.save
@@ -52,6 +53,7 @@ class Memories::LinksController < ApplicationController
 
     link = link_between(@memory.id, other_id)
     return render_not_found unless link
+    return render_forbidden(t("memories.links.other_archived")) if other.archived?
     return render_forbidden(t("memories.links.remove_denied")) unless link.manageable_by?(Current.user)
 
     link.destroy
@@ -67,6 +69,7 @@ class Memories::LinksController < ApplicationController
     if other.nil?
       return redirect_back_to_memory(alert: t("memories.links.not_found"))
     end
+    return redirect_back_to_memory(alert: t("memories.links.other_archived")) if other.archived?
 
     link = MemoryLink.new(from_memory: @memory, to_memory: other, created_by: Current.user)
     if link.save
@@ -85,6 +88,7 @@ class Memories::LinksController < ApplicationController
     if link.nil?
       return redirect_back_to_memory(alert: t("memories.links.not_found"))
     end
+    return redirect_back_to_memory(alert: t("memories.links.other_archived")) if other.archived?
 
     unless link.manageable_by?(Current.user)
       return redirect_back_to_memory(alert: t("memories.links.remove_denied"))

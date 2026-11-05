@@ -576,12 +576,12 @@
         </div>
         <div class="info-box warn">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-patch)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
-          <span>Returns <code>422</code> if <code>to_memory_id</code> belongs to a different account, references the same memory, or the link already exists.</span>
+          <span>Returns <code>422</code> if <code>to_memory_id</code> belongs to a different account, references the same memory, or the link already exists. Returns <code>403</code> if either memory's workspace is archived.</span>
         </div>
       </div>
 
       <div class="endpoint" id="delete-memory-link">
-        <div class="endpoint-head"><h3>Delete Memory Link</h3><p>Removes a link between two memories. The path <code>:id</code> is the <em>other</em> memory's id — not a separate join row id. Only an admin or the person who created the link can remove it; anyone else gets <code>403</code>. A link with no recorded creator belongs to the admin.</p></div>
+        <div class="endpoint-head"><h3>Delete Memory Link</h3><p>Removes a link between two memories. The path <code>:id</code> is the <em>other</em> memory's id — not a separate join row id. Only an admin or the person who created the link can remove it; anyone else gets <code>403</code>. A link with no recorded creator belongs to the admin. Links can't be removed while either memory's workspace is archived, which also returns <code>403</code>.</p></div>
         <div class="route-bar delete"><span class="route-method">DELETE</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:memory_id</span>/links/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s204">204 No Content</span></div>
@@ -844,7 +844,7 @@
       </div>
 
       <div class="endpoint" id="delete-memory">
-        <div class="endpoint-head"><h3>Delete Memory</h3><p>Deletes a memory and all its versions. <code>:id</code> is the memory's root id or its current version's id; either one removes the whole memory. An older version's id is refused with <code>422</code>, and the message gives the root id.</p></div>
+        <div class="endpoint-head"><h3>Delete Memory</h3><p>Deletes a memory and all its versions.</p></div>
         <div class="route-bar delete"><span class="route-method">DELETE</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/memories/<span class="param">:id</span>.json</span><span class="route-badge">full_access</span></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s204">204 No Content</span></div>
@@ -967,6 +967,7 @@
           <div class="code-head"><span class="code-label">snippet mode response (default)</span><span class="code-status s200">200 OK</span></div>
           <div class="code-body"><code>{
   <span class="ck">"query"</span>: <span class="cs">"architecture AND design"</span>,
+  <span class="ck">"ignored_words"</span>: [],
   <span class="ck">"total_results"</span>: <span class="cn">3</span>,
   <span class="ck">"related_results"</span>: <span class="cn">0</span>,
   <span class="ck">"obsolete_hidden"</span>: <span class="cn">1</span>,
@@ -994,6 +995,7 @@
 
 {
   <span class="ck">"query"</span>: <span class="cs">"architecture"</span>,
+  <span class="ck">"ignored_words"</span>: [],
   <span class="ck">"total_results"</span>: <span class="cn">2</span>,
   <span class="ck">"results"</span>: [
     {
@@ -1016,7 +1018,7 @@
         </div>
         <div class="info-box warn">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-patch)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
-          <span>Query must be 3–100 characters. An expression whose operators do not parse (<code>kamal OR</code>) is searched as its words ANDed rather than rejected.</span>
+          <span>Query must be 3–100 characters. An expression whose operators do not parse (<code>kamal OR</code>) is searched as its words ANDed rather than rejected. Unquoted words under three characters can't be searched, so they are left out and listed in <code>ignored_words</code>: <code>how to deploy</code> searches <code>how</code> and <code>deploy</code>. A quoted phrase stays exact.</span>
         </div>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>

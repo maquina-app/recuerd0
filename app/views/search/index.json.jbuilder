@@ -1,4 +1,5 @@
 json.query @query
+json.ignored_words Memory.ignored_search_words(@query)
 json.total_results @pagy.count
 json.related_results @related.size
 json.obsolete_hidden @obsolete_hidden_count.to_i

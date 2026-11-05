@@ -124,14 +124,9 @@ class MemoriesController < ApplicationController
     end
   end
 
-  # A memory goes as a whole, by its root id or its current version's id. Destroying
-  # the row in the URL would quietly drop one version, roll the memory back if it was
-  # the newest, and take the memory out of search, because the index is keyed by root.
   def destroy
-    return refuse_historical_delete if @memory.historical_version?
-
     track_event("memory.destroy", resource: @memory)
-    @memory.root_memory.destroy
+    @memory.destroy
 
     respond_to do |format|
       format.html { redirect_to workspace_path(@workspace), notice: t(".destroyed"), status: :see_other }
@@ -141,19 +136,10 @@ class MemoriesController < ApplicationController
 
   private
 
-  def refuse_historical_delete
-    @memory.errors.add(:base, :historical_version_undeletable, root_id: @memory.root_memory.id)
-
-    respond_to do |format|
-      format.html { redirect_to [@workspace, @memory], alert: @memory.errors.full_messages.to_sentence, status: :see_other }
-      format.json { render_validation_errors(@memory) }
-    end
-  end
-
   # Candidates for the "Link a memory" picker. Account-scoped (never just the
   # current workspace — links are explicitly allowed to cross them), with the
-  # memory itself and anything already linked removed so the list only ever
-  # offers a link that can actually be made.
+  # memory itself, anything already linked and anything in a workspace that isn't
+  # active removed, so the list only ever offers a link that can actually be made.
   def load_link_candidates
     @link_query = params[:link_q].to_s.strip.first(80).presence
     return if @link_query.blank?
@@ -162,7 +148,7 @@ class MemoriesController < ApplicationController
 
     @link_candidates = Memory
       .joins(:workspace)
-      .where(workspaces: {account_id: Current.account.id})
+      .where(workspaces: {account_id: Current.account.id, archived_at: nil, deleted_at: nil})
       .latest_versions
       .where.not(id: excluded)
       .search(@link_query)
