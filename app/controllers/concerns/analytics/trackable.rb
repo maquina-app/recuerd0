@@ -9,10 +9,10 @@ module Analytics
 
     private
 
-    def track_event(event_type, resource: nil, metadata: {})
+    def track_event(event_type, resource: nil, metadata: {}, account: Current.account, user: Current.user)
       attributes = {
-        account_id: Current.account&.id,
-        user_id: Current.user&.id,
+        account_id: account&.id,
+        user_id: user&.id,
         event_type: event_type,
         resource_type: resource&.class&.name,
         resource_id: resource&.id,

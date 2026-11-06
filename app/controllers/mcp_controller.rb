@@ -167,9 +167,29 @@ class McpController < ApplicationController
       arguments,
       user: @current_oauth_token.user
     )
+    track_search(arguments, value) if name == "list_memories"
     jsonrpc_result(content: [{type: "text", text: value.to_json}])
   rescue Mcp::ToolError => e
     jsonrpc_result(content: [{type: "text", text: e.message}], isError: true)
+  end
+
+  # The event web and REST record, so the fallback's hit rate covers MCP too. MCP
+  # authentication doesn't set Current, so it says who ran the search.
+  def track_search(arguments, result)
+    query = Memory.normalize_search_query(arguments["query"])
+    return if query.blank?
+
+    top_related = result[:memories].find { |memory| memory[:match] == "related" }
+
+    track_event("search.query", account: @mcp_account, user: @current_oauth_token.user, metadata: {
+      surface: "mcp",
+      query: query,
+      results_count: result[:total_count],
+      related_count: result[:related_count].to_i,
+      top_similarity: top_related&.dig(:similarity),
+      workspace_id: arguments["workspace_id"],
+      retrieval: arguments["retrieval"]
+    })
   end
 
   # 403 with a step-up challenge, so the client can ask for memories:write.

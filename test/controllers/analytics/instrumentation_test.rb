@@ -138,6 +138,55 @@ class Analytics::InstrumentationTest < ActionDispatch::IntegrationTest
     assert_kind_of Integer, event.metadata["results_count"]
   end
 
+  test "an MCP search records search.query with who ran it" do
+    @memory.rebuild_search_index
+
+    perform_enqueued_jobs { mcp_search(query: "test") }
+
+    event = Analytics::Event.find_by(event_type: "search.query")
+    token = AccessToken.find_by_token(@read_only_token)
+    assert_equal token.user_id, event.user_id
+    assert_equal token.user.account_id, event.account_id
+    assert_equal "mcp", event.metadata["surface"]
+    assert_equal "test", event.metadata["query"]
+    assert_equal @workspace.id.to_s, event.metadata["workspace_id"]
+    assert_kind_of Integer, event.metadata["results_count"]
+    assert_equal 0, event.metadata["related_count"]
+  end
+
+  test "an MCP search records the fallback's hit rate" do
+    memory = Memory.create_with_content(@workspace, title: "Close in meaning", content: "body")
+
+    with_hybrid_retrieval do |provider|
+      create_memory_embedding(memory, vector: provider.embed("zzqqxx"))
+
+      perform_enqueued_jobs { mcp_search(query: "zzqqxx") }
+    end
+
+    event = Analytics::Event.find_by(event_type: "search.query")
+    assert_equal 0, event.metadata["results_count"]
+    assert_equal 1, event.metadata["related_count"]
+    assert_equal 1.0, event.metadata["top_similarity"]
+  end
+
+  test "MCP records which retrieval mode was asked for" do
+    perform_enqueued_jobs { mcp_search(query: "test", retrieval: "lexical") }
+
+    assert_equal "lexical", Analytics::Event.find_by(event_type: "search.query").metadata["retrieval"]
+  end
+
+  test "listing memories over MCP without a query isn't a search" do
+    perform_enqueued_jobs { mcp_search }
+
+    assert_nil Analytics::Event.find_by(event_type: "search.query")
+  end
+
+  test "a refused MCP search records nothing" do
+    perform_enqueued_jobs { mcp_search(query: "test", category: "nope") }
+
+    assert_nil Analytics::Event.find_by(event_type: "search.query")
+  end
+
   # Auth tracking
 
   test "successful sign-in creates auth.sign_in event" do
@@ -223,5 +272,13 @@ class Analytics::InstrumentationTest < ActionDispatch::IntegrationTest
     assert_nothing_raised do
       Analytics::RecordEventJob.perform_now({event_type: nil})
     end
+  end
+
+  private
+
+  def mcp_search(**arguments)
+    payload = mcp_rpc("tools/call", name: "list_memories", arguments: {workspace_id: @workspace.id.to_s}.merge(arguments))
+    mcp_post(payload, token: @read_only_token)
+    assert_response :success
   end
 end

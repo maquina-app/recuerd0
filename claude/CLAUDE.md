@@ -215,6 +215,7 @@ View-level locale keys go in `config/locales/views/en.yml`. Partial key paths st
 
 ### System tests
 
+- **Don't add more.** `test/system/onboarding_dismissal_test.rb` and `search_shortcut_hint_test.rb` stay as a named exception to the no-system-tests rule (owner's decision, 2026-11-05). New coverage goes in `test/integration/`.
 - `bin/ci` does **not** run them (`config/ci.rb` has the step commented out) — run `bin/rails test test/system/...` by hand when you touch JS.
 - Headless Chrome cannot start in the container without `--no-sandbox`; the flags live in `test/application_system_test_case.rb`. Without them every system test fails with `SessionNotCreatedError: Chrome instance exited`.
 - Rebuild CSS (`bin/rails tailwindcss:build`) after editing `app/assets/tailwind/application.css` or system tests exercise the stale build.
