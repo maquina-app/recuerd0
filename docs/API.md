@@ -538,7 +538,7 @@ GET /workspaces/:workspace_id/merge_candidates.json
 
 | Name | Type | Description |
 |------|------|-------------|
-| min_score | number | Similarity threshold `0`–`1` (default `0.5`). Higher = stricter |
+| min_score | number | Similarity threshold `0`–`1` (default `0.5`). Higher = stricter. Anything else is a `422` |
 | include | string | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
 **Response** `200 OK`

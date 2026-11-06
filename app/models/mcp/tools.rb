@@ -465,6 +465,7 @@ module Mcp
       rescue
         default
       end
+      integer = default unless integer.positive?
       integer.clamp(min, max)
     end
     private_class_method :clamp_int

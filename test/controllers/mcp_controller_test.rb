@@ -350,6 +350,16 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Claude", listed["source"]
   end
 
+  test "a limit that isn't a positive integer falls back to the default" do
+    12.times { |i| Memory.create_with_content(@workspace, title: "Limit#{i}", content: "b") }
+
+    %w[0 -1 abc].each do |limit|
+      payload = call_tool("list_memories", {workspace_id: @workspace.id.to_s, limit: limit})
+
+      assert_equal 10, payload["memories"].size, "limit=#{limit}"
+    end
+  end
+
   test "list_memories paginates via limit and offset" do
     3.times { |i| Memory.create_with_content(@workspace, title: "Page#{i}", content: "b") }
 

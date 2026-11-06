@@ -64,6 +64,7 @@ class Workspaces::ContextsController < ApplicationController
     rescue
       default
     end
+    n = default unless n.positive?
     n.clamp(min, max)
   end
 
