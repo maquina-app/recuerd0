@@ -193,7 +193,7 @@ class MemoriesController < ApplicationController
   end
 
   # Overwriting can erase someone's work as surely as deleting it. Anyone can add a
-  # new version; updating in place is for the creator and admins.
+  # new version; updating in place is for the owner and admins.
   def require_in_place_access
     require_manage_access(@memory) unless save_as_new_version?
   end

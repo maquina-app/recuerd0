@@ -357,7 +357,7 @@
             <tbody>
               <tr><td>Client can't authorize</td><td>The instance URL isn't reachable, or the URL is wrong</td><td>Use the full <code>https://&lt;instance&gt;/mcp</code> URL; confirm the instance is public</td></tr>
               <tr><td>Consent screen sends you to sign in</td><td>No active recuerd0 session in that browser</td><td>Sign in to recuerd0 first, then retry the connection</td></tr>
-              <tr><td>Write tools are missing</td><td>The token is <code>read_only</code></td><td>Reconnect and approve <em>Create and update memories</em></td></tr>
+              <tr><td>A write tool fails with 'Insufficient scope — write access required'</td><td>The token is <code>read_only</code>. Every tool is still listed</td><td>Reconnect and approve <em>Create and update memories</em></td></tr>
               <tr><td>Client fails with 'Method not found … supports protocol versions: 2026-07-28'</td><td>Client predates MCP 2026-07-28</td><td>Update the client</td></tr>
               <tr><td>App stopped working after a disconnect</td><td>Its token was revoked</td><td>Reconnect — the client re-registers and re-consents</td></tr>
             </tbody>
