@@ -1,4 +1,4 @@
-<%# locals: (exports_this_month:, current_export:, latest_export:) %>
+<%# locals: (exports_this_month:, current_export:, latest_export:, last_export_failed:) %>
 <%= render "components/card" do %>
   <%= render "components/card/header" do %>
     <%= render "components/card/title", text: t("accounts.data_export.title") %>
@@ -10,6 +10,10 @@
       <p class="text-sm text-muted-foreground">
         <%= t("accounts.data_export.usage", count: exports_this_month, limit: AccountExport::MONTHLY_LIMIT) %>
       </p>
+
+      <% if last_export_failed %>
+        <%= render "accounts/export_failed" %>
+      <% end %>
 
       <% if current_export %>
         <div class="flex items-center gap-2 text-sm text-muted-foreground">

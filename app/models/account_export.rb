@@ -17,6 +17,10 @@ class AccountExport < ApplicationRecord
   scope :completed, -> { where(status: "completed") }
   scope :in_progress, -> { where(status: %w[pending processing]) }
 
+  def self.last_failed?
+    order(created_at: :desc, id: :desc).first&.failed? || false
+  end
+
   def pending?
     status == "pending"
   end

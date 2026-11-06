@@ -44,4 +44,16 @@ class AccountExportMailerTest < ActionMailer::TestCase
     assert_equal I18n.t("account_export_mailer.started.subject"), started_mail.subject
     assert_equal I18n.t("account_export_mailer.completed.subject"), completed_mail.subject
   end
+
+  test "failed email says so and where to try again" do
+    @export.update!(status: "failed", error_message: "disk full")
+
+    mail = AccountExportMailer.failed(@export)
+
+    assert_equal "Your data export didn't finish", mail.subject
+    assert_equal [@admin.email_address], mail.to
+    assert_match "didn't finish", mail.body.encoded
+    assert_match "/account", mail.body.encoded
+    assert_no_match(/disk full/, mail.body.encoded)
+  end
 end

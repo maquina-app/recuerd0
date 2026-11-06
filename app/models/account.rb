@@ -7,6 +7,9 @@ class Account < ApplicationRecord
   has_many :workspaces, dependent: :destroy
   has_many :account_exports, dependent: :destroy
   has_many :invitations, dependent: :delete_all
+  # Permanently removed means these too: an event can hold what someone searched for.
+  has_many :analytics_events, class_name: "Analytics::Event", dependent: :delete_all
+  has_many :analytics_api_requests, class_name: "Analytics::ApiRequest", dependent: :delete_all
 
   validates :name, presence: true
 

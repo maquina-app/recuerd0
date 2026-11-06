@@ -612,6 +612,8 @@ en:
       description: "Download a complete backup of your workspaces and memories."
       usage: "%{count} of %{limit} exports used this month"
       in_progress: "Export in progress..."
+      failed_title: "Your last export didn't finish"
+      failed_description: "There's nothing to download, and your workspaces and memories aren't affected. Try again. A failed export stops counting toward your monthly limit within two days."
       download: "Download Export"
       expires: "Expires %{date}"
       request: "Request Export"

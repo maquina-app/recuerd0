@@ -12,12 +12,11 @@ class Workspaces::MergeCandidatesController < ApplicationController
   # and title similarity. Mirrors the suggest_merge_candidates MCP tool. Merging
   # remains a human decision — this only proposes clusters.
   def show
-    if params.key?(:min_score) && !requested_min_score&.between?(0, 1)
-      return render_validation_error("min_score must be a number from 0 to 1")
-    end
-
     finder = if params.key?(:min_score)
-      WorkspaceMergeCandidates.new(@workspace, min_score: requested_min_score, include_obsolete: include_obsolete?)
+      min_score = WorkspaceMergeCandidates.parse_min_score(params[:min_score])
+      return render_validation_error(WorkspaceMergeCandidates::INVALID_MIN_SCORE) unless min_score
+
+      WorkspaceMergeCandidates.new(@workspace, min_score: min_score, include_obsolete: include_obsolete?)
     else
       WorkspaceMergeCandidates.new(@workspace, include_obsolete: include_obsolete?)
     end
@@ -26,10 +25,6 @@ class Workspaces::MergeCandidatesController < ApplicationController
   end
 
   private
-
-  def requested_min_score
-    Float(params[:min_score], exception: false)
-  end
 
   def set_workspace
     @workspace = Current.account.workspaces.find(params[:workspace_id])

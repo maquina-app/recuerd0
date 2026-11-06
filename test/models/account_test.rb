@@ -326,4 +326,24 @@ class AccountTest < ActiveSupport::TestCase
     assert_not User.exists?(email_address: "purge-me@example.com")
     assert_equal 0, Memory.where(workspace_id: workspace.id).count
   end
+
+  test "purge! removes the account's analytics, including what it searched for" do
+    account = Account.create_with_user(account_name: "Test account", email_address: "purge-analytics@example.com",
+      password: "password123", password_confirmation: "password123").account
+    other = accounts(:one)
+    Analytics::Event.create!(account: account, event_type: "search.query", metadata: {query: "our secret plan"})
+    Analytics::ApiRequest.create!(account: account, http_method: "GET", path: "/search.json", status: 200)
+    kept_event = Analytics::Event.create!(account: other, event_type: "search.query", metadata: {query: "theirs"})
+    kept_request = Analytics::ApiRequest.create!(account: other, http_method: "GET", path: "/search.json", status: 200)
+    account.schedule_deletion!
+
+    assert_equal 1, Analytics::Event.where(account_id: account.id, event_type: "search.query").count, "kept during the grace period"
+
+    account.purge!
+
+    assert_equal 0, Analytics::Event.where(account_id: account.id).count
+    assert_equal 0, Analytics::ApiRequest.where(account_id: account.id).count
+    assert Analytics::Event.exists?(kept_event.id)
+    assert Analytics::ApiRequest.exists?(kept_request.id)
+  end
 end

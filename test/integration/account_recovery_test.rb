@@ -98,4 +98,16 @@ class AccountRecoveryTest < ActionDispatch::IntegrationTest
       headers: auth_headers("test_full_token_456").merge("Content-Type" => "application/json")
     assert_response :unauthorized
   end
+
+  test "the recovery page says when the last export failed" do
+    @account.account_exports.create!(user: @admin, status: "failed", error_message: "disk full")
+    @account.schedule_deletion!
+    sign_in_as(@admin)
+
+    get account_recovery_url
+
+    assert_response :success
+    assert_includes response.body, ERB::Util.html_escape(I18n.t("accounts.data_export.failed_title"))
+    assert_not_includes response.body, "disk full"
+  end
 end

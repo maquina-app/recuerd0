@@ -194,9 +194,7 @@ module Mcp
             content: {type: "string"},
             category: {type: "string", enum: CATEGORIES},
             tags: {type: "array", items: {type: "string"},
-                   description: "Optional tags for search and filtering"},
-            change_note: {type: "string",
-                          description: "Optional. Why this version exists, in one line (max 280 characters)"}
+                   description: "Optional tags for search and filtering"}
           },
           required: ["memory_id"]
         }
@@ -217,7 +215,9 @@ module Mcp
             content: {type: "string"},
             category: {type: "string", enum: CATEGORIES},
             tags: {type: "array", items: {type: "string"},
-                   description: "Optional tags for search and filtering"}
+                   description: "Optional tags for search and filtering"},
+            change_note: {type: "string",
+                          description: "Optional. Why this version exists, in one line (max 280 characters)"}
           },
           required: ["memory_id"]
         }

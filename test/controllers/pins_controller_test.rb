@@ -90,4 +90,21 @@ class PinsControllerTest < ActionDispatch::IntegrationTest
 
     assert_not map.reload.pinned_by?(@user)
   end
+
+  test "pinning past the limit says so, however the button asks" do
+    @user.pins.user_origin.destroy_all
+    memory = memories(:versioned_parent)
+    User::PIN_LIMIT.times do |n|
+      Memory.create_with_content(workspaces(:one), title: "Pinned #{n}", content: "b").pin!(@user)
+    end
+
+    [{}, {"Accept" => "text/vnd.turbo-stream.html, text/html"}].each do |headers|
+      assert_no_difference("Pin.count") do
+        post create_pin_url("Memory", memory), headers: headers
+      end
+
+      assert_response :see_other, headers.inspect
+      assert_equal I18n.t("pins.limit_reached", limit: User::PIN_LIMIT), flash[:alert]
+    end
+  end
 end

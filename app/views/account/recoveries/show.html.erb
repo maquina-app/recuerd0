@@ -20,6 +20,10 @@
             class: "w-full",
             data: { component: "button", variant: "primary" } %>
 
+        <% if @last_export_failed %>
+          <%= render "accounts/export_failed" %>
+        <% end %>
+
         <% if @latest_export&.downloadable? %>
           <a href="<%= account_export_path(@latest_export) %>" class="w-full"
              data-component="button" data-variant="outline">

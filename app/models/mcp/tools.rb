@@ -355,13 +355,15 @@ module Mcp
     # similarity). Suggestions only — merging stays a human decision.
     def suggest_merge_candidates(account, args = {}, user: nil)
       workspace = find_workspace(account, args["workspace_id"])
-      min_score = args["min_score"].presence&.to_f
       include_obsolete = include_obsolete?(args)
 
-      finder = if min_score
-        WorkspaceMergeCandidates.new(workspace, min_score: min_score, include_obsolete: include_obsolete)
-      else
+      finder = if args["min_score"].nil?
         WorkspaceMergeCandidates.new(workspace, include_obsolete: include_obsolete)
+      else
+        min_score = WorkspaceMergeCandidates.parse_min_score(args["min_score"])
+        raise ToolError, WorkspaceMergeCandidates::INVALID_MIN_SCORE unless min_score
+
+        WorkspaceMergeCandidates.new(workspace, min_score: min_score, include_obsolete: include_obsolete)
       end
       finder.clusters.map do |cluster|
         {

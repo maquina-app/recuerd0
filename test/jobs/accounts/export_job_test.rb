@@ -1,6 +1,8 @@
 require "test_helper"
 
 class Accounts::ExportJobTest < ActiveSupport::TestCase
+  include ActionMailer::TestHelper
+
   setup do
     @account = accounts(:one)
     @admin = users(:one)
@@ -134,5 +136,23 @@ class Accounts::ExportJobTest < ActiveSupport::TestCase
     assert_includes v2.last, "change_note: Second try"
 
     assert_empty files.keys.grep(%r{history-check\.versions/v3})
+  end
+
+  test "a failed export tells the person who asked, without the internal error" do
+    failing_job = Class.new(Accounts::ExportJob) do
+      private
+
+      def build_workspace_folders(*)
+        raise "disk full at /rails/storage"
+      end
+    end
+
+    assert_enqueued_email_with AccountExportMailer, :failed, args: [@export] do
+      failing_job.new.perform(@export.id)
+    end
+
+    assert @export.reload.failed?
+    assert_equal "disk full at /rails/storage", @export.error_message
+    assert_not_includes AccountExportMailer.failed(@export).body.encoded, "disk full"
   end
 end
