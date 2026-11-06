@@ -13,6 +13,15 @@ class WorkspaceMergeCandidates
 
   Cluster = Struct.new(:score, :reasons, :memories)
 
+  INVALID_MIN_SCORE = "min_score must be a number from 0 to 1"
+
+  # The score, or nil if it isn't a number from 0 to 1. Clamping "abc" would quietly
+  # mean 0 and return every pair, so REST and MCP both refuse it.
+  def self.parse_min_score(value)
+    score = Float(value, exception: false)
+    score if score&.between?(0, 1)
+  end
+
   def initialize(workspace, min_score: DEFAULT_MIN_SCORE, include_obsolete: false)
     @workspace = workspace
     @min_score = min_score.to_f.clamp(0.0, 1.0)

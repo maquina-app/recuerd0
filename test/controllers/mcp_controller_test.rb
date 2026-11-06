@@ -1567,6 +1567,35 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     assert_nil result["result"]["isError"]
   end
 
+  test "min_score has to be a number from 0 to 1" do
+    workspace = workspaces(:one)
+
+    [0, 1, 0.5, "0.5"].each do |score|
+      result = mcp_post(mcp_rpc("tools/call", name: "suggest_merge_candidates",
+        arguments: {"workspace_id" => workspace.id.to_s, "min_score" => score}), token: @read_token.raw_token)
+      assert_not result.dig("result", "isError"), score.inspect
+    end
+
+    ["abc", "", "NaN", 2, -1, true, [0.5]].each do |score|
+      assert_tool_error "min_score must be a number from 0 to 1", "suggest_merge_candidates",
+        {"workspace_id" => workspace.id.to_s, "min_score" => score}, token: @read_token.raw_token
+    end
+  end
+
+  test "a null min_score means the default" do
+    result = mcp_post(mcp_rpc("tools/call", name: "suggest_merge_candidates",
+      arguments: {"workspace_id" => workspaces(:one).id.to_s, "min_score" => nil}), token: @read_token.raw_token)
+
+    assert_not result.dig("result", "isError")
+  end
+
+  test "change_note is advertised on the tool that keeps it" do
+    tools = mcp_post(mcp_rpc("tools/list"), token: @read_token.raw_token).dig("result", "tools").index_by { |tool| tool["name"] }
+
+    assert tools["create_version"].dig("inputSchema", "properties").key?("change_note")
+    assert_not tools["update_memory"].dig("inputSchema", "properties").key?("change_note")
+  end
+
   private
 
   # An OAuth token for account two, used to prove account one is out of reach.
