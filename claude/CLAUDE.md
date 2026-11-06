@@ -259,6 +259,23 @@ recuerd0 memory show --workspace <id> <memory_id> --pretty
 
 Content formats: recuerd0 uses Markdown, fizzy uses HTML.
 
+### Canonical memories
+
+Workspace 26 ("recuerd0 Rails Application") has one reference per area, checked against the code. Read it before the older memories it links to, and version it when the area changes. Read one with `recuerd0 memory show --workspace 26 <id>`.
+
+| Area | Memory |
+|------|--------|
+| Technical Guide, the hub | 98 |
+| REST API (endpoint list: 101) | 179 |
+| MCP and OAuth | 695 |
+| Security | 4076 |
+| Account management | 117 |
+| Memories and versioning | 104 |
+| Flows | 178 |
+| Brand | 102 |
+
+UI components aren't covered here: maquina-components is the catalog (see "maquina-components Gem" above).
+
 ## Project Tracking (Fizzy)
 
 Engineering tasks on Fizzy board: **Recuerd0 Engineering** (`03fip3ticfveu2xub49cypi30`). Use the `/fizzy` skill to manage cards, comments, and task status — it knows the full CLI syntax.
