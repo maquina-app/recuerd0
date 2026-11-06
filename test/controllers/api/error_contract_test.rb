@@ -115,6 +115,38 @@ class ApiErrorContractTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "min_score takes any number from 0 to 1 and refuses the rest" do
+    %w[0 1 0.5 .5 1e-1].each do |score|
+      get workspace_merge_candidates_url(@workspace, format: :json), params: {min_score: score}, headers: @headers
+
+      assert_response :success, "min_score=#{score}"
+    end
+
+    ["", " ", "-1", "2", "abc", "NaN"].each do |score|
+      get workspace_merge_candidates_url(@workspace, format: :json), params: {min_score: score}, headers: @headers
+
+      assert_json_error :unprocessable_entity, "VALIDATION_ERROR", "min_score=#{score.inspect}"
+      assert_includes response.parsed_body.dig("error", "message"), "from 0 to 1"
+    end
+  end
+
+  test "a context limit that isn't a positive integer falls back to the default" do
+    12.times { |n| Memory.create_with_content(@workspace, title: "Limit #{n}", content: "body") }
+    Pin.destroy_all
+
+    get workspace_context_url(@workspace, format: :json, limit: 11), headers: @headers
+    assert_equal 11, response.parsed_body.fetch("memories").size
+
+    %w[0 -1 abc].each do |limit|
+      get workspace_context_url(@workspace, format: :json, limit: limit), headers: @headers
+
+      assert_equal 10, response.parsed_body.fetch("memories").size, "limit=#{limit}"
+    end
+
+    get workspace_context_url(@workspace, format: :json, limit: 500), headers: @headers
+    assert_operator response.parsed_body.fetch("memories").size, :>, 10
+  end
+
   test "a min_score that isn't a number is a 422 rather than the lowest score" do
     get workspace_merge_candidates_url(@workspace, format: :json), params: {min_score: "abc"}, headers: @headers
     assert_json_error :unprocessable_entity, "VALIDATION_ERROR"

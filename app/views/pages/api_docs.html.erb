@@ -429,7 +429,7 @@
       </div>
 
       <div class="endpoint" id="merge-candidates">
-        <div class="endpoint-head"><h3>Get Merge Candidates</h3><p>Returns clusters of likely-duplicate memories, scored by shared tags and title similarity. These are read-only suggestions: merging stays a manual action. Takes <code>min_score</code> (<code>0</code>–<code>1</code>, default <code>0.5</code>) and <code>include</code>.</p></div>
+        <div class="endpoint-head"><h3>Get Merge Candidates</h3><p>Returns clusters of likely-duplicate memories, scored by shared tags and title similarity. These are read-only suggestions: merging stays a manual action. Takes <code>min_score</code> (<code>0</code>–<code>1</code>, default <code>0.5</code>; anything else is a <code>422</code>) and <code>include</code>.</p></div>
         <div class="route-bar get"><span class="route-method">GET</span><span class="route-path">/workspaces/<span class="param">:workspace_id</span>/merge_candidates.json</span></div>
         <div class="code-block">
           <div class="code-head"><span class="code-label">response</span><span class="code-status s200">200 OK</span></div>
