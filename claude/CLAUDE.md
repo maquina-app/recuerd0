@@ -271,6 +271,7 @@ Workspace 26 ("recuerd0 Rails Application") has one reference per area, checked 
 | Security | 4076 |
 | Account management | 117 |
 | Memories and versioning | 104 |
+| Search: FTS5 and the semantic fallback | 4098 |
 | Flows | 178 |
 | Brand | 102 |
 
