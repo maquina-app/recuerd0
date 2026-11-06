@@ -13,8 +13,11 @@ class Memories::LinksController < ApplicationController
     @links = @memory.linked_memories
       .latest_versions
       .order(updated_at: :desc)
-    last_modified = [@memory.updated_at, @links.maximum(:updated_at)].compact.max
-    stale?(etag: [@memory, @links.to_a], last_modified: last_modified)
+    # Editing a version in place doesn't touch its root, so the validators read the
+    # versions this list reports.
+    current_versions = @links.map(&:current_version)
+    last_modified = [@memory.updated_at, *current_versions.map(&:updated_at)].compact.max
+    stale?(etag: [@memory, current_versions], last_modified: last_modified)
   end
 
   # POST /workspaces/:workspace_id/memories/:memory_id/links.json

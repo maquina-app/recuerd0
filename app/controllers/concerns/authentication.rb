@@ -1,6 +1,9 @@
 module Authentication
   extend ActiveSupport::Concern
 
+  FAILED_TOKEN_LIMIT = 60
+  FAILED_TOKEN_WINDOW = 1.minute
+
   included do
     before_action :require_authentication
     helper_method :authenticated?
@@ -50,7 +53,7 @@ module Authentication
   def require_authentication
     if extract_bearer_token
       return render_unauthorized unless token_authentication_allowed
-      return render_unauthorized unless authenticate_via_token
+      return render_failed_token unless authenticate_via_token
     else
       resume_session || request_authentication
     end
@@ -83,16 +86,29 @@ module Authentication
     return false unless token
 
     access_token = AccessToken.find_by_token(token)
-    unless access_token
-      track_event("auth.token_failed")
-      return false
-    end
+    return false unless access_token
 
     access_token.touch_last_used!
     Current.session = nil
     Current.user = access_token.user
     @current_access_token = access_token
     true
+  end
+
+  def render_failed_token
+    return render_rate_limited if failed_token_limit_reached?
+
+    track_event("auth.token_failed")
+    render_unauthorized
+  end
+
+  # Counts failures only, by address, and is only asked after a token has failed, so a
+  # valid token is never refused. Agents share egress addresses, and blocking the
+  # address would let one bad client lock out everyone behind it. A token is too long to
+  # guess, so what this limits is the noise: each failure enqueues an analytics job.
+  def failed_token_limit_reached?
+    count = cache_store.increment("failed-token:#{request.remote_ip}", 1, expires_in: FAILED_TOKEN_WINDOW)
+    count.to_i > FAILED_TOKEN_LIMIT
   end
 
   def extract_bearer_token

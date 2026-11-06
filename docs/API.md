@@ -52,7 +52,7 @@ Every error under an API path uses this format, including unknown paths and bad 
 
 ## Rate Limiting
 
-API requests are limited to 100 requests per minute per token. When exceeded, the response carries a `Retry-After: 60` header:
+API requests are limited to 100 requests per minute per token, counted separately for each kind of resource. When exceeded, the response carries a `Retry-After: 60` header:
 
 ```json
 {
@@ -63,6 +63,8 @@ API requests are limited to 100 requests per minute per token. When exceeded, th
   }
 }
 ```
+
+Requests with a token that isn't valid get a `401`. Past 60 of those in a minute from one address, they get this `429` instead, here and on MCP. A valid token from the same address keeps working.
 
 ## Pagination
 
@@ -965,7 +967,7 @@ Memory and workspace context responses include a `links_count` integer field on 
 
 ### List Memory Links
 
-Returns the memories linked to a given memory. Latest versions only, ordered by `updated_at` desc.
+Returns the memories linked to a given memory, ordered by `updated_at` desc. Each row reports the memory's current version, and its `id` is the memory's root id, which is what deleting a link takes.
 
 ```
 GET /workspaces/:workspace_id/memories/:memory_id/links.json
