@@ -2,27 +2,39 @@
 
 Recuerd0 — Rails 8 memory/workspace app. SQLite for everything (including cache, jobs, WebSockets via Solid libraries), Kamal deployment, importmaps (no Node.js).
 
-See `docs/technical-guide.md` for architecture, `docs/ui-patterns.md` for UI patterns, `docs/hotwire-patterns.md` for Turbo/Stimulus patterns, `docs/brand-guide.md` for brand guidelines, `docs/API.md` for REST API.
-
 **Auth is not Clave and not Devise**, unlike the other maquina apps: the Rails 8 generator's `has_secure_password` with a signed `session_id` cookie (`Authentication` concern, `new_session_path`), plus Bearer access tokens and OAuth for the API and MCP.
+
+## Knowledge Base
+
+**When the user asks you to explain an area of the application**, search Recuerd0 first with the `recuerd0:remember` skill. Do NOT read source code unless explicitly asked; fall back to it only if no relevant memories are found.
+
+Workspace 26 ("recuerd0 Rails Application") has one reference per area, checked against the code. Read it before the older memories it links to, and version it when the area changes: `recuerd0 memory show --workspace 26 <id>`.
+
+| Area | Memory |
+|------|--------|
+| Technical Guide, the hub: stack, jobs, deploy, CI | 98 |
+| REST API (endpoint list: 101, `docs/API.md`) | 179 |
+| MCP and OAuth | 695 |
+| Security | 4076 |
+| Account management, ownership | 117 |
+| Memories and versioning | 104 |
+| Search: FTS5 and the semantic fallback | 4098 |
+| Flows | 178 |
+| Brand | 102 |
 
 ## Workflow Discipline
 
 - When implementing a feature from a plan, ALWAYS re-read the full plan before starting and check off each requirement as you complete it. Before declaring done, verify every planned item was addressed.
-- After implementing UI components or interactive elements, verify they work end-to-end by running relevant tests before considering the task complete.
-- After making changes, always run `bin/ci` to verify nothing is broken. For quick iteration, `bin/rails test path/to/test.rb` is fine, but always finish with `bin/ci` before declaring done. Run `bin/rubocop` to check lint violations in changed files.
+- For quick iteration, `bin/rails test path/to/test.rb` is fine. Always finish with the Definition of Done below.
+- After bulk find/replace operations (`replace_all`), always grep the codebase for partial-word matches or typos introduced by the replacement.
+- When the user says "continue" or references a Fizzy card, confirm which specific card/task before starting implementation — do NOT assume based on recently viewed cards.
+- Commits and PR bodies carry no "Generated with Claude Code" line or any similar attribution footer.
 
 ### Definition of Done — REQUIRED, in this order
 
-Work is not done when the tests pass. All four steps below are mandatory; skipping
-step 1 means conventions land as an embarrassing self-correcting commit after review
-has started, and skipping step 4 means "CI is green" is a claim you have not earned.
+Work is not done when the tests pass. Skipping step 1 means conventions land as an embarrassing self-correcting commit after review has started, and skipping step 4 means "CI is green" is a claim you have not earned.
 
-1. **Run the convention skills BEFORE pushing.** Conventions are owned by skills, not
-   by judgement. Invoke with the **Skill** tool using the full `plugin:skill` name —
-   passing one to the Agent tool as `subagent_type` fails with "Agent type not found".
-   The naming is not uniform (two repeat the plugin name, two do not), so read it,
-   do not infer it:
+1. **Run the convention skills BEFORE pushing.** Invoke with the **Skill** tool using the full `plugin:skill` name. Passing one to the Agent tool as `subagent_type` fails with "Agent type not found". The naming is not uniform, so read it, do not infer it:
 
    | Touched | Skill |
    |---|---|
@@ -31,101 +43,62 @@ has started, and skipping step 4 means "CI is green" is a claim you have not ear
    | Stimulus controllers | `better-stimulus:better-stimulus` |
    | Turbo / deep Hotwire | `hotwire-patterns:hotwire-patterns` |
 
-   Then run `bin/rails maquina:doctor` (the gate `maquina-ui-standards` names). It
-   never edits and always exits 0, so read it: BREAKING must be empty apart from
-   the known false positive — on 0.7.4 its `destructive-error-invisible` rule
-   measures `--destructive-foreground` and ignores the `--destructive-text` /
-   `--destructive-border` tokens that fix it, so those two lines stay. The
-   remaining REVIEW/CLEANUP findings are the toast restyle and app rules that
-   deliberately sit outside a layer.
+   Then read `bin/rails maquina:doctor`. It never edits and always exits 0. BREAKING must be empty apart from the known false positive: on 0.7.4 its `destructive-error-invisible` rule ignores the `--destructive-text` / `--destructive-border` tokens that fix it, so those two lines stay. The remaining REVIEW/CLEANUP findings are the toast restyle and app rules that deliberately sit outside a layer.
 
-2. **Verify interactive work in a browser.** Tests do not exercise JavaScript. A
-   Stimulus or Turbo change is unverified until it has been driven for real,
-   *including after a refactor of code that already worked*.
+2. **Verify interactive work in a browser.** Tests do not exercise JavaScript. A Stimulus or Turbo change is unverified until it has been driven for real, *including after a refactor of code that already worked*.
 
 3. **Commit and push.**
 
-4. **Run `bin/ci` AGAIN, after the push, and require the Signoff stage to pass.**
-   The final stage is `gh signoff`, and it fails with `repository has uncommitted or
-   unpushed changes` whenever anything is uncommitted **or** committed-but-unpushed.
-   So every mid-work `bin/ci` ends on a red `❌ Continuous Integration failed` even
-   when every check before it passed.
-
-   **Do not call that "CI green."** Mid-work, `bin/ci` is a check-runner: say "all
-   checks pass, signoff pending — not yet pushed." Only the post-push run can print,
-   and only this counts as done:
+4. **Run `bin/ci` AGAIN, after the push, and require the Signoff stage to pass.** `gh signoff` fails with `repository has uncommitted or unpushed changes`, so every mid-work `bin/ci` ends on a red `❌ Continuous Integration failed` even when every check passed. **Do not call that "CI green."** Say "all checks pass, signoff pending — not yet pushed." Only this counts as done, against the pushed HEAD:
 
    ```
    ✓ Signed off on <sha>
    ✅ Continuous Integration passed
    ```
 
-   Signoff records a specific commit SHA, so it must be run against the pushed HEAD.
-- After bulk find/replace operations (`replace_all`), always grep the codebase for partial-word matches or typos introduced by the replacement.
-- When the user says "continue" or references a Fizzy card, confirm which specific card/task before starting implementation — do NOT assume based on recently viewed cards.
-- When opening pull requests, do NOT add a "Generated with Claude Code" line (or any similar attribution footer) to the PR body or commit messages.
-
 ## Commands
 
-```bash
-bin/dev                          # Start server + Tailwind + Solid Queue (foreman, port 3820)
-bin/ci                           # Setup, lint, security audits, tests, seeds
-bin/rails test                   # All tests
-bin/rails test path/to/test.rb   # Single file
-bin/rails test path/to/test.rb:42  # Single test at line
-bin/rubocop                      # Check Ruby style (Standard Ruby)
-bin/rubocop -a                   # Auto-fix
-bin/brakeman                     # Static security analysis
-bin/rails db:migrate             # Run migrations
-bin/rails search:reindex         # Rebuild FTS5 search index
-bin/rails tailwindcss:build      # Build app/assets/builds/tailwind.css
-```
+`bin/dev` runs the server, Tailwind and Solid Queue on port 3820. `bin/ci` runs setup, lint, security audits, tests and seeds. `bin/rails search:reindex` rebuilds the FTS5 index.
 
-`bin/setup` does not build Tailwind, so on a fresh checkout every view-rendering test
-errors with `The asset 'tailwind.css' was not found in the load path`. Run
-`bin/rails tailwindcss:build` once before `bin/rails test` (`bin/ci` does it for you).
+`bin/setup` does not build Tailwind, so on a fresh checkout every view-rendering test errors with `The asset 'tailwind.css' was not found in the load path`. Run `bin/rails tailwindcss:build` once before `bin/rails test` (`bin/ci` does it for you).
 
 ## Architecture
-
-### Tenancy
-
-`MULTI_TENANT_ENABLED` env var (default: `false`) → `Rails.application.config.multi_tenant` / `multi_tenant?` helper. Single-tenant: no registration, root → `workspaces#index`, `FirstRunController` creates first account. Multi-tenant: public registration, marketing pages, root → `home#index`. Test env sets `config.multi_tenant = true`; stub `false` for single-tenant tests.
 
 ### Critical Data Isolation
 
 All workspace queries MUST scope to `Current.account.workspaces`. This is security-critical.
 
+### Tenancy
+
+`MULTI_TENANT_ENABLED` (default `false`) sets `config.multi_tenant` and the `multi_tenant?` helper. Routes compile at boot. The test env sets it to true, so every route exists; stub `false` for single-tenant tests.
+
 ### Workspace State Hierarchy
 
-active (default) → archived → deleted. State changes auto-unpin. When refactoring models or changing associations, always check and update `db/seeds.rb`.
+active (default) → archived → deleted. State changes unpin the workspace, not its memories. When refactoring models or changing associations, always check and update `db/seeds.rb`.
 
-### FTS5 Search
+### Search
 
-One search contract for web, REST and MCP: `Memory.search` (`app/models/memory.rb`) — FTS via `Searchable#full_search` unioned with exact-tag equality, FTS rank first. Do not add a second search path; results must stay identical across surfaces. `full_search` runs the query through `Memory.fts_expression`, which quotes every bare word (so `deploy.sh` is searched, not parsed), leaves out unquoted words under 3 characters (the trigram tokenizer can't match them, and ANDed they empty the result; `Memory.ignored_search_words` reports them on every surface), keeps AND/OR/NOT, phrases, grouping and `title:`/`body:`, and falls back to the words ANDed when the operators don't parse — user input never raises an FTS5 error. (Raw FTS5 errors surface as `ActiveRecord::StatementInvalid`, not `SQLite3::SQLException`; match on `e.message.include?("fts5")`.) The index holds the newest version's content under the root memory's ID, so search runs on roots; show each hit as its current version by preloading `latest_version` (one row per root) — never `includes(:child_versions)` next to a `where(workspaces: …)`, which turns into an eager-load JOIN over every version and a ~1s `COUNT(DISTINCT)`.
+One search contract for web, REST and MCP: `Memory.search`. Do not add a second search path; results must stay identical across surfaces. Never fuse or reorder the keyword list with embeddings: unweighted RRF demoted exact matches on the retrieval bench (D022), so they only fill in when keyword search comes up nearly empty. Show each hit as its current version by preloading `latest_version`, never `includes(:child_versions)` next to a `where(workspaces: …)`, which turns into an eager-load JOIN over every version and a ~1s `COUNT(DISTINCT)`. Memory 4098 has the rest.
 
-Semantic fallback (`HYBRID_RETRIEVAL=true`): `Memory.related_to` (`Embeddable`) runs only when keyword search found fewer than `MemoryRetrieval::RELATED_WHEN_FEWER_THAN` hits and appends up to `RELATED_LIMIT` roots at cosine ≥ `RELATED_FLOOR`, labelled `match: "related"` on every surface. Never fuse or reorder the keyword list with embeddings — unweighted RRF demoted exact matches on the retrieval bench (recuerd0 decision D022). Tests use `FakeEmbeddingProvider` + `with_hybrid_retrieval` + `create_memory_embedding`; create memories with the flag off so callbacks don't embed them first.
+### Ownership
 
-### Ownership (edit, delete, archive, purge)
+Members change, delete, archive, restore and purge only what they own; admins can do it to anything; anyone can add a version. A workspace's owner can also delete what's in it, and that reaches delete only. `Ownable#manageable_by?` is the rule, `Memory#deletable_by?` adds the workspace owner, `OwnershipAuthorizable` enforces both on web and REST, and `update_memory` checks it on MCP. Views hiding a control isn't enforcement.
 
-Every workspace and root memory has an owner (`owner_id`) as well as a creator (`created_by_id`). Whoever creates something owns it until it is passed on, and the creator never changes, so history stays honest ("Owned by Ana, created by a former member"). A version belongs to whoever owns its memory (`Memory#ownership_record`), and only roots carry an owner.
+- MCP has no delete, archive or purge tool; if one is added it needs the same check. Its write tools refuse an archived workspace themselves, because `find_memory` keeps archived memories readable.
+- A handover deliberately touches nothing, so `owner_id` has to stay out of `json.cache!` and be part of any ETag on a record that reports it.
+- `User#remove_from_account!` is the only way to remove someone: it revokes their tokens and OAuth grants, passes on what they own, and revokes unused invitation links.
 
-Members rename, delete, archive, unarchive, restore, purge and overwrite in place only what they own; admins can do it to anything. Anyone can add a new version. A workspace's owner can also delete any memory in it and permanently delete it with everything inside, including what an admin or a third person put there, and the confirmation says how many belong to others (`Workspace#memories_of_others_count`). That reaches delete only: overwriting and purging someone else's memory stay with its owner and admins, and nothing works the other way round.
+Memory 117 has the full rule, handover, invitations, account deletion and retention. `Account#purge!` destroys workspaces one by one first, because `dependent: :destroy` would only soft-delete them.
 
-`Ownable#manageable_by?` is the rule, `Memory#deletable_by?` adds the workspace owner, `OwnershipAuthorizable` enforces both on web and REST, `update_memory` checks it on MCP, and the views hide what fails it. MCP has no delete, archive or purge tool; if one is added it needs the same check. Its `update_memory` and `create_version` refuse an archived workspace themselves, because `find_memory` keeps archived memories readable. `owner_id` is nullable on purpose: no owner means the account admin (everything older than the column, and the seeded "My Workspace"), so `owned_by?` is true for an admin there and they can pass it without taking it first.
+### Memories and versions
 
-The owner passes something on, to anyone still on the account, and an admin takes it for themselves first; the receiver doesn't accept, so `/profile/ownership` lists what someone owns (`OwnershipTransferring`, `Ownable#pass_ownership_to`). A handover moves one record, so memories in a passed workspace keep their owners. It deliberately touches nothing, so it doesn't count as activity; that means `owner_id` has to stay out of `json.cache!` and be part of any ETag on a record that reports it. `User#remove_from_account!` is the only way to remove someone: it also revokes their tokens and OAuth grants, passes what they own to `transfer_to` (the first admin by default), and revokes every unused invitation link.
+- `/memories/<root id>` always opens the current version. Link with `stable_memory_path` / `version_page_path`, not `workspace_memory_path(workspace, version)`.
+- Editing has two explicit outcomes, `save_as=new_version` (primary, Cmd+S) and `save_as=in_place`; there is no autosave. A plain PATCH, the REST contract, means in place. The primary button is first in the DOM and last on screen, because Enter presses the first submit button.
+- A root row is v1 and also what filters read. Its `tags` and `category` follow the current version, and anything showing one specific version reads `version_tags` / `version_category`. Its `title` and `source` stay v1's, so show a root through `current_version`, and filter or sort roots with `with_current_title_like`, `with_current_source` and `ordered_by("title")`.
+- `create_version!` fills omitted fields from the row it is called on, so callers choose that row deliberately. REST and MCP resolve to the current version and use `create_changed_version`, which refuses a result identical to it.
+- `memories_count` counts roots only, and links always attach to the root.
 
-### Invitations
-
-A link is for one person. The token is a `signed_id` with a 7-day expiry and the `Invitation` row is what makes it single use: `Invitation#redeem` saves the person and claims the row in one transaction, so a failed signup leaves it usable and two people racing can't both join. Used rows stay so the link can say it was used. Generating a link leaves other unused ones working; revoking deletes the unused rows.
-
-### Memory URLs and versions
-
-`/memories/<root id>` always opens the current version and `/memories/<root id>/versions/<id>` opens a specific one; a URL holding a version's own id redirects to whichever of those it now is. Link with `stable_memory_path` / `version_page_path`, not `workspace_memory_path(workspace, version)`. Editing has two explicit outcomes on one form, `save_as=new_version` (primary, Cmd+S) and `save_as=in_place`; there is no autosave. A plain PATCH, which is the REST contract, still means in place. Deleting takes the whole memory, so an older version's id is refused with a 422; the root's id and the current version's both mean the memory. The form carries `edit_base` (`Memory#edit_digest`), so a save over someone else's comes back as a conflict with the text intact; REST stays last-write-wins. The primary button is first in the DOM and last on screen, because Enter presses the first submit button. A root row is v1 and also what filters read, so its `tags` and `category` follow the current version and `first_version_tags` / `first_version_category` keep what v1 held once they differ; anything showing one specific version reads `version_tags` / `version_category`. Its `title` and `source` stay v1's, so show a root through `current_version`, and filter or sort roots with `with_current_title_like`, `with_current_source` and `ordered_by("title")`. `create_version!` fills omitted fields from the row it is called on, so callers choose that row deliberately: REST and MCP resolve to the current version and use `create_changed_version`, which refuses a result identical to the current version (MCP ignores its stamped source for this), and `Memories::Versions::RestorationsController` (browser only) copies the version in its URL. `memories_count` counts roots only. Links always attach to the root (`MemoryLink#point_at_roots`).
-
-### Account deletion
-
-`Account#schedule_deletion!` locks the account and keeps every row and email for `RETENTION_DAYS`; signing in lands on `Account::RecoveriesController` (Restore, Export), the only place besides sign-out that `allow_deleted_account` opens. `Accounts::PurgeDeletedJob` (hourly) ends it, for deleted workspaces too, once `RETENTION_DAYS` have passed. `Account#purge!` destroys workspaces one by one first, because `dependent: :destroy` would only soft-delete them.
+Memory 104 has the rest, including conflicts, restore and purge.
 
 ### Asset Paths
 
@@ -133,54 +106,15 @@ A link is for one person. The token is a `signed_id` with a 7-day expiry and the
 - Propshaft font paths: CSS `url()` must use `url('/filename.woff2')` — not `../fonts/` and not `/assets/filename.woff2`
 - After placing or moving assets, verify the path resolves correctly before declaring done
 
-## maquina-components Gem
+## UI
 
-Components live in the gem (`app/views/components/`), not the app. App-specific components in `app/views/application/components/`.
+maquina-components is the component catalog: the `maquina-ui-standards:ui` skill and https://maquina.app/documentation/components/. Components live in the gem (`app/views/components/`); app-specific ones are in `app/views/application/components/`. The catalog owns props and variants, but these catch people out: alert has no `:info`, empty has no `:dashed`, and the toaster takes `content:`, not a block.
 
-### Icons — always check `main_icon_svg_for` first
+- **Icons:** before using or adding one, check `main_icon_svg_for(name)` in `app/helpers/maquina_components_helper.rb`. Add new ones as `when :icon_name` cases. Never use inline SVGs in views; always use `icon_for(:name)`.
+- **Invalid fields:** the field must say it's invalid with `aria: { invalid: record.errors[:field].any? }`, because the engine keys the error border on `aria-invalid` / `:user-invalid`, and a server-rendered error on an untouched field matches neither. `<p data-form-part="error">` needs no colour utility.
+- **Compound inputs** (a bordered shell around a bare input): add the shell to the grouped "Compound fields" rule in `application.css`. Never transition `outline-color` on it.
 
-Before using or adding an icon, check `app/helpers/maquina_components_helper.rb` → `main_icon_svg_for(name)`. Add new icons as `when :icon_name` cases. Never use inline SVGs in views — always use `icon_for(:name)`.
-
-### Sub-component content pattern
-
-Since maquina-components 0.7.1 every leaf partial (card/title, card/description,
-alert/title, toast/title, …) takes `text:`, `content:` or a block interchangeably.
-Prefer `text:` for plain strings. The toaster is the exception: it still takes
-`content:`, not a block.
-
-```erb
-<%= render "components/toast/title", text: "Saved!" %>
-<%= render "components/card/title" do %><span>Custom</span><% end %>
-```
-
-### Component variants
-
-| Component | Variants |
-|-----------|----------|
-| alert | `:default`, `:destructive`, `:success`, `:warning` (no `:info`) |
-| empty | `:default`, `:outline` (no `:dashed`) |
-| badge | `:default`, `:secondary`, `:destructive`, `:warning`, `:outline` |
-| toast | `:default`, `:success`, `:info`, `:warning`, `:error` |
-
-### Alert `icon:` parameter
-
-Use the built-in `icon:` local — the component handles `data-has-icon` and CSS grid layout automatically:
-
-```erb
-<%= render "components/alert", variant: :warning, icon: :trash_2 do %>
-  <strong>Title</strong><p class="mt-1">Description.</p>
-<% end %>
-```
-
-### Sidebar `active:` parameter
-
-`sidebar/menu_button` accepts `active:` (default `false`) to highlight current section.
-
-### Form data attributes
-
-The gem styles forms via `[data-component]` and `[data-form-part]` selectors. Key attributes: `data-component="form|label|input|textarea|button"`, `data-form-part="group|error"`. Error text paints `--destructive-text` (set to `--destructive` in the theme), so `<p data-form-part="error">` needs no colour utility. The field itself must say it is invalid — `aria: { invalid: record.errors[:field].any? }` — because the engine keys the error border on `aria-invalid` / `:user-invalid`, and a server-rendered error on an untouched field matches neither.
-
-When creating compound input components (a bordered shell around a bare input), add the shell to the grouped "Compound fields" rule in `application.css`: `--ring` border plus the `--focus-ring-*` tokens as an outline, exactly like `[data-component="input"]`. Never transition `outline-color` on it.
+Read `PRODUCT.md` and `DESIGN.md` before designing, building, or reviewing any UI, and take numbers from `application.css` where they disagree. Use the `impeccable` skill for design, critique, audit and polish work. Memory 102 has positioning, voice and tokens.
 
 ### I18n lazy lookup gotcha — CRITICAL
 
@@ -213,129 +147,34 @@ View-level locale keys go in `config/locales/views/en.yml`. Partial key paths st
 - **`<house-md>` must be `data-turbo-permanent` with a per-record `id`.** It builds its editable area and hidden input once, in `connectedCallback`, and a morph reuses the element without re-running it. A failed form save comes back as a morph, so without this the editor goes dead and the next save sends no content, and reads as a success. Don't use a shared id: permanent elements are matched by id across pages.
 - **Browser-drawn chrome is styled once, globally.** `::-webkit-search-cancel-button` (the X in a `type="search"` field) is suppressed by a single unscoped rule in the "Browser surfaces" section of `app/assets/tailwind/application.css`. Scoping that kind of rule to one component class is how the workspaces filter and the memories filter drifted apart. `test/assets/search_input_css_test.rb` guards it.
 
-### System tests
-
-- **Don't add more.** `test/system/onboarding_dismissal_test.rb` and `search_shortcut_hint_test.rb` stay as a named exception to the no-system-tests rule (owner's decision, 2026-11-05). New coverage goes in `test/integration/`.
-- `bin/ci` does **not** run them (`config/ci.rb` has the step commented out) — run `bin/rails test test/system/...` by hand when you touch JS.
-- Headless Chrome cannot start in the container without `--no-sandbox`; the flags live in `test/application_system_test_case.rb`. Without them every system test fails with `SessionNotCreatedError: Chrome instance exited`.
-- Rebuild CSS (`bin/rails tailwindcss:build`) after editing `app/assets/tailwind/application.css` or system tests exercise the stale build.
-- **Run `bin/rails db:test:prepare` before system tests if you just ran `bin/ci`.** Its
-  last step, `env RAILS_ENV=test bin/rails db:seed:replant`, leaves seed rows in the
-  test database; the next fixture load deletes the memories they point at and every
-  system test errors with `Foreign key violations found: memory_links`. `db:reset` does
-  not help — it re-seeds. This is environment state, not a broken test.
-- `getComputedStyle(el, "::-webkit-search-cancel-button")` returns the **host element's** style in headless Chrome, not the pseudo-element's — it reports `appearance: auto` even when the rule applies. Don't assert on it; assert on the CSS source and check the rendering in a screenshot.
-
 ## Testing Gotchas
 
-- **`check_box_tag` vs `f.check_box`**: only the form-builder version emits the paired
-  hidden "0" field. A GET filter checkbox that must send *nothing* when unchecked (the
-  search page's `include=obsolete`) has to be `check_box_tag`, or every unchecked submit
-  carries `include=0`.
-- **`Workspaces::ContextResolver` prefers pins**: a test that wants the *recent* branch
-  must clear pins first (`Pin.destroy_all`) — fixtures pin memories for `users(:one)`, so
-  a freshly created memory never appears in the returned context otherwise.
-
+- **`Foreign key violations found: memory_links` after `bin/ci`** is environment state, not a broken test. Its seed step leaves rows in the test database, and a run under 50 tests loads fixtures onto that file, which deletes the memories those rows point at. Run `bin/rails db:test:prepare`. `db:reset` does not help, because it re-seeds.
+- **`check_box_tag` vs `f.check_box`**: only the form-builder version emits the paired hidden "0" field. A GET filter checkbox that must send *nothing* when unchecked (the search page's `include=obsolete`) has to be `check_box_tag`, or every unchecked submit carries `include=0`.
+- **`Workspaces::ContextResolver` prefers pins**: a test that wants the *recent* branch must clear pins first (`Pin.destroy_all`) — fixtures pin memories for `users(:one)`, so a freshly created memory never appears in the returned context otherwise.
 - **Two users in one integration test**: `sign_in_as` posts to `SessionsController#create`, which has `before_action :redirect_authenticated_user` — a second `sign_in_as` in the same test is silently redirected and you keep the FIRST user's session (and its response bodies/ETags). Always `delete session_url` before signing in as somebody else.
 - **`assert_no_queries` and fixtures**: `users(:one)` inside the block issues its own SELECT. Resolve every fixture into a local before the block or the assertion fails on the fixture lookup, not on the code under test.
+- **Search tests** use `FakeEmbeddingProvider` + `with_hybrid_retrieval` + `create_memory_embedding`; create memories with the flag off so callbacks don't embed them first.
 
-## Rails MCP Server
+### System tests
 
-Use `mcp__rails__execute_tool` to call tools, `mcp__rails__search_tools` to discover them.
+**Don't add more.** `test/system/onboarding_dismissal_test.rb` and `search_shortcut_hint_test.rb` stay as a named exception to the no-system-tests rule (owner's decision, 2026-11-05). New coverage goes in `test/integration/`. `bin/ci` doesn't run them, so run `bin/rails test test/system/...` by hand when you touch what they cover, after `bin/rails tailwindcss:build` if the CSS changed.
 
-Load guides: `execute_tool("load_guide", { library: "<library>", guide: "<guide_name>" })`. Omit `guide` to list available guides. Libraries: Rails, Turbo, Stimulus, Kamal.
-
-Other tools: `analyze_models`, `analyze_controller_views`, `get_routes`, `get_schema`, `project_info`.
-
-## Recuerd0 Knowledge Base
-
-The `/recuerd0` skill provides access to project knowledge stored as memories. **When the user asks you to explain an area of the application**, search recuerd0 first — do NOT read source code unless explicitly asked. Fall back to codebase only if no relevant memories found.
-
-```bash
-recuerd0 workspace list --pretty              # Find workspaces (look for "recuerd0 Rails Application")
-recuerd0 memory list --workspace <id> --pretty # Browse docs in a workspace
-recuerd0 search "query terms" --pretty         # FTS5 search (supports AND, OR, NOT, "phrase", title:, body:)
-recuerd0 memory show --workspace <id> <memory_id> --pretty
-```
-
-Content formats: recuerd0 uses Markdown, fizzy uses HTML.
-
-### Canonical memories
-
-Workspace 26 ("recuerd0 Rails Application") has one reference per area, checked against the code. Read it before the older memories it links to, and version it when the area changes. Read one with `recuerd0 memory show --workspace 26 <id>`.
-
-| Area | Memory |
-|------|--------|
-| Technical Guide, the hub | 98 |
-| REST API (endpoint list: 101) | 179 |
-| MCP and OAuth | 695 |
-| Security | 4076 |
-| Account management | 117 |
-| Memories and versioning | 104 |
-| Search: FTS5 and the semantic fallback | 4098 |
-| Flows | 178 |
-| Brand | 102 |
-
-UI components aren't covered here: maquina-components is the catalog (see "maquina-components Gem" above).
+- Headless Chrome cannot start in the container without `--no-sandbox`; the flags live in `test/application_system_test_case.rb`.
+- `getComputedStyle(el, "::-webkit-search-cancel-button")` returns the **host element's** style in headless Chrome, not the pseudo-element's. Don't assert on it; assert on the CSS source and check the rendering in a screenshot.
 
 ## Project Tracking (Fizzy)
 
-Engineering tasks on Fizzy board: **Recuerd0 Engineering** (`03fip3ticfveu2xub49cypi30`). Use the `/fizzy` skill to manage cards, comments, and task status — it knows the full CLI syntax.
+Engineering tasks are on the **Recuerd0 Engineering** board (`03fip3ticfveu2xub49cypi30`). Use the `/fizzy` skill for cards, comments and status; it knows the CLI syntax. Search before creating a card.
 
-### Fizzy CLI quick reference
-
-```bash
-fizzy card list --board <board_id> --search "query"  # Find cards
-fizzy card show <number>                             # Card by number (not ID)
-fizzy card close <number>                            # Close a card
-fizzy card reopen <number>                           # Reopen a card
-fizzy card column <number> --column <column_name>    # Move to column
-fizzy comment create --card <number> --body "text"   # Add comment (--card and --body are required flags)
-fizzy comment list --card <number>                   # List comments
-```
-
-### Key rules
-
-- Use card **number** (e.g. `274`), not the full ID, for most commands
-- `fizzy card comment` is NOT a valid subcommand — comments are a separate top-level command: `fizzy comment`
-- `fizzy card close/reopen` take only the card number as a positional arg
-- `fizzy comment create` requires `--card` and `--body` flags (not positional args)
-- When posting comments, always use **HTML format**, never markdown. Fizzy renders HTML content.
+- Post comments in **HTML**, never Markdown. Fizzy renders HTML.
 - Include the full plan as a comment on the card when closing or updating status.
-- When the user says "update the card" or "create a card", refer to the CLI commands above and use the correct syntax and ID formats before invoking.
-
-## Design Context
-
-Frontend/UI work is guided by two root files (created via the `impeccable` skill). Read them before designing, building, or reviewing any UI:
-
-- **`PRODUCT.md`** — strategic: register (`brand`-primary; override to `product` for the app shell), users, product purpose ("the Notion for LLM context"), brand personality (*precise, human, quietly confident*), anti-references, and 5 design principles.
-- **`DESIGN.md`** — visual system: OKLCH hue-150 palette (Memory Green primary), Jura / Instrument Sans / Geist Mono type, flat-by-default elevation, and named rules (One Green Rule, True-Neutral Rule, Flat-By-Default Rule, One-Frost Rule). Machine-readable tokens live in its YAML frontmatter; `.impeccable/design.json` carries tonal ramps and component snippets.
-
-These align with `docs/brand-guide.md` and `docs/brand-voice.md`. Use the `impeccable` skill (`/impeccable <command>`) for UI design, critique, audit, and polish work.
 
 ## Gotchas
 
-- A `parent_memory` preload re-loads the roots a collection already holds, as separate
-  instances whose `child_versions` are NOT loaded — so anything asking a version whether it
-  is current (`current_version?`) costs one query per root. When every version is already in
-  the result set, point the children at the loaded roots instead
-  (`Workspaces::ExportsController#link_parents_to_loaded_roots`).
-- `invert_where` inverts EVERY where clause on the relation, not just the last one. For "the
-  rows this filter withheld", write the positive predicate (as `Memory.only_obsolete` does).
-- Archiving or deleting a workspace does not touch its memories, so any fragment cache that
-  renders workspace state must include the workspace in its key
-  (`app/views/memories/_memory.json.jbuilder`).
-- In dev, agent-browser cannot submit the sign-in form (no POST ever reaches the server). Log
-  in with curl (`GET /session/new` → scrape `authenticity_token` → `POST /session` with a
-  cookie jar), then hand the cookie over:
-  `agent-browser cookies set --curl <file> --domain localhost --url http://localhost:3820`.
-  The jar file is Netscape format and `--curl` rejects it — write a single
-  `session_id=<value>` Cookie-header line instead.
-- Destroying a version child fires `Searchable#delete_search_index`, which deletes the
-  **root's** FTS row (the index is keyed by root id), and nothing re-inserts it. Any code
-  that destroys versions while the memory survives must call `root.rebuild_search_index`
-  after the transaction commits (`Memory#purge_versions!` does).
-- mise does not read `.ruby-version` here (`idiomatic_version_file_enable_tools` is empty and
-  the global config pins a Ruby), so bumping `.ruby-version` leaves `ruby -v` on the old
-  version. Export `MISE_RUBY_VERSION=<version>` (or `mise use ruby@<version>`) before
-  `bundle`/`bin/ci`, then confirm with `bin/rails runner 'puts RUBY_VERSION'`.
+- A `parent_memory` preload re-loads the roots a collection already holds, as separate instances whose `child_versions` are NOT loaded — so anything asking a version whether it is current (`current_version?`) costs one query per root. When every version is already in the result set, point the children at the loaded roots instead (`Workspaces::ExportsController#link_parents_to_loaded_roots`).
+- `invert_where` inverts EVERY where clause on the relation, not just the last one. For "the rows this filter withheld", write the positive predicate (as `Memory.only_obsolete` does).
+- Archiving or deleting a workspace does not touch its memories, so any fragment cache that renders workspace state must include the workspace in its key (`app/views/memories/_memory.json.jbuilder`).
+- In dev, agent-browser cannot submit the sign-in form (no POST ever reaches the server). Log in with curl (`GET /session/new` → scrape `authenticity_token` → `POST /session` with a cookie jar), then hand the cookie over: `agent-browser cookies set --curl <file> --domain localhost --url http://localhost:3820`. The jar file is Netscape format and `--curl` rejects it — write a single `session_id=<value>` Cookie-header line instead.
+- Destroying a version child fires `Searchable#delete_search_index`, which deletes the **root's** FTS row (the index is keyed by root id), and nothing re-inserts it. Any code that destroys versions while the memory survives must call `root.rebuild_search_index` after the transaction commits (`Memory#purge_versions!` does).
+- `db:migrate`, or `bin/ci` setup on a checkout whose dev database is behind, can re-dump `db/schema.rb` with columns reordered. That isn't a real change: restore the file, or signoff refuses a dirty tree.
