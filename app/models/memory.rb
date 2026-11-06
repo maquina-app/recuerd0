@@ -130,12 +130,26 @@ class Memory < ApplicationRecord
     end
   }
 
+  # A root row keeps v1's title and source, while its tags and category follow the
+  # current version (sync_root_tags!). So anything filtering or sorting roots by these
+  # two reads the current version here. The root is in the subquery because it can be
+  # the current version itself, and so a blank current title stays blank instead of
+  # falling back to v1's.
+  CURRENT_VALUE_SQL = "(SELECT latest.%s FROM memories AS latest " \
+    "WHERE latest.id = memories.id OR latest.parent_memory_id = memories.id " \
+    "ORDER BY latest.version DESC LIMIT 1)"
+  CURRENT_TITLE_SQL = format(CURRENT_VALUE_SQL, "title").freeze
+  CURRENT_SOURCE_SQL = format(CURRENT_VALUE_SQL, "source").freeze
+
+  scope :with_current_title_like, ->(pattern) { where("LOWER(#{CURRENT_TITLE_SQL}) LIKE LOWER(?) ESCAPE '\\'", pattern) }
+  scope :with_current_source, ->(source) { where("#{CURRENT_SOURCE_SQL} = ?", source) }
+
   scope :ordered_by, ->(sort) {
     case sort
     when "relevance" then all
     when "updated" then reorder(updated_at: :desc, id: :desc)
     when "created" then reorder(created_at: :desc, id: :desc)
-    when "title" then reorder(Arel.sql("LOWER(memories.title) ASC"), id: :asc)
+    when "title" then reorder(Arel.sql("LOWER(#{CURRENT_TITLE_SQL}) ASC"), id: :asc)
     else raise ArgumentError, "sort must be resolved before ordering"
     end
   }
@@ -566,7 +580,9 @@ class Memory < ApplicationRecord
   # other, and deletion has to mean the same thing through every door. Archived
   # ones are kept and carry their workspace state in the payload.
   def linked_memories
-    Memory.where(id: linked_memory_ids).in_undeleted_workspaces.includes(:content, :workspace)
+    Memory.where(id: linked_memory_ids).in_undeleted_workspaces
+      .includes(:content, :workspace)
+      .preload(:latest_version)
   end
 
   # Links live on the root, so a version reports its memory's count.

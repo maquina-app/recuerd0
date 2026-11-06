@@ -116,7 +116,8 @@
       <div class="api-section" id="rate-limits">
         <div class="resource-header">
           <h2>Rate Limiting</h2>
-          <p>API requests are limited to <strong>100 requests per minute</strong> per token. A <code>429</code> carries a <code>Retry-After: 60</code> header.</p>
+          <p>API requests are limited to <strong>100 requests per minute</strong> per token, counted separately for each kind of resource. A <code>429</code> carries a <code>Retry-After: 60</code> header.</p>
+          <p>Requests with a token that isn't valid get a <code>401</code>. Past 60 of those in a minute from one address, they get a <code>429</code> instead, here and on MCP. A valid token from the same address keeps working.</p>
         </div>
         <div class="code-block">
           <div class="code-head">

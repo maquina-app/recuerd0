@@ -26,7 +26,7 @@
 
         <% if @suggested_memories&.any? %>
           <li role="presentation" class="palette-group"><%= t("search.command.jump_back_in") %></li>
-          <% @suggested_memories.each do |memory| %>
+          <% @suggested_memories.map(&:resolve_current_version).each do |memory| %>
             <li role="presentation">
               <%= link_to stable_memory_path(memory.workspace, memory), role: "option", "aria-selected": "false",
                     class: "palette-item", data: {palette_result: true, turbo_frame: "_top"} do %>

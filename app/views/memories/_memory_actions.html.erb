@@ -52,7 +52,7 @@
             memory_owner_note(memory)
           ].compact.join(" "),
           confirm_severity: "destructive",
-          confirm_title: t("memories.memory_show_actions.delete_title", title: memory.display_title),
+          confirm_title: t("memories.memory_show_actions.delete_title", title: memory.current_version.display_title),
           confirm_button: t("memories.memory_show_actions.delete_button")
         } do %>
       <%= icon_for(:trash_2, class: "w-4 h-4") %>

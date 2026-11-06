@@ -258,14 +258,15 @@
 
     <% if @root_memory.links_count > 0 %>
       <ul class="divide-y divide-border overflow-hidden rounded-lg border border-border">
-        <% @root_memory.linked_memories.latest_versions.includes(:workspace).order(:title).each do |linked| %>
+        <% @root_memory.linked_memories.latest_versions.includes(:workspace).ordered_by("title").each do |linked| %>
+          <% linked_title = linked.current_version.display_title %>
           <% linked_cat = Memory::CATEGORIES.include?(linked.category) ? linked.category : "general" %>
           <% elsewhere = linked.workspace_id != @workspace.id %>
           <li class="memory-row">
             <span class="category-dot" data-cat="<%= linked_cat %>" aria-hidden="true"></span>
             <span class="sr-only"><%= t("memories.categories.#{linked_cat}") %></span>
 
-            <%= link_to linked.display_title, workspace_memory_path(linked.workspace, linked), class: "mr-title" %>
+            <%= link_to linked_title, workspace_memory_path(linked.workspace, linked), class: "mr-title" %>
 
             <%# The workspace is named only when it is a DIFFERENT one. Printing
                 it on every row made the single fact that matters — that this
@@ -288,12 +289,12 @@
                     class: "mr-remove",
                     form: { class: "contents" },
                     data: {
-                      turbo_confirm: t("memories.links.remove_confirm", title: linked.display_title),
+                      turbo_confirm: t("memories.links.remove_confirm", title: linked_title),
                       confirm_severity: "warning",
                       confirm_title: t("memories.links.remove_title"),
                       confirm_button: t("memories.links.remove_button")
                     },
-                    aria: { label: t("memories.links.remove_aria", title: linked.display_title) } do %>
+                    aria: { label: t("memories.links.remove_aria", title: linked_title) } do %>
                 <%= icon_for(:x) %>
               <% end %>
             <% end %>
@@ -343,7 +344,7 @@
                 <% @link_candidates.each do |candidate| %>
                   <li class="memory-row">
                     <span class="category-dot" data-cat="<%= Memory::CATEGORIES.include?(candidate.category) ? candidate.category : "general" %>" aria-hidden="true"></span>
-                    <span class="mr-title"><%= candidate.display_title %></span>
+                    <span class="mr-title"><%= candidate.current_version.display_title %></span>
                     <span class="mr-elsewhere-static"><%= candidate.workspace.name %></span>
                     <%= button_to t("memories.links.link_button"),
                           workspace_memory_memory_linking_path(@workspace, @root_memory),

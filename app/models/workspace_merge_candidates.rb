@@ -35,6 +35,7 @@ class WorkspaceMergeCandidates
     scope = scope.without_obsolete unless @include_obsolete
 
     scope.includes(:workspace)
+      .preload(:latest_version)
       .order(created_at: :desc)
       .limit(MAX_MEMORIES)
       .to_a
@@ -53,7 +54,7 @@ class WorkspaceMergeCandidates
   end
 
   def assess(a, b)
-    title = title_similarity(a.title, b.title)
+    title = title_similarity(a.current_version.title, b.current_version.title)
     tag = tag_similarity(a.tags, b.tags)
 
     score = if a.tags.present? && b.tags.present?

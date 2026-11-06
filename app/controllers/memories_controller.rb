@@ -244,6 +244,7 @@ class MemoriesController < ApplicationController
       .where.not(id: excluded)
       .search(@link_query)
       .includes(:workspace)
+      .preload(:latest_version)
       .order(updated_at: :desc)
       .limit(8)
   end

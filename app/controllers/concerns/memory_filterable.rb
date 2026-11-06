@@ -47,7 +47,7 @@ module MemoryFilterable
 
     # Only * and ? are wildcards here; a % or _ in the pattern means itself.
     like_pattern = ActiveRecord::Base.sanitize_sql_like(pattern).gsub("*", "%").gsub("?", "_")
-    scope.where("LOWER(memories.title) LIKE LOWER(?) ESCAPE '\\'", like_pattern)
+    scope.with_current_title_like(like_pattern)
   end
 
   def apply_tags_filter(scope, tags_param)
@@ -65,13 +65,14 @@ module MemoryFilterable
   def apply_source_filter(scope, source)
     return scope if source.blank?
 
-    scope.where(source: source)
+    scope.with_current_source(source)
   end
 
   def apply_sorting(scope)
     field = ALLOWED_SORT_FIELDS.include?(params[:sort]) ? params[:sort] : "updated_at"
     direction = ALLOWED_DIRECTIONS.include?(params[:direction]) ? params[:direction].to_sym : :desc
-    scope.reorder(Arel.sql("memories.#{field}") => direction)
+    column = (field == "title") ? Memory::CURRENT_TITLE_SQL : "memories.#{field}"
+    scope.reorder(Arel.sql(column) => direction)
   end
 
   def permitted_per_page

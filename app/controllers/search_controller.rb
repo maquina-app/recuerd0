@@ -77,6 +77,7 @@ class SearchController < ApplicationController
       .limit(SUGGESTION_LIMIT)
 
     pinned = apply_obsolete_filter(Current.user.pinned_memories.includes(:workspace))
+      .preload(latest_version: :workspace)
       .limit(SUGGESTION_LIMIT)
       .to_a
     @suggested_memories = if pinned.size >= SUGGESTION_LIMIT
