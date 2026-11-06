@@ -28,6 +28,10 @@ module Recuerd0
 
     config.active_storage.variant_processor = :disabled
 
+    # Lets a locale set `format: "%{message}"` on an attribute whose messages are
+    # already whole sentences, so they don't read "Title Title is too long".
+    config.active_model.i18n_customize_full_message = true
+
     config.multi_tenant = ENV.fetch("MULTI_TENANT_ENABLED", "false") == "true"
 
     config.x.hybrid_retrieval = ENV.fetch("HYBRID_RETRIEVAL", "false") == "true"

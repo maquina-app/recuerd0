@@ -119,5 +119,7 @@
 
   <% if @memory_query.present? && @memory_query.length < Searchable::MIN_QUERY_LENGTH %>
     <p class="text-xs text-muted-foreground"><%= t("workspaces.show.toolbar.short_query_hint") %></p>
+  <% elsif (ignored_notice = ignored_words_notice(@memory_query)) %>
+    <p class="text-xs text-muted-foreground"><%= ignored_notice %></p>
   <% end %>
 </div>

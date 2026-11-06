@@ -10,7 +10,9 @@ import { Controller } from "@hotwired/stimulus"
 //      form's primary button. House MD binds Ctrl+S to `strikethrough` and
 //      stopPropagation()s it, so this listener runs in the CAPTURE phase to get
 //      there first.
-//   2. beforeunload + turbo:before-visit — covers leaving with unsaved changes.
+//   2. turbo:before-visit asks with the app's own dialog before leaving with unsaved
+//      changes. beforeunload covers closing the tab or reloading, where only the
+//      browser's prompt is allowed: pages can't replace that one.
 //
 // Bound to `house-md:change`, not `input`. Both fire on the current editor
 // build, but `house-md:change` is documented as exactly one per commit while
@@ -22,10 +24,12 @@ export default class extends Controller {
     // A form re-rendered with an error holds text nothing has saved yet.
     startDirty: { type: Boolean, default: false },
     unsavedLabel: String,
+    editorLostLabel: String,
     unloadPrompt: String
   }
 
   #dirty = false
+  #editorLost = false
 
   connect() {
     this.onBeforeUnload = this.onBeforeUnload.bind(this)
@@ -58,7 +62,17 @@ export default class extends Controller {
     this.#renderPlaceholder()
   }
 
-  submit() {
+  // The last line of defence. An editor without its hidden input submits no content,
+  // and a save that drops the body reads as a success. Nothing should get it into that
+  // state now, but losing someone's text silently is the one failure worth refusing.
+  submit(event) {
+    if (this.hasEditorTarget && !this.editorTarget.querySelector('input[type="hidden"]')) {
+      event.preventDefault()
+      this.#editorLost = true
+      this.#render()
+      return
+    }
+
     this.#dirty = false
   }
 
@@ -109,7 +123,18 @@ export default class extends Controller {
 
   onBeforeVisit(event) {
     if (!this.#dirty) return
-    if (!window.confirm(this.unloadPromptValue)) event.preventDefault()
+
+    // The dialog can't answer in time to let this visit carry on, so stop it and start
+    // it again if the person chooses to leave. The form carries the dialog's copy.
+    event.preventDefault()
+    const { url } = event.detail
+
+    Turbo.config.forms.confirm(this.unloadPromptValue, null, this.element).then((leave) => {
+      if (!leave) return
+
+      this.#dirty = false
+      Turbo.visit(url)
+    })
   }
 
   // Private
@@ -129,7 +154,10 @@ export default class extends Controller {
     this.element.classList.toggle("is-dirty", this.#dirty)
     this.element.classList.toggle("is-clean", !this.#dirty)
 
-    if (this.hasStatusTarget) this.statusTarget.textContent = this.#dirty ? this.unsavedLabelValue : ""
+    if (!this.hasStatusTarget) return
+
+    if (this.#editorLost) this.statusTarget.textContent = this.editorLostLabelValue
+    else this.statusTarget.textContent = this.#dirty ? this.unsavedLabelValue : ""
   }
 
   async #focusEditor() {

@@ -202,6 +202,52 @@ class MemoryTest < ActiveSupport::TestCase
     assert_equal "", Memory.fts_expression("AND OR NOT")
   end
 
+  test "fts_expression leaves out unquoted words too short to search" do
+    assert_equal %("how" AND "deploy"), Memory.fts_expression("how to deploy")
+    assert_equal %("AdminWS"), Memory.fts_expression("M2 in AdminWS")
+    assert_equal %("deploy"), Memory.fts_expression("deploy AND to")
+    assert_equal %("deploy"), Memory.fts_expression("to OR deploy")
+    assert_equal %("design"), Memory.fts_expression("design NOT to")
+    assert_equal %("deploy"), Memory.fts_expression("title:to deploy")
+    assert_equal %("deploy"), Memory.fts_expression("a* deploy")
+    assert_equal "", Memory.fts_expression("to in")
+  end
+
+  test "fts_expression keeps a quoted word however short" do
+    assert_equal %("to" AND "deploy"), Memory.fts_expression(%("to" deploy))
+  end
+
+  test "fts_expression never turns an exclusion into a match" do
+    assert_equal "", Memory.fts_expression("NOT deploy")
+    assert_equal "", Memory.fts_expression("to NOT deploy")
+  end
+
+  test "ignored_search_words names what the search left out" do
+    assert_equal %w[to], Memory.ignored_search_words("how to deploy")
+    assert_equal %w[M2 in], Memory.ignored_search_words("M2 in AdminWS")
+    assert_equal %w[to], Memory.ignored_search_words("to deploy to production")
+    assert_equal %w[to], Memory.ignored_search_words("title:to deploy")
+  end
+
+  test "ignored_search_words has nothing to report for quotes, operators or tag-only queries" do
+    assert_empty Memory.ignored_search_words("deploy app")
+    assert_empty Memory.ignored_search_words(%("to" deploy))
+    assert_empty Memory.ignored_search_words("AND OR NOT")
+    assert_empty Memory.ignored_search_words("to")
+    assert_empty Memory.ignored_search_words(nil)
+  end
+
+  test "search matches the words of a natural phrase" do
+    memory = Memory.create_with_content(workspaces(:one), title: "How to deploy the app", content: "Going to production")
+    memory.rebuild_search_index
+
+    ["how to deploy", "deploy the app", "deploy to production"].each do |query|
+      assert_equal [memory.id], workspaces(:one).memories.search(query).pluck(:id), query
+    end
+
+    assert_empty workspaces(:one).memories.search("deploy to staging").pluck(:id)
+  end
+
   test "plain_query keeps only the words of a query" do
     assert_equal "csp nonce draft", Memory.plain_query(%("csp nonce" NOT title:draft))
     assert_equal "kube deploy.sh", Memory.plain_query("(kube* OR deploy.sh)")

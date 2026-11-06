@@ -277,7 +277,12 @@
               <% end %>
             <% end %>
 
-            <% if @workspace.active? && !@viewing_old_version %>
+            <%# Remove is refused for this one, so the row says why it has no control. %>
+            <% if @workspace.active? && linked.archived? && !@viewing_old_version %>
+              <span class="mr-elsewhere-static"><%= t("memories.links.archived_other_hint") %></span>
+            <% end %>
+
+            <% if @workspace.active? && linked.active? && !@viewing_old_version && @unlinkable_memory_ids.include?(linked.id) %>
               <%= button_to workspace_memory_memory_linking_remove_path(@workspace, @root_memory, other_id: linked.id),
                     method: :delete,
                     class: "mr-remove",
@@ -330,6 +335,9 @@
           <% end %>
 
           <% if @link_query.present? %>
+            <% if (ignored_notice = ignored_words_notice(@link_query)) %>
+              <p class="mt-2 px-0.5 text-xs text-muted-foreground"><%= ignored_notice %></p>
+            <% end %>
             <% if @link_candidates.present? %>
               <ul class="mt-2 divide-y divide-border overflow-hidden rounded-lg border border-border">
                 <% @link_candidates.each do |candidate| %>

@@ -8,8 +8,9 @@ class Workspace < ApplicationRecord
   has_many :memories, dependent: :destroy
   attr_reader :starter_map
 
-  # "0" from the New Workspace form's "Start with a map" checkbox. Everything
-  # else, including an API client that never heard of it, gets the map.
+  # Send false (or "0", as the New Workspace form's checkbox does) to create a
+  # workspace with no seeded map. Anything else, including a client that never
+  # heard of it, gets the map.
   attr_accessor :start_with_map
 
   normalizes :name, with: ->(name) { name.strip }
@@ -19,7 +20,7 @@ class Workspace < ApplicationRecord
   validates :description, length: {maximum: 500}, allow_blank: true
 
   # Callbacks to unpin when archiving or soft deleting
-  after_create :create_starter_map, unless: -> { start_with_map.to_s == "0" }
+  after_create :create_starter_map, unless: -> { ActiveModel::Type::Boolean.new.cast(start_with_map) == false }
   after_update :unpin_if_inactive, if: -> { saved_change_to_archived_at? || saved_change_to_deleted_at? }
 
   # Scopes

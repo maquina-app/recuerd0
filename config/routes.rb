@@ -151,4 +151,10 @@ Rails.application.routes.draw do
   else
     root "workspaces#index"
   end
+
+  # An unknown API path answers in the API's own format, in every environment. Last,
+  # and clear of /rails/, because Active Storage appends its routes after these.
+  match "*path", to: "errors#not_found", via: :all, constraints: ->(request) {
+    !request.path.start_with?("/rails/") && request.format.json?
+  }
 end

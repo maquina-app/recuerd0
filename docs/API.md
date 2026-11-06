@@ -4,14 +4,14 @@ The Recuerd0 API provides programmatic access to workspaces and memories. All re
 
 ## Authentication
 
-All API requests require authentication via Bearer token and a JSON content type. Include these headers with every request:
+All API requests require authentication via Bearer token. The scheme name is case-insensitive. Requests with a body also need a JSON content type:
 
 ```
 Authorization: Bearer your_token_here
 Content-Type: application/json
 ```
 
-All responses use `Content-Type: application/json`.
+All responses use `Content-Type: application/json`. On a self-hosted instance, use that instance's own address as the base URL.
 
 ### Token Permissions
 
@@ -48,19 +48,45 @@ reach you want the caller to have.
 }
 ```
 
+Every error under an API path uses this format, including unknown paths and bad requests. See [Common Errors](#common-errors) for each code.
+
 ## Rate Limiting
 
-API requests are limited to 100 requests per minute per token. When exceeded:
+API requests are limited to 100 requests per minute per token. When exceeded, the response carries a `Retry-After: 60` header:
 
 ```json
 {
   "error": {
     "code": "RATE_LIMITED",
-    "message": "Rate limit exceeded. Please try again later.",
+    "message": "Too many requests",
     "status": 429
   }
 }
 ```
+
+## Pagination
+
+List endpoints take `page` (default 1) and report their position in `X-Page`, `X-Per-Page`, `X-Total`, `X-Total-Pages` and `Link` headers.
+
+- A `page` past the end returns an empty list, so a client can loop until it gets one.
+- A `page` that isn't a positive integer (`0`, `-1`, `abc`) is a `422`.
+
+## Size limits
+
+| Field | Limit |
+|---|---|
+| `workspace[name]` | 100 characters |
+| `workspace[description]` | 500 characters |
+| `memory[title]` | 255 characters |
+| `memory[content]` | 1 MB |
+| `memory[source]` | 255 characters |
+| `memory[tags]` | 50 tags, each up to 100 characters |
+
+A limit applies to a value you set. An older memory can hold more than these from before they existed: editing it or adding a version that leaves the value alone still works.
+
+A query parameter sent as a list or an object, such as `tags[]=x`, is a `422`. Only `include` also accepts a list. A `per_page` or `limit` that isn't a positive integer falls back to its default.
+
+Going over a limit is a `422` naming the field. Limits apply when a value changes, so an older row over a limit can still be edited in other ways.
 
 ---
 
@@ -122,6 +148,8 @@ restored — deletion means what the confirmation dialog promised:
 
 | Surface | Behaviour |
 |---|---|
+| `GET/PATCH/DELETE /workspaces/:id[.json]` | `404` with the `NOT_FOUND` envelope |
+| `POST/DELETE /workspaces/:id/archive[.json]` | `404` |
 | `GET/POST/PATCH/DELETE /workspaces/:id/memories[/:id][.json]` | `404` with the `NOT_FOUND` envelope |
 | `GET/POST /workspaces/:id/memories/:id/versions.json` | `404` |
 | `GET/POST/DELETE /workspaces/:id/memories/:id/links[.json]` | `404` |
@@ -132,8 +160,12 @@ restored — deletion means what the confirmation dialog promised:
 
 Links never resolve to a memory in a deleted workspace, in either direction.
 
+`GET /search.json?include=inactive` is the one read that still lists a deleted workspace's
+memories, so you can review them. Check each result's `workspace.state`: while it says
+`deleted`, the result's `url` answers `404`.
+
 **Archived** workspaces are different: every endpoint above stays readable, writes still
-answer `403`, and only `workspace.state` changes.
+answer `403` (links included), and only `workspace.state` changes.
 
 ### Unknown `category` is a 422
 
@@ -187,9 +219,13 @@ GET /workspaces.json
     "description": "Main project workspace",
     "memories_count": 42,
     "archived": false,
+    "state": "active",
     "created_at": "2026-01-15T10:30:00Z",
     "updated_at": "2026-02-04T14:22:00Z",
-    "url": "https://recuerd0.com/workspaces/1"
+    "url": "https://recuerd0.com/workspaces/1",
+    "pinned": false,
+    "pinned_at": null,
+    "pin_origin": null
   }
 ]
 ```
@@ -208,7 +244,7 @@ GET /workspaces.json
 
 ### Get Workspace
 
-Returns a single workspace with memory count and pinned status.
+Returns a single workspace with memory count, state and pinned status. `state` is `active` or `archived`; a deleted workspace answers `404`.
 
 ```
 GET /workspaces/:id.json
@@ -223,9 +259,13 @@ GET /workspaces/:id.json
   "description": "Main project workspace",
   "memories_count": 42,
   "archived": false,
+  "state": "active",
   "created_at": "2026-01-15T10:30:00Z",
   "updated_at": "2026-02-04T14:22:00Z",
-  "url": "https://recuerd0.com/workspaces/1"
+  "url": "https://recuerd0.com/workspaces/1",
+  "pinned": true,
+  "pinned_at": "2026-02-01T09:00:00Z",
+  "pin_origin": "user"
 }
 ```
 
@@ -233,7 +273,15 @@ GET /workspaces/:id.json
 
 ### Get Workspace Context
 
-Returns a compact "wake-up" snapshot of a workspace for AI agents to load in one call: workspace metadata, a small set of orienting memories, and stats. When the requesting user has no pinned memories in the workspace, the endpoint returns the most recently updated memories instead of an empty list; context_source reports pins or recent. Supports HTTP caching via `ETag` / `If-None-Match`.
+Returns a compact "wake-up" snapshot of a workspace for AI agents to load in one call: workspace metadata, a small set of orienting memories, and stats. Supports HTTP caching via `ETag` / `If-None-Match`.
+
+Which memories you get depends on the requesting user's pins in the workspace:
+
+| Pins | Memories returned | `context_source` |
+|---|---|---|
+| Any they chose | Their pinned memories | `pins` |
+| Only ones recuerd0 placed, such as the seeded Map | Those first, then the workspace's most recently updated memories, up to `limit` | `recent`, or `pins` if the workspace holds nothing else |
+| None | The most recently updated memories | `recent` |
 
 ```
 GET /workspaces/:id/context.json
@@ -297,6 +345,8 @@ Returns `404 NOT_FOUND` if the workspace is deleted or does not belong to the au
 
 Creates a new workspace. Requires `full_access` token.
 
+A new workspace starts with a seeded, auto-pinned **Map** memory explaining how to use it, so `memories_count` is `1`. Pass `start_with_map: false` to start empty. The `Location` header holds the new workspace's URL.
+
 ```
 POST /workspaces.json
 ```
@@ -306,7 +356,8 @@ POST /workspaces.json
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | workspace[name] | string | Yes | Workspace name (max 100 characters) |
-| workspace[description] | string | No | Workspace description |
+| workspace[description] | string | No | Workspace description (max 500 characters) |
+| workspace[start_with_map] | boolean | No | `false` skips the seeded Map (default: `true`) |
 
 **Request**
 
@@ -326,11 +377,15 @@ POST /workspaces.json
   "id": 2,
   "name": "New Project",
   "description": "A new workspace for the team",
-  "memories_count": 0,
+  "memories_count": 1,
   "archived": false,
+  "state": "active",
   "created_at": "2026-02-04T15:00:00Z",
   "updated_at": "2026-02-04T15:00:00Z",
-  "url": "https://recuerd0.com/workspaces/2"
+  "url": "https://recuerd0.com/workspaces/2",
+  "pinned": false,
+  "pinned_at": null,
+  "pin_origin": null
 }
 ```
 
@@ -340,9 +395,9 @@ POST /workspaces.json
 {
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "Name can't be blank",
+    "message": "Give your workspace a name so you can find it later.",
     "details": {
-      "name": ["can't be blank"]
+      "name": ["Give your workspace a name so you can find it later."]
     },
     "status": 422
   }
@@ -379,6 +434,22 @@ PATCH /workspaces/:id.json
 **Response** `200 OK`
 
 Returns the updated workspace object.
+
+---
+
+### Delete Workspace
+
+Soft-deletes a workspace and everything in it. Requires `full_access` token.
+
+```
+DELETE /workspaces/:id.json
+```
+
+**Response** `204 No Content`
+
+From then on, the workspace and its memories answer `404` over the API. See [Deleted workspaces answer 404](#deleted-workspaces-answer-404). `GET /workspaces/:id/export.json` keeps working, so you can still take a copy.
+
+A deleted workspace stays recoverable for 30 days. **Restoring is browser-only:** its owner or an admin does it from the Deleted Workspaces page in the web app, and there is no REST endpoint for it.
 
 ---
 
@@ -520,12 +591,12 @@ GET /workspaces/:workspace_id/memories.json
 |------|------|-------------|
 | page | integer | Page number (default: 1) |
 | per_page | integer | Items per page (1-100, default: 25) |
-| title | string | Glob pattern for title matching. `*` matches any characters, `?` matches a single character |
-| tags | string | Comma-separated tag list. Returns memories containing ALL specified tags |
+| title | string | Glob pattern for title matching. `*` matches any characters, `?` matches a single character. Every other character, including `%` and `_`, means itself |
+| tags | string | Comma-separated tag list, ignoring case. Returns memories containing ALL specified tags. A tag that itself contains a comma can't be filtered on |
 | source | string | Exact match on source field |
 | category | string | Filter by category (`decision`, `discovery`, `preference`, `general`) |
-| sort | string | Sort field: `updated_at` (default), `created_at`, `title` |
-| direction | string | Sort direction: `desc` (default), `asc` |
+| sort | string | Sort field: `updated_at` (default), `created_at`, `title`. Anything else is a `422` |
+| direction | string | Sort direction: `desc` (default), `asc`. Anything else is a `422` |
 | include | string | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
 **Examples**
@@ -543,16 +614,33 @@ GET /workspaces/1/memories.json?source=claude-code-session&per_page=50
   {
     "id": 1,
     "title": "Meeting Notes",
-    "version": 1,
-    "source": "manual",
     "tags": ["meetings", "q1"],
+    "source": "manual",
     "category": "general",
+    "version": 1,
+    "version_label": "v1",
+    "has_versions": false,
+    "obsolete": false,
+    "current": true,
+    "root_id": 1,
+    "links_count": 0,
     "created_at": "2026-01-20T09:00:00Z",
     "updated_at": "2026-02-03T16:45:00Z",
-    "url": "https://recuerd0.com/workspaces/1/memories/1"
+    "url": "https://recuerd0.com/workspaces/1/memories/1",
+    "workspace": {
+      "id": 1,
+      "name": "Project Alpha",
+      "state": "active",
+      "url": "https://recuerd0.com/workspaces/1"
+    },
+    "pinned": false,
+    "pinned_at": null,
+    "pin_origin": null
   }
 ]
 ```
+
+Get Memory, Browse Memories and the version endpoints return these same fields. Search, context and links return their own shapes, shown in their sections. Each new version gets its own `id`, while `root_id` stays the same, so `root_id` is the one to store if you want to refer to the memory across saves.
 
 **Headers**
 
@@ -575,13 +663,13 @@ GET /memories.json
 | page | integer | Page number (default: 1) |
 | per_page | integer | Items per page (1-100, default: 25) |
 | workspace_id | integer | Filter to a specific workspace |
-| ids | string | Comma-separated memory IDs. Batch-fetches exactly those memories (still account-scoped and paginated) |
-| title | string | Glob pattern for title matching. `*` matches any characters, `?` matches a single character |
-| tags | string | Comma-separated tag list. Returns memories containing ALL specified tags |
+| ids | string | Comma-separated memory IDs. Batch-fetches exactly those memories (still account-scoped and paginated). An old version's ID returns its memory, as the current version |
+| title | string | Glob pattern for title matching. `*` matches any characters, `?` matches a single character. Every other character, including `%` and `_`, means itself |
+| tags | string | Comma-separated tag list, ignoring case. Returns memories containing ALL specified tags. A tag that itself contains a comma can't be filtered on |
 | source | string | Exact match on source field |
 | category | string | Filter by category (`decision`, `discovery`, `preference`, `general`) |
-| sort | string | Sort field: `updated_at` (default), `created_at`, `title` |
-| direction | string | Sort direction: `desc` (default), `asc` |
+| sort | string | Sort field: `updated_at` (default), `created_at`, `title`. Anything else is a `422` |
+| direction | string | Sort direction: `desc` (default), `asc`. Anything else is a `422` |
 | include | string | Comma-separated tokens re-enabling hidden memories. `obsolete` and (on search and pinned) `inactive` are recognized; unknown tokens are ignored. See [Hidden memories](#hidden-memories). |
 
 **Examples**
@@ -656,11 +744,11 @@ GET /workspaces/1/memories/1.json?line_start=50&line_end=75
 }
 ```
 
-The `content` object always includes `total_lines`, `line_start`, and `line_end`. When line range parameters are provided, `body` contains only the requested lines and `line_start`/`line_end` reflect the actual range returned (clamped to content bounds).
+The `content` object always includes `total_lines`, `line_start`, and `line_end`. When line range parameters are provided, `body` contains only the requested lines and `line_start`/`line_end` reflect the actual range returned (clamped to content bounds). A `line_start` past the last line returns an empty `body`, because a memory can shrink between two reads.
 
 **Errors**
 
-Returns `422` if `line_start` is greater than `line_end`.
+Returns `422` if `line_start` is greater than `line_end`, or if either isn't a positive integer.
 
 **Grep Mode**
 
@@ -754,10 +842,12 @@ POST /workspaces/:workspace_id/memories.json
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | memory[title] | string | No | Memory title (max 255 characters) |
-| memory[content] | string | No | Memory body (Markdown) |
-| memory[source] | string | No | Source identifier |
-| memory[tags] | array | No | Array of tag strings |
+| memory[content] | string | No | Memory body (Markdown, max 1 MB) |
+| memory[source] | string | No | Source identifier (max 255 characters) |
+| memory[tags] | array | No | Array of tag strings (max 50 tags, 100 characters each) |
 | memory[category] | string | No | One of `decision`, `discovery`, `preference`, `general` (default: `general`) |
+
+A field of the wrong type, such as `"tags": "one,two"` or `"content": ["a", "b"]`, is a `422` naming it, on this endpoint and on Update Memory and Create Version. So is text containing a null character, and a `memory` object that is missing or empty.
 
 **Request**
 
@@ -773,7 +863,7 @@ POST /workspaces/:workspace_id/memories.json
 
 **Response** `201 Created`
 
-Returns the created memory object with content.
+Returns the created memory object with content. The `Location` header holds its URL.
 
 ---
 
@@ -817,7 +907,7 @@ DELETE /workspaces/:workspace_id/memories/:id.json
 
 ### List Pinned Memories
 
-Returns the current user's pinned memories across all workspaces, paginated. Requires `read_only` or `full_access` token.
+Returns the current user's pinned memories across all workspaces. Requires `read_only` or `full_access` token. The list isn't paginated, because the number of pins a user can have is capped.
 
 ```
 GET /memories/pinned.json
@@ -830,7 +920,7 @@ GET /memories/pinned.json?include=obsolete,inactive
 |-----------|------|-------------|
 | include | string | Comma-separated tokens re-enabling hidden pins: `obsolete`, `inactive`. See [Hidden memories](#hidden-memories). |
 
-**Response** `200 OK` — an array of memory objects (same shape as List Memories), with standard pagination headers.
+**Response** `200 OK` — an array of memory objects (same shape as List Memories).
 
 Obsolete pins and pins in archived or deleted workspaces are withheld by default. The
 pinned **page** still shows every pin, including the group it labels "Inactive" — curation
@@ -923,12 +1013,14 @@ POST /workspaces/:workspace_id/memories/:memory_id/links.json
 **Errors**
 
 - `422 VALIDATION_ERROR` — `to_memory_id` is missing, equals `:memory_id` (self-link), references a memory in another account, or the link already exists (in either direction).
-- `403 FORBIDDEN` — token lacks `full_access`.
+- `403 FORBIDDEN` — token lacks `full_access`, or either memory is in an archived workspace.
 - `404 NOT_FOUND` — `:workspace_id` or `:memory_id` is not visible to the current account.
 
 ### Delete Memory Link
 
 Removes the link between `:memory_id` and the memory identified by `:id`. The URL `:id` is the **other memory's id**, NOT a `MemoryLink` row id — the server resolves the join row internally so clients never need to track it. Requires `full_access` token.
+
+Only an admin or the person who created the link can remove it. A link with no recorded creator belongs to the admin. The MCP `unlink_memories` tool follows the same rule.
 
 ```
 DELETE /workspaces/:workspace_id/memories/:memory_id/links/:id.json
@@ -939,7 +1031,7 @@ DELETE /workspaces/:workspace_id/memories/:memory_id/links/:id.json
 **Errors**
 
 - `404 NOT_FOUND` — no such link exists, or the other memory is not visible to the current account.
-- `403 FORBIDDEN` — token lacks `full_access`.
+- `403 FORBIDDEN` — token lacks `full_access`, the caller is a member who didn't create the link, or either memory is in an archived workspace.
 
 ---
 
@@ -953,7 +1045,7 @@ Lists every version of a memory, oldest to newest. Requires `read_only` or `full
 GET /workspaces/:workspace_id/memories/:memory_id/versions.json
 ```
 
-**Response** `200 OK` — an array of memory objects (same shape as List Memories), one per version.
+**Response** `200 OK` — an array of memory objects (same shape as List Memories, without the pin fields), one per version. `:memory_id` can be any version's id.
 
 ---
 
@@ -987,6 +1079,8 @@ POST /workspaces/:workspace_id/memories/:memory_id/versions.json
 | version[tags] | array | Tags (defaults to the current version) |
 | version[category] | string | Category (defaults to the current version) |
 | version[change_note] | string | Why this version exists, in one line (optional, max 280 characters) |
+
+Leaving `content` out inherits it. Sending it blank is a `422`, the same as Update Memory, because it would wipe the memory's current text.
 
 **Request**
 
@@ -1041,6 +1135,10 @@ account (optionally one workspace), MCP and the workspace filter search one work
   search never fails on syntax.
 - Matching is substring-level (trigram tokenizer): a word can match inside longer
   words — `rank` matches `ranking`. A trailing `*` is accepted and ignored.
+- An unquoted word under three characters can't be searched, so it is left out and the
+  rest of the query still matches: `how to deploy` searches `how` and `deploy`. REST and
+  MCP name what was left out in `ignored_words`, and the web says so under the search
+  field. A quoted phrase stays exact.
 - FTS matches come first by rank. A memory that also has the exact tag appears once
   in the FTS group. Tag-only matches follow by `updated_at DESC`, with stable
   memory-ID tie-breakers so pagination is deterministic.
@@ -1093,11 +1191,14 @@ The search query supports FTS5 operators:
 | Column filter | `body:implementation` | Search only in body field |
 | Grouping | `(meeting OR standup) AND notes` | Parentheses for precedence |
 
+Unquoted words under three characters can't be searched, so they are left out and the rest of the query still matches. `how to deploy` searches `how` and `deploy`, and the response lists `to` in `ignored_words`. A quoted phrase stays exact.
+
 **Response (snippet mode — default)**
 
 ```json
 {
   "query": "architecture AND design",
+  "ignored_words": [],
   "total_results": 3,
   "related_results": 0,
   "obsolete_hidden": 1,
@@ -1138,6 +1239,7 @@ When `mode=grep`, each result includes `matches` (line-level matches with contex
 ```json
 {
   "query": "architecture",
+  "ignored_words": [],
   "total_results": 2,
   "obsolete_hidden": 0,
   "results": [
@@ -1225,6 +1327,8 @@ Query too short:
 }
 ```
 
+A query over 100 characters gets the same response, with the message `Query must be at most 100 characters`.
+
 ### MCP and workspace search
 
 The MCP `list_memories.query` argument and the search field within a workspace use
@@ -1242,6 +1346,31 @@ order when a query is present and resolves to `updated` without one.
 ---
 
 ## Common Errors
+
+| Status | Code | Meaning |
+|---|---|---|
+| 400 | `BAD_REQUEST` | The request body isn't valid JSON |
+| 401 | `UNAUTHORIZED` | Missing, invalid or expired token |
+| 403 | `FORBIDDEN` | Read-only token, an inactive workspace, changing or deleting something you neither own nor administer, or a link you can't remove |
+| 404 | `NOT_FOUND` | No such resource or path |
+| 406 | `NOT_ACCEPTABLE` | The endpoint has no JSON representation |
+| 422 | `VALIDATION_ERROR` | The request is well formed but its data isn't acceptable |
+| 429 | `RATE_LIMITED` | Too many requests |
+| 500 | `INTERNAL_SERVER_ERROR` | Something went wrong on the server |
+
+### 400 Bad Request
+
+Returned when the request body can't be parsed as JSON. A body that parses but has the wrong shape (empty, an array, or sent as `text/plain`) is a `422`.
+
+```json
+{
+  "error": {
+    "code": "BAD_REQUEST",
+    "message": "The request body is not valid JSON",
+    "status": 400
+  }
+}
+```
 
 ### 401 Unauthorized
 
@@ -1288,6 +1417,18 @@ Or when accessing an inactive workspace:
 }
 ```
 
+Or when a member removes a link they didn't create:
+
+```json
+{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Only an admin or the person who created this link can remove it.",
+    "status": 403
+  }
+}
+```
+
 ### 404 Not Found
 
 ```json
@@ -1306,9 +1447,9 @@ Or when accessing an inactive workspace:
 {
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "Name can't be blank",
+    "message": "Give your workspace a name so you can find it later.",
     "details": {
-      "name": ["can't be blank"]
+      "name": ["Give your workspace a name so you can find it later."]
     },
     "status": 422
   }
@@ -1317,11 +1458,13 @@ Or when accessing an inactive workspace:
 
 ### 429 Too Many Requests
 
+The response carries a `Retry-After: 60` header.
+
 ```json
 {
   "error": {
     "code": "RATE_LIMITED",
-    "message": "Rate limit exceeded. Please try again later.",
+    "message": "Too many requests",
     "status": 429
   }
 }

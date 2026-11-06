@@ -62,10 +62,10 @@ class Memory < ApplicationRecord
   scope :versions_of, ->(memory) { where(parent_memory_id: memory.id) }
   scope :by_category, ->(cat) { where(category: cat) if cat.present? && CATEGORIES.include?(cat) }
 
-  # Exact, case-sensitive tag match. Mirrors the API's proven predicate from
-  # MemoryFilterable#apply_tags_filter (deliberately case-sensitive — unlike the
-  # search scope's COLLATE NOCASE tag equality). Uses a bound placeholder, so
-  # the tag string is never interpolated into SQL.
+  # Exact, case-sensitive tag match, for the web filter a tag chip links to (it
+  # always carries the tag's own spelling). Typed filters ignore case instead: see
+  # MemoryFilterable#apply_tags_filter and the search scope. Uses a bound placeholder,
+  # so the tag string is never interpolated into SQL.
   scope :by_tag, ->(tag) {
     next all if tag.blank?
     where("EXISTS (SELECT 1 FROM json_each(memories.tags) WHERE json_each.value = ?)", tag)
@@ -154,10 +154,24 @@ class Memory < ApplicationRecord
     normalized_query.present? ? "relevance" : "updated"
   end
 
+  # Far above anything real, there to stop one write bloating every list and export.
+  # Only checked when the value changes, so a row older than a limit stays editable.
+  MAX_TAGS = 50
+  MAX_TAG_LENGTH = 100
+  MAX_SOURCE_LENGTH = 255
+  MAX_CONTENT_BYTES = 1.megabyte
+
+  # The body being written, so the limit can fail on this record: Content is saved
+  # after it, and its own invalid record would leave these errors empty.
+  attr_accessor :incoming_body, :version_base
+
   # Validations
   validates :title, length: {maximum: 255}
   validates :version, presence: true, numericality: {greater_than: 0}
   validates :category, presence: true, inclusion: {in: CATEGORIES}
+  validates :source, length: {maximum: MAX_SOURCE_LENGTH}, if: :source_introduced?
+  validate :tags_within_limits, if: :tags_introduced?
+  validate :incoming_body_within_limit
 
   validates :change_note, length: {maximum: 280}
 
@@ -175,6 +189,7 @@ class Memory < ApplicationRecord
     memory = workspace.memories.build(
       attributes.slice(:title, :tags, :source, :category, :default_pinned, :created_by).compact
     )
+    memory.incoming_body = attributes[:content]
 
     if attributes[:title].blank? && attributes[:content].blank?
       memory.errors.add(:base, :blank_memory)
@@ -192,6 +207,8 @@ class Memory < ApplicationRecord
   end
 
   def update_with_content(attributes)
+    self.incoming_body = attributes[:content]
+
     transaction do
       update!(attributes.slice(:title, :tags, :source, :category))
 
@@ -316,6 +333,15 @@ class Memory < ApplicationRecord
       created_by: attributes[:created_by],
       change_note: attributes[:change_note].presence
     )
+    new_version.incoming_body = attributes[:content]
+    new_version.version_base = self
+
+    # Omitting content inherits it. Sending it blank is asking to wipe the memory,
+    # which update_with_content refuses too.
+    if attributes[:content]&.blank? && root.current_version.content&.body&.content.present?
+      new_version.errors.add(:content, :blank_overwrite)
+      return new_version
+    end
 
     transaction do
       new_version.save!
@@ -550,12 +576,39 @@ class Memory < ApplicationRecord
     outgoing_links.size + incoming_links.size
   end
 
+  # The ids on the far side of the links this user may remove.
+  def unlinkable_memory_ids_for(user)
+    (outgoing_links + incoming_links).select { |link| link.manageable_by?(user) }.map { |link| link.other_side_id(self) }
+  end
+
   # Display title with fallback for untitled memories
   def display_title
     title.presence || I18n.t("models.memory.untitled")
   end
 
   private
+
+  # The limits are for what someone is setting now. A value from before they existed
+  # can't stop an edit that leaves it alone, and that includes a new version carrying
+  # it forward: someone adding a sentence shouldn't be refused over a long source.
+  def source_introduced?
+    source_changed? && source != version_base&.source
+  end
+
+  def tags_introduced?
+    tags_changed? && (version_base.nil? || tags != self.class.distinct_tags(version_base.version_tags))
+  end
+
+  def tags_within_limits
+    errors.add(:tags, :too_many, count: MAX_TAGS) if tags.size > MAX_TAGS
+    errors.add(:tags, :tag_too_long, count: MAX_TAG_LENGTH) if tags.any? { |tag| tag.to_s.length > MAX_TAG_LENGTH }
+  end
+
+  def incoming_body_within_limit
+    return if incoming_body.to_s.bytesize <= MAX_CONTENT_BYTES
+
+    errors.add(:content, :too_long, count: "1 MB")
+  end
 
   def drop_repeated_tags
     self.tags = self.class.distinct_tags(tags)

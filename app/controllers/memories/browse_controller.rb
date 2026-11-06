@@ -5,7 +5,7 @@ class Memories::BrowseController < ApplicationController
   allow_token_authentication
 
   def index
-    return unless validate_category_param!
+    return unless validate_category_param! && validate_sort_params!
 
     scope = active_workspace_memories
     scope = apply_memory_filters(scope)
@@ -13,7 +13,9 @@ class Memories::BrowseController < ApplicationController
     # Fetching by identity is never filtered: a caller naming ids already knows
     # what it wants, obsolete or not.
     scope = if batch_ids
-      scope.where(id: batch_ids)
+      # Any version's id means its memory: each save returns a new id, so a client
+      # holding one from an earlier save still gets the memory, as its current version.
+      scope.where(id: Memory.where(id: batch_ids).select("COALESCE(memories.parent_memory_id, memories.id)"))
     else
       apply_obsolete_filter(scope)
     end

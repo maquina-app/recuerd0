@@ -1,5 +1,6 @@
 class Memories::VersionsController < ApplicationController
   include WorkspaceScoped
+  include PayloadShape
   include MemoryPage
 
   allow_token_authentication
@@ -10,6 +11,7 @@ class Memories::VersionsController < ApplicationController
   before_action :ensure_not_deleted
   before_action :set_memory
   before_action :require_active_workspace, only: %i[create]
+  before_action -> { reject_misshaped_fields(:version) }, only: %i[create]
 
   def index
     @all_versions = @memory.all_versions.includes(:content, :created_by).to_a
@@ -20,8 +22,15 @@ class Memories::VersionsController < ApplicationController
   # The same page as the memory itself, so a version reads the way it will read
   # if it comes back, rendered rather than as raw source.
   def show
-    prepare_memory_page(@memory.all_versions.find(params[:id]))
-    render "memories/show"
+    version = @memory.all_versions.find(params[:id])
+
+    respond_to do |format|
+      format.html do
+        prepare_memory_page(version)
+        render "memories/show"
+      end
+      format.json { @version = version }
+    end
   end
 
   # Omitted fields come from the version in the URL. The memory's own id means its
@@ -39,7 +48,7 @@ class Memories::VersionsController < ApplicationController
         format.html { redirect_to workspace_memory_path(@workspace, @memory.stable_id), notice: t(".created") }
         format.json do
           @memory = @new_version
-          render "memories/show", status: :created
+          render "memories/show", status: :created, location: workspace_memory_url(@workspace, @new_version)
         end
       end
     else
@@ -65,7 +74,11 @@ class Memories::VersionsController < ApplicationController
     end
   end
 
+  # Every field is optional, so an absent or empty version is fine and inherits
+  # everything. Only one of the wrong shape, such as a bare string, is refused.
   def version_params
-    params.fetch(:version, {}).permit(:title, :content, :source, :category, :change_note, tags: [])
+    return {} if params[:version].blank?
+
+    params.expect(version: [:title, :content, :source, :category, :change_note, tags: []])
   end
 end

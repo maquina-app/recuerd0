@@ -12,6 +12,10 @@ class Workspaces::MergeCandidatesController < ApplicationController
   # and title similarity. Mirrors the suggest_merge_candidates MCP tool. Merging
   # remains a human decision — this only proposes clusters.
   def show
+    if params[:min_score].present? && !params[:min_score].match?(/\A\d+(\.\d+)?\z/)
+      return render_validation_error("min_score must be a number")
+    end
+
     finder = if params[:min_score].present?
       WorkspaceMergeCandidates.new(@workspace, min_score: params[:min_score].to_f, include_obsolete: include_obsolete?)
     else

@@ -240,7 +240,8 @@ en:
       title_placeholder: "Untitled Memory"
       source_placeholder: "e.g., Claude, Book Title, URL..."
       content_placeholder: "Markdown is supported."
-      content_blank: "Content can't be blank when overwriting existing content."
+      tags_too_many: "A memory can have up to %{count} tags. Remove one to add another."
+      tag_too_long: "A tag can be up to %{count} characters."
       cancel: "Cancel"
       create: "Create"
       save_as_new_version: "Save as new version"
@@ -252,6 +253,9 @@ en:
       status:
         unsaved: "Unsaved changes"
         unload_prompt: "You have unsaved changes. Leave this page and lose them?"
+        leave_title: "Leave without saving?"
+        leave_button: "Leave"
+        editor_lost: "The editor stopped working, so nothing was saved. Copy your text, then reload the page."
       toolbar:
         mod: "Ctrl+"
         bold: "Bold"
@@ -307,6 +311,9 @@ en:
       created: "Linked to %{title}."
       removed: "Removed the link to %{title}."
       not_found: "That memory is no longer available in your account."
+      remove_denied: "Only an admin or the person who created this link can remove it."
+      other_archived: "The other memory's workspace is archived, so this link can't change. Unarchive that workspace first."
+      archived_other_hint: "Archived, so this link can't be removed"
       remove_title: "Remove this link?"
       remove_button: "Remove link"
       remove_confirm: "The link to %{title} is removed. Neither memory is deleted, and you can link them again at any time."
@@ -373,6 +380,7 @@ en:
           view_compact: "Compact view"
   search:
     placeholder: "Search workspaces and memories…"
+    ignored_words: "Left out %{words}. Search skips words under %{minimum} characters."
     command:
       label: "Search"
       input_label: "Search workspaces and memories"
@@ -593,7 +601,7 @@ en:
       copy_tooltip: "Copy to clipboard"
       link_hint: "This link is for one person. It stops working once they join, after 7 days, or if you revoke it."
       generate: "Generate Invitation Link"
-      permissions: "Members can use every workspace in this account and add new versions to any memory. Only a thing's owner or an admin can rename, delete, archive, restore, purge or overwrite it, and a workspace's owner can also delete any memory in it. Whoever creates something owns it until it is passed on."
+      permissions: "Members can use every workspace in this account and add new versions to any memory. Only a thing's owner or an admin can rename, delete, archive, restore, purge or overwrite it, and a workspace's owner can also delete any memory in it. Whoever creates something owns it until it is passed on. Only an admin or the person who created a link between memories can remove it."
       name_hint: "Invitations say only \"this team\" until you give this account a name."
       revoke: "Revoke all invitation links"
       revoke_title: "Revoke all invitation links?"

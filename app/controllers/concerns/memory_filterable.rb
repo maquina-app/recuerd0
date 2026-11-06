@@ -21,6 +21,19 @@ module MemoryFilterable
     false
   end
 
+  # The same for sort and direction, which used to fall back to the default order
+  # and read as if the request had been honoured.
+  def validate_sort_params!
+    if params[:sort].present? && ALLOWED_SORT_FIELDS.exclude?(params[:sort])
+      render_validation_error("Invalid sort: #{params[:sort]}. Use #{ALLOWED_SORT_FIELDS.to_sentence(last_word_connector: " or ", two_words_connector: " or ")}")
+      return false
+    end
+    return true if params[:direction].blank? || ALLOWED_DIRECTIONS.include?(params[:direction])
+
+    render_validation_error("Invalid direction: #{params[:direction]}. Use asc or desc")
+    false
+  end
+
   def apply_memory_filters(scope)
     scope = apply_title_filter(scope, params[:title])
     scope = apply_tags_filter(scope, params[:tags])
@@ -32,8 +45,9 @@ module MemoryFilterable
   def apply_title_filter(scope, pattern)
     return scope if pattern.blank?
 
-    like_pattern = pattern.gsub("*", "%").gsub("?", "_")
-    scope.where("LOWER(memories.title) LIKE LOWER(?)", like_pattern)
+    # Only * and ? are wildcards here; a % or _ in the pattern means itself.
+    like_pattern = ActiveRecord::Base.sanitize_sql_like(pattern).gsub("*", "%").gsub("?", "_")
+    scope.where("LOWER(memories.title) LIKE LOWER(?) ESCAPE '\\'", like_pattern)
   end
 
   def apply_tags_filter(scope, tags_param)
@@ -43,7 +57,7 @@ module MemoryFilterable
     return scope if tags.empty?
 
     tags.each do |tag|
-      scope = scope.where("EXISTS (SELECT 1 FROM json_each(memories.tags) WHERE json_each.value = ?)", tag)
+      scope = scope.where("EXISTS (SELECT 1 FROM json_each(memories.tags) WHERE json_each.value = ? COLLATE NOCASE)", tag)
     end
     scope
   end

@@ -3,10 +3,15 @@ class MemoriesController < ApplicationController
   include MemoryFilterable
   include ObsoleteFilterable
   include ContentRenderable
+  include PayloadShape
   include OwnershipAuthorizable
   include MemoryPage
 
   allow_token_authentication
+
+  # Memory has no content column, so the default wrapper would drop it from a flat
+  # {"title": "...", "content": "..."} body.
+  wrap_parameters :memory, include: %i[title content source category tags change_note]
 
   before_action :set_workspace
   before_action :ensure_not_deleted
@@ -14,6 +19,7 @@ class MemoriesController < ApplicationController
   before_action -> { require_delete_access(@memory) }, only: :destroy
   before_action :require_in_place_access, only: :update
   before_action :require_active_workspace, only: %i[new create edit update destroy]
+  before_action -> { reject_misshaped_fields(:memory) }, only: %i[create update]
   before_action :refuse_deleting_an_older_version, only: :destroy
 
   def index
@@ -28,7 +34,7 @@ class MemoriesController < ApplicationController
         redirect_to workspace_path(@workspace)
       end
       format.json do
-        return unless validate_category_param!
+        return unless validate_category_param! && validate_sort_params!
 
         scope = apply_obsolete_filter(scope)
         scope = apply_memory_filters(scope)
@@ -72,11 +78,12 @@ class MemoriesController < ApplicationController
       track_event("memory.create", resource: @memory)
       respond_to do |format|
         format.html { redirect_to [@workspace, @memory], notice: t(".created") }
-        format.json { render :show, status: :created }
+        format.json { render :show, status: :created, location: workspace_memory_url(@workspace, @memory) }
       end
     else
       respond_to do |format|
         format.html do
+          keep_what_was_typed
           flash.now[:alert] = t(".errors")
           render :new, status: :unprocessable_entity
         end
@@ -117,6 +124,7 @@ class MemoriesController < ApplicationController
     else
       respond_to do |format|
         format.html do
+          keep_what_was_typed
           flash.now[:alert] = t(".errors")
           render :edit, status: :unprocessable_entity
         end
@@ -163,14 +171,25 @@ class MemoriesController < ApplicationController
   def render_edit_conflict
     @memory = @memory.current_version
     @edit_base = @memory.edit_digest
-    attributes = memory_params
-
-    @memory.assign_attributes(attributes.slice(:title, :source, :category, :tags))
-    (@memory.content || @memory.build_content).body.content = attributes[:content] if attributes.key?(:content)
+    keep_what_was_typed
     @memory.errors.add(:base, :edit_conflict)
 
     flash.now[:alert] = t(".errors")
     render :edit, status: :unprocessable_entity
+  end
+
+  # Puts this person's text over the record for the form to show. Nothing here is saved.
+  def keep_what_was_typed
+    attributes = memory_params
+
+    @memory.assign_attributes(attributes.slice(:title, :source, :category, :tags))
+    return unless attributes.key?(:content)
+
+    if @memory.content
+      @memory.content.body.content = attributes[:content]
+    else
+      @memory.build_content(body: attributes[:content])
+    end
   end
 
   # Overwriting can erase someone's work as surely as deleting it. Anyone can add a
@@ -209,8 +228,8 @@ class MemoriesController < ApplicationController
 
   # Candidates for the "Link a memory" picker. Account-scoped (never just the
   # current workspace — links are explicitly allowed to cross them), with the
-  # memory itself and anything already linked removed so the list only ever
-  # offers a link that can actually be made.
+  # memory itself, anything already linked and anything in a workspace that isn't
+  # active removed, so the list only ever offers a link that can actually be made.
   def load_link_candidates
     @link_picker_open = params.key?(:link_q)
     @link_query = params[:link_q].to_s.strip.first(80).presence
@@ -220,7 +239,7 @@ class MemoriesController < ApplicationController
 
     @link_candidates = Memory
       .joins(:workspace)
-      .where(workspaces: {account_id: Current.account.id})
+      .where(workspaces: {account_id: Current.account.id, archived_at: nil, deleted_at: nil})
       .latest_versions
       .where.not(id: excluded)
       .search(@link_query)
@@ -242,6 +261,8 @@ class MemoriesController < ApplicationController
       parse_grep_params
       render_validation_error(t("memories.show.grep_query_required")) if @grep_query.blank?
     elsif line_range_requested?
+      return render_validation_error(t("memories.show.invalid_line_number")) if invalid_line_numbers?
+
       parse_line_range_params
       render_validation_error(t("memories.show.invalid_line_range")) if invalid_line_range?
     end
@@ -256,6 +277,6 @@ class MemoriesController < ApplicationController
   end
 
   def memory_params
-    params.require(:memory).permit(:title, :source, :content, :category, :change_note, tags: [])
+    params.expect(memory: [:title, :source, :content, :category, :change_note, tags: []])
   end
 end

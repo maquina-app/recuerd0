@@ -5,9 +5,11 @@ en:
         workspace:
           attributes:
             name:
+              format: "%{message}"
               blank: "Give your workspace a name so you can find it later."
               too_long: "Workspace name is too long (maximum is %{count} characters)."
             description:
+              format: "%{message}"
               too_long: "Description is too long (maximum is %{count} characters)."
         memory:
           attributes:
@@ -17,25 +19,42 @@ en:
               no_changes: "Nothing has changed since this version, so there is nothing to save as a new version."
               historical_version_immutable: "historical versions are immutable — update the current version or create a new version"
             title:
+              format: "%{message}"
               too_long: "Title is too long (maximum is %{count} characters)."
             content:
               blank_overwrite: "can't be blank when overwriting existing content."
+              too_long: "is too long (maximum is %{count})."
+            source:
+              too_long: "is too long (maximum is %{count} characters)."
+            tags:
+              too_many: "are limited to %{count} on one memory."
+              tag_too_long: "are limited to %{count} characters each."
+        memory_link:
+          attributes:
+            from_memory_id:
+              format: "%{message}"
+              taken: "These memories are already linked."
         pin:
           attributes:
             position:
+              format: "%{message}"
               blank: "Pin position is required."
               not_a_number: "Pin position must be a number."
               greater_than_or_equal_to: "Pin position cannot be negative."
             user_id:
+              format: "%{message}"
               taken: "This item is already pinned."
         user:
           attributes:
             email_address:
+              format: "%{message}"
               taken: "This email already has an account."
             password:
+              format: "%{message}"
               blank: "Enter a password."
               too_short: "Password is too short (minimum is %{count} characters)."
             password_confirmation:
+              format: "%{message}"
               confirmation: "Passwords don't match."
 
     models:

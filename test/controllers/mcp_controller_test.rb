@@ -8,11 +8,12 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     "whole tags. " \
     "FTS matches come first by relevance, followed by tag-only matches by recency; " \
     "a memory matching both appears once as an FTS match. Queries under 3 characters " \
-    "search exact tags only. When a search finds fewer than 3 matches, up to 5 memories " \
+    "search exact tags only. In a longer query, unquoted words under 3 characters are left " \
+    "out and listed in ignored_words. When a search finds fewer than 3 matches, up to 5 memories " \
     "close in meaning follow on the first page, marked match: \"related\" with a similarity " \
     "(keyword hits are match: \"keyword\"); they don't contain the query words. " \
     "Returns a paginated envelope: " \
-    "{memories, total_count, has_more, next_offset}, plus related_count when searching; " \
+    "{memories, total_count, has_more, next_offset}, plus related_count and ignored_words when searching; " \
     "total_count counts keyword matches only. Pass `offset: next_offset` " \
     "to fetch the following page. Defaults to 50 per page (max 200). " \
     "Memories tagged obsolete, superseded or deprecated are excluded by default; " \
@@ -861,6 +862,102 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     unlink = call_tool("unlink_memories", {memory_id: a.id.to_s, to_memory_id: b.id.to_s}, token: @full_token.raw_token)
     assert unlink["unlinked"]
     assert_empty call_tool("list_memory_links", {memory_id: a.id.to_s})
+  end
+
+  test "unlink_memories follows the link's ownership" do
+    a = Memory.create_with_content(@workspace, title: "A", content: "b")
+    b = Memory.create_with_content(@workspace, title: "B", content: "b")
+    member_token = AccessToken.create!(user: users(:member), description: "member", permission: "full_access")
+    paired = {memory_id: a.id.to_s, to_memory_id: b.id.to_s}
+
+    call_tool("link_memories", paired, token: @full_token.raw_token)
+    assert_equal @full_token.user, MemoryLink.last.created_by
+
+    assert_tool_error I18n.t("memories.links.remove_denied"), "unlink_memories", paired, token: member_token.raw_token
+    assert_equal 1, MemoryLink.involving(a).count
+
+    MemoryLink.involving(a).destroy_all
+    call_tool("link_memories", paired, token: member_token.raw_token)
+    assert call_tool("unlink_memories", paired, token: member_token.raw_token)["unlinked"]
+  end
+
+  test "a null character is a tool error, not an HTML 500" do
+    arguments = {workspace_id: @workspace.id.to_s, title: "a\u0000b", content: "c"}
+
+    assert_no_difference "Memory.count" do
+      assert_tool_error "Text can't contain null characters", "create_memory", arguments, token: @full_token.raw_token
+    end
+    assert_response :success
+  end
+
+  test "write tools refuse a field of the wrong shape instead of saving it as text" do
+    memory = Memory.create_with_content(@workspace, title: "Shaped", content: "b")
+    create = {workspace_id: @workspace.id.to_s, title: "New"}
+
+    assert_no_difference "Memory.count" do
+      assert_tool_error "content must be a string", "create_memory", create.merge(content: ["a"]), token: @full_token.raw_token
+      assert_tool_error "title must be a string", "create_memory", create.merge(title: {a: 1}), token: @full_token.raw_token
+      assert_tool_error "tags must be an array of strings", "create_memory", create.merge(tags: "one,two"), token: @full_token.raw_token
+      assert_tool_error "tags must be an array of strings", "create_memory", create.merge(tags: [1]), token: @full_token.raw_token
+      assert_tool_error "content must be a string", "create_version", {memory_id: memory.id.to_s, content: ["a"]}, token: @full_token.raw_token
+      assert_tool_error "change_note must be a string", "create_version", {memory_id: memory.id.to_s, content: "c", change_note: [1]}, token: @full_token.raw_token
+    end
+
+    assert_tool_error "tags must be an array of strings", "update_memory", {memory_id: memory.id.to_s, tags: "one,two"}, token: @full_token.raw_token
+    assert_empty memory.reload.tags
+  end
+
+  test "a query or an id sent as a list is refused like REST refuses it" do
+    a = Memory.create_with_content(@workspace, title: "A", content: "b")
+    b = Memory.create_with_content(@workspace, title: "B", content: "b")
+
+    assert_tool_error "query must be a string", "list_memories", {workspace_id: @workspace.id.to_s, query: ["a"]}, token: @full_token.raw_token
+    assert_tool_error "Workspace not found", "list_memories", {workspace_id: [@workspace.id.to_s]}, token: @full_token.raw_token
+
+    assert_no_difference "MemoryLink.count" do
+      assert_tool_error "Memory not found", "link_memories", {memory_id: a.id.to_s, to_memory_id: [b.id]}, token: @full_token.raw_token
+      assert_tool_error "Memory not found", "link_memories", {memory_id: [a.id], to_memory_id: b.id.to_s}, token: @full_token.raw_token
+    end
+  end
+
+  test "link_memories says plainly when a pair is already linked" do
+    a = Memory.create_with_content(@workspace, title: "A", content: "b")
+    b = Memory.create_with_content(@workspace, title: "B", content: "b")
+    paired = {memory_id: a.id.to_s, to_memory_id: b.id.to_s}
+
+    call_tool("link_memories", paired, token: @full_token.raw_token)
+
+    assert_tool_error "These memories are already linked.", "link_memories", paired, token: @full_token.raw_token
+  end
+
+  test "links can't change when either memory's workspace is archived" do
+    frozen = Memory.create_with_content(workspaces(:archived), title: "Frozen", content: "b")
+    live = Memory.create_with_content(@workspace, title: "Live", content: "b")
+    read_only = "This memory's workspace is archived, so it is read-only. Unarchive the workspace to change it."
+    from_frozen = {memory_id: frozen.id.to_s, to_memory_id: live.id.to_s}
+    from_live = {memory_id: live.id.to_s, to_memory_id: frozen.id.to_s}
+
+    assert_no_difference "MemoryLink.count" do
+      assert_tool_error read_only, "link_memories", from_frozen, token: @full_token.raw_token
+      assert_tool_error I18n.t("memories.links.other_archived"), "link_memories", from_live, token: @full_token.raw_token
+    end
+
+    MemoryLink.create!(from_memory: live, to_memory: frozen, created_by: @full_token.user)
+
+    assert_no_difference "MemoryLink.count" do
+      assert_tool_error read_only, "unlink_memories", from_frozen, token: @full_token.raw_token
+      assert_tool_error I18n.t("memories.links.other_archived"), "unlink_memories", from_live, token: @full_token.raw_token
+    end
+  end
+
+  test "list_memories names the words a search left out" do
+    memory = Memory.create_with_content(@workspace, title: "How to deploy the app", content: "b")
+    memory.rebuild_search_index
+
+    payload = call_tool("list_memories", {workspace_id: @workspace.id.to_s, query: "how to deploy"})
+
+    assert_equal [memory.id.to_s], payload["memories"].map { |m| m["id"].to_s }
+    assert_equal ["to"], payload["ignored_words"]
   end
 
   test "link_memories is denied for a read_only token" do

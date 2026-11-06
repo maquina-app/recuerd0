@@ -78,6 +78,8 @@ module Mcp
       include_obsolete = include_obsolete?(args)
       limit = clamp_limit(args["limit"])
       offset = [args["offset"].to_i, 0].max
+      raise ToolError, "query must be a string" unless args["query"].nil? || args["query"].is_a?(String)
+
       query = Memory.normalize_search_query(args["query"])
 
       retrieval = resolve_retrieval(args)
@@ -120,6 +122,7 @@ module Mcp
       end
 
       envelope.merge(
+        ignored_words: Memory.ignored_search_words(query),
         memories: envelope[:memories].map { |memory| memory.merge(match: "keyword") } +
           related.map do |match|
             memory_json(match.memory.resolve_current_version)
@@ -204,6 +207,7 @@ module Mcp
     end
 
     def create_memory(account, args = {}, user: nil)
+      refuse_misshaped_fields!(args)
       workspace = find_workspace(account, args["workspace_id"])
       validate_category!(args["category"])
       category = args["category"].presence || Memory::DEFAULT_CATEGORY
@@ -223,6 +227,7 @@ module Mcp
     end
 
     def update_memory(account, args = {}, user: nil)
+      refuse_misshaped_fields!(args)
       memory = find_memory_for_update(account, args["memory_id"]).resolve_current_version
       refuse_if_archived!(memory)
       raise ToolError, I18n.t("ownership.update_denied") unless memory.manageable_by?(user)
@@ -251,6 +256,7 @@ module Mcp
     # Appends a new version to an existing memory (vs. update_memory,
     # which overwrites in place). Omitted fields inherit from the latest version.
     def create_version(account, args = {}, user: nil)
+      refuse_misshaped_fields!(args)
       memory = find_memory(account, args["memory_id"])
       refuse_if_archived!(memory)
       validate_category!(args["category"])
@@ -289,7 +295,9 @@ module Mcp
       other = find_memory(account, args["to_memory_id"])
       raise ToolError, "Cannot link a memory to itself" if memory.id == other.id
 
-      link = MemoryLink.new(from_memory: memory, to_memory: other)
+      refuse_link_change_if_archived!(memory, other)
+
+      link = MemoryLink.new(from_memory: memory, to_memory: other, created_by: user)
       raise ToolError, link.errors.full_messages.to_sentence unless link.save
 
       {linked: true, memory_id: memory.id.to_s, to_memory_id: other.id.to_s}
@@ -304,6 +312,9 @@ module Mcp
         memory.id, other.id, other.id, memory.id
       ).first
       raise ToolError, "Link not found" unless link
+
+      refuse_link_change_if_archived!(memory, other)
+      raise ToolError, I18n.t("memories.links.remove_denied") unless link.manageable_by?(user)
 
       link.destroy
       {unlinked: true, memory_id: memory.id.to_s, to_memory_id: other.id.to_s}
@@ -394,6 +405,17 @@ module Mcp
     end
     private_class_method :workspace_json
 
+    # to_s and Array() would otherwise save ["a"] as literal text and "one,two" as one tag.
+    def refuse_misshaped_fields!(args)
+      %w[title content change_note].each do |field|
+        raise ToolError, "#{field} must be a string" unless args[field].nil? || args[field].is_a?(String)
+      end
+      return if args["tags"].nil? || (args["tags"].is_a?(Array) && args["tags"].all?(String))
+
+      raise ToolError, "tags must be an array of strings"
+    end
+    private_class_method :refuse_misshaped_fields!
+
     def normalize_tags(value)
       Array(value).map { |tag| tag.to_s.strip }.reject(&:blank?)
     end
@@ -469,8 +491,14 @@ module Mcp
     end
     private_class_method :parse_tags
 
+    # find_by would happily read [12] as 12, which REST refuses.
+    def one_id(value)
+      value if value.is_a?(String) || value.is_a?(Integer)
+    end
+    private_class_method :one_id
+
     def find_workspace(account, workspace_id)
-      account.workspaces.active.find_by(id: workspace_id) ||
+      account.workspaces.active.find_by(id: one_id(workspace_id)) ||
         raise(ToolError, "Workspace not found")
     end
     private_class_method :find_workspace
@@ -482,7 +510,7 @@ module Mcp
       Memory.joins(:workspace)
         .where(workspaces: {account_id: account.id, deleted_at: nil})
         .latest_versions
-        .find_by(id: memory_id) ||
+        .find_by(id: one_id(memory_id)) ||
         raise(ToolError, "Memory not found")
     end
     private_class_method :find_memory
@@ -490,7 +518,7 @@ module Mcp
     def find_memory_for_update(account, memory_id)
       Memory.joins(:workspace)
         .where(workspaces: {account_id: account.id, deleted_at: nil})
-        .find_by(id: memory_id) ||
+        .find_by(id: one_id(memory_id)) ||
         raise(ToolError, "Memory not found")
     end
     private_class_method :find_memory_for_update
@@ -502,5 +530,12 @@ module Mcp
       raise ToolError, "This memory's workspace is archived, so it is read-only. Unarchive the workspace to change it."
     end
     private_class_method :refuse_if_archived!
+
+    # A link shows on both memories' pages, so either side being read-only is enough.
+    def refuse_link_change_if_archived!(memory, other)
+      refuse_if_archived!(memory)
+      raise ToolError, I18n.t("memories.links.other_archived") if other.archived?
+    end
+    private_class_method :refuse_link_change_if_archived!
   end
 end

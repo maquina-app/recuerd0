@@ -26,6 +26,12 @@ module ContentRenderable
     params[:line_start].present? || params[:line_end].present?
   end
 
+  # to_i would read "abc", 0 and -1 from the start, and a huge number overflows the
+  # slice that reads the lines.
+  def invalid_line_numbers?
+    [params[:line_start], params[:line_end]].compact_blank.any? { |line| !line.match?(/\A[1-9]\d{0,11}\z/) }
+  end
+
   def invalid_line_range?
     @line_start && @line_end && @line_start > @line_end
   end

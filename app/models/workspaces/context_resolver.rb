@@ -21,13 +21,14 @@ module Workspaces
 
     def call
       if user
-        pinned_root_ids = workspace.memories
+        pins = workspace.memories
           .joins(:pins)
           .where(pins: {user_id: user.id})
           .order(Arel.sql("pins.created_at DESC"))
-          .pluck(:id, :parent_memory_id)
-          .map { |id, parent_memory_id| parent_memory_id || id }
-          .uniq
+          .pluck(:id, :parent_memory_id, Arel.sql("pins.origin"))
+          .map { |id, parent_memory_id, origin| [parent_memory_id || id, origin] }
+        pinned_root_ids = pins.map(&:first).uniq
+        chosen_root_ids = pins.filter_map { |root_id, origin| root_id unless origin == "system" }
 
         pinned_roots_by_id = visible(workspace.memories.latest_versions)
           .where(id: pinned_root_ids)
@@ -39,26 +40,42 @@ module Workspaces
         pinned_roots = prioritized + rest
 
         total_pinned = pinned_roots.size
-        if total_pinned.positive?
+        if pinned_roots.any? { |memory| chosen_root_ids.include?(memory.id) }
           return {
             memories: pinned_roots.first(limit),
             source: "pins",
             total_pinned: total_pinned
           }
         end
+
+        # Only pins recuerd0 placed, such as the seeded Map. Nobody chose those as
+        # this workspace's context, so they lead the workspace's own memories rather
+        # than replacing them: an agent should wake on the how-to page and the content.
+        # Seeded memories don't top up, so a fresh account still wakes on just its pins.
+        if total_pinned.positive?
+          placed = pinned_roots.first(limit)
+          own = recent(limit - placed.size, workspace.memories.where("memories.source IS NOT 'system'"))
+          return {
+            memories: placed + own,
+            source: own.any? ? "recent" : "pins",
+            total_pinned: total_pinned
+          }
+        end
       end
 
-      recent = visible(workspace.memories.latest_versions)
+      {memories: recent(limit), source: "recent", total_pinned: 0}
+    end
+
+    private
+
+    def recent(limit, memories = workspace.memories)
+      visible(memories.latest_versions)
         .by_category(category)
         .order(updated_at: :desc)
         .includes(*PRELOADS)
         .limit(limit)
         .to_a
-
-      {memories: recent, source: "recent", total_pinned: 0}
     end
-
-    private
 
     # Obsolete memories are retired knowledge: a session woken on them starts
     # from a decision that was reversed. Pins included — a pinned-and-obsolete

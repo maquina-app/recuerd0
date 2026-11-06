@@ -27,10 +27,26 @@ class ApplicationController < ActionController::Base
     by: -> { current_access_token&.id || Current.user&.id || request.remote_ip },
     with: -> { render_rate_limited }
 
+  before_action :reject_null_characters, unless: :self_managed_rate_limit?
+  before_action :reject_structured_query_params, if: -> { api_request? && !self_managed_rate_limit? }
+
   after_action :set_api_cache_control, if: :api_request?
   rescue_from ActiveRecord::RecordNotFound, with: :handle_record_not_found
+  rescue_from ActionController::ParameterMissing, with: :handle_parameter_missing
+  rescue_from ActionDispatch::Http::Parameters::ParseError, with: :handle_malformed_body
+  rescue_from ActionController::UnknownFormat, with: :handle_unknown_format
+  rescue_from ApiHelpers::InvalidPage, with: :handle_invalid_page
 
   private
+
+  # Rails reads the params to log them before rescue_from is in place, so a query
+  # string that isn't valid UTF-8 can't be rescued the usual way. Left alone it reaches
+  # the exceptions app, which trips over the same params and answers a bare 500.
+  def process_action(*)
+    super
+  rescue ActionController::BadRequest
+    render_unreadable_params
+  end
 
   def set_api_cache_control
     expires_in 0, public: false
@@ -41,6 +57,75 @@ class ApplicationController < ActionController::Base
       render_not_found
     else
       raise
+    end
+  end
+
+  # Also what a body of the wrong shape lands on: nothing, a JSON array, JSON
+  # sent as text/plain, or a string where the object belongs.
+  def handle_parameter_missing(error)
+    raise error unless api_request?
+
+    render_validation_error("Send a #{error.param} object with at least one field")
+  end
+
+  def handle_malformed_body(error)
+    raise error unless api_request?
+
+    render_bad_request("The request body is not valid JSON")
+  end
+
+  def handle_unknown_format(error)
+    raise error unless api_request?
+
+    render_not_acceptable
+  end
+
+  def handle_invalid_page
+    render_validation_error("page must be a positive integer")
+  end
+
+  # api_request? reads the params that just failed, so this asks only what doesn't
+  # depend on them.
+  def render_unreadable_params
+    if request.path_parameters[:format].to_s == "json" || extract_bearer_token.present? || request.accepts.any? { |type| type&.json? }
+      render_bad_request("The request's parameters can't be read. Check that they are valid UTF-8.")
+    else
+      render_bad_request_page
+    end
+  end
+
+  def render_bad_request_page
+    render file: Rails.public_path.join("400.html"), status: :bad_request, layout: false
+  end
+
+  # SQLite treats NUL as the end of a string in LOWER, FTS and friends, so text
+  # holding one would be stored and then misbehave everywhere it is read.
+  def reject_null_characters
+    return unless null_character_in?(params.to_unsafe_h)
+
+    if api_request?
+      render_validation_error("Text can't contain null characters")
+    else
+      render_bad_request_page
+    end
+  end
+
+  # page[]=1 and tags[a]=b parse fine and then crash whatever expected a string. No
+  # API query parameter takes a list or an object, except include, which the search
+  # form submits as a list.
+  def reject_structured_query_params
+    name, = request.query_parameters.find do |key, value|
+      value.is_a?(Hash) || (value.is_a?(Array) && key != "include")
+    end
+    render_validation_error("#{name} must be a single value") if name
+  end
+
+  def null_character_in?(value)
+    case value
+    when String then value.include?("\u0000")
+    when Hash then value.any? { |key, item| null_character_in?(key) || null_character_in?(item) }
+    when Array then value.any? { |item| null_character_in?(item) }
+    else false
     end
   end
 
@@ -55,8 +140,11 @@ class ApplicationController < ActionController::Base
     Rails.application.config.multi_tenant
   end
 
+  # The path is checked on its own because an unparseable body makes request.format
+  # fall back to the Accept header, which would turn the error for a bad JSON
+  # request into an HTML page.
   def api_request?
-    request.format.json? || request.accepts.any? { |type| type&.json? }
+    request.path_parameters[:format].to_s == "json" || request.format.json? || request.accepts.any? { |type| type&.json? }
   end
 
   # OAuth and MCP controllers declare their own rate limits keyed by token/client,

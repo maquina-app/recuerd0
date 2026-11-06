@@ -6,6 +6,7 @@ class Memories::LinksController < ApplicationController
   before_action :set_workspace
   before_action :ensure_not_deleted
   before_action :set_memory
+  before_action :require_active_workspace, except: %i[index]
 
   # GET /workspaces/:workspace_id/memories/:memory_id/links.json
   def index
@@ -18,12 +19,12 @@ class Memories::LinksController < ApplicationController
 
   # POST /workspaces/:workspace_id/memories/:memory_id/links.json
   def create
-    other_id = params[:to_memory_id] || params.dig(:link, :to_memory_id)
+    other_id = params[:to_memory_id] || (params[:link][:to_memory_id] if params[:link].respond_to?(:key?))
     if other_id.blank?
       return render_validation_error("to_memory_id is required")
     end
 
-    if other_id.to_i == @memory.id
+    if other_id.to_s == @memory.id.to_s
       link = MemoryLink.new(from_memory: @memory, to_memory: @memory)
       link.valid?
       return render_validation_errors(link)
@@ -33,8 +34,9 @@ class Memories::LinksController < ApplicationController
     unless other
       return render_validation_error("to_memory_id must reference a memory in your account")
     end
+    return render_forbidden(t("memories.links.other_archived")) if other.archived?
 
-    @link = MemoryLink.new(from_memory: @memory, to_memory: other)
+    @link = MemoryLink.new(from_memory: @memory, to_memory: other, created_by: Current.user)
     if @link.save
       @other = @link.other_side(@memory)
       render :show, status: :created
@@ -51,6 +53,8 @@ class Memories::LinksController < ApplicationController
 
     link = link_between(@memory.id, other_id)
     return render_not_found unless link
+    return render_forbidden(t("memories.links.other_archived")) if other.archived?
+    return render_forbidden(t("memories.links.remove_denied")) unless link.manageable_by?(Current.user)
 
     link.destroy
     head :no_content
@@ -65,8 +69,9 @@ class Memories::LinksController < ApplicationController
     if other.nil?
       return redirect_back_to_memory(alert: t("memories.links.not_found"))
     end
+    return redirect_back_to_memory(alert: t("memories.links.other_archived")) if other.archived?
 
-    link = MemoryLink.new(from_memory: @memory, to_memory: other)
+    link = MemoryLink.new(from_memory: @memory, to_memory: other, created_by: Current.user)
     if link.save
       redirect_back_to_memory(notice: t("memories.links.created", title: other.display_title))
     else
@@ -82,6 +87,11 @@ class Memories::LinksController < ApplicationController
 
     if link.nil?
       return redirect_back_to_memory(alert: t("memories.links.not_found"))
+    end
+    return redirect_back_to_memory(alert: t("memories.links.other_archived")) if other.archived?
+
+    unless link.manageable_by?(Current.user)
+      return redirect_back_to_memory(alert: t("memories.links.remove_denied"))
     end
 
     link.destroy
@@ -113,6 +123,8 @@ class Memories::LinksController < ApplicationController
   # unreachable by id everywhere else, so offering it here would be a way back
   # in through the side door.
   def find_other_memory(id)
+    return unless id.is_a?(String) || id.is_a?(Integer)
+
     Memory.joins(:workspace)
       .where(workspaces: {account_id: Current.account.id, deleted_at: nil})
       .find_by(id: id)
