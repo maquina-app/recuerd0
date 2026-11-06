@@ -29,5 +29,8 @@ Memory links connect memories across workspaces within the same account. Within 
 workspace, use the map's routing lines instead. Links are undirected, unlabeled, and
 same-account only.
 
-Search matches substrings. One distinctive token or an exact phrase works; boolean
-operators do not. On a miss, try a different token rather than a broader query.
+Search matches substrings, and every word has to match. One distinctive token or an exact
+phrase works best. Uppercase `AND`, `OR` and `NOT` work too. Words under 3 characters are
+left out and listed in `ignored_words`. Results marked `match: "related"` are close in
+meaning but don't contain the words. On a miss, try a different token rather than a
+broader query.
