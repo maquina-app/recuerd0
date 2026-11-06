@@ -135,11 +135,12 @@ class Memory < ApplicationRecord
   # two reads the current version here. The root is in the subquery because it can be
   # the current version itself, and so a blank current title stays blank instead of
   # falling back to v1's.
-  CURRENT_VALUE_SQL = "(SELECT latest.%s FROM memories AS latest " \
+  CURRENT_TITLE_SQL = "(SELECT latest.title FROM memories AS latest " \
     "WHERE latest.id = memories.id OR latest.parent_memory_id = memories.id " \
     "ORDER BY latest.version DESC LIMIT 1)"
-  CURRENT_TITLE_SQL = format(CURRENT_VALUE_SQL, "title").freeze
-  CURRENT_SOURCE_SQL = format(CURRENT_VALUE_SQL, "source").freeze
+  CURRENT_SOURCE_SQL = "(SELECT latest.source FROM memories AS latest " \
+    "WHERE latest.id = memories.id OR latest.parent_memory_id = memories.id " \
+    "ORDER BY latest.version DESC LIMIT 1)"
 
   scope :with_current_title_like, ->(pattern) { where("LOWER(#{CURRENT_TITLE_SQL}) LIKE LOWER(?) ESCAPE '\\'", pattern) }
   scope :with_current_source, ->(source) { where("#{CURRENT_SOURCE_SQL} = ?", source) }
