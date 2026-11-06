@@ -12,6 +12,7 @@ class Account::RecoveriesController < ApplicationController
     @latest_export = @account.account_exports.completed.order(completed_at: :desc).first
     @export_in_progress = @account.account_exports.in_progress.exists?
     @exports_this_month = @account.account_exports.exports_this_month.count
+    @last_export_failed = @account.account_exports.last_failed?
   end
 
   def create

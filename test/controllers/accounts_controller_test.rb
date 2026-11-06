@@ -88,4 +88,22 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to account_path
     assert_not @account.reload.deleted?
   end
+
+  test "the account page says when the last export failed, until a newer one exists" do
+    account = accounts(:one)
+    admin = users(:one)
+    account.account_exports.destroy_all
+    account.account_exports.create!(user: admin, status: "failed", error_message: "disk full", created_at: 2.hours.ago)
+    delete session_url
+    sign_in_as(admin)
+
+    get account_url
+    assert_response :success
+    assert_includes response.body, ERB::Util.html_escape(I18n.t("accounts.data_export.failed_title"))
+    assert_not_includes response.body, "disk full"
+
+    account.account_exports.create!(user: admin, status: "pending")
+    get account_url
+    assert_not_includes response.body, ERB::Util.html_escape(I18n.t("accounts.data_export.failed_title"))
+  end
 end

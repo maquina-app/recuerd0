@@ -30,6 +30,7 @@ module Accounts
       rescue => e
         Rails.logger.error("[AccountExport] Export ##{export.id} failed: #{e.class}: #{e.message}")
         export.mark_failed!(e.message)
+        AccountExportMailer.failed(export).deliver_later
       ensure
         FileUtils.rm_rf(tmpdir)
       end

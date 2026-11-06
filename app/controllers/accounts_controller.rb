@@ -50,5 +50,6 @@ class AccountsController < ApplicationController
     @exports_this_month = @account.account_exports.exports_this_month.count
     @current_export = @account.account_exports.in_progress.order(created_at: :desc).first
     @latest_export = @account.account_exports.completed.order(completed_at: :desc).first
+    @last_export_failed = @account.account_exports.last_failed?
   end
 end

@@ -1,0 +1,7 @@
+Hi,
+
+Your data export didn't finish, so there's nothing to download. Your workspaces and memories aren't affected.
+
+Try again: <%= @export.account.deleted? ? account_recovery_url : account_url %>
+
+A failed export stops counting toward your monthly limit within two days. If it keeps failing, write to info@recuerd0.ai.

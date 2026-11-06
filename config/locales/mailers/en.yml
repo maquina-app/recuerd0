@@ -24,3 +24,5 @@ en:
       subject: "Your data export has started"
     completed:
       subject: "Your data export is ready"
+    failed:
+      subject: "Your data export didn't finish"

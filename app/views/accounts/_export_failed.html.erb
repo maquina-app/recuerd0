@@ -1,0 +1,5 @@
+<%# locals: () %>
+<%= render "components/alert", variant: :warning, icon: :alert_triangle do %>
+  <%= render "components/alert/title", text: t("accounts.data_export.failed_title") %>
+  <%= render "components/alert/description", text: t("accounts.data_export.failed_description") %>
+<% end %>
