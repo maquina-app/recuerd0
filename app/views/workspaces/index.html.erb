@@ -31,30 +31,44 @@
   <% if @total.zero? %>
     <%= render "workspaces/empty_state" %>
   <% else %>
+    <% mine_param = ("1" if @mine) %>
     <div data-controller="ws-filter">
       <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <%= render "workspaces/filter", query: @query, extra_params: { view: @view_mode, sort: @sort } %>
+        <%= render "workspaces/filter", query: @query, extra_params: { view: @view_mode, sort: @sort, mine: mine_param } %>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <%# Ownership segmented control. Never remembered: a bare /workspaces
+              always opens on All, so the filter can't hide anything unnoticed. %>
+          <div class="seg" role="group" aria-label="<%= t("workspaces.index.mine_label") %>">
+            <%= link_to t("workspaces.index.mine_all"), workspaces_path(view: @view_mode, sort: @sort, q: @query),
+                  class: "seg-item",
+                  data: { state: (@mine ? "off" : "on"), turbo_action: "replace" },
+                  "aria-current": (@mine ? nil : "page") %>
+            <%= link_to t("workspaces.index.mine_only"), workspaces_path(view: @view_mode, sort: @sort, q: @query, mine: "1"),
+                  class: "seg-item",
+                  data: { state: (@mine ? "on" : "off"), turbo_action: "replace" },
+                  "aria-current": (@mine ? "page" : nil) %>
+          </div>
+
           <%# Sort segmented control. Sorting is list state, so it replaces
               rather than advances — which is also what lets it morph. %>
           <div class="seg" role="group" aria-label="<%= t("workspaces.index.sort_label") %>">
-            <%= link_to t("workspaces.index.sort_recent"), workspaces_path(view: @view_mode, q: @query),
+            <%= link_to t("workspaces.index.sort_recent"), workspaces_path(view: @view_mode, q: @query, mine: mine_param),
                   class: "seg-item",
                   data: { state: (@sort.blank? ? "on" : "off"), turbo_action: "replace" },
                   "aria-current": (@sort.blank? ? "page" : nil) %>
-            <%= link_to t("workspaces.index.sort_name"), workspaces_path(view: @view_mode, sort: "name", q: @query),
+            <%= link_to t("workspaces.index.sort_name"), workspaces_path(view: @view_mode, sort: "name", q: @query, mine: mine_param),
                   class: "seg-item",
                   data: { state: (@sort == "name" ? "on" : "off"), turbo_action: "replace" },
                   "aria-current": (@sort == "name" ? "page" : nil) %>
-            <%= link_to t("workspaces.index.sort_memories"), workspaces_path(view: @view_mode, sort: "memories", q: @query),
+            <%= link_to t("workspaces.index.sort_memories"), workspaces_path(view: @view_mode, sort: "memories", q: @query, mine: mine_param),
                   class: "seg-item",
                   data: { state: (@sort == "memories" ? "on" : "off"), turbo_action: "replace" },
                   "aria-current": (@sort == "memories" ? "page" : nil) %>
           </div>
 
           <%# View (list/grid) segmented control %>
-          <%= render "workspaces/view_toggle", view_mode: @view_mode, extra_params: { sort: @sort, q: @query } %>
+          <%= render "workspaces/view_toggle", view_mode: @view_mode, extra_params: { sort: @sort, q: @query, mine: mine_param } %>
         </div>
       </div>
 
@@ -63,17 +77,25 @@
           "Content missing". Filtering, sorting and paging all keep the same
           pathname and use turbo_action: replace, which morphs the page — so the
           count below, the header total and the sort chrome update together. %>
-      <% if @query.present? %>
+      <% if @query.present? || @mine %>
         <p class="mb-3 px-0.5 text-xs text-muted-foreground">
-          <%= t("workspaces.index.count_filtered", count: @pagy.count, total: @total, query: @query) %>
+          <% if @mine && @query.present? %>
+            <%= t("workspaces.index.count_mine_filtered", count: @pagy.count, query: @query) %>
+          <% elsif @mine %>
+            <%= t("workspaces.index.count_mine", count: @pagy.count, total: @total) %>
+          <% else %>
+            <%= t("workspaces.index.count_filtered", count: @pagy.count, total: @total, query: @query) %>
+          <% end %>
         </p>
       <% end %>
       <% if @workspaces.any? %>
         <%= render "workspaces/workspaces_list",
               workspaces: @workspaces, pagy: @pagy, view_mode: @view_mode,
               show_pins: true, stale_after: @stale_after %>
+      <% elsif @query.present? %>
+        <%= render "workspaces/filter_empty_state", query: @query, mine: @mine %>
       <% else %>
-        <%= render "workspaces/filter_empty_state", query: @query %>
+        <%= render "workspaces/mine_empty_state", view_mode: @view_mode, sort: @sort %>
       <% end %>
     </div>
   <% end %>

@@ -17,6 +17,8 @@ class WorkspacesController < ApplicationController
     @view_mode = resolve_workspace_view_mode
     @sort = params[:sort].presence_in(%w[name memories]) # nil => default "recent"
     @query = params[:q].to_s.strip.first(80).presence
+    # HTML only: the REST contract has no mine param, so JSON ignores it.
+    @mine = request.format.html? && params[:mine] == "1"
 
     scope = Current.account.workspaces.active
 
@@ -24,6 +26,7 @@ class WorkspacesController < ApplicationController
     # page you happen to be on. @total is the unfiltered count, so the header
     # can say "3 of 21" rather than contradicting the list.
     @total = scope.count
+    scope = scope.owned_by(Current.user) if @mine
     scope = scope.search(@query) if @query
 
     workspaces = scope

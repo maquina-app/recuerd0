@@ -574,4 +574,149 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
 
     assert_not_equal alice_etag, response.headers["ETag"]
   end
+
+  # -- the All · Mine filter --
+  #
+  # Workspace fixtures have no owner, so every test builds the owned ones itself.
+
+  def create_workspace(name, by:, account: accounts(:one))
+    account.workspaces.create!(name: name, created_by: by)
+  end
+
+  test "mine shows a member only the workspaces they own" do
+    mine = create_workspace("Bob's Notes", by: users(:member))
+    theirs = create_workspace("Alice's Notes", by: users(:one))
+
+    delete session_url
+    sign_in_as(users(:member))
+    get workspaces_url(mine: "1")
+    assert_response :success
+
+    assert_select "a.ws-row-link[href=?]", workspace_path(mine)
+    assert_select "a.ws-row-link[href=?]", workspace_path(theirs), count: 0
+    # Ownerless workspaces answer to an admin, not a member.
+    assert_select "a.ws-row-link[href=?]", workspace_path(@workspace), count: 0
+    assert_select "p", text: "1 of 3 workspaces is yours"
+  end
+
+  test "mine includes ownerless workspaces for an admin" do
+    mine = create_workspace("Alice's Notes", by: @user)
+    theirs = create_workspace("Bob's Notes", by: users(:member))
+
+    get workspaces_url(mine: "1")
+    assert_response :success
+
+    assert_select "a.ws-row-link[href=?]", workspace_path(mine)
+    assert_select "a.ws-row-link[href=?]", workspace_path(@workspace)
+    assert_select "a.ws-row-link[href=?]", workspace_path(theirs), count: 0
+    # The header total stays the unfiltered account count.
+    assert_select "h1 + span", text: "3"
+    assert_select "p", text: "2 of 3 workspaces are yours"
+  end
+
+  test "mine excludes a workspace the user created but handed over" do
+    handed = create_workspace("Handed over", by: users(:member))
+    handed.pass_ownership_to(@user)
+
+    delete session_url
+    sign_in_as(users(:member))
+    get workspaces_url(mine: "1")
+    assert_response :success
+
+    assert_select "a.ws-row-link[href=?]", workspace_path(handed), count: 0
+  end
+
+  test "mine=0 or no param shows all" do
+    theirs = create_workspace("Bob's Notes", by: users(:member))
+
+    [{}, {mine: "0"}, {mine: "true"}, {mine: ""}].each do |extra|
+      get workspaces_url(extra)
+      assert_response :success
+      assert_select "a.ws-row-link[href=?]", workspace_path(theirs)
+      assert_select "a.ws-row-link[href=?]", workspace_path(@workspace)
+      assert_select ".seg[aria-label=Show] a[data-state=on][aria-current=page]", text: "All"
+    end
+  end
+
+  test "mine segment is active and carries view, sort and q" do
+    create_workspace("Project API", by: @user)
+
+    get workspaces_url(mine: "1", sort: "name", q: "Project", view: "grid")
+    assert_response :success
+
+    assert_select ".seg[aria-label=Show]" do
+      assert_select "a[data-state=on][aria-current=page][data-turbo-action=replace]", text: "Mine"
+      assert_select "a[data-state=off][href=?]", workspaces_path(view: "grid", sort: "name", q: "Project"), text: "All"
+    end
+    assert_select "a[href=?]", workspaces_path(view: "grid", q: "Project", mine: "1"), text: "Recent"
+    assert_select "a[href=?]", workspaces_path(view: "grid", sort: "memories", q: "Project", mine: "1"), text: "Memories"
+    assert_select "a[href=?]", workspaces_path(sort: "name", q: "Project", mine: "1", view: "list")
+    assert_select "form.ws-filter input[type=hidden][name=mine][value='1']"
+    assert_select "p", text: "2 of your workspaces match \"Project\""
+  end
+
+  test "all links omit mine" do
+    get workspaces_url
+    assert_response :success
+
+    assert_select "a[href=?]", workspaces_path(view: "list", mine: "1"), text: "Mine"
+    assert_select "a[href=?]", workspaces_path(view: "list"), text: "All"
+    assert_select "a[href*='mine=']", count: 1
+    assert_select "form.ws-filter input[name=mine]", count: 0
+  end
+
+  test "mine empty state offers show all and new workspace" do
+    delete session_url
+    sign_in_as(users(:member))
+    get workspaces_url(mine: "1", sort: "name")
+    assert_response :success
+
+    assert_select "h3, div, p", text: "You don't own any workspaces yet"
+    assert_select "a[href=?][data-variant=outline]", workspaces_path(view: "list", sort: "name"), text: "Show all"
+    assert_select "a[href=?][data-variant=default]", new_workspace_path, text: /New Workspace/
+  end
+
+  test "clear filter keeps mine" do
+    get workspaces_url(mine: "1", q: "nothing-matches-this")
+    assert_response :success
+
+    assert_select "a[href=?]", workspaces_path(mine: "1"), text: /Clear filter/
+    assert_select "*", text: "You don't own any workspaces yet", count: 0
+  end
+
+  test "clear filter without mine stays canonical" do
+    get workspaces_url(q: "nothing-matches-this")
+    assert_response :success
+
+    assert_select "a[href=?]", workspaces_path, text: /Clear filter/
+  end
+
+  test "index json ignores mine" do
+    create_workspace("Bob's Notes", by: users(:member))
+
+    get workspaces_url(format: :json)
+    all = response.parsed_body.map { it["id"] }
+
+    get workspaces_url(format: :json, mine: "1")
+    assert_equal all, response.parsed_body.map { it["id"] }
+    assert_equal 2, all.size
+  end
+
+  test "mine is never remembered" do
+    create_workspace("Bob's Notes", by: users(:member))
+
+    cookie_names = ->(params) do
+      get workspaces_url(params)
+      assert_response :success
+      Array(response.headers["Set-Cookie"]).join("\n").split("\n").map { it.split("=").first }.sort
+    end
+
+    # Only what a plain index already sets (the Rails session); nothing for mine.
+    assert_equal cookie_names.call({}), cookie_names.call(mine: "1")
+    assert_nil session[:mine]
+
+    get workspaces_url
+    assert_select ".seg[aria-label=Show] a[data-state=on]", text: "All"
+    assert_select "a.ws-row-link", count: 2
+  end
 end

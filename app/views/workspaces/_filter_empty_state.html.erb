@@ -1,4 +1,4 @@
-<%# locals: (query:) -%>
+<%# locals: (query:, mine: false) -%>
 <%# A filter that finds nothing must offer a way out, not just report the fact. %>
 <%= render "components/empty", variant: :outline do %>
   <%= render "components/empty/header" do %>
@@ -8,7 +8,7 @@
   <% end %>
   <%= render "components/empty/content" do %>
     <div class="flex flex-wrap items-center justify-center gap-2">
-      <%= link_to workspaces_path, data: { component: "button", variant: "outline" } do %>
+      <%= link_to workspaces_path(mine: ("1" if mine)), data: { component: "button", variant: "outline" } do %>
         <%= t("workspaces.index.filter_empty_clear") %>
       <% end %>
       <%= link_to search_path(q: query), data: { component: "button", variant: "ghost" } do %>
