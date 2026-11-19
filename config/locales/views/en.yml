@@ -37,6 +37,18 @@ en:
       filter_empty_description: "Nothing in this account matches that. Try fewer characters, or search your memories instead."
       filter_empty_clear: "Clear filter"
       filter_empty_search_all: "Search memories for \"%{query}\""
+      mine_label: "Show"
+      mine_all: "All"
+      mine_only: "Mine"
+      count_mine:
+        one: "1 of %{total} workspaces is yours"
+        other: "%{count} of %{total} workspaces are yours"
+      count_mine_filtered:
+        one: "1 of your workspaces matches \"%{query}\""
+        other: "%{count} of your workspaces match \"%{query}\""
+      mine_empty_title: "You don't own any workspaces yet"
+      mine_empty_description: "Workspaces you own show up here. Create one, or show everything in this account."
+      mine_empty_show_all: "Show all"
       sort_label: "Sort by"
       sort_recent: "Recent"
       sort_name: "Name"
