@@ -48,6 +48,9 @@
         data-ws-filter-target="input"
         data-action="input->ws-filter#submit search->ws-filter#submit keydown.esc->ws-filter#clear"
       >
+      <%# A search replaces the tag filter, so it says so: an omitted tag would be
+          filled back in from the remembered preferences. %>
+      <input type="hidden" name="tag" value="">
       <% if @category.present? %><input type="hidden" name="category" value="<%= @category %>"><% end %>
       <% if @memory_sort_param.present? %><input type="hidden" name="sort" value="<%= @memory_sort_param %>"><% end %>
       <% if @memory_view.present? %><input type="hidden" name="view" value="<%= @memory_view %>"><% end %>
@@ -106,7 +109,7 @@
         whole token is the button that removes it. %>
     <p class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
       <span><%= t("workspaces.show.toolbar.tag_filter_prefix") %></span>
-      <%= link_to workspace_show_path(workspace, view: @memory_view),
+      <%= link_to workspace_show_path(workspace, **memory_filter_params(tag: nil)),
             class: "filter-token",
             data: { turbo_action: "advance" },
             "aria-label": t("workspaces.show.toolbar.tag_filter_remove", tag: @memory_tag) do %>

@@ -1,5 +1,6 @@
 class Memories::PinnedController < ApplicationController
   include ObsoleteFilterable
+  include ListPreferences
 
   allow_token_authentication
 
@@ -7,8 +8,8 @@ class Memories::PinnedController < ApplicationController
   DEFAULT_SORT = "pinned"
 
   def index
-    @view = (params[:view] == "compact") ? "compact" : "cards"
-    @sort = SORTS.include?(params[:sort]) ? params[:sort] : DEFAULT_SORT
+    @view = preference(:pinned, :view) { it.presence_in(ListPreferences::MEMORY_VIEWS) } || "cards"
+    @sort = preference(:pinned, :sort) { it.presence_in(SORTS) } || DEFAULT_SORT
 
     scope = Current.user.pinned_memories.includes(preloads)
 
@@ -25,7 +26,10 @@ class Memories::PinnedController < ApplicationController
     # holds few pins, and the rows are grouped and re-sorted before rendering.
     @pin_origins = Current.user.pins.for_memories.pluck(:pinnable_id, :origin).to_h
 
-    @workspace_filter = Current.account.workspaces.find_by(id: params[:workspace_id])
+    # Only ever an id the account can see; the record, not the stored id, is
+    # what filters.
+    workspace_id = preference(:pinned, :workspace_id) { Current.account.workspaces.where(id: it).pick(:id) }
+    @workspace_filter = Current.account.workspaces.find_by(id: workspace_id) if workspace_id
     memories = @workspace_filter ? all_pinned.select { |m| m.workspace_id == @workspace_filter.id } : all_pinned
 
     # No pager: PIN_LIMIT caps a user at ten pins across workspaces and

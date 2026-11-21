@@ -8,7 +8,7 @@
   <% end %>
   <%= render "components/empty/content" do %>
     <div class="flex flex-wrap items-center justify-center gap-2">
-      <%= link_to workspaces_path(view: view_mode, sort: sort), data: { component: "button", variant: "outline" } do %>
+      <%= link_to workspaces_path(view: view_mode, sort: sort, mine: ""), data: { component: "button", variant: "outline" } do %>
         <%= t("workspaces.index.mine_empty_show_all") %>
       <% end %>
       <%= link_to new_workspace_path, data: { component: "button", variant: "default" } do %>

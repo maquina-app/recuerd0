@@ -1,5 +1,6 @@
 module WorkspaceScoped
   extend ActiveSupport::Concern
+  include ListPreferences
 
   private
 
@@ -28,19 +29,21 @@ module WorkspaceScoped
   end
 
   def load_workspace_memories
-    @memory_view = resolve_memory_view_mode
-    @memory_tag = params[:tag].presence
+    # Remembered across every workspace (ListPreferences), never per workspace.
+    @memory_view = preference(:memories, :view) { it.presence_in(ListPreferences::MEMORY_VIEWS) } || "cards"
+    @memory_tag = preference(:memories, :tag) { it.presence }
 
     # A tag filter replaces category/search (single active filter at a time).
-    # Ignoring them here is defense in depth against a crafted URL carrying both.
+    # Ignoring them here is defense in depth against a crafted URL carrying both,
+    # and forgetting them keeps a refresh showing the one filter that applied.
     if @memory_tag
-      @category = nil
-      @memory_query = ""
+      @category = clear_preference(:memories, :category)
+      @memory_query = clear_preference(:memories, :q).to_s
     else
-      @category = params[:category].presence_in(Memory::CATEGORIES)
-      @memory_query = Memory.normalize_search_query(params[:q])
+      @category = preference(:memories, :category) { it.presence_in(Memory::CATEGORIES) }
+      @memory_query = preference(:memories, :q) { Memory.normalize_search_query(it).presence }.to_s
     end
-    @memory_sort_param = params[:sort].presence_in(Memory::SEARCH_SORTS)
+    @memory_sort_param = preference(:memories, :sort) { it.presence_in(Memory::SEARCH_SORTS) }
 
     base = @workspace.memories.latest_versions.includes(:content, :pins, child_versions: :content)
 

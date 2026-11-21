@@ -20,7 +20,7 @@ class Workspaces::ArchivesControllerTest < ActionDispatch::IntegrationTest
   test "index renders grid view when view=grid and persists the shared cookie" do
     get archived_workspaces_url(view: "grid")
     assert_response :success
-    assert_equal "grid", cookies[:recuerd0_workspace_view]
+    assert_equal "grid", JSON.parse(cookies[:recuerd0_preferences]).dig("workspaces", "view")
   end
 
   test "index honors the shared workspace view cookie" do

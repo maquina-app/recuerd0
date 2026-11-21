@@ -90,13 +90,13 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     get workspaces_url(view: "grid")
     assert_response :success
     assert_equal "grid", @controller.view_assigns["view_mode"]
-    assert_equal "grid", cookies[:recuerd0_workspace_view]
+    assert_equal "grid", preferences_cookie.dig("workspaces", "view")
   end
 
   test "index resolves view from cookie when no param given" do
     # First request sets the cookie to grid.
     get workspaces_url(view: "grid")
-    assert_equal "grid", cookies[:recuerd0_workspace_view]
+    assert_equal "grid", preferences_cookie.dig("workspaces", "view")
 
     # Subsequent request with no view param resolves grid from cookie.
     get workspaces_url
@@ -176,11 +176,11 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a.seg-item[data-state='on']", text: "Updated"
   end
 
-  test "show with view=compact sets the recuerd0_memory_view cookie" do
+  test "show with view=compact remembers the memory view" do
     get workspace_url(@workspace, view: "compact")
     assert_response :success
     assert_equal "compact", @controller.view_assigns["memory_view"]
-    assert_equal "compact", cookies[:recuerd0_memory_view]
+    assert_equal "compact", preferences_cookie.dig("memories", "view")
   end
 
   test "show populates category counts from memories" do
@@ -646,22 +646,22 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
 
     assert_select ".seg[aria-label=Show]" do
       assert_select "a[data-state=on][aria-current=page][data-turbo-action=replace]", text: "Mine"
-      assert_select "a[data-state=off][href=?]", workspaces_path(view: "grid", sort: "name", q: "Project"), text: "All"
+      assert_select "a[data-state=off][href=?]", workspaces_path(view: "grid", sort: "name", q: "Project", mine: ""), text: "All"
     end
-    assert_select "a[href=?]", workspaces_path(view: "grid", q: "Project", mine: "1"), text: "Recent"
+    assert_select "a[href=?]", workspaces_path(view: "grid", sort: "", q: "Project", mine: "1"), text: "Recent"
     assert_select "a[href=?]", workspaces_path(view: "grid", sort: "memories", q: "Project", mine: "1"), text: "Memories"
     assert_select "a[href=?]", workspaces_path(sort: "name", q: "Project", mine: "1", view: "list")
     assert_select "form.ws-filter input[type=hidden][name=mine][value='1']"
     assert_select "p", text: "2 of your workspaces match \"Project\""
   end
 
-  test "all links omit mine" do
+  test "all links clear mine explicitly" do
     get workspaces_url
     assert_response :success
 
     assert_select "a[href=?]", workspaces_path(view: "list", mine: "1"), text: "Mine"
-    assert_select "a[href=?]", workspaces_path(view: "list"), text: "All"
-    assert_select "a[href*='mine=']", count: 1
+    assert_select "a[href=?]", workspaces_path(view: "list", mine: ""), text: "All"
+    assert_select "a[href*='mine=']", count: 2
     assert_select "form.ws-filter input[name=mine]", count: 0
   end
 
@@ -672,7 +672,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     assert_select "h3, div, p", text: "You don't own any workspaces yet"
-    assert_select "a[href=?][data-variant=outline]", workspaces_path(view: "list", sort: "name"), text: "Show all"
+    assert_select "a[href=?][data-variant=outline]", workspaces_path(view: "list", sort: "name", mine: ""), text: "Show all"
     assert_select "a[href=?][data-variant=default]", new_workspace_path, text: /New Workspace/
   end
 
@@ -680,15 +680,15 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     get workspaces_url(mine: "1", q: "nothing-matches-this")
     assert_response :success
 
-    assert_select "a[href=?]", workspaces_path(mine: "1"), text: /Clear filter/
+    assert_select "a[href=?]", workspaces_path(q: "", mine: "1"), text: /Clear filter/
     assert_select "*", text: "You don't own any workspaces yet", count: 0
   end
 
-  test "clear filter without mine stays canonical" do
+  test "clear filter without mine clears only the query" do
     get workspaces_url(q: "nothing-matches-this")
     assert_response :success
 
-    assert_select "a[href=?]", workspaces_path, text: /Clear filter/
+    assert_select "a[href=?]", workspaces_path(q: ""), text: /Clear filter/
   end
 
   test "index json ignores mine" do
@@ -702,21 +702,28 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2, all.size
   end
 
-  test "mine is never remembered" do
+  test "mine is remembered until All clears it" do
     create_workspace("Bob's Notes", by: users(:member))
 
-    cookie_names = ->(params) do
-      get workspaces_url(params)
-      assert_response :success
-      Array(response.headers["Set-Cookie"]).join("\n").split("\n").map { it.split("=").first }.sort
-    end
+    get workspaces_url(mine: "1")
+    assert_equal true, preferences_cookie.dig("workspaces", "mine")
 
-    # Only what a plain index already sets (the Rails session); nothing for mine.
-    assert_equal cookie_names.call({}), cookie_names.call(mine: "1")
-    assert_nil session[:mine]
+    get workspaces_url
+    assert_select ".seg[aria-label=Show] a[data-state=on]", text: "Mine"
+    assert_select "a.ws-row-link", count: 1
 
+    get workspaces_url(mine: "")
+    assert_nil preferences_cookie.dig("workspaces", "mine")
     get workspaces_url
     assert_select ".seg[aria-label=Show] a[data-state=on]", text: "All"
     assert_select "a.ws-row-link", count: 2
+  end
+
+  private
+
+  def preferences_cookie
+    JSON.parse(cookies[:recuerd0_preferences].to_s)
+  rescue JSON::ParserError
+    {}
   end
 end

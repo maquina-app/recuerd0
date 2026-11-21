@@ -1,6 +1,6 @@
 class WorkspacesController < ApplicationController
   include WorkspaceScoped
-  include WorkspaceViewMode
+  include ListPreferences
   include OwnershipAuthorizable
 
   include PayloadShape
@@ -14,11 +14,10 @@ class WorkspacesController < ApplicationController
   before_action -> { reject_misshaped_fields(:workspace) }, only: %i[create update]
 
   def index
-    @view_mode = resolve_workspace_view_mode
-    @sort = params[:sort].presence_in(%w[name memories]) # nil => default "recent"
-    @query = params[:q].to_s.strip.first(80).presence
-    # HTML only: the REST contract has no mine param, so JSON ignores it.
-    @mine = request.format.html? && params[:mine] == "1"
+    # sort nil => default "recent". HTML only for mine: the REST contract has
+    # no mine param, so JSON ignores it.
+    @view_mode, @query, @sort, @mine = workspace_list_preferences(sort: true, mine: request.format.html?)
+      .values_at(:view, :query, :sort, :mine)
 
     scope = Current.account.workspaces.active
 

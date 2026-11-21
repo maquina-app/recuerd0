@@ -37,10 +37,10 @@
         <%= render "workspaces/filter", query: @query, extra_params: { view: @view_mode, sort: @sort, mine: mine_param } %>
 
         <div class="flex flex-wrap items-center gap-2">
-          <%# Ownership segmented control. Never remembered: a bare /workspaces
-              always opens on All, so the filter can't hide anything unnoticed. %>
+          <%# Ownership segmented control. Remembered like sort and view
+              (ListPreferences), so All sends mine= to clear it. %>
           <div class="seg" role="group" aria-label="<%= t("workspaces.index.mine_label") %>">
-            <%= link_to t("workspaces.index.mine_all"), workspaces_path(view: @view_mode, sort: @sort, q: @query),
+            <%= link_to t("workspaces.index.mine_all"), workspaces_path(view: @view_mode, sort: @sort, q: @query, mine: ""),
                   class: "seg-item",
                   data: { state: (@mine ? "off" : "on"), turbo_action: "replace" },
                   "aria-current": (@mine ? nil : "page") %>
@@ -53,7 +53,7 @@
           <%# Sort segmented control. Sorting is list state, so it replaces
               rather than advances — which is also what lets it morph. %>
           <div class="seg" role="group" aria-label="<%= t("workspaces.index.sort_label") %>">
-            <%= link_to t("workspaces.index.sort_recent"), workspaces_path(view: @view_mode, q: @query, mine: mine_param),
+            <%= link_to t("workspaces.index.sort_recent"), workspaces_path(view: @view_mode, sort: "", q: @query, mine: mine_param),
                   class: "seg-item",
                   data: { state: (@sort.blank? ? "on" : "off"), turbo_action: "replace" },
                   "aria-current": (@sort.blank? ? "page" : nil) %>
