@@ -1,6 +1,6 @@
 class Workspaces::DeletedController < ApplicationController
   include WorkspaceScoped
-  include WorkspaceViewMode
+  include ListPreferences
   include OwnershipAuthorizable
 
   before_action :set_workspace, except: [:index]
@@ -8,8 +8,7 @@ class Workspaces::DeletedController < ApplicationController
 
   # GET /workspaces/deleted
   def index
-    @view_mode = resolve_workspace_view_mode
-    @query = params[:q].to_s.strip.first(80).presence
+    @view_mode, @query = workspace_list_preferences.values_at(:view, :query)
 
     scope = Current.account.workspaces.deleted_ordered
     @total = scope.count

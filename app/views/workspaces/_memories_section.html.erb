@@ -87,7 +87,7 @@
       <%= render "components/empty/description", text: memory_filter_summary %>
     <% end %>
     <%= render "components/empty/content" do %>
-      <%= link_to t("workspaces.show.filtered_empty_clear"), workspace_show_path(workspace),
+      <%= link_to t("workspaces.show.filtered_empty_clear"), workspace_show_path(workspace, **memory_filter_params(category: nil, tag: nil, q: nil)),
             data: { component: "button", variant: "outline", size: "sm" } %>
     <% end %>
   <% end %>

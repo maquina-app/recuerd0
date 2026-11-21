@@ -42,7 +42,7 @@ class Memories::PinnedControllerTest < ActionDispatch::IntegrationTest
 
     get pinned_memories_url(workspace_id: other.id, sort: "title", view: "compact")
     assert_response :success
-    assert_select "a[href=?]", pinned_memories_path(sort: "title", view: "compact")
+    assert_select "a[href=?]", pinned_memories_path(workspace_id: "", sort: "title", view: "compact")
   end
 
   test "index requires authentication" do

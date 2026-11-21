@@ -1,6 +1,6 @@
 class Workspaces::ArchivesController < ApplicationController
   include WorkspaceScoped
-  include WorkspaceViewMode
+  include ListPreferences
   include OwnershipAuthorizable
 
   allow_token_authentication
@@ -11,8 +11,7 @@ class Workspaces::ArchivesController < ApplicationController
 
   # GET /workspaces/archived
   def index
-    @view_mode = resolve_workspace_view_mode
-    @query = params[:q].to_s.strip.first(80).presence
+    @view_mode, @query = workspace_list_preferences.values_at(:view, :query)
 
     scope = Current.account.workspaces.archived_ordered
     @total = scope.count

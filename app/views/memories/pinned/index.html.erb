@@ -115,7 +115,7 @@
         <%= render "components/empty/description", text: t("memories.pinned.index.filtered_empty_description", workspace: @workspace_filter.name) %>
       <% end %>
       <%= render "components/empty/content" do %>
-        <%= link_to t("memories.pinned.index.filtered_empty_clear"), pinned_memories_path(sort: @sort, view: @view),
+        <%= link_to t("memories.pinned.index.filtered_empty_clear"), pinned_memories_path(workspace_id: "", sort: @sort, view: @view),
               data: { component: "button", variant: "outline", size: "sm" } %>
       <% end %>
     <% end %>

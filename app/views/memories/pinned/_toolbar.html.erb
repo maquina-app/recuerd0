@@ -7,7 +7,7 @@
   <% if workspace_counts.size > 1 %>
     <div class="category-bar" role="group" aria-label="<%= t("memories.pinned.index.toolbar.filter_label") %>">
       <% all_active = active_workspace.nil? %>
-      <%= link_to pinned_memories_path(sort: sort, view: view),
+      <%= link_to pinned_memories_path(workspace_id: "", sort: sort, view: view),
             class: "category-chip",
             data: { state: (all_active ? "on" : "off"), turbo_action: "replace" },
             "aria-current": (all_active ? "true" : nil) do %>

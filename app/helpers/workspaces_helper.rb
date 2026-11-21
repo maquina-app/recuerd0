@@ -43,9 +43,11 @@ module WorkspacesHelper
   end
 
   # Current memory filter params, with overrides, for building toolbar/pagination links.
+  # An override of nil is sent as "" so it clears the remembered value
+  # (ListPreferences) instead of letting the cookie fill it back in.
   def memory_filter_params(overrides = {})
     {category: @category, tag: @memory_tag, sort: @memory_sort_param, q: @memory_query.presence, view: @memory_view}
-      .merge(overrides).compact
+      .compact.merge(overrides.transform_values { it.nil? ? "" : it })
   end
 
   # "Nothing matched" is only actionable if it says what was applied. The old
