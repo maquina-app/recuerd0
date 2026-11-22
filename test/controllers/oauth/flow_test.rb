@@ -1,4 +1,5 @@
 require "test_helper"
+require "minitest/mock"
 
 # Exercises the full OAuth 2.1 + PKCE authorization-code flow end to end:
 # DCR registration -> consent -> code exchange -> refresh.
@@ -188,6 +189,22 @@ class Oauth::FlowTest < ActionDispatch::IntegrationTest
 
     assert_response :bad_request
     assert_equal "invalid_client_metadata", JSON.parse(response.body)["error"]
+  end
+
+  # rate_limit captured the null store at class load, so the count is stubbed on it.
+  test "consent past its rate limit goes back to the client as temporarily_unavailable" do
+    client = register_client
+    sign_in_as(@user)
+
+    Oauth::AuthorizationsController.cache_store.stub(:increment, 31) do
+      assert_no_difference "OauthAuthorizationCode.count" do
+        post "/oauth/authorize", params: authorize_params(client).merge(approved: "true")
+      end
+    end
+
+    assert response.location.start_with?(REDIRECT_URI)
+    assert_equal "temporarily_unavailable", redirect_param("error")
+    assert_equal "xyz", redirect_param("state")
   end
 
   # --- Refresh token reuse (OAuth 2.1 §4.3.1) ---------------------------------

@@ -328,7 +328,7 @@
       <div class="api-section" id="security">
         <div class="resource-header">
           <h2>Security &amp; limits</h2>
-          <p>The MCP and OAuth endpoints are rate-limited per token or per IP. Exceeding a limit returns <code>429 Too Many Requests</code>.</p>
+          <p>The MCP and OAuth endpoints are rate-limited per token, per person or per IP. Exceeding a limit returns <code>429 Too Many Requests</code>, except on the consent screen, which sends the client back with <code>error=temporarily_unavailable</code>.</p>
         </div>
         <div class="table-scroll">
           <table class="op-table">
@@ -336,6 +336,7 @@
             <tbody>
               <tr><td><code>POST /mcp</code></td><td>120 requests / minute per token</td></tr>
               <tr><td><code>POST /oauth/token</code></td><td>30 requests / minute per IP</td></tr>
+              <tr><td><code>GET · POST /oauth/authorize</code></td><td>30 requests / minute per person</td></tr>
               <tr><td><code>POST /oauth/register</code></td><td>15 requests / minute per IP</td></tr>
               <tr><td><code>POST /oauth/revoke</code></td><td>30 requests / minute per IP</td></tr>
             </tbody>

@@ -13,6 +13,12 @@ class Oauth::AuthorizationsController < ApplicationController
   before_action :validate_pkce
   before_action :validate_resource
 
+  # Per person, since consent needs a session; an IP can be shared by everyone
+  # behind it. Declared after the guards, so the client is known and the
+  # refusal goes back to its validated redirect_uri.
+  rate_limit to: 30, within: 1.minute, by: -> { Current.user.id },
+    with: -> { redirect_error("temporarily_unavailable", "Too many authorization requests") }
+
   # GET /oauth/authorize
   def new
     @authorization = authorization_params
