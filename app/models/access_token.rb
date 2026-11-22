@@ -60,6 +60,12 @@ class AccessToken < ApplicationRecord
     oauth_client_id? || audience.present?
   end
 
+  # Whether the granted OAuth scope includes any of `scopes`. A token with no
+  # scope, a manual API token, is limited by its permission tier alone.
+  def scope_covers?(scopes)
+    oauth_scope.blank? || oauth_scope.split.intersect?(scopes)
+  end
+
   def read_only?
     permission == "read_only"
   end

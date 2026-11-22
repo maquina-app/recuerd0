@@ -292,13 +292,13 @@
             <thead><tr><th>Scope</th><th>Grants</th><th>Tier</th></tr></thead>
             <tbody>
               <tr><td><code>memories:read</code></td><td>Read and search memories</td><td><code>read_only</code></td></tr>
-              <tr><td><code>memories:write</code></td><td>Create and update memories</td><td><code>full_access</code></td></tr>
-              <tr><td><code>workspaces:read</code></td><td>List your workspaces</td><td><code>read_only</code></td></tr>
+              <tr><td><code>memories:write</code></td><td>Create and update memories, and read them</td><td><code>full_access</code></td></tr>
+              <tr><td><code>workspaces:read</code></td><td>List your workspaces and their stats, without reading memories</td><td><code>read_only</code></td></tr>
             </tbody>
           </table>
         </div>
         <p class="doc-note">
-          A <code>read_only</code> token can call every read tool — <code>workspace_context</code>, <code>list_workspaces</code>, <code>list_memories</code>, <code>read_memory</code>, <code>read_memories</code>, <code>list_memory_links</code>, <code>workspace_stats</code>, and <code>suggest_merge_candidates</code>. The write tools — <code>create_memory</code>, <code>update_memory</code>, <code>create_version</code>, <code>link_memories</code>, and <code>unlink_memories</code> — need <code>full_access</code>.
+          With <code>memories:read</code>, a token can call every read tool — <code>workspace_context</code>, <code>list_workspaces</code>, <code>list_memories</code>, <code>read_memory</code>, <code>read_memories</code>, <code>list_memory_links</code>, <code>workspace_stats</code>, and <code>suggest_merge_candidates</code>. With only <code>workspaces:read</code>, it can call <code>list_workspaces</code> and <code>workspace_stats</code>. The write tools — <code>create_memory</code>, <code>update_memory</code>, <code>create_version</code>, <code>link_memories</code>, and <code>unlink_memories</code> — need <code>full_access</code>. A missing scope answers <code>403</code> with an <code>insufficient_scope</code> challenge naming it.
         </p>
         <div class="info-box note">
           <span class="info-box-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--m-note)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>

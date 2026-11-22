@@ -29,6 +29,10 @@ class McpController < ApplicationController
   DISCOVERY_TTL_MS = 3_600_000
 
   WRITE_TOOLS = %w[create_memory update_memory create_version link_memories unlink_memories].freeze
+  # Read tools that describe workspaces without reading a memory, so
+  # workspaces:read covers them. Every other read tool needs a memories scope.
+  WORKSPACE_TOOLS = %w[list_workspaces workspace_stats].freeze
+  MEMORY_SCOPES = %w[memories:read memories:write].freeze
 
   # Tools that create a new record whose `source` we stamp with the calling app.
   SOURCE_STAMPED_TOOLS = %w[create_memory create_version].freeze
@@ -152,7 +156,11 @@ class McpController < ApplicationController
   def handle_tool_call(params)
     name = params["name"]
     return jsonrpc_error(@jsonrpc_id, -32_602, "Unknown tool: #{name}") unless Mcp::ToolDefinitions.exists?(name)
-    insufficient_scope(name) if WRITE_TOOLS.include?(name) && !@current_oauth_token.full_access?
+    if WRITE_TOOLS.include?(name)
+      insufficient_scope(name, AccessToken::WRITE_SCOPE) unless @current_oauth_token.full_access?
+    else
+      insufficient_scope(name, "memories:read") unless @current_oauth_token.scope_covers?(read_scopes_for(name))
+    end
 
     arguments = object_param(params["arguments"])
     raise Mcp::ToolError, "Text can't contain null characters" if null_character_in?(arguments)
@@ -192,12 +200,17 @@ class McpController < ApplicationController
     })
   end
 
-  # 403 with a step-up challenge, so the client can ask for memories:write.
-  def insufficient_scope(name)
-    Rails.logger.info("[mcp] insufficient_scope tool=#{name} token_id=#{@current_oauth_token.id}")
+  def read_scopes_for(name)
+    WORKSPACE_TOOLS.include?(name) ? MEMORY_SCOPES + ["workspaces:read"] : MEMORY_SCOPES
+  end
+
+  # 403 with a step-up challenge, so the client can ask for the scope it lacks.
+  def insufficient_scope(name, scope)
+    Rails.logger.info("[mcp] insufficient_scope tool=#{name} scope=#{scope} token_id=#{@current_oauth_token.id}")
     response.set_header("WWW-Authenticate",
-      %(Bearer error="insufficient_scope", scope="#{AccessToken::WRITE_SCOPE}", resource_metadata="#{resource_metadata_url}"))
-    raise RequestError.new(-32_001, "Insufficient scope — write access required", status: :forbidden)
+      %(Bearer error="insufficient_scope", scope="#{scope}", resource_metadata="#{resource_metadata_url}"))
+    message = (scope == AccessToken::WRITE_SCOPE) ? "write access required" : "#{scope} required"
+    raise RequestError.new(-32_001, "Insufficient scope — #{message}", status: :forbidden)
   end
 
   def object_param(value)
