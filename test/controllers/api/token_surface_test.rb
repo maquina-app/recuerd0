@@ -28,6 +28,21 @@ class ApiTokenSurfaceTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "an OAuth token issued for MCP is refused on the REST API" do
+    token = @user.access_tokens.create!(permission: "full_access", oauth_client: @client,
+      audience: "http://www.example.com/mcp", expires_at: 1.hour.from_now)
+
+    get workspaces_url(format: :json), headers: auth_headers(token.raw_token)
+    assert_response :unauthorized
+
+    token.update!(oauth_client: nil)
+    get workspaces_url(format: :json), headers: auth_headers(token.raw_token)
+    assert_response :unauthorized, "a token whose client was removed keeps its audience"
+
+    get workspaces_url(format: :json), headers: auth_headers(TOKENS[:full_access])
+    assert_response :success
+  end
+
   test "a read-only token cannot mint a full-access token" do
     assert_no_difference "AccessToken.count" do
       post profile_access_tokens_url,

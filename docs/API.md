@@ -35,6 +35,9 @@ reach you want the caller to have.
 - Tokens work on the API surface only. The profile, password, account and OAuth
   consent pages are browser-only and answer `401` to a token, however valid, so
   a token can never manage its owner's credentials or mint another token.
+- **OAuth tokens are for MCP only.** A token issued through OAuth consent is
+  bound to `/mcp` and answers `401` on this API. Use an API token from your
+  Profile here.
 
 ### Errors
 

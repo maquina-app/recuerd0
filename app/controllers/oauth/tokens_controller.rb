@@ -40,7 +40,7 @@ class Oauth::TokensController < ApplicationController
       oauth_client: client,
       permission: AccessToken.permission_for_scope(auth_code.scope),
       oauth_scope: auth_code.scope,
-      description: client.client_name,
+      description: client.client_name.truncate(AccessToken::DESCRIPTION_LENGTH),
       audience: auth_code.resource.presence || canonical_resource,
       expires_at: 1.hour.from_now
     )
@@ -61,12 +61,7 @@ class Oauth::TokensController < ApplicationController
     token = nil unless client && token&.oauth_client_id == client.id
 
     unless token
-      # A well-formed but unknown refresh token is a reuse signal: rotation
-      # overwrites the digest, so a replayed (already-rotated) token no longer
-      # matches any row. Log it for monitoring without leaking the token value.
-      if params[:refresh_token].present?
-        Rails.logger.warn("[oauth] refresh_token rejected (unknown/rotated/revoked) client_id=#{params[:client_id]} ip=#{request.remote_ip}")
-      end
+      revoke_replayed_refresh_token
       return render_error("invalid_grant", "Refresh token invalid or expired")
     end
 
@@ -74,9 +69,21 @@ class Oauth::TokensController < ApplicationController
     token.assign_refresh_token!
     token.expires_at = 1.hour.from_now
     token.audience = canonical_resource
+    token.refreshed_at = Time.current
     token.save!
 
     render json: token_response(token)
+  end
+
+  # A refresh token that matches no live row is logged as a reuse signal,
+  # without the token value. One that was rotated away is a replay, and
+  # revokes the grant it came from.
+  def revoke_replayed_refresh_token
+    return if params[:refresh_token].blank?
+
+    replayed = AccessToken.find_by_rotated_refresh_token(params[:refresh_token])
+    replayed&.revoke_for_refresh_reuse!
+    Rails.logger.warn("[oauth] refresh_token rejected (#{replayed&.revoked? ? "replayed, grant revoked" : "unknown/rotated/revoked"}) client_id=#{params[:client_id]} ip=#{request.remote_ip}")
   end
 
   def canonical_resource

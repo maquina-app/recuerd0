@@ -29,6 +29,31 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     @read_token = oauth_token(permission: "read_only", scope: "memories:read")
   end
 
+  test "a workspaces:read token lists workspaces but can't read memories" do
+    token = oauth_token(permission: "read_only", scope: "workspaces:read")
+
+    %w[list_workspaces workspace_stats].each do |name|
+      result = mcp_post(mcp_rpc("tools/call", name: name, arguments: {workspace_id: @workspace.id.to_s}), token: token.raw_token)
+      assert_response :success, name
+      assert_not result.dig("result", "isError"), name
+    end
+
+    result = mcp_post(mcp_rpc("tools/call", name: "list_memories", arguments: {workspace_id: @workspace.id.to_s}), token: token.raw_token)
+    assert_response :forbidden
+    assert_equal 'Bearer error="insufficient_scope", scope="memories:read", ' \
+      'resource_metadata="http://www.example.com/.well-known/oauth-protected-resource/mcp"',
+      response.headers["WWW-Authenticate"]
+    assert_equal "Insufficient scope — memories:read required", result["error"]["message"]
+  end
+
+  test "memories:write alone reads memories too" do
+    token = oauth_token(permission: "full_access", scope: "memories:write")
+
+    result = mcp_post(mcp_rpc("tools/call", name: "list_memories", arguments: {workspace_id: @workspace.id.to_s}), token: token.raw_token)
+    assert_response :success
+    assert_not result.dig("result", "isError")
+  end
+
   test "rejects requests without a Bearer token" do
     mcp_post(mcp_rpc("tools/list"))
     assert_response :unauthorized
@@ -260,8 +285,9 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       .fetch("memories")
       .sole
 
+    # REST refuses OAuth tokens, so the comparison reads through a manual one.
     get workspace_context_url(workspace, format: :json),
-      headers: auth_headers(@read_token.raw_token)
+      headers: auth_headers("test_read_token_123")
     assert_response :success
     rest_memory = JSON.parse(response.body)["memories"].sole
 

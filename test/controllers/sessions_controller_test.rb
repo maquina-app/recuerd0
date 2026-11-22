@@ -35,4 +35,16 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-variant='destructive']"
     assert_select "input[name='email_address'][value='wrong@example.com']"
   end
+
+  test "a session past the absolute limit is signed out even while in use" do
+    user = users(:one)
+    sign_in_as(user)
+    session = user.sessions.order(:created_at).last
+    session.update_columns(created_at: (Session::ABSOLUTE_TIMEOUT + 1.day).ago, updated_at: Time.current)
+
+    get workspaces_url
+
+    assert_redirected_to new_session_path
+    assert_not Session.exists?(session.id)
+  end
 end

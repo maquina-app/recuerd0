@@ -67,6 +67,19 @@ class Profile::AccessTokensControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "disconnecting an app revokes every token the person holds for it" do
+    client = OauthClient.create!(client_name: "Twice", redirect_uris: ["https://example.test/cb"].to_json)
+    first, second = 2.times.map { @user.access_tokens.create!(permission: "full_access", oauth_client: client, expires_at: 1.hour.from_now) }
+    other_app = @user.access_tokens.create!(permission: "full_access", oauth_client: OauthClient.create!(client_name: "Other", redirect_uris: ["https://example.test/cb"].to_json))
+    sign_in_as(@user)
+
+    delete profile_access_token_url(first)
+
+    assert_redirected_to profile_path
+    assert [first, second].all? { it.reload.revoked? }
+    assert_not other_app.reload.revoked?
+  end
+
   test "unauthenticated access redirects to login" do
     post profile_access_tokens_url, params: {
       access_token: {permission: "read_only"}

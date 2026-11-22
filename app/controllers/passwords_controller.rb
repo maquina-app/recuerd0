@@ -3,6 +3,11 @@ class PasswordsController < ApplicationController
 
   allow_unauthenticated_access
   before_action :set_user_by_token, only: %i[edit update]
+  # Each request for a known address sends an email, so an unthrottled form is an
+  # inbox flood and a drain on the SMTP quota. Rack::Attack only exists in the
+  # hosted deploy; this is the limit every install gets.
+  rate_limit to: 5, within: 3.minutes, only: :create,
+    with: -> { redirect_to new_password_path, alert: t("passwords.create.rate_limited") }
 
   def new
   end

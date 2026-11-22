@@ -16,9 +16,10 @@ class Profile::AccessTokensController < ApplicationController
   def destroy
     @access_token = Current.user.access_tokens.find(params[:id])
 
-    # OAuth-issued tokens are revoked (kept for audit); manual tokens are deleted.
+    # OAuth-issued tokens are revoked (kept for audit), along with every other
+    # token for the same app; manual tokens are deleted.
     if @access_token.oauth_client_id?
-      @access_token.revoke!
+      @access_token.revoke_grant!
       redirect_to profile_path, notice: t(".disconnected"), status: :see_other
     else
       @access_token.destroy

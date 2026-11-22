@@ -13,6 +13,12 @@ class Oauth::AuthorizationsController < ApplicationController
   before_action :validate_pkce
   before_action :validate_resource
 
+  # Per person, since consent needs a session; an IP can be shared by everyone
+  # behind it. Declared after the guards, so the client is known and the
+  # refusal goes back to its validated redirect_uri.
+  rate_limit to: 30, within: 1.minute, by: -> { Current.user.id },
+    with: -> { redirect_error("temporarily_unavailable", "Too many authorization requests") }
+
   # GET /oauth/authorize
   def new
     @authorization = authorization_params
@@ -73,9 +79,17 @@ class Oauth::AuthorizationsController < ApplicationController
   end
 
   # The requested scope, narrowed to what the server supports and what the
-  # client registered for, so a tampered request can't widen it.
+  # client registered for, so a tampered request can't widen it. A request that
+  # names no scope gets the client's registered one, which the consent screen
+  # shows. A request naming only scopes this server doesn't have gets read
+  # access: falling back to the registered scope handed such clients write.
   def granted_scope
-    (params[:scope].to_s.split & OauthClient::SCOPES & @client.scope.to_s.split).join(" ").presence || @client.scope
+    requested = params[:scope].to_s.split
+    return @client.scope if requested.empty?
+
+    registered = OauthClient::SCOPES & @client.scope.to_s.split
+    granted = (requested & registered).presence || (OauthClient::READ_SCOPES & registered)
+    granted.join(" ").presence
   end
 
   def authorization_params

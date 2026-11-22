@@ -1,8 +1,10 @@
 # Derived from Writebook by 37signals — MIT licensed. See NOTICE.md.
 # https://github.com/basecamp/writebook
+#
+# Writebook serves uploads to anyone holding the slug. Memories are private to an
+# account, so here a read passes the same check as a write, and the redirect is
+# never cached by a shared proxy.
 class ActionText::Markdown::UploadsController < ApplicationController
-  allow_unauthenticated_access only: :show
-
   before_action do
     ActiveStorage::Current.url_options = {protocol: request.protocol, host: request.host, port: request.port}
   end
@@ -28,7 +30,9 @@ class ActionText::Markdown::UploadsController < ApplicationController
 
   def show
     @attachment = ActiveStorage::Attachment.find_by!(slug: "#{params[:slug]}.#{params[:format]}")
-    expires_in 1.year, public: true
+    raise ActiveRecord::RecordNotFound unless @attachment.record.record.markdown_uploadable_by?(Current.user)
+
+    expires_in 5.minutes, private: true
     redirect_to @attachment.url, allow_other_host: true
   end
 end
