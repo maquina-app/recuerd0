@@ -14,4 +14,18 @@ class SessionTest < ActiveSupport::TestCase
 
     assert session.expired?
   end
+
+  test "a session in daily use expires once it is older than the absolute limit" do
+    session = sessions(:one)
+    session.update_columns(created_at: (Session::ABSOLUTE_TIMEOUT + 1.day).ago, updated_at: Time.current)
+
+    assert session.expired?
+  end
+
+  test "a session within the absolute limit is not expired" do
+    session = sessions(:one)
+    session.update_columns(created_at: (Session::ABSOLUTE_TIMEOUT - 1.day).ago, updated_at: Time.current)
+
+    assert_not session.expired?
+  end
 end
