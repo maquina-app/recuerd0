@@ -9,7 +9,8 @@ class OauthClient < ApplicationRecord
   has_many :access_tokens, dependent: :nullify
 
   validates :client_id, presence: true, uniqueness: true
-  validates :client_name, presence: true
+  # Registration is open, so the name is bounded like any other input.
+  validates :client_name, presence: true, length: {maximum: 200}
   validates :redirect_uris, presence: true
   validate :redirect_uris_well_formed
 

@@ -174,6 +174,22 @@ class Oauth::FlowTest < ActionDispatch::IntegrationTest
     assert_not_equal refresh_token, rotated["refresh_token"]
   end
 
+  test "a client name longer than a token description still gets a token" do
+    client = OauthClient.create!(client_name: "A" * 120, redirect_uris: JSON.generate([REDIRECT_URI]))
+    sign_in_as(@user)
+    post "/oauth/authorize", params: authorize_params(client).merge(approved: "true")
+
+    tokens = exchange(client, redirect_param("code"))
+    assert_equal AccessToken::DESCRIPTION_LENGTH, AccessToken.find_by_token(tokens["access_token"]).description.length
+  end
+
+  test "registration refuses an unbounded client name" do
+    post "/oauth/register", params: {client_name: "A" * 201, redirect_uris: [REDIRECT_URI]}, as: :json
+
+    assert_response :bad_request
+    assert_equal "invalid_client_metadata", JSON.parse(response.body)["error"]
+  end
+
   # --- Refresh token reuse (OAuth 2.1 §4.3.1) ---------------------------------
 
   test "replaying a rotated refresh token revokes the grant" do

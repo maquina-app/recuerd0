@@ -40,7 +40,7 @@ class Oauth::TokensController < ApplicationController
       oauth_client: client,
       permission: AccessToken.permission_for_scope(auth_code.scope),
       oauth_scope: auth_code.scope,
-      description: client.client_name,
+      description: client.client_name.truncate(AccessToken::DESCRIPTION_LENGTH),
       audience: auth_code.resource.presence || canonical_resource,
       expires_at: 1.hour.from_now
     )
