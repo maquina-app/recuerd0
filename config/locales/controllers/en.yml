@@ -69,6 +69,7 @@ en:
   passwords:
     create:
       sent: "Password reset instructions sent (if user with that email address exists)."
+      rate_limited: "Too many reset requests. Try again in a few minutes."
     update:
       success: "Password has been reset and every session was signed out. API tokens keep working; revoke any you don't recognize from your Profile."
     invalid_token: "Password reset link is invalid or has expired."
