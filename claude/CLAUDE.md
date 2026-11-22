@@ -43,7 +43,7 @@ Work is not done when the tests pass. Skipping step 1 means conventions land as 
    | Stimulus controllers | `better-stimulus:better-stimulus` |
    | Turbo / deep Hotwire | `hotwire-patterns:hotwire-patterns` |
 
-   Then read `bin/rails maquina:doctor`. It never edits and always exits 0. BREAKING must be empty apart from the known false positive: on 0.7.4 its `destructive-error-invisible` rule ignores the `--destructive-text` / `--destructive-border` tokens that fix it, so those two lines stay. The remaining REVIEW/CLEANUP findings are the toast restyle and app rules that deliberately sit outside a layer.
+   Then read `bin/rails maquina:doctor`. It never edits and always exits 0. BREAKING must be empty apart from the known false positive: on 0.8.1 its `destructive-error-invisible` rule ignores the `--destructive-text` / `--destructive-border` tokens that fix it, so those two lines stay. The remaining REVIEW/CLEANUP findings are the toast restyle and app rules that deliberately sit outside a layer.
 
 2. **Verify interactive work in a browser.** Tests do not exercise JavaScript. A Stimulus or Turbo change is unverified until it has been driven for real, *including after a refactor of code that already worked*.
 
@@ -161,6 +161,7 @@ View-level locale keys go in `config/locales/views/en.yml`. Partial key paths st
 **Don't add more.** `test/system/onboarding_dismissal_test.rb` and `search_shortcut_hint_test.rb` stay as a named exception to the no-system-tests rule (owner's decision, 2026-11-05). New coverage goes in `test/integration/`. `bin/ci` doesn't run them, so run `bin/rails test test/system/...` by hand when you touch what they cover, after `bin/rails tailwindcss:build` if the CSS changed.
 
 - Headless Chrome cannot start in the container without `--no-sandbox`; the flags live in `test/application_system_test_case.rb`.
+- On Chrome 158+ with Capybara 3.40.0 every system test errors in `reset_session!` with `invalid argument: * is not a valid URL`: Capybara's `clear_storage` sends `Storage.clearDataForOrigin(origin: "*")`, which newer Chrome rejects. The assertions before teardown still run. It is the host browser, not the app; confirm against the base lockfile before chasing it.
 - `getComputedStyle(el, "::-webkit-search-cancel-button")` returns the **host element's** style in headless Chrome, not the pseudo-element's. Don't assert on it; assert on the CSS source and check the rendering in a screenshot.
 
 ## Project Tracking (Fizzy)

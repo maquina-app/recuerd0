@@ -1061,7 +1061,7 @@ house-md-toolbar button svg {
 
 /* First paint on a desktop must already leave room for an expanded sidebar. The
    server renders collapsible="offcanvas" and the controller only switches it to
-   "none" once it connects. The engine's guard for this (maquina-components 0.7.4)
+   "none" once it connects. The engine's guard for this (maquina-components 0.8.1)
    is wrapped in :where(), so its own later offcanvas rule zeroes the gap anyway
    and the whole page slid sideways on every full load. */
 @media (min-width: 768px) {
@@ -1073,7 +1073,7 @@ house-md-toolbar button svg {
 /* First paint on a phone must not be a nav drawer over the content. The server
    only knows the desktop cookie, and the sidebar controller can only correct
    the state once it connects — so hold the sheet off-canvas until then.
-   Still needed on maquina-components 0.7.4: the engine zeroes the gap below
+   Still needed on maquina-components 0.8.1: the engine zeroes the gap below
    768px and marks a collapsed sheet inert, but an expanded cookie still paints
    the sheet over the page until the controller connects. */
 @media (max-width: 767px) {
