@@ -87,6 +87,10 @@ module Authentication
 
     access_token = AccessToken.find_by_token(token)
     return false unless access_token
+    # An OAuth token is issued for /mcp alone (RFC 8707). McpAuthenticatable
+    # refuses one bound elsewhere, and this is the other half: without it a
+    # token an agent was given for MCP also opened the REST API.
+    return false if access_token.oauth?
 
     access_token.touch_last_used!
     Current.session = nil

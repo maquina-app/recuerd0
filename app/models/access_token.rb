@@ -37,6 +37,12 @@ class AccessToken < ApplicationRecord
     scope.to_s.split.include?(WRITE_SCOPE) ? "full_access" : "read_only"
   end
 
+  # Issued through OAuth consent and bound to an audience. A token outlives its
+  # client (`dependent: :nullify`), so the audience is what marks it.
+  def oauth?
+    oauth_client_id? || audience.present?
+  end
+
   def read_only?
     permission == "read_only"
   end

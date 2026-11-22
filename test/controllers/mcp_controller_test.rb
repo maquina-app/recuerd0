@@ -260,8 +260,9 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       .fetch("memories")
       .sole
 
+    # REST refuses OAuth tokens, so the comparison reads through a manual one.
     get workspace_context_url(workspace, format: :json),
-      headers: auth_headers(@read_token.raw_token)
+      headers: auth_headers("test_read_token_123")
     assert_response :success
     rest_memory = JSON.parse(response.body)["memories"].sole
 
