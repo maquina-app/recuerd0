@@ -1,6 +1,9 @@
 class AccessToken < ApplicationRecord
   PERMISSIONS = %w[read_only full_access].freeze
   WRITE_SCOPE = "memories:write"
+  # Two workers refreshing with the same token at once look like a replay, so
+  # one within this long of the rotation is refused without revoking.
+  REFRESH_REUSE_GRACE = 1.minute
 
   belongs_to :user
   belongs_to :oauth_client, optional: true
@@ -30,6 +33,12 @@ class AccessToken < ApplicationRecord
   def self.find_by_refresh_token(raw_token)
     return nil if raw_token.blank?
     where(revoked_at: nil).find_by(refresh_token_digest: Digest::SHA256.hexdigest(raw_token))
+  end
+
+  # The token whose refresh token this was before its last rotation.
+  def self.find_by_rotated_refresh_token(raw_token)
+    return nil if raw_token.blank?
+    where(revoked_at: nil).find_by(previous_refresh_token_digest: Digest::SHA256.hexdigest(raw_token))
   end
 
   # Maps a granted OAuth scope string to the two-tier permission model.
@@ -63,7 +72,9 @@ class AccessToken < ApplicationRecord
   end
 
   # Issues/rotates the refresh token, exposing the raw value via #raw_refresh_token.
+  # The digest being replaced is kept, so a replay of it can be recognised.
   def assign_refresh_token!
+    self.previous_refresh_token_digest = refresh_token_digest
     @raw_refresh_token = SecureRandom.base58(48)
     self.refresh_token_digest = Digest::SHA256.hexdigest(@raw_refresh_token)
     @raw_refresh_token
@@ -71,6 +82,13 @@ class AccessToken < ApplicationRecord
 
   def revoke!
     update_column(:revoked_at, Time.current)
+  end
+
+  # A rotated refresh token came back: the client lost the response, or someone
+  # else holds a copy. OAuth 2.1 says to revoke the grant, since the server
+  # can't tell which (§4.3.1).
+  def revoke_for_refresh_reuse!
+    revoke! if refreshed_at.nil? || refreshed_at < REFRESH_REUSE_GRACE.ago
   end
 
   # Revokes every token the person holds for this token's app. Each consent

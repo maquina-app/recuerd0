@@ -174,6 +174,35 @@ class Oauth::FlowTest < ActionDispatch::IntegrationTest
     assert_not_equal refresh_token, rotated["refresh_token"]
   end
 
+  # --- Refresh token reuse (OAuth 2.1 §4.3.1) ---------------------------------
+
+  test "replaying a rotated refresh token revokes the grant" do
+    client, tokens = connect_client
+    rotated = refresh(client, tokens["refresh_token"])
+    assert_response :success
+
+    travel AccessToken::REFRESH_REUSE_GRACE + 1.second do
+      refresh(client, tokens["refresh_token"])
+      assert_response :bad_request
+      assert_equal "invalid_grant", JSON.parse(response.body)["error"]
+
+      refresh(client, rotated["refresh_token"])
+      assert_response :bad_request, "the rotated token went with the grant"
+      assert_nil AccessToken.find_by_token(rotated["access_token"])
+    end
+  end
+
+  test "a replay within the grace period is refused without revoking" do
+    client, tokens = connect_client
+    rotated = refresh(client, tokens["refresh_token"])
+
+    refresh(client, tokens["refresh_token"])
+    assert_response :bad_request
+
+    refresh(client, rotated["refresh_token"])
+    assert_response :success
+  end
+
   # --- Audience binding (RFC 8707) --------------------------------------------
 
   test "code exchange issues a token bound to the canonical resource" do
@@ -347,6 +376,18 @@ class Oauth::FlowTest < ActionDispatch::IntegrationTest
     post "/oauth/token", params: {grant_type: "authorization_code", client_id: client.client_id, code: code,
                                   redirect_uri: REDIRECT_URI, code_verifier: PKCE_VERIFIER}.merge(extra)
     assert_response :success
+    JSON.parse(response.body)
+  end
+
+  def connect_client
+    client = register_client
+    sign_in_as(@user)
+    post "/oauth/authorize", params: authorize_params(client).merge(approved: "true")
+    [client, exchange(client, redirect_param("code"))]
+  end
+
+  def refresh(client, refresh_token)
+    post "/oauth/token", params: {grant_type: "refresh_token", client_id: client.client_id, refresh_token: refresh_token}
     JSON.parse(response.body)
   end
 
