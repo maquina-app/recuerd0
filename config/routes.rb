@@ -144,8 +144,11 @@ Rails.application.routes.draw do
   match "/500", to: "errors#internal_server_error", via: :all
 
   get "up", to: "rails/health#show", as: :rails_health_check
-  get "manifest", to: "rails/pwa#manifest", as: :pwa_manifest
-  get "service-worker", to: "rails/pwa#service_worker", as: :pwa_service_worker
+  # Each serves one format. Left open, (.:format) took any extension Rails knows:
+  # /manifest.zip found no template and answered 500, and Rack::Attack's route
+  # guard read it as a real route, so the archive-path rule stood down.
+  get "manifest", to: "rails/pwa#manifest", as: :pwa_manifest, constraints: {format: "json"}
+  get "service-worker", to: "rails/pwa#service_worker", as: :pwa_service_worker, constraints: {format: "js"}
 
   if Rails.application.config.multi_tenant
     root "home#index"
