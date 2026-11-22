@@ -92,4 +92,14 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     # which is the thing the user was being denied.
     assert_select "body", text: /Expired Probe Client/
   end
+
+  test "connected apps lists a re-authorized app once" do
+    client = OauthClient.create!(client_name: "Reauthorized Client", redirect_uris: ["https://example.test/cb"].to_json)
+    2.times { @user.access_tokens.create!(permission: "full_access", oauth_client: client, expires_at: 1.hour.from_now) }
+
+    sign_in_as(@user)
+    get profile_url
+
+    assert_select "p", text: "Reauthorized Client", count: 1
+  end
 end

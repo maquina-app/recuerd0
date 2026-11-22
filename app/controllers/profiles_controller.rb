@@ -27,7 +27,9 @@ class ProfilesController < ApplicationController
     # mint new ones indefinitely, and the user was shown "No connected
     # applications" with no way to revoke it. List by the same condition that
     # actually grants access.
-    @connected_apps = @user.access_tokens.oauth.where(revoked_at: nil).includes(:oauth_client).recent
+    # One row per app: re-authorizing issues another token, and Disconnect
+    # revokes them all (AccessToken#revoke_grant!).
+    @connected_apps = @user.access_tokens.oauth.where(revoked_at: nil).includes(:oauth_client).recent.to_a.uniq(&:oauth_client_id)
   end
 
   def profile_params

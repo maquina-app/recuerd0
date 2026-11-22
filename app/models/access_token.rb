@@ -67,6 +67,13 @@ class AccessToken < ApplicationRecord
     update_column(:revoked_at, Time.current)
   end
 
+  # Revokes every token the person holds for this token's app. Each consent
+  # issues a new row, so revoking only the one shown left a re-authorized app
+  # connected through the others.
+  def revoke_grant!
+    user.access_tokens.where(oauth_client_id: oauth_client_id, revoked_at: nil).update_all(revoked_at: Time.current)
+  end
+
   def expired?
     expires_at.present? && expires_at <= Time.current
   end
