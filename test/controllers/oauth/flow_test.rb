@@ -297,6 +297,26 @@ class Oauth::FlowTest < ActionDispatch::IntegrationTest
     assert_select "input[name=response_type][value=code]"
   end
 
+  test "a request naming only unsupported scopes is granted read access, not write" do
+    client = OauthClient.create!(client_name: "Wide", redirect_uris: JSON.generate([REDIRECT_URI]), scope: OauthClient::SCOPES.join(" "))
+    sign_in_as(@user)
+
+    post "/oauth/authorize", params: authorize_params(client).merge(scope: "openid offline_access", approved: "true")
+    code = OauthAuthorizationCode.find_by(code: redirect_param("code"))
+    assert_equal "memories:read workspaces:read", code.scope
+
+    token = AccessToken.find_by_token(exchange(client, code.code)["access_token"])
+    assert token.read_only?
+  end
+
+  test "a request naming no scope gets the client's registered scope" do
+    client = OauthClient.create!(client_name: "Default", redirect_uris: JSON.generate([REDIRECT_URI]), scope: OauthClient::SCOPES.join(" "))
+    sign_in_as(@user)
+
+    post "/oauth/authorize", params: authorize_params(client).except(:scope).merge(approved: "true")
+    assert_equal OauthClient::SCOPES.join(" "), OauthAuthorizationCode.find_by(code: redirect_param("code")).scope
+  end
+
   # --- Discovery ---------------------------------------------------------------
 
   test "authorization server metadata advertises the iss response parameter" do

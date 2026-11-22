@@ -3,6 +3,7 @@
 # clients (token_endpoint_auth_method: "none") and authenticate using PKCE only.
 class OauthClient < ApplicationRecord
   SCOPES = %w[memories:read memories:write workspaces:read].freeze
+  READ_SCOPES = %w[memories:read workspaces:read].freeze
 
   has_many :oauth_authorization_codes, dependent: :destroy
   has_many :access_tokens, dependent: :nullify
