@@ -80,4 +80,29 @@ class UserTest < ActiveSupport::TestCase
     assert_equal 0, member.pinned_items_count
     assert member.can_pin_more?
   end
+
+  test "an email address mail can be delivered to is valid" do
+    %w[ana@example.com ana.maria+notes@mail.example.co first_o'neil@example.mx a-b_c@sub-domain.example.com].each do |address|
+      user = User.new(email_address: address)
+      user.validate
+      assert_empty user.errors[:email_address], address
+    end
+  end
+
+  # Production had an account whose local part ended in a dot: every email to
+  # it, the password reset included, failed with "Bad recipient address syntax".
+  test "an email address a mail server refuses is invalid" do
+    %w[ana.@example.com .ana@example.com ana..maria@example.com ana@example ana@-example.com ana@example..com ana@ ana].each do |address|
+      user = User.new(email_address: address)
+      user.validate
+      assert_includes user.errors[:email_address], I18n.t("activerecord.errors.models.user.attributes.email_address.invalid"), address
+    end
+  end
+
+  test "an account saved with a malformed address can still be updated" do
+    user = users(:one)
+    user.update_column(:email_address, "ana.@example.com")
+
+    assert user.update(name: "Ana")
+  end
 end
