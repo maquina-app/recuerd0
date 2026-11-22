@@ -102,4 +102,15 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "p", text: "Reauthorized Client", count: 1
   end
+
+  test "connected apps leaves out a grant whose refresh token has gone idle" do
+    client = OauthClient.create!(client_name: "Abandoned Client", redirect_uris: ["https://example.test/cb"].to_json)
+    @user.access_tokens.create!(permission: "full_access", oauth_client: client, expires_at: 1.hour.from_now,
+      refreshed_at: (AccessToken::REFRESH_IDLE_TIMEOUT + 1.day).ago)
+
+    sign_in_as(@user)
+    get profile_url
+
+    assert_select "body", text: /Abandoned Client/, count: 0
+  end
 end

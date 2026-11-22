@@ -4,6 +4,9 @@ class AccessToken < ApplicationRecord
   # Two workers refreshing with the same token at once look like a replay, so
   # one within this long of the rotation is refused without revoking.
   REFRESH_REUSE_GRACE = 1.minute
+  # A refresh token dies after this long without being used. Connected agents
+  # refresh hourly, so only an abandoned grant reaches it.
+  REFRESH_IDLE_TIMEOUT = 90.days
 
   belongs_to :user
   belongs_to :oauth_client, optional: true
@@ -13,6 +16,9 @@ class AccessToken < ApplicationRecord
   scope :oauth, -> { where.not(oauth_client_id: nil) }
   scope :active, -> { where(revoked_at: nil).where("expires_at IS NULL OR expires_at > ?", Time.current) }
   scope :expired, -> { where.not(expires_at: nil).where("expires_at <= ?", Time.current) }
+  # What still grants access through a refresh, whether or not the access token
+  # has expired. Connected applications lists by this.
+  scope :refreshable, -> { where(revoked_at: nil).where("COALESCE(refreshed_at, created_at) > ?", REFRESH_IDLE_TIMEOUT.ago) }
 
   attr_reader :raw_token, :raw_refresh_token
 
@@ -29,10 +35,10 @@ class AccessToken < ApplicationRecord
   end
 
   # Refresh tokens stay usable after the access token's short expiry — that is
-  # their purpose — so this is gated only on revocation, not on expires_at.
+  # their purpose — so this is gated on revocation and idleness, not on expires_at.
   def self.find_by_refresh_token(raw_token)
     return nil if raw_token.blank?
-    where(revoked_at: nil).find_by(refresh_token_digest: Digest::SHA256.hexdigest(raw_token))
+    refreshable.find_by(refresh_token_digest: Digest::SHA256.hexdigest(raw_token))
   end
 
   # The token whose refresh token this was before its last rotation.

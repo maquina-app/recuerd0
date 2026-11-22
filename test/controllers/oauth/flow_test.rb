@@ -203,6 +203,21 @@ class Oauth::FlowTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "a refresh token unused for the idle timeout is refused" do
+    client, tokens = connect_client
+
+    travel AccessToken::REFRESH_IDLE_TIMEOUT - 1.day do
+      tokens = refresh(client, tokens["refresh_token"])
+      assert_response :success, "each refresh restarts the window"
+    end
+
+    travel(AccessToken::REFRESH_IDLE_TIMEOUT * 2) do
+      refresh(client, tokens["refresh_token"])
+      assert_response :bad_request
+      assert_equal "invalid_grant", JSON.parse(response.body)["error"]
+    end
+  end
+
   # --- Audience binding (RFC 8707) --------------------------------------------
 
   test "code exchange issues a token bound to the canonical resource" do

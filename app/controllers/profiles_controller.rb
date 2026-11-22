@@ -21,7 +21,7 @@ class ProfilesController < ApplicationController
   def load_tokens
     @access_tokens = @user.access_tokens.manual.recent
     # `.active` also requires expires_at in the future, but AccessToken
-    # .find_by_refresh_token gates ONLY on revoked_at — deliberately, since a
+    # .find_by_refresh_token gates only on `refreshable` — deliberately, since a
     # refresh token outliving its access token is the point. So an app whose
     # access token had expired vanished from this list while remaining able to
     # mint new ones indefinitely, and the user was shown "No connected
@@ -29,7 +29,7 @@ class ProfilesController < ApplicationController
     # actually grants access.
     # One row per app: re-authorizing issues another token, and Disconnect
     # revokes them all (AccessToken#revoke_grant!).
-    @connected_apps = @user.access_tokens.oauth.where(revoked_at: nil).includes(:oauth_client).recent.to_a.uniq(&:oauth_client_id)
+    @connected_apps = @user.access_tokens.oauth.refreshable.includes(:oauth_client).recent.to_a.uniq(&:oauth_client_id)
   end
 
   def profile_params
