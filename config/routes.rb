@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   # House MD image uploads — deferred to a follow-up. Re-enable alongside the
-  # uploads controller and Content#markdown_uploadable_by? wiring.
+  # uploads controller and Content#markdown_uploadable_by? wiring. Both actions
+  # go through that predicate, so until Content answers it every upload is refused.
   # namespace :action_text, path: nil do
   #   get  "/u/*slug" => "markdown/uploads#show",   as: :markdown_upload
   #   post "/uploads" => "markdown/uploads#create", as: :markdown_uploads
