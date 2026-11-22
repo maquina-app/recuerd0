@@ -34,7 +34,16 @@ class User < ApplicationRecord
   scope :active, -> { where.not("email_address LIKE 'deleted-%'") }
 
   validates :role, presence: true, inclusion: {in: ROLES}
+  # What a mail server will accept: dot-separated atoms, then a domain with a
+  # dot. The browser's type="email" lets a local part end in a dot, and
+  # production had an account whose every email, the password reset included,
+  # came back "Bad recipient address syntax". Checked only when the address
+  # changes, so an account saved before this can still sign in and edit itself.
+  EMAIL_ATOM = %r{[a-z0-9!#$%&'*+/=?^_`{|}~-]+}i
+  EMAIL_FORMAT = /\A#{EMAIL_ATOM}(?:\.#{EMAIL_ATOM})*@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+\z/i
+
   validates :email_address, uniqueness: true
+  validates :email_address, format: {with: EMAIL_FORMAT}, if: :email_address_changed?
   # The only 8-character floor was minlength: 8 on the form fields, which any
   # non-browser client ignores — on the page whose whole job is credential
   # hygiene. allow_nil so records that are not setting a password still save.

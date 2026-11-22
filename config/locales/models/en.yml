@@ -49,6 +49,7 @@ en:
             email_address:
               format: "%{message}"
               taken: "This email already has an account."
+              invalid: "Check this email address. Mail can't be delivered to it as written."
             password:
               format: "%{message}"
               blank: "Enter a password."

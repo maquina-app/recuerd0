@@ -83,6 +83,25 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 4, workspace.memories.count
   end
 
+  test "POST create refuses an email address mail can't be delivered to" do
+    assert_no_difference ["Account.count", "User.count"] do
+      assert_no_enqueued_jobs only: ActionMailer::MailDeliveryJob do
+        post registration_url, params: {
+          user: {
+            account_name: "Acme",
+            email_address: "new.user.@example.com",
+            password: "password123",
+            password_confirmation: "password123"
+          }
+        }
+      end
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "input[name='user[email_address]'][aria-invalid=true]"
+    assert_select "p[data-form-part=error]", text: I18n.t("activerecord.errors.models.user.attributes.email_address.invalid")
+  end
+
   test "POST create with invalid params does not create workspace" do
     assert_no_difference "Workspace.count" do
       post registration_url, params: {
